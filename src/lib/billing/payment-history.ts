@@ -290,6 +290,11 @@ export function buildPaymentHistory(
   //   ⚠️paymentOrders 를 안 넘기는 호출부에서는 이 판정을 하지 않는다(근거가 없으므로 기존 동작 유지).
   const hasOrderLedger = Boolean(input.paymentOrders && input.paymentOrders.length > 0);
   const completedOrderIds = new Set((input.paymentOrders ?? []).map((o) => o.order_id));
+  const entitlementOrderIds = new Set(
+    input.productEntitlements
+      .map((e) => e.order_id)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0)
+  );
   const entries: PaymentHistoryEntry[] = [
     ...input.productEntitlements.map((row) => {
       const entry = mapProductEntitlementToHistory(row);
@@ -300,7 +305,19 @@ export function buildPaymentHistory(
         hasOrderLedger && Boolean(row.order_id) && !completedOrderIds.has(row.order_id as string);
       return isBundleComponent || orderUnconfirmed ? { ...entry, amountWon: null } : entry;
     }),
-    ...input.creditTransactions.map(mapCreditTransactionToHistory),
+    // 🔴 2026-09-08 — 같은 주문이 두 테이블에 다 적히면 **이중 계상**된다.
+    //   평생리포트 결제는 product_entitlements(amount=35,000)와 credit_transactions
+    //   (feature='lifetime_report', metadata.amount=35,000) 양쪽에 기록되는데, dedupe 가
+    //   payment_orders 에만 걸려 있어 35,000 이 두 번 세어졌다. 실측: 실결제 44,900원인
+    //   회원의 LTV 가 79,900원(=44,900+35,000). 번들(taste_product)은 feature 필터에
+    //   걸려 우연히 안 겹쳤을 뿐, 구조는 같다.
+    //   → 아래 payment_orders 와 **같은 정책**: 이용권이 이미 잡은 주문번호는 건너뛴다.
+    ...input.creditTransactions
+      .filter((tx) => {
+        const orderId = readMetaString(tx.metadata, 'orderId');
+        return !(orderId && entitlementOrderIds.has(orderId));
+      })
+      .map(mapCreditTransactionToHistory),
   ];
 
   // payment_orders 는 기존 두 소스와 겹칠 수 있음(레거시 전팩·단건은 양쪽 기록)

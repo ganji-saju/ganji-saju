@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
+import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import type { PolicyKind } from '@/shared/policies/types';
@@ -173,7 +174,18 @@ export async function createPaymentOrder(
   input: {
     userId: string;
     pkg: PaymentPackage;
-    amount: number; // 2026-07-07 — 리졸버 스냅샷가(카탈로그 price 아님). prepare 가 전달.
+    /**
+     * 🔴 2026-09-11 — `amount` 에서 이름을 바꿨다. **정가**(리졸버 스냅샷가, 카탈로그 price 아님).
+     *   할인 계산은 이 함수 **안에서** 한다 → 새 결제 경로를 만드는 사람은 정가를 넘길 수밖에 없고
+     *   할인이 자동으로 붙는다. "쿠폰 적용을 잊는다"는 실수의 물리적 표현이 사라진다.
+     *   설계: docs/discount-coupon-design.md §3-1
+     */
+    listAmount: number;
+    /**
+     * 적용할 쿠폰. null = 쿠폰 없음(할인 0). prepare 가 귀속·검증을 마친 뒤 넘긴다.
+     * ⚠️ 클라이언트가 보낸 값을 그대로 넘기면 안 된다 — percent 는 반드시 DB(coupon_tiers)에서 읽은 값.
+     */
+    coupon?: { code: string; percent: number; maxDiscountWon?: number | null } | null;
     slug?: string | null;
     scope?: string | null;
     product?: string | null;
@@ -193,13 +205,23 @@ export async function createPaymentOrder(
 ) {
   const client = service ?? (await createServiceClient());
   const orderId = generatePaymentOrderId();
+  // 🔴 할인이 금액이 되는 유일한 지점. 상한 50% clamp·원 단위 절사·0원 방지가 여기 들어 있다.
+  //   호출부가 할인을 계산해 넘기는 구조였다면 경로마다 어긋났을 것이다.
+  const pricing = input.coupon
+    ? applyCouponDiscount(input.listAmount, input.coupon.percent, input.coupon.maxDiscountWon)
+    : { percent: 0, discountWon: 0, chargeAmount: input.listAmount };
   const { data, error } = await client
     .from('payment_orders')
     .insert({
       order_id: orderId,
       user_id: input.userId,
       package_id: input.pkg.id,
-      amount: input.amount,
+      // amount = **실청구액**. 의미를 바꾸지 않는다 — 승인 대조·환불·매출집계가 전부 이 값을 본다.
+      amount: pricing.chargeAmount,
+      list_amount: input.listAmount,
+      discount_won: pricing.discountWon,
+      coupon_code: input.coupon?.code ?? null,
+      coupon_percent: input.coupon ? pricing.percent : null,
       currency: 'KRW',
       status: 'prepared',
       slug: input.slug ?? null,

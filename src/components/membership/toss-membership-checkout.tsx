@@ -17,10 +17,13 @@ import { trackMoonlightEvent } from '@/lib/analytics';
 import { savePendingLifetimeReportSlug } from '@/lib/payments/lifetime-report';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 // 2026-05-18 Phase 3-C-1: 결제 전 동의 체크박스 + prepare API 검증.
-import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-checkboxes';
+import {
+  PaymentConsentDetails,
+  PaymentConsentRow,
+  usePaymentConsent,
+} from '@/components/policies/payment-consent-checkboxes';
 import { getPackage } from '@/lib/payments/catalog';
 import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
-import type { PolicyKind } from '@/shared/policies/types';
 
 interface Props {
   packageId: string;
@@ -65,11 +68,12 @@ export default function TossMembershipCheckout({
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(
     DEFAULT_TOSS_PAYMENT_METHOD
   );
-  // Phase 3-C-1: 동의 체크 상태. valid 시만 결제 버튼 활성.
-  const [consentValid, setConsentValid] = useState(false);
-  const [acceptedKinds, setAcceptedKinds] = useState<PolicyKind[]>([]);
-
   const pkg = useMemo(() => getPackage(packageId), [packageId]);
+  // Phase 3-C-1: 동의 체크 상태. valid 시만 결제 버튼 활성.
+  //   2026-09-09 — 체크박스가 하단 고정바로 내려가면서 상태 소유자를 여기로 올렸다
+  //   (체크박스 행과 결제 버튼이 같은 상태를 봐야 한다).
+  const consent = usePaymentConsent(pkg);
+  const { valid: consentValid, acceptedKinds } = consent;
 
   const checkoutPath = useMemo(() => {
     const params = new URLSearchParams(product ? { product } : { plan });
@@ -350,27 +354,26 @@ export default function TossMembershipCheckout({
   return (
     <div className="space-y-3">
       <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} provider={provider} />
-      {/* Phase 3-C-1: 결제 전 동의 — 필수 동의 모두 체크해야 결제 버튼 활성 */}
-      {pkg && (
-        <PaymentConsentCheckboxes
-          pkg={pkg}
-          confirmationItems={confirmationItems}
-          onValidChange={(valid, kinds) => {
-            setConsentValid(valid);
-            setAcceptedKinds(kinds);
-          }}
-        />
-      )}
+      {/* 주문 요약·알림 필드는 본문에. 동의 체크박스는 아래 고정바(버튼 바로 위)로 갔다. */}
+      {pkg && <PaymentConsentDetails confirmationItems={confirmationItems} />}
       {errorMessage ? (
         <p className="text-center text-sm leading-6 text-rose-600">{errorMessage}</p>
       ) : (
         <p className="text-center text-sm leading-6 text-[var(--app-copy-soft)]">
-          결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
+          결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다.
         </p>
       )}
-      {/* 2026-06-30 — 결제 버튼을 화면 하단에 진짜 고정(포커스 체크아웃). 결제수단·동의는
-          흐름상 위에 유지(전자상거래법상 결제 전 동의 순서 보존). body portal 로 viewport 고정. */}
+      {/* 2026-06-30 — 결제 버튼을 화면 하단에 진짜 고정(포커스 체크아웃). body portal 로 viewport 고정.
+          2026-09-09 — 동의 체크박스를 이 바 안, **버튼 바로 위**로 옮겼다(사용자 요청:
+          "바로 결제하기가 더 수월하게"). 체크하러 위로 스크롤할 필요가 없다.
+          ⚠️ 버튼 **위**인 이유: 전자상거래법상 동의가 결제 행위보다 앞서야 하고 화면 순서도
+          그 흐름을 따른다(2026-06-30 부터 지켜온 제약). 아래로 내리지 말 것. */}
       <StickyBottomBar variant="bottom">
+        <PaymentConsentRow
+          items={consent.items}
+          allAccepted={consent.allAccepted}
+          onToggleAll={consent.toggleAll}
+        />
         <Button
           type="button"
           onClick={handlePayment}

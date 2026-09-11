@@ -527,7 +527,7 @@ export function GangiServiceCardLink({
         className="col-span-2 block no-underline transition-transform active:scale-[0.99]"
       >
         <span
-          className="relative flex items-center gap-3.5 overflow-hidden rounded-[20px] py-3 pl-3.5 pr-4"
+          className="relative flex flex-wrap items-center gap-3.5 overflow-hidden rounded-[20px] py-3 pl-3.5 pr-4"
           style={{
             background:
               'linear-gradient(105deg, var(--app-ink) 0%, #241a2e 52%, #35203a 100%)',

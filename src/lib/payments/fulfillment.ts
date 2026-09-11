@@ -181,6 +181,8 @@ export async function fulfillPaymentOrder(input: {
         orderId: claimed.orderId,
         packageId: pkg.id,
         paymentKey,
+        // 🔴 실결제액. 없으면 환불 계산이 카탈로그 정가로 떨어진다(credit-refunds.ts 주석).
+        amount: claimed.amount,
       });
       const updatedCredits = await getCredits(claimed.userId);
       totalCredits =
@@ -219,6 +221,8 @@ export async function fulfillPaymentOrder(input: {
         orderId: claimed.orderId,
         packageId: pkg.id,
         paymentKey,
+        // 🔴 실결제액. 없으면 환불 계산이 카탈로그 정가로 떨어진다(credit-refunds.ts 주석).
+        amount: claimed.amount,
       });
       const updatedCredits = await getCredits(claimed.userId);
       totalCredits =

@@ -6,6 +6,7 @@
 // ⚠️ 스캐폴드 — requestPay 파라미터·method 문자열·SDK URL(운영/샌드박스)은 샌드박스 E2E 로
 //   확정(docs §6). 나이스페이 클라이언트 키가 'Server 승인 방식'으로 발급돼야 서버승인 결제창 동작.
 import { getNicepayClientKey } from '@/lib/payments/nicepay-env';
+import { TOSS_PAYMENT_METHOD_OPTIONS } from '@/lib/payments/methods';
 
 const SDK_URL = 'https://pay.nicepay.co.kr/v1/js/';
 
@@ -55,16 +56,23 @@ function loadNicepaySdk(): Promise<void> {
   return sdkPromise;
 }
 
-/** 토스 결제수단 코드(CARD/TRANSFER) → 나이스페이 method 문자열. */
-export function toNicepayMethod(tossMethod: string): string {
-  switch (tossMethod) {
-    case 'CARD':
-      return 'card';
-    case 'TRANSFER':
-      return 'bank';
-    default:
-      return 'card';
-  }
+/** 매핑이 없는 코드가 들어왔을 때의 안전한 기본값. 카드는 항상 열려 있다. */
+const NICEPAY_METHOD_FALLBACK = 'card';
+
+/**
+ * 결제수단 코드 → 나이스페이 method 문자열. 매핑 정본은 methods.ts 의 `nicepayMethod`.
+ *
+ * 🔴 계좌이체('bank')는 **어떤 입력으로도 나가면 안 된다** — 나이스페이 안내상 넣는 순간
+ *   결제 자체가 막힌다(2026-09-08). TRANSFER 는 테이블에서 `nicepayMethod: null` 이라
+ *   여기서 fallback('card')으로 떨어진다. 픽커가 이미 안 보여주지만 여기가 마지막 관문이다.
+ *
+ * 🔴 2026-09-08 — CARD 는 'cardAndEasyPay'(카드+간편결제 한 덩어리)에서 'card'(카드 전용)로
+ *   돌아왔다. 간편결제를 우리 화면에서 개별 버튼으로 분리했으므로 카드 창에 또 넣으면
+ *   같은 수단이 두 번 나온다. 설계: docs/payment-easypay-picker-design.md
+ */
+export function toNicepayMethod(methodCode: string): string {
+  const option = TOSS_PAYMENT_METHOD_OPTIONS.find((o) => o.code === methodCode);
+  return option?.nicepayMethod ?? NICEPAY_METHOD_FALLBACK;
 }
 
 /**

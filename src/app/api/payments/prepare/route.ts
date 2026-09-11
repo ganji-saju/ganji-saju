@@ -383,11 +383,13 @@ export async function POST(req: NextRequest) {
 
   // 2026-07-07 — 주문 금액을 리졸버로 스냅샷(카탈로그 기본가 위 DB 오버라이드).
   //   이후 confirm/return 은 이 order.amount 를 authoritative 검증한다.
-  const resolvedAmount = await resolvePackagePrice(pkg.id);
+  const listAmount = await resolvePackagePrice(pkg.id);
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
-    amount: resolvedAmount,
+    listAmount,
+    // 쿠폰 귀속·검증은 PR3 에서 붙인다. 지금은 항상 null = 할인 0 → 기존 동작과 동일.
+    coupon: null,
     slug,
     scope,
     product,
@@ -437,7 +439,7 @@ export async function POST(req: NextRequest) {
     stage: 'prepare_ready',
     userId: user.id,
     packageId,
-    amount: resolvedAmount,
+    amount: order.amount,
     orderId: order.orderId,
     metadata: {
       scopeKey: paymentScope?.scopeKey ?? null,
@@ -455,9 +457,11 @@ export async function POST(req: NextRequest) {
     alreadyPurchased: false,
     scopeKey: paymentScope?.scopeKey ?? null,
     orderId: order.orderId,
-    // 2026-07-07 — 청구 금액은 order.amount(리졸버 스냅샷). 클라이언트는 이 값으로 PG 청구해야
-    //   confirm/return 의 order.amount 검증과 일치(카탈로그 prop 사용 시 가격 변경 후 전건 거부).
-    amount: resolvedAmount,
+    // 🔴 반드시 `order.amount` 다. `listAmount`(정가)를 내보내면 할인 주문에서 클라이언트가
+    //   정가로 PG 청구 → confirm:66 / nicepay-return:216 의 `order.amount !== amount` 에서
+    //   **모든 결제가 거부**된다(쿠폰 없는 결제까지 같이 죽는다). 타입이 못 잡는 자리라
+    //   가드 테스트로 고정한다(coupon-chokepoint.test.ts).
+    amount: order.amount,
     // 2026-06-26 — 결제창 분기용 PG. 클라이언트가 toss SDK ↔ nicepay 결제창을 선택.
     provider: getPaymentProvider(),
   });
