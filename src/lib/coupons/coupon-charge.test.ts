@@ -26,6 +26,8 @@ interface FakeDb {
   inserted: Row[];
   updates: number;
   attempts: number;
+  /** true 면 056 RPC 가 오류를 낸다(장애 흉내). */
+  rpcDown?: boolean;
 }
 
 function cmp(a: unknown, b: unknown) {
@@ -74,10 +76,15 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
       const hits = rowsOf().filter((row) => matches(row, filters));
       if (patch) {
         db.updates += 1;
-        // 부분 유니크 인덱스 discount_coupons_one_per_user 흉내(요구 6 은 DB 가 자른다).
-        const nextOwner = patch.bound_user_id;
-        if (nextOwner && db.coupons.some((c) => c.bound_user_id === nextOwner && !hits.includes(c))) {
-          return { data: null, error: { code: '23505', message: 'duplicate key' } };
+        // 부분 유니크 인덱스 discount_coupons_one_live_per_user 흉내(요구 6 은 DB 가 자른다):
+        //   UPDATE 뒤 상태에서 (bound_user_id, released_at is null) 인 행이 한 사용자에 둘이면 거부.
+        //   새 귀속뿐 아니라 released 되돌리기(보상)도 자리를 다시 차지하므로 **모든** UPDATE 뒤를 본다.
+        if (table === 'discount_coupons') {
+          const next = db.coupons.map((c) => (hits.includes(c) ? { ...c, ...patch } : c));
+          const live = next.filter((c) => c.bound_user_id && !c.released_at).map((c) => c.bound_user_id);
+          if (new Set(live).size !== live.length) {
+            return { data: null, error: { code: '23505', message: 'duplicate key' } };
+          }
         }
         for (const row of hits) Object.assign(row, patch);
       }
@@ -106,6 +113,7 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
   db.client = {
     from: (table: string) => builder(table),
     rpc: (fn: string, params: { p_limit?: number }) => {
+      if (db.rpcDown) return Promise.resolve({ data: null, error: { message: 'rpc down' } });
       if (fn === 'get_member_benefit_used') return Promise.resolve({ data: db.attempts, error: null });
       assert.equal(fn, 'consume_member_benefit');
       if (db.attempts >= (params.p_limit ?? 0)) return Promise.resolve({ data: false, error: null });
@@ -128,6 +136,7 @@ function coupon(code: string, overrides: Row = {}): Row {
     bound_origin: null,
     expires_at: '2027-12-31T14:59:59+00:00',
     disabled_at: null,
+    released_at: null,
     ...overrides,
   };
 }
@@ -273,7 +282,7 @@ test('coupon-charge — 회수 CAS: 미리보기 뒤 24시간 조건이 깨지�
   assert.equal(db.coupons[0].bound_user_id, 'u1');
 });
 
-test('coupon-charge — 요구 6: 쿠폰이 있는 계정이 다른 코드를 넣으면 거부하고 기존 쿠폰을 계속 적용', async () => {
+test('coupon-charge — 요구 6: **살아 있는** 쿠폰이 있는 계정이 다른 코드를 넣으면 거부하고 기존 쿠폰을 계속 적용', async () => {
   const db = fakeDb({
     coupons: [
       coupon('ganji100001', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 10 }),
@@ -386,4 +395,165 @@ test('coupon-charge — 쿠폰 없는 일반 결제는 종전과 같다(할인 0
     { list: pkg.price, charge: pkg.price, code: null, reason: null }
   );
   assert.equal(db.attempts + db.updates, 0);
+});
+
+// ─────────────────────────────────────────────────────────────
+// 요구 6 = "동시에 1개" (2026-09-11 사용자 결정, migration 080)
+// ─────────────────────────────────────────────────────────────
+
+// 🔴 079 는 죽은 쿠폰도 자리를 차지해, "소진된 배치를 끄고 재발행" 하면 끈 배치의 정상 고객이
+//   재발행 코드를 영구히 못 썼다(리뷰어 2명 독립 지목).
+test('coupon-charge — 동시에 1개: 배치가 회수된 고객은 재발행 코드를 쓸 수 있다(옛 쿠폰은 자리에서 빠진다)', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(10 * 24 * HOUR), bound_percent: 30, disabled_at: ago(HOUR) }),
+      coupon('ganji300777'),
+    ],
+  });
+  const quote = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0777', opts(db));
+  assert.equal(quote.reason, null, '죽은 쿠폰은 account_has_other 로 막지 않는다');
+  assert.equal(quote.chargeAmount, 2310);
+  assert.equal(quote.claim?.releaseCode, 'ganji300001');
+  assert.equal(db.updates, 0, '미리보기는 쓰지 않는다');
+
+  assert.ok(await bind(db, quote.claim!, 'u1'));
+  assert.equal(db.coupons[0].released_at, NOW.toISOString(), '옛 쿠폰은 released');
+  assert.equal(db.coupons[0].bound_user_id, 'u1', '행을 지우거나 비우지 않는다(감사 증거)');
+  assert.equal(db.coupons[1].bound_user_id, 'u1');
+
+  // 이후 코드 없이 와도 새 쿠폰이 붙는다(귀속 조회가 released 를 뺀다).
+  const later = await resolveChargeForUser(TODAY_DETAIL, 'u1', null, opts(db));
+  assert.equal(later.couponCode, 'ganji300777');
+});
+
+test('coupon-charge — 동시에 1개: 만료·등급 회수된 쿠폰도 새 코드로 바꿀 수 있다', async () => {
+  for (const dead of [
+    { expires_at: ago(1000) },
+    { __tierDisabled: true },
+  ]) {
+    const db = fakeDb({
+      coupons: [
+        coupon('ganji500001', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 50, ...(dead.expires_at ? { expires_at: dead.expires_at } : {}) }),
+        coupon('ganji300002'),
+      ],
+    });
+    if (dead.__tierDisabled) db.tiers['50'].disabled_at = ago(HOUR);
+    const quote = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0002', opts(db));
+    assert.equal(quote.claim?.releaseCode, 'ganji500001', JSON.stringify(dead));
+    assert.ok(await bind(db, quote.claim!, 'u1'), JSON.stringify(dead));
+    assert.equal(db.coupons[1].bound_user_id, 'u1');
+  }
+});
+
+test('coupon-charge — 동시에 1개: released 는 종료 상태 — 관리자가 되살려도 누구도 못 쓴다', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(30 * 24 * HOUR), bound_percent: 30, released_at: ago(HOUR) }),
+      coupon('ganji100002', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 10 }),
+    ],
+  });
+  // 원래 주인: 지금 쿠폰(10%)이 살아 있으니 그걸 쓴다. 코드 없이 와도 released 행이 아니라 새 행이 붙는다.
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u1', null, opts(db))).couponCode, 'ganji100002');
+  // 남: 결제 흔적 없는 24h+ 귀속이지만 released 라 회수 대상도 아니다(전단 코드 부활 금지 — 요구 4).
+  const other = await resolveChargeForUser(TODAY_DETAIL, 'u2', 'ganji-30-0001', opts(db));
+  assert.equal(other.reason, 'disabled');
+  assert.equal(other.claim, null);
+  // CAS 도 released 행을 건드리지 않는다(판정을 우회해도 DB 조건이 막는다).
+  assert.equal(
+    await bind(db, { code: 'ganji300001', mode: 'reclaim', percent: 30, maxDiscountWon: null, holderUserId: 'u1', releaseCode: null }, 'u2'),
+    null
+  );
+});
+
+test('coupon-charge — 동시에 1개: 살아 있는 쿠폰은 여전히 자리를 지킨다(두 탭 경합도 DB 가 한 건만)', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 30, expires_at: ago(1000) }),
+      coupon('ganji300002'),
+      coupon('ganji300003'),
+    ],
+  });
+  const tabA = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0002', opts(db));
+  const tabB = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0003', opts(db));
+  assert.ok(await bind(db, tabA.claim!, 'u1'));
+  assert.equal(await bind(db, tabB.claim!, 'u1'), null, '옛 쿠폰은 이미 빠졌고, 새 쿠폰이 자리를 차지 → 23505');
+  assert.equal(db.coupons[2].bound_user_id, null);
+  // 이제 살아 있는 쿠폰(0002)이 있으니 다른 코드는 account_has_other.
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0003', opts(db))).reason, 'account_has_other');
+});
+
+// staging 에서 실물 쿠폰을 '죽었다' 고 보고 released 를 찍으면 staging 이 프로덕션 고객의 쿠폰을 지운다(같은 DB).
+test('coupon-charge — 동시에 1개: 환경이 안 맞는 (살아 있는) 쿠폰은 죽은 게 아니다 — 자리를 비우지 않는다', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 30 }), // 실물
+      coupon('ganji300002', { batch: STAGING_TEST_BATCH }),
+    ],
+  });
+  const onStaging = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0002', opts(db, 'test'));
+  assert.equal(onStaging.reason, 'account_has_other');
+  assert.equal(onStaging.claim, null);
+  assert.equal(db.coupons[0].released_at, null);
+});
+
+// 🔴 리뷰 발견(2026-09-11): 위 테스트는 **살아 있는** 실물 쿠폰만 시드해, 죽은 실물 쿠폰을 staging 이 비우는
+//   경로를 못 봤다(거짓 green). 죽은 실물 쿠폰도 staging 은 건드리면 안 된다.
+test('coupon-charge — 동시에 1개: staging 은 **죽은 실물** 쿠폰도 비우지 않는다(staging-test 행만)', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 30, disabled_at: ago(HOUR) }), // 죽은 실물
+      coupon('ganji300002', { batch: STAGING_TEST_BATCH }),
+    ],
+  });
+  const onStaging = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0002', opts(db, 'test'));
+  assert.equal(onStaging.reason, 'account_has_other');
+  assert.equal(onStaging.claim, null);
+  assert.equal(db.coupons[0].released_at, null, '프로덕션 행이 종료 상태가 되면 안 된다');
+
+  // 반대로 운영은 죽은 staging-test 쿠폰을 비울 수 있다(테스트 쿠폰이 실계정 자리를 영구 점유하지 않게).
+  const prod = fakeDb({
+    coupons: [
+      coupon('ganji300009', { batch: STAGING_TEST_BATCH, bound_user_id: 'u1', bound_at: ago(HOUR), bound_percent: 30, expires_at: ago(1000) }),
+      coupon('ganji300010'),
+    ],
+  });
+  const q = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0010', opts(prod, 'production'));
+  assert.equal(q.claim?.releaseCode, 'ganji300009');
+  assert.ok(await bind(prod, q.claim!, 'u1'));
+});
+
+// 🔴 리뷰 발견(2026-09-11): release 와 새 귀속은 원자적이지 않다. 새 귀속이 경합에서 지면 옛 쿠폰을 되돌려야 한다
+//   — "죽음"은 일시적일 수 있다(관리자가 배치를 되살림). 안 되돌리면 되살아났을 본인 쿠폰(요구 7)을 영구히 잃는다.
+test('coupon-charge — 동시에 1개: 새 귀속이 경합에서 지면 옛 쿠폰을 되돌린다(되살리면 다시 쓴다)', async () => {
+  const db = fakeDb({
+    coupons: [
+      coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(10 * 24 * HOUR), bound_percent: 30, disabled_at: ago(HOUR) }),
+      coupon('ganji300777'),
+    ],
+  });
+  const quote = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0777', opts(db));
+  assert.equal(quote.claim?.releaseCode, 'ganji300001');
+  // 그 사이 다른 사람이 0777 을 먼저 귀속.
+  Object.assign(db.coupons[1], { bound_user_id: 'u2', bound_at: NOW.toISOString(), bound_percent: 30 });
+
+  assert.equal(await bind(db, quote.claim!, 'u1'), null, '새 귀속 실패 → prepare 는 멈춘다');
+  assert.equal(db.coupons[0].released_at, null, '옛 쿠폰은 자리로 돌아온다');
+
+  // 관리자가 배치를 되살리면 원래 쿠폰이 다시 붙는다.
+  db.coupons[0].disabled_at = null;
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u1', null, opts(db))).couponCode, 'ganji300001');
+});
+
+// 🔴 조사 발견(2026-09-11): 공유 헬퍼 getMemberBenefitUsed 는 오류 시 0 을 돌려준다(주석은 반대로 적혀 있다).
+//   그걸 쓰면 RPC 장애 동안 추측 제한이 조용히 사라진다. 쿠폰은 실패-닫힘 — 새 코드 조회만 막고 결제는 안 막는다.
+test('coupon-charge — 시도 카운터 RPC 가 죽으면 새 코드 조회를 막는다(실패-닫힘), 등록된 쿠폰·일반 결제는 그대로', async () => {
+  const db = fakeDb({
+    coupons: [coupon('ganji300001'), coupon('ganji300002', { bound_user_id: 'u2', bound_at: ago(HOUR), bound_percent: 30 })],
+  });
+  db.rpcDown = true;
+  const probe = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0001', opts(db));
+  assert.equal(probe.reason, 'rate_limited');
+  assert.equal(probe.chargeAmount, 3300, '정가 결제는 가능');
+  // 이미 귀속된 본인 쿠폰은 카운터를 안 거치므로 계속 붙는다.
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u2', null, opts(db))).chargeAmount, 2310);
 });

@@ -5,6 +5,8 @@ import {
   MAX_DISCOUNT_PERCENT,
   STAGING_TEST_BATCH,
   applyCouponDiscount,
+  canReleaseCoupon,
+  couponDeadReason,
   resolveCouponEnv,
   type CouponEnv,
   evaluateCouponRow,
@@ -120,6 +122,7 @@ function row(overrides: Partial<CouponRow> = {}): CouponRow {
     bound_max_discount_won: null,
     expires_at: '2027-12-31T14:59:59+00:00',
     disabled_at: null,
+    released_at: null,
     coupon_tiers: { percent: 30, max_discount_won: null, disabled_at: null },
     ...overrides,
   };
@@ -222,4 +225,33 @@ test('orderHoldsCoupon — prepared 는 주문 만료(45분) 전까지만 붙잡
 test('isCouponEligiblePackage — 전(재화)이 전달물인 상품만 제외된다', () => {
   const excluded = PAYMENT_PACKAGES.filter((pkg) => !isCouponEligiblePackage(pkg)).map((pkg) => pkg.id);
   assert.deepEqual(excluded.sort(), ['credit_100', 'credit_15', 'credit_40', 'taste_dialogue_entry'].sort());
+});
+
+test('couponDeadReason — 만료·회수·등급 회수·released 는 죽음, 환경 불일치는 죽음이 아니다', () => {
+  assert.equal(couponDeadReason(row(), NOW), null);
+  assert.equal(couponDeadReason(row({ expires_at: NOW.toISOString() }), NOW), 'expired');
+  assert.equal(couponDeadReason(row({ disabled_at: NOW.toISOString() }), NOW), 'disabled');
+  assert.equal(couponDeadReason(row({ released_at: NOW.toISOString() }), NOW), 'disabled');
+  assert.equal(
+    couponDeadReason(row({ coupon_tiers: { percent: 30, max_discount_won: null, disabled_at: NOW.toISOString() } }), NOW),
+    'disabled'
+  );
+  assert.equal(couponDeadReason(row({ batch: STAGING_TEST_BATCH }), NOW), null, '환경은 요청마다 다르다 — 행 자체는 살아 있다');
+});
+
+test('evaluateCouponRow — released 쿠폰은 본인에게도 남에게도 적용되지 않는다(종료 상태)', () => {
+  const released = row({ bound_user_id: 'u1', bound_at: NOW.toISOString(), bound_percent: 30, released_at: NOW.toISOString() });
+  assert.deepEqual(evaluate(released), { ok: false, reason: 'disabled' });
+  assert.deepEqual(evaluate(released, { userId: 'u2' }), { ok: false, reason: 'disabled' });
+});
+
+test('canReleaseCoupon — 죽은 쿠폰만, 그리고 staging 은 staging-test 행만 비울 수 있다', () => {
+  const deadReal = row({ disabled_at: NOW.toISOString() });
+  const deadTest = row({ disabled_at: NOW.toISOString(), batch: STAGING_TEST_BATCH });
+  assert.equal(canReleaseCoupon(row(), NOW, 'production'), false, '살아 있으면 어디서도 못 비운다');
+  assert.equal(canReleaseCoupon(deadReal, NOW, 'production'), true);
+  assert.equal(canReleaseCoupon(deadTest, NOW, 'production'), true);
+  assert.equal(canReleaseCoupon(deadReal, NOW, 'test'), false, 'staging 이 프로덕션 행을 종료시키면 안 된다');
+  assert.equal(canReleaseCoupon(deadTest, NOW, 'test'), true);
+  assert.equal(canReleaseCoupon(deadReal, NOW, null), false);
 });

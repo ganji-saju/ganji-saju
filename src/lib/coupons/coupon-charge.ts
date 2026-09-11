@@ -10,14 +10,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
-import {
-  consumeMemberBenefit,
-  dailyPeriodKey,
-  getMemberBenefitUsed,
-} from '@/lib/credits/member-benefits';
+import { consumeMemberBenefit, dailyPeriodKey } from '@/lib/credits/member-benefits';
 import {
   COUPON_RECLAIM_AFTER_MS,
   applyCouponDiscount,
+  canReleaseCoupon,
   evaluateCouponRow,
   isCouponEligiblePackage,
   orderHoldsCoupon,
@@ -34,7 +31,7 @@ export function couponEnvForHost(host: string | null | undefined): CouponEnv {
 }
 
 const COUPON_COLUMNS =
-  'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, coupon_tiers(percent, max_discount_won, disabled_at)';
+  'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, released_at, coupon_tiers(percent, max_discount_won, disabled_at)';
 
 /**
  * 코드 추측 시도 한도(계정 · KST 하루). 056 `consume_member_benefit` 카운터를 재사용한다(설계 §6).
@@ -55,6 +52,8 @@ export interface CouponClaim {
   maxDiscountWon: number | null;
   /** reclaim 일 때 풀어낼 이전 귀속자. */
   holderUserId: string | null;
+  /** 요구 6 "동시에 1개": 이 계정의 **죽은** 쿠폰. 새 코드를 귀속하기 직전에 자리에서 뺀다(080 released_at). */
+  releaseCode: string | null;
 }
 
 export interface ChargeQuote {
@@ -71,16 +70,20 @@ export interface ChargeQuote {
   claim: CouponClaim | null;
 }
 
+/**
+ * code = 코드 한 장 / bound = 이 계정이 **지금 차지하고 있는** 쿠폰(released 제외 — 080 부분 유니크가
+ * 이 조건으로 한 행만 허용하므로 maybeSingle 이 안전하다).
+ */
 async function selectCoupon(
   service: SupabaseClient,
-  column: 'code' | 'bound_user_id',
+  by: 'code' | 'bound',
   value: string
 ): Promise<CouponRow | null> {
-  const { data, error } = await service
-    .from('discount_coupons')
-    .select(COUPON_COLUMNS)
-    .eq(column, value)
-    .maybeSingle();
+  const query = service.from('discount_coupons').select(COUPON_COLUMNS);
+  const { data, error } = await (by === 'code'
+    ? query.eq('code', value)
+    : query.eq('bound_user_id', value).is('released_at', null)
+  ).maybeSingle();
   if (error) {
     // 조회 실패 = 쿠폰 없음(할인 0). 화면과 prepare 는 **따로** 조회하므로 한쪽만 실패할 수 있다 —
     //   그 어긋남은 prepare 의 표시 금액 대조(expectedAmount)가 409 로 잡는다.
@@ -114,8 +117,9 @@ async function holderHasLiveOrder(
  * - 쿠폰은 "상태"다. 코드를 안 넣어도 계정에 귀속된 쿠폰이 있으면 붙는다(요구 7 · 설계 §11-A D).
  * - `couponInput` 은 아직 귀속 안 된 코드의 **미리보기**다. 🔴 이 인자가 없으면 전단 첫 사용
  *   (= 대다수)에서 화면은 정가, 청구는 할인가로 갈린다.
- * - 계정당 1개(요구 6): 이미 쿠폰이 있는 계정이 다른 코드를 넣으면 넣은 코드는 거부하고
- *   **기존 쿠폰을 계속 적용**한다.
+ * - 동시에 1개(요구 6, 2026-09-11 사용자 결정): 살아 있는 쿠폰이 있는 계정이 다른 코드를 넣으면
+ *   넣은 코드는 거부하고 **기존 쿠폰을 계속 적용**한다. 등록된 쿠폰이 **죽었으면**(만료·회수) 새 코드를
+ *   받고, prepare 가 귀속하면서 옛 쿠폰을 자리에서 뺀다(claim.releaseCode).
  */
 export async function resolveChargeForUser(
   pkg: PaymentPackage,
@@ -142,22 +146,32 @@ export async function resolveChargeForUser(
   const service = opts.service ?? (await createServiceClient());
   const now = opts.now ?? new Date();
 
-  const bound = await selectCoupon(service, 'bound_user_id', userId);
+  const bound = await selectCoupon(service, 'bound', userId);
 
   // 전(재화)이 전달물인 상품은 할인하지 않는다(§7). 등록된 쿠폰이 있거나 코드를 넣었으면 이유를 보여 준다
   //   — 할인이 안 붙는 이유가 안 보이면 버그 신고가 된다.
   if (!isCouponEligiblePackage(pkg)) return noDiscount(raw || bound ? 'not_eligible' : null);
 
+  // 등록된 쿠폰이 죽었고 이 환경이 그 행을 건드려도 되면 자리를 비워 줄 수 있다(동시에 1개) — canReleaseCoupon 주석.
+  const releasable = bound && canReleaseCoupon(bound, now, opts.env) ? bound : null;
   let row = bound;
   let reason: CouponRejectReason | null = null;
   if (raw && !parsed) {
     reason = 'invalid_format';
-  } else if (parsed && bound && parsed.code !== bound.code) {
+  } else if (parsed && bound && parsed.code !== bound.code && !releasable) {
     reason = 'account_has_other';
-  } else if (parsed && !bound) {
+  } else if (parsed && (!bound || parsed.code !== bound.code)) {
     const period = dailyPeriodKey(now);
-    const used = await getMemberBenefitUsed(userId, COUPON_ATTEMPT_BENEFIT, period, service);
-    if (used >= COUPON_ATTEMPT_DAILY_LIMIT) return noDiscount('rate_limited');
+    // 🔴 실패-닫힘. 공유 헬퍼 getMemberBenefitUsed 는 오류 시 0 을 돌려준다(무료 메뉴엔 그게 맞다) —
+    //   그걸 쓰면 RPC 장애 때 추측 제한이 조용히 사라진다. 막히는 건 새 코드 입력뿐, 결제는 안 막힌다.
+    const { data: used, error: usedError } = await service.rpc('get_member_benefit_used', {
+      p_user_id: userId,
+      p_benefit: COUPON_ATTEMPT_BENEFIT,
+      p_period_key: period,
+    });
+    if (usedError || typeof used !== 'number' || used >= COUPON_ATTEMPT_DAILY_LIMIT) {
+      return noDiscount('rate_limited');
+    }
     row = await selectCoupon(service, 'code', parsed.code);
     if (!row) {
       await consumeMemberBenefit(userId, COUPON_ATTEMPT_BENEFIT, period, COUPON_ATTEMPT_DAILY_LIMIT, service);
@@ -191,6 +205,8 @@ export async function resolveChargeForUser(
       percent: evaluation.percent,
       maxDiscountWon: evaluation.maxDiscountWon,
       holderUserId: evaluation.mode === 'reclaim' ? holder : null,
+      // claim 이 나오는 건 "살아 있는 등록 쿠폰(self)" 이거나 "새 코드" 뿐이라, releasable 은 후자에서만 채워진다.
+      releaseCode: releasable?.code ?? null,
     },
   };
 }
@@ -202,7 +218,12 @@ export async function resolveChargeForUser(
  * - claim: `bound_user_id is null` 조건부 UPDATE — 동시에 두 명이 넣어도 한 명만 1행을 얻는다.
  * - reclaim: 이전 귀속자·24h 경과를 조건에 다시 건다. 이전 귀속자가 그 사이 새 주문을 만드는
  *   경합은 여기서 못 막는다 → 승인 직전 재검증(PR4, 설계 §5-3)이 `bound_user_id === order.userId` 로 자른다.
- * - 계정당 1개: 다른 탭에서 방금 다른 코드를 귀속했으면 부분 유니크 인덱스(079)가 23505 로 막는다.
+ * - 동시에 1개: 등록된 쿠폰이 죽었으면(releaseCode) **먼저** released_at 을 찍어 자리에서 뺀다 —
+ *   순서가 반대면 새 귀속이 부분 유니크(080)에 걸린다. 두 UPDATE 는 원자적이지 않으므로, 새 귀속이
+ *   실패하면 **이번 요청이 찍은 released_at 만** 되돌린다. 🔴 되돌리지 않으면 계정은 쿠폰 0개가 되고,
+ *   "죽음"은 일시적일 수 있어(관리자가 배치·등급·만료를 되살림) 되살아났을 본인 쿠폰(요구 7)을 영구히 잃는다.
+ *   다른 탭에서 방금 다른 코드를 귀속했으면 부분 유니크 인덱스가 23505 로 막는다.
+ * - released 된 쿠폰은 종료 상태라 claim·reclaim 대상이 아니다(조건에 released_at is null).
  */
 export async function bindCouponClaim(
   claim: CouponClaim,
@@ -216,6 +237,20 @@ export async function bindCouponClaim(
   const service = opts.service ?? (await createServiceClient());
   const now = opts.now ?? new Date();
   const nowIso = now.toISOString();
+
+  if (claim.releaseCode) {
+    const { error } = await service
+      .from('discount_coupons')
+      .update({ released_at: nowIso })
+      .eq('code', claim.releaseCode)
+      .eq('bound_user_id', userId)
+      .is('released_at', null);
+    if (error) {
+      console.error('[coupon] 옛 쿠폰 자리 비우기 실패', error.message);
+      return null;
+    }
+  }
+
   const update = service
     .from('discount_coupons')
     .update({
@@ -227,6 +262,7 @@ export async function bindCouponClaim(
     })
     .eq('code', claim.code)
     .is('disabled_at', null)
+    .is('released_at', null)
     .gt('expires_at', nowIso);
   const guarded =
     claim.mode === 'claim'
@@ -236,10 +272,22 @@ export async function bindCouponClaim(
           .lt('bound_at', new Date(now.getTime() - COUPON_RECLAIM_AFTER_MS).toISOString());
 
   const { data, error } = await guarded.select('code').maybeSingle();
-  if (error) {
-    // 23505 = 계정당 1개 인덱스. 그 외는 진짜 오류 — 둘 다 할인 없이 결제를 진행하면 안 된다.
-    if (error.code !== '23505') console.error('[coupon] 귀속 실패', error.message);
-    return null;
+  // 23505 = 동시에 1개 인덱스. 그 외는 진짜 오류 — 둘 다 할인 없이 결제를 진행하면 안 된다.
+  if (error && error.code !== '23505') console.error('[coupon] 귀속 실패', error.message);
+  if (!error && data) return coupon;
+
+  if (claim.releaseCode) {
+    // 보상: 이번 요청이 찍은 행만(released_at = nowIso). 그 사이 다른 탭이 새 쿠폰을 잡았으면 여기서 23505 가
+    //   나고 옛 쿠폰은 빠진 채로 남는다 — 그 계정은 이미 살아 있는 쿠폰이 있으니 그게 맞다.
+    const { error: undoError } = await service
+      .from('discount_coupons')
+      .update({ released_at: null })
+      .eq('code', claim.releaseCode)
+      .eq('bound_user_id', userId)
+      .eq('released_at', nowIso);
+    if (undoError && undoError.code !== '23505') {
+      console.error('[coupon] 옛 쿠폰 되돌리기 실패', undoError.message);
+    }
   }
-  return data ? coupon : null;
+  return null;
 }
