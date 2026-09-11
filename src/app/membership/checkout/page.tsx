@@ -379,9 +379,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   최종 결제 금액 = prepare 가 만들 order.amount = PG 청구액. 할인 표기는 **이 화면에서만** 한다
   //   — 전역 가격 맵(getPriceDisplayMap)은 전 방문자 공유 캐시라 사용자별 값을 담을 수 없다(설계 §3-2).
   const quote = paymentPackage
-    ? await resolveChargeForUser(paymentPackage, viewer, coupon, {
-        env: couponEnvForHost(requestHeaders.get('host')),
-      })
+    ? await resolveChargeForUser(
+        paymentPackage,
+        viewer,
+        // 다른 사이트가 연 링크(`?coupon=`)로는 미리보기하지 않는다 — 세션 쿠키가 SameSite=Lax 라 교차 사이트 최상위 GET 에도
+        //   실려, 남의 페이지가 이 사용자의 조회 예산을 대신 태울 수 있다(리뷰 발견 2026-09-11). QR·앱 링크·직접 입력은 'none',
+        //   사이트 안 이동은 'same-origin' 이라 정상 흐름은 그대로다. 근본책은 미리보기를 POST 로(PR5).
+        requestHeaders.get('sec-fetch-site') === 'cross-site' ? undefined : coupon,
+        {
+          env: couponEnvForHost(requestHeaders.get('host')),
+        }
+      )
     : null;
   const formatPrice = (won: number) =>
     paymentPackage?.kind === 'subscription' && paymentPackage.planSlug

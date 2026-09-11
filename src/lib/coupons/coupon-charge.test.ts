@@ -79,7 +79,15 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
     const filters: Filter[] = [];
     let patch: Row | null = null;
     let insertRow: Row | null = null;
-    const rowsOf = () => (table === 'discount_coupons' ? db.coupons : db.orders);
+    const rowsOf = (): Row[] =>
+      table === 'discount_coupons'
+        ? db.coupons
+        : table === 'rate_counters'
+          ? Array.from(db.counters, ([key, used_count]) => {
+              const [bucket, period_key] = key.split('|');
+              return { bucket, period_key, used_count };
+            })
+          : db.orders;
     const run = (): { data: unknown; error: unknown } => {
       if (insertRow) {
         const row = { order_id: 'ord_test', ...insertRow };
@@ -344,8 +352,9 @@ test('coupon-charge — 등록된 쿠폰이 만료·회수되면 할인 없이 �
 
 test('coupon-charge — staging 호스트에서는 staging-test 배치만, 운영에서는 그 배치를 거부', async () => {
   const db = fakeDb({ coupons: [coupon('ganji300001'), coupon('ganji300002', { batch: STAGING_TEST_BATCH })] });
-  assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db, 'test'))).reason, 'env_mismatch');
-  assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0002', opts(db, 'production'))).reason, 'env_mismatch');
+  // 환경이 안 맞는 코드는 **없는 코드와 같은 답** — 만료 문구·응답 시간으로 존재가 새지 않게(리뷰 발견).
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db, 'test'))).reason, 'not_found');
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0002', opts(db, 'production'))).reason, 'not_found');
   assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0002', opts(db, 'test'))).chargeAmount, 2310);
   // 환경을 모르는 호스트(프리뷰·*.vercel.app 별칭)는 둘 다 거부.
   for (const code of ['ganji-30-0001', 'ganji-30-0002']) {
@@ -565,19 +574,31 @@ test('S2 — 주체(계정)당 하루 10회, 적중 포함 — 한도 뒤엔 맞
   assert.equal(real.chargeAmount, 3300);
 });
 
-// PR3 리뷰에서 "렌더+prepare 이중 차감"이 문제였다 — 이제 적중도 세므로, 정상 고객 1명이 쓰는 양이 한도 안인지 고정한다.
-test('S2 — 정상 고객 한 명(렌더 · 새로고침 · prepare = 3회)은 주체·풀 한도 안에서 결제된다', async () => {
+// 🔴 리뷰 발견(2026-09-11): 체크아웃은 탭·앱 복귀 때마다 헤더의 router.refresh() 로 다시 렌더된다.
+//   매번 과금하면 결제 전에 앱을 오간 정상 고객이 코드 하나로 한도에 걸린다 → 같은 (주체, 코드)는 하루 1회만 과금.
+test('S2 — 같은 코드는 렌더·복귀 재렌더·prepare 를 몇 번 거쳐도 하루 1회만 과금된다', async () => {
   const db = fakeDb({ coupons: [coupon('ganji300001')] });
-  const render = await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db));
-  const refresh = await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db));
+  for (let i = 0; i < COUPON_SUBJECT_DAILY_LIMIT + 5; i += 1) {
+    const q = await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db));
+    assert.equal(q.chargeAmount, 2310, `재렌더 ${i}`);
+  }
   const prepare = await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db));
-  for (const q of [render, refresh, prepare]) assert.equal(q.chargeAmount, 2310);
   assert.ok(await bind(db, prepare.claim!, 'u1'));
-  assert.equal(db.counters.get(`coupon:production:acct:u1|2026-09-11`), 3);
-  assert.equal(db.counters.get(`coupon:production:pool:open|2026-09-11`), 3);
-  // 귀속 뒤엔 코드를 넣어도 본인 쿠폰 경로라 예산을 더 쓰지 않는다.
-  await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db));
-  assert.equal(db.counters.get(`coupon:production:acct:u1|2026-09-11`), 3);
+  assert.equal(db.counters.get(`coupon:production:acct:u1|2026-09-11`), 1);
+  assert.equal(db.counters.get(`coupon:production:pool:open|2026-09-11`), 1);
+});
+
+// 표시를 과금 **전에** 하면, 한도에 막힌 질문이 표시돼 같은 코드를 두 번째 물을 때 공짜로 답을 얻는다.
+test('S2 — 한도에 막힌 질문은 "이미 본 코드"로 표시되지 않는다(두 번 물어 우회 불가)', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001')] });
+  for (let i = 0; i < COUPON_SUBJECT_DAILY_LIMIT; i += 1) {
+    await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, valid(100 + i), opts(db));
+  }
+  const lookups = db.codeLookups;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, 'ganji-30-0001', opts(db))).reason, 'rate_limited');
+  }
+  assert.equal(db.codeLookups, lookups, '막힌 뒤로는 몇 번을 물어도 조회하지 않는다');
 });
 
 // 🔴 풀이 하나면 무료 계정 몇 개로 전 고객이 막힌다(S1 의 약점). 등급을 나누면 피해가 무료 이메일 풀 안에 갇힌다.
@@ -617,6 +638,8 @@ test('S2 — 결제 등급은 프로덕션 실결제만: staging 샌드박스·�
     ['prod', { status: 'fulfilled', amount: 3300, metadata: { origin: { env: 'production' } } }, null],
     ['legacy', { status: 'fulfilled', amount: 990, metadata: {} }, null], // 2026-08-29 이전(origin 없음)은 실매출 관례
     ['staging', { status: 'fulfilled', amount: 3300, metadata: { origin: { env: 'staging' } } }, 'busy'],
+    // 리뷰 발견: 허용목록 밖 호스트로 들어온 새 주문은 origin 'unknown' — 매출 집계엔 남기지만 등급엔 못 쓴다
+    ['unknown-host', { status: 'fulfilled', amount: 3300, metadata: { origin: { env: 'unknown', host: 'staging.ganjisaju.kr.' } } }, 'busy'],
     ['refunded', { status: 'refunded', amount: 3300, metadata: { origin: { env: 'production' } } }, 'busy'],
     ['prepared', { status: 'prepared', amount: 3300, metadata: { origin: { env: 'production' } } }, 'busy'],
   ];
@@ -654,4 +677,25 @@ test('S2 — 카운터 RPC 가 죽으면 새 코드 조회를 막는다 — 등�
   assert.equal(probe.chargeAmount, 3300, '정가 결제는 가능');
   assert.equal(db.codeLookups, 0);
   assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u2' }, null, opts(db))).chargeAmount, 2310);
+});
+
+// 리뷰 발견: Number('') 가 0 이라, 운영자가 값을 비우면 기본값이 아니라 풀이 통째로 닫혔다.
+test('S2 — COUPON_POOL_* 가 빈 값·공백이면 기본값, 0 을 명시할 때만 닫힌다', async () => {
+  const saved = process.env.COUPON_POOL_OPEN;
+  try {
+    for (const [value, expectBusyAt] of [['', COUPON_POOL_DEFAULTS.open], [' \t', COUPON_POOL_DEFAULTS.open], ['0', 0]] as const) {
+      process.env.COUPON_POOL_OPEN = value;
+      const db = fakeDb({ coupons: [coupon('ganji300001')] });
+      // 첫 조회가 예산을 통과하는지부터 본다 — 이걸 안 보면 처음부터 닫힌 풀도 통과한다(뮤테이션으로 확인한 구멍).
+      const first = await resolveChargeForUser(TODAY_DETAIL, { id: 'p0' }, valid(4999), opts(db));
+      assert.equal(first.reason, expectBusyAt > 0 ? 'not_found' : 'busy', `first ${JSON.stringify(value)}`);
+      for (let n = 1; n < expectBusyAt; n += 1) {
+        await resolveChargeForUser(TODAY_DETAIL, { id: `p${Math.floor(n / COUPON_SUBJECT_DAILY_LIMIT)}` }, valid(5000 + n), opts(db));
+      }
+      assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'last' }, 'ganji-30-0001', opts(db))).reason, 'busy', JSON.stringify(value));
+    }
+  } finally {
+    if (saved === undefined) delete process.env.COUPON_POOL_OPEN;
+    else process.env.COUPON_POOL_OPEN = saved;
+  }
 });

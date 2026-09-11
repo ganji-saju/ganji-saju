@@ -10,7 +10,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
-import { isRealRevenueOrder, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
+import { after } from 'next/server';
+import { readPaymentOrigin, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
 import { dailyPeriodKey } from '@/lib/credits/member-benefits';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 import {
@@ -22,6 +23,7 @@ import {
   orderHoldsCoupon,
   parseCouponCode,
   resolveCouponEnv,
+  STAGING_TEST_BATCH,
   type CouponEnv,
   type CouponRejectReason,
   type CouponRow,
@@ -60,8 +62,11 @@ export interface CouponViewer {
 }
 
 function poolLimit(tier: CouponLookupTier): number {
-  const raw = Number(process.env[`COUPON_POOL_${tier.toUpperCase()}`]);
-  return Number.isInteger(raw) && raw >= 0 ? raw : COUPON_POOL_DEFAULTS[tier];
+  // 빈 값·공백은 "미설정"(기본값)이다. Number('') 가 0 이라 그대로 두면 값을 비운 순간 풀이 통째로 닫힌다.
+  //   닫으려면 '0' 을 명시한다.
+  const raw = process.env[`COUPON_POOL_${tier.toUpperCase()}`]?.trim();
+  const value = raw ? Number(raw) : NaN;
+  return Number.isInteger(value) && value >= 0 ? value : COUPON_POOL_DEFAULTS[tier];
 }
 
 /**
@@ -86,7 +91,13 @@ async function hasPaidHistory(service: SupabaseClient, userId: string): Promise<
     .gt('amount', 0)
     .limit(20);
   if (error || !data) return false;
-  return (data as { metadata?: unknown }[]).some((row) => isRealRevenueOrder(row));
+  // origin 이 **production** 이거나, origin 기록 자체가 없는 2026-08-29 이전 주문만. 🔴 기록이 'unknown'(허용목록 밖 호스트)인
+  //   새 주문은 빼야 한다 — isRealRevenueOrder 는 매출 집계용이라 unknown 을 실매출로 두는데, 그러면 낯선 호스트로 들어온
+  //   샌드박스 결제가 비용 0 으로 paid 등급을 얻는다(리뷰 발견 2026-09-11).
+  return (data as { metadata?: unknown }[]).some((row) => {
+    const origin = (row.metadata as { origin?: unknown } | null)?.origin;
+    return origin == null || readPaymentOrigin(row.metadata).env === 'production';
+  });
 }
 
 /**
@@ -98,13 +109,15 @@ async function hasPaidHistory(service: SupabaseClient, userId: string): Promise<
 async function spendLookupBudget(
   service: SupabaseClient,
   viewer: CouponViewer,
+  code: string,
   env: 'production' | 'test',
   now: Date
 ): Promise<'rate_limited' | 'busy' | null> {
   const period = dailyPeriodKey(now);
-  const consume = async (bucket: string, limit: number) => {
+  const bucketOf = (name: string) => `coupon:${env}:${name}`;
+  const consume = async (name: string, limit: number) => {
     const { data, error } = await service.rpc('consume_rate_counter', {
-      p_bucket: `coupon:${env}:${bucket}`,
+      p_bucket: bucketOf(name),
       p_period_key: period,
       p_limit: limit,
     });
@@ -112,19 +125,35 @@ async function spendLookupBudget(
   };
 
   const social = socialSubject(viewer);
-  if ((await consume(social ? `id:${social}` : `acct:${viewer.id}`, COUPON_SUBJECT_DAILY_LIMIT)) == null) {
-    return 'rate_limited';
-  }
+  const subject = social ? `id:${social}` : `acct:${viewer.id}`;
+
+  // 🔴 같은 (주체, 코드)는 KST 하루 1회만 과금한다(리뷰 발견 2026-09-11). 체크아웃은 탭·앱 복귀 때마다 헤더의
+  //   router.refresh() 로 다시 렌더되는데, 매번 과금하면 결제 전에 앱을 오간 정상 고객이 코드 하나로 한도에 걸린다.
+  //   같은 질문을 반복해도 새 정보가 없으므로 오라클은 넓어지지 않는다 — 주체 한도는 "서로 다른 코드 10개"가 된다.
+  const seen = `seen:${subject}:${code}`;
+  const { data: seenRow, error: seenError } = await service
+    .from('rate_counters')
+    .select('used_count')
+    .eq('bucket', bucketOf(seen))
+    .eq('period_key', period)
+    .maybeSingle();
+  if (!seenError && seenRow) return null;
+
+  if ((await consume(subject, COUPON_SUBJECT_DAILY_LIMIT)) == null) return 'rate_limited';
   const tier: CouponLookupTier = (await hasPaidHistory(service, viewer.id)) ? 'paid' : social ? 'social' : 'open';
   const limit = poolLimit(tier);
   const used = await consume(`pool:${tier}`, limit);
   if (used == null) return 'busy';
+  // 과금이 **성공한 뒤에만** 표시한다. 거부된 질문을 표시하면 같은 코드를 두 번째 물을 때 공짜로 답을 얻는다(한도 우회).
+  //   동시 첫 요청 두 개가 둘 다 과금되는 건 허용한다(과소 과금보다 과다 과금 쪽이 안전하다).
+  await consume(seen, 1);
   // 풀이 반·전부 찼을 때 1회씩 알린다(각 값은 하루에 한 요청만 받는다). 운영 대응: 정상 급증이면 노브 상향·그날 행 삭제,
   //   공격이면 배치 disabled_at(080 덕에 정상 고객은 재발행 코드를 쓸 수 있다).
   //   실제 프로덕션 배포에서만 보낸다 — staging·로컬·테스트가 운영 메일함을 채우지 않게.
   const isProductionDeploy = process.env.VERCEL_ENV === 'production';
   if (env === 'production' && isProductionDeploy && (used === Math.ceil(limit / 2) || used === limit)) {
-    await sendOpsAlertEmail({
+    // 응답 뒤에 보낸다 — 한도에 닿은 그 고객의 요청이 메일 API 를 기다리지 않게.
+    after(() => sendOpsAlertEmail({
       subject: `쿠폰 조회 예산 ${used === limit ? '소진' : '50%'} — ${tier} 풀`,
       lines: [
         `오늘(KST ${period}) ${tier} 등급의 새 쿠폰 코드 조회가 ${used}/${limit} 에 닿았습니다.`,
@@ -134,7 +163,7 @@ async function spendLookupBudget(
         '정상 급증이면 COUPON_POOL_* env 를 올려 재배포하거나 rate_counters 의 오늘 행을 지워 리필하세요. 공격이면 해당 배치를 disabled_at 으로 끄고 재발행하세요.',
       ],
       url: '/admin',
-    }).catch(() => undefined);
+    }).catch(() => undefined));
   }
   return null;
 }
@@ -261,10 +290,14 @@ export async function resolveChargeForUser(
   } else if (parsed && (!bound || parsed.code !== bound.code)) {
     // 새 코드 = 오라클 입구(미리보기·prepare 둘 다 여기를 지난다). 환경을 모르면 어떤 쿠폰도 안 되므로 조회하지 않는다.
     if (!opts.env) return noDiscount('env_mismatch');
-    const blocked = await spendLookupBudget(service, viewer, opts.env, now);
+    const blocked = await spendLookupBudget(service, viewer, parsed.code, opts.env, now);
     if (blocked) return noDiscount(blocked);
     row = await selectCoupon(service, 'code', parsed.code);
-    if (!row) return noDiscount('not_found');
+    // 환경이 안 맞는 행(staging 에서 본 실물 코드 등)은 **없는 코드와 같은 답**으로 끝낸다 — 평가·보유자 조회까지 가면
+    //   만료 문구·응답 시간으로 존재가 샌다(리뷰 발견 2026-09-11: staging 예산은 프로덕션 풀과 따로라 우회 채널이 된다).
+    if (!row || (opts.env === 'production') === (row.batch === STAGING_TEST_BATCH)) {
+      return noDiscount('not_found');
+    }
   }
   if (!row) return noDiscount(reason);
 
