@@ -95,7 +95,9 @@ function resolveRefundAmount(amountWon: number | null, coinsPurchased: number, c
 export function buildCreditRefundItem(
   row: CreditRefundTransactionRow,
   lots: readonly CreditRefundLotRow[],
-  now = new Date()
+  now = new Date(),
+  /** order_id → 실결제액(payment_orders.amount). 과거 행의 정가 폴백을 대체한다. */
+  orderAmounts?: ReadonlyMap<string, number>
 ): CreditRefundEligibleItem | null {
   if (row.type !== 'purchase' || row.amount <= 0) return null;
 
@@ -128,8 +130,19 @@ export function buildCreditRefundItem(
     0
   );
   const coinsUsed = lotsLinked ? Math.max(0, coinsPurchased - coinsRemaining) : 0;
-  // 실결제액(metadata.amount) 우선 — 정가 우선이면 가격 개정 시 과거 결제가 소급 왜곡.
-  const originalAmountWon = readNumber(row.metadata, 'amount') ?? pkg?.price ?? null;
+  // 🔴 2026-09-11 — 이 줄은 주석과 달리 **항상 카탈로그 정가**를 쓰고 있었다.
+  //   fulfillment.ts 의 addCredits 두 곳이 metadata 에 amount 를 안 실어
+  //   readNumber(...,'amount') 가 늘 null 이었고 `?? pkg?.price` 폴백이 100% 탔다.
+  //   지금까지 안 보인 이유는 990원 결제 = 990원 정가라 **우연히 같았기** 때문이다.
+  //   /admin/pricing 으로 가격을 바꾸거나 할인이 들어오는 순간 과다환불이 된다
+  //   (PG 에 실결제액보다 큰 취소액을 쏜다).
+  //   해결: ① 신규 행은 fulfillment 가 amount 를 싣는다 ② 과거 행은 주문 원장에서 실결제액을
+  //   조회한다(orderAmounts) ③ 정가 폴백은 둘 다 없을 때만 남는 최후 수단이다.
+  const originalAmountWon =
+    readNumber(row.metadata, 'amount') ??
+    (orderId ? orderAmounts?.get(orderId) ?? null : null) ??
+    pkg?.price ??
+    null;
   const refundAmountWon = resolveRefundAmount(originalAmountWon, coinsPurchased, coinsRemaining);
 
   let status: CreditRefundPolicyStatus = 'none';
@@ -163,13 +176,27 @@ export function buildCreditRefundItem(
   };
 }
 
+/** payment_orders 행에서 order_id → amount 맵. 호출부가 이미 읽어 둔 주문을 그대로 넘긴다. */
+export function buildOrderAmountMap(
+  rows: ReadonlyArray<{ order_id?: string | null; amount?: number | null }> | null | undefined
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const row of rows ?? []) {
+    if (row?.order_id && typeof row.amount === 'number' && row.amount > 0) {
+      map.set(row.order_id, row.amount);
+    }
+  }
+  return map;
+}
+
 export function determineCreditRefundEligibility(
   creditTransactions: readonly CreditRefundTransactionRow[],
   creditLots: readonly CreditRefundLotRow[],
-  now = new Date()
+  now = new Date(),
+  orderAmounts?: ReadonlyMap<string, number>
 ): CreditRefundEligibility {
   const items = creditTransactions
-    .map((row) => buildCreditRefundItem(row, creditLots, now))
+    .map((row) => buildCreditRefundItem(row, creditLots, now, orderAmounts))
     .filter((item): item is CreditRefundEligibleItem => Boolean(item))
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const refundableItems = items.filter((item) => item.status !== 'none' && item.refundAmountWon > 0);

@@ -14,6 +14,7 @@ import {
 } from '@/lib/billing/payment-history';
 import { loadPurchaseCreditLots } from '@/lib/admin/credit-lots';
 import {
+  buildOrderAmountMap,
   determineCreditRefundEligibility,
   type CreditRefundEligibleItem,
   type CreditRefundEligibility,
@@ -408,7 +409,9 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
 
   const creditRefundEligibility = determineCreditRefundEligibility(
     allCreditTransactions,
-    creditLotRows
+    creditLotRows,
+    undefined,
+    buildOrderAmountMap(orderHistoryRows as Array<{ order_id: string; amount: number }> | null)
   );
   const refund = determineRefundEligibility(
     productEntitlements,

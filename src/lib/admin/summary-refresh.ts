@@ -9,6 +9,7 @@ import {
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
 import {
+  buildOrderAmountMap,
   determineCreditRefundEligibility,
   type CreditRefundLotRow,
   type CreditRefundTransactionRow,
@@ -117,7 +118,9 @@ async function computeUserSummary(
   const purchaseLots = lots.filter((l) => l.source === 'purchase') as unknown as CreditRefundLotRow[];
   const creditRefund = determineCreditRefundEligibility(
     allCredit as unknown as readonly CreditRefundTransactionRow[],
-    purchaseLots
+    purchaseLots,
+    undefined,
+    buildOrderAmountMap(orderRows as Array<{ order_id: string; amount: number }> | null)
   );
   const refund = determineRefundEligibility(productEntitlements, creditRefund);
 
