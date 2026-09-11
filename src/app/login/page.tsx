@@ -140,15 +140,13 @@ function getPasswordLoginError(message?: string) {
   if (normalized.includes('invalid') || normalized.includes('credential')) {
     return '이메일 또는 비밀번호가 맞지 않습니다.';
   }
+  // 2026-09-11 — 예전엔 여기서 /api/auth/confirm-email 로 **무인증 강제 확인** 후 재시도했다. 그 라우트는
+  //   이메일 주소만으로 아무 계정이나 '확인됨'으로 바꿔 선점 가입 탈취를 도왔고(가입 여부 오라클·증폭 포함) 삭제했다.
+  //   미확인 계정은 메일함 소유를 증명하는 비밀번호 찾기 링크(recoverVerify 가 확인까지 한다)로 푼다.
   if (normalized.includes('confirm')) {
-    return '이메일 로그인 상태를 정리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+    return '이메일 확인이 필요한 계정이에요. 아래 "비밀번호 찾기"로 받은 메일의 링크를 누르면 바로 로그인할 수 있어요.';
   }
   return message;
-}
-
-function isEmailNotConfirmedError(message?: string) {
-  const normalized = message?.toLowerCase() ?? '';
-  return normalized.includes('confirm');
 }
 
 function getRecoveryError(message?: string) {
@@ -611,7 +609,7 @@ function LoginContent({
   async function signInWithPassword(
     email: string,
     password: string,
-    options: { redirect?: boolean; allowConfirmRetry?: boolean } = {}
+    options: { redirect?: boolean } = {}
   ) {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
@@ -620,29 +618,6 @@ function LoginContent({
     });
 
     if (error) {
-      if (options.allowConfirmRetry !== false && isEmailNotConfirmedError(error.message)) {
-        setStatusMessage('이메일 로그인 상태를 정리한 뒤 다시 로그인하고 있어요.');
-
-        const response = await fetch('/api/auth/confirm-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        const data = (await response.json().catch(() => null)) as
-          | { success?: boolean; error?: string }
-          | null;
-
-        if (response.ok && data?.success) {
-          return signInWithPassword(email, password, {
-            ...options,
-            allowConfirmRetry: false,
-          });
-        }
-
-        setErrorMessage(data?.error ?? getPasswordLoginError(error.message));
-        return false;
-      }
-
       setErrorMessage(getPasswordLoginError(error.message));
       return false;
     }
@@ -753,7 +728,6 @@ function LoginContent({
     markAuthEvent('sign_up', 'email');
     const signedIn = await signInWithPassword(signupForm.email, signupForm.password, {
       redirect: false,
-      allowConfirmRetry: true,
     });
     if (!signedIn) {
       setStatusMessage('회원가입은 완료됐습니다. 로그인 탭에서 비밀번호로 다시 로그인해 주세요.');
@@ -798,7 +772,6 @@ function LoginContent({
     setErrorMessage('');
     setStatusMessage('');
     await signInWithPassword(loginForm.email, loginForm.password, {
-      allowConfirmRetry: true,
     });
     setIsSubmittingLogin(false);
   }

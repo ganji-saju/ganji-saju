@@ -11,16 +11,17 @@ export function kakaoUidHash(verifiedKakaoUid: string): string {
 }
 
 /**
- * 로그인 세션의 user 객체에서 카카오 회원번호를 꺼내 해시한다.
+ * 로그인 세션의 user.identities 에서 카카오 회원번호를 꺼내 해시한다.
  *
- * Supabase 카카오 로그인(signInWithIdToken)은 OIDC 클레임을 user_metadata 에 담는다 —
- * `provider_id` 와 `sub` 둘 다 카카오 회원번호다(실측: 전 계정에 존재).
- * 카카오가 아닌 경로(이메일 등)로 가입한 계정은 null — 그 경우 대조가 불가능하다.
+ * 🔴 2026-09-11 — 예전엔 user_metadata(provider_id/sub)에서 읽었다. user_metadata 는 로그인한 사용자가
+ *   `supabase.auth.updateUser({ data })` 한 줄로 덮어쓸 수 있어, 탈퇴 직전에 바꾸면 076 원장(무료 사용량)을 우회했다.
+ *   identities 는 GoTrue 가 검증된 id_token 으로만 쓴다(사용자 수정 불가). `id` 는 제공자 사용자 ID(= 카카오 회원번호),
+ *   `identity_id` 가 행 uuid 다 — 기존 원장 키(sha256(회원번호))와 같은 값이 나온다.
+ * 카카오 신원이 없는 계정(이메일·구글)은 null.
  */
-export function kakaoUidHashFromUserMetadata(
-  metadata: Record<string, unknown> | null | undefined
+export function kakaoUidHashFromIdentities(
+  identities: ReadonlyArray<{ provider: string; id: string }> | null | undefined
 ): string | null {
-  const raw = metadata?.provider_id ?? metadata?.sub;
-  const uid = typeof raw === 'string' ? raw.trim() : typeof raw === 'number' ? String(raw) : '';
+  const uid = identities?.find((identity) => identity.provider === 'kakao')?.id?.trim();
   return uid ? kakaoUidHash(uid) : null;
 }

@@ -4,7 +4,8 @@
 //   조회해 전화번호→user_contact(알림톡 대상), 이름→profiles.display_name(비어있을 때만)
 //   자동 저장. 전부 best-effort — 실패해도 로그인은 진행.
 import { NextRequest, NextResponse } from 'next/server';
-import { kakaoUidHashFromUserMetadata } from '@/lib/kakao/uid-hash';
+import { kakaoUidHashFromIdentities } from '@/lib/kakao/uid-hash';
+import { guardSocialSignIn } from '@/lib/auth/social-link-guard';
 import { restoreFreeDailyUsage } from '@/lib/free-usage/withdrawal-ledger';
 import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
@@ -42,6 +43,38 @@ async function fetchKakaoContact(
     };
   } catch {
     return { phone: null, name: null };
+  }
+}
+
+/**
+ * 🔴 2026-09-11 — id_token 에 email 이 실리면 GoTrue(parseKakaoIDToken)는 **무조건 '확인된 이메일'** 로 보고 같은 이메일의
+ * 기존 계정에 자동 연결한다. 카카오 id_token 의 email 은 '유효'할 뿐 '인증'을 보장하지 않는다(카카오 문서: 미인증 이메일 존재).
+ * scope 가 openid 뿐이어도 공격자는 인가 URL 에 account_email 을 직접 붙일 수 있다 → 인증된 이메일일 때만 로그인시킨다.
+ * 이메일 없는 토큰(현재 대부분)은 연결 대상이 아니라 그대로 통과.
+ */
+async function kakaoEmailClaimIsSafe(idToken: string, accessToken: string | null): Promise<boolean> {
+  let email: unknown;
+  try {
+    email = JSON.parse(Buffer.from(idToken.split('.')[1] ?? '', 'base64url').toString()).email;
+  } catch {
+    return false;
+  }
+  if (typeof email !== 'string' || !email) return true;
+  if (!accessToken) return false;
+  try {
+    const res = await fetch(KAKAO_USER_ME_URL, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!res.ok) return false;
+    const me = (await res.json()) as {
+      kakao_account?: { email?: string; is_email_valid?: boolean; is_email_verified?: boolean };
+    };
+    const account = me.kakao_account;
+    return Boolean(
+      account?.is_email_valid &&
+        account.is_email_verified &&
+        account.email?.trim().toLowerCase() === email.trim().toLowerCase()
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -153,6 +186,7 @@ export async function GET(req: NextRequest) {
     return fail('token_exchange');
   }
   if (!idToken) return fail('no_id_token'); // 콘솔 OpenID Connect 미활성 시 id_token 없음
+  if (!(await kakaoEmailClaimIsSafe(idToken, accessToken))) return fail('kakao_email_unverified');
 
   const response = clearCookies(NextResponse.redirect(`${origin}${next}`));
   const supabase = createServerClient(supabaseServerUrl, supabaseAnonKey, {
@@ -175,32 +209,43 @@ export async function GET(req: NextRequest) {
   });
   if (error) return fail(error.message);
 
+  // 🔴 2026-09-11 선점 가입 탈취 차단(구글 콜백과 같은 가드) — social-link-guard.ts 주석.
+  //   판정 전에는 연락처 저장·사주 귀속을 하지 않는다.
+  const guarded = await guardSocialSignIn(supabase, await createServiceClient(), signInData, {
+    provider: 'kakao',
+    token: idToken,
+    nonce,
+  });
+  if (!guarded.ok) return fail(guarded.reason);
+  const user = guarded.user;
+
   // 2026-07-03 — 전화번호(알림톡 대상)·이름 자동 수집. 실패해도 로그인은 그대로 진행.
-  if (signInData?.user?.id) {
+  {
     const contact = accessToken
       ? await fetchKakaoContact(accessToken)
       : { phone: null as string | null, name: null as string | null };
 
     if (contact.phone || contact.name) {
-      await saveKakaoContact(signInData.user.id, contact);
+      await saveKakaoContact(user.id, contact);
     }
 
     // 2026-07-19 — 프로필 부트스트랩은 **연락처 수집 성공과 무관하게** 항상 실행한다.
     //   ⚠️ 위 if 블록 안에 넣으면 안 된다: 현재 카카오 scope 는 openid 뿐이라
     //   (KOE205 핫픽스 #596) fetchKakaoContact 는 거의 항상 {phone:null, name:null} 을
     //   돌려주고, 그러면 신규 가입자 대부분이 여전히 profiles 행 없이 남는다.
-    await ensureProfileRow(signInData.user.id, contact.name);
+    await ensureProfileRow(user.id, contact.name);
 
     // 🔴 2026-09-01 — 같은 카카오 계정이 탈퇴 전에 쓴 무료 사용량을 되돌린다(076 원장).
     //   탈퇴하면 membership_benefit_usage 가 cascade 로 지워져 무료 하루 1회가 리셋됐다.
     //   원장이 비어 있으면(대부분의 정상 로그인) 셀렉트 한 번으로 끝난다.
     await restoreFreeDailyUsage(
-      signInData.user.id,
-      kakaoUidHashFromUserMetadata(signInData.user.user_metadata)
+      user.id,
+      // 🔴 user_metadata 가 아니라 identities — user_metadata 는 사용자가 updateUser({data}) 로 덮어써 원장을 우회한다.
+      kakaoUidHashFromIdentities(user.identities)
     );
 
     // 익명으로 만든 사주를 이 계정에 귀속시킨다(이 브라우저 쿠키에 영수증이 있는 것만).
-    await claimAnonymousReadings(req, response, signInData.user.id);
+    await claimAnonymousReadings(req, response, user.id);
   }
 
   return response;
