@@ -29,7 +29,10 @@ interface Props {
   packageId: string;
   plan: string;
   product?: string;
+  /** 화면 표시·GA 용 금액(= 서버가 계산한 할인 후 청구액). PG 청구에는 쓰지 않는다 — prepare 응답만 쓴다. */
   amount: number;
+  /** 체크아웃 화면이 적용해 보여 준 쿠폰. prepare 가 같은 코드로 다시 계산·귀속한다. */
+  couponCode?: string;
   orderName: string;
   slug?: string;
   scope?: string;
@@ -46,8 +49,7 @@ interface PaymentPrepareResponse {
   error?: string;
   orderId?: string;
   provider?: 'toss' | 'nicepay';
-  // 2026-07-07 — 서버가 스냅샷한 청구 금액(order.amount). PG 청구는 이 값을 써야
-  //   confirm/return 의 order.amount 검증과 일치한다(prop amount 는 폴백).
+  // 2026-07-07 — 서버가 스냅샷한 청구 금액(order.amount). PG 청구는 **이 값만** 쓴다.
   amount?: number;
 }
 
@@ -56,6 +58,7 @@ export default function TossMembershipCheckout({
   plan,
   product,
   amount,
+  couponCode,
   orderName,
   slug,
   scope,
@@ -185,6 +188,10 @@ export default function TossMembershipCheckout({
           paymentMethod,
           // Phase 3-C-1: 결제 전 동의 정책 종류. prepare API 가 활성 PolicyVersion 으로 변환 후 DB insert.
           acceptedKinds,
+          // 2026-09-11 — 코드만 보낸다. 할인율·금액은 서버가 DB 에서 다시 계산한다.
+          couponCode,
+          // 화면에 보여 준 최종 금액. 서버는 **대조에만** 쓴다(다르면 결제를 멈추고 새로고침 안내).
+          expectedAmount: amount,
         }),
       });
       const prepare = (await prepareResponse
@@ -213,9 +220,18 @@ export default function TossMembershipCheckout({
 
       const orderId = prepare.orderId;
       // 2026-07-07 — 실제 PG 청구액은 서버가 만든 order.amount(리졸버 스냅샷)를 따른다.
-      //   prop amount(카탈로그)는 폴백 — 가격 변경/렌더 레이스 시 confirm 거부 방지.
-      const chargeAmount =
-        typeof prepare.amount === 'number' && prepare.amount > 0 ? prepare.amount : amount;
+      // 🔴 2026-09-11 — prop amount 폴백 **삭제**. 폴백이 있으면 서버 금액이 비었을 때 화면 금액으로
+      //   결제창이 열리고, 할인쿠폰이 붙은 뒤로는 "할인 실패 → 조용히 다른 금액 청구"가 된다
+      //   (설계 docs/discount-coupon-design.md §3-3). 서버 금액이 없으면 결제창을 열지 않는다.
+      if (
+        typeof prepare.amount !== 'number' ||
+        !Number.isInteger(prepare.amount) ||
+        prepare.amount <= 0
+      ) {
+        setErrorMessage('결제 금액을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+        return;
+      }
+      const chargeAmount = prepare.amount;
 
       // 2026-06-26 — 나이스페이 분기: 결제창 SDK·승인 방식이 달라(서버승인 returnUrl) 별도 흐름.
       //   토스(successUrl/failUrl 클라 redirect) ↔ 나이스페이(returnUrl 서버 승인) 차이.

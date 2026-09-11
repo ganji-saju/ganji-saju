@@ -57,11 +57,45 @@ test('prepare 응답의 amount 는 order.amount 다 — 정가(listAmount)를 �
 });
 
 // 할인율·금액을 클라이언트에서 받으면 서버가 유일한 진실이라는 전제가 무너진다.
+// prepare 는 요청 본문을 `payload` 로 받는다 — 두 이름 다 본다(원래 가드는 body 만 봐서 실효가 없었다).
 test('prepare 는 body 에서 할인율·최종금액을 읽지 않는다', () => {
   const src = FILES.find((f) => f.rel === 'src/app/api/payments/prepare/route.ts')!.text;
-  for (const key of ['discountRate', 'discountPercent', 'finalAmount', 'chargeAmount']) {
-    assert.ok(!new RegExp(`body[\\s\\S]{0,40}${key}`).test(src), `${key} 를 body 에서 읽으면 안 된다`);
+  for (const key of ['discountRate', 'discountPercent', 'discountWon', 'percent', 'finalAmount', 'chargeAmount', 'amount']) {
+    assert.ok(
+      !new RegExp(`\\b(body|payload)\\b[^\\n]{0,40}\\b${key}\\b`).test(src),
+      `${key} 를 요청 본문에서 읽으면 안 된다`
+    );
   }
+});
+
+// 🔴 PR3 — 쿠폰이 붙은 뒤 폴백이 남아 있으면 "할인 실패 → 조용히 다른 금액 청구"가 된다(설계 §3-3).
+test('PG 청구액은 prepare 응답(order.amount)뿐 — 체크아웃 컴포넌트에 prop 금액 폴백이 없다', () => {
+  const src = FILES.find((f) => f.rel === 'src/components/membership/toss-membership-checkout.tsx')!.text;
+  assert.ok(!/prepare\.amount[^;\n]*:\s*amount\b/.test(src), 'prepare.amount 가 없을 때 prop amount 로 폴백하면 안 된다');
+  assert.ok(/const chargeAmount = prepare\.amount;/.test(src), 'PG 금액은 prepare.amount 를 그대로 써야 한다');
+});
+
+test('체크아웃 화면 금액에 카탈로그 정가 폴백(?? paymentPackage.price)이 없다', () => {
+  const src = FILES.find((f) => f.rel === 'src/app/membership/checkout/page.tsx')!.text;
+  assert.ok(!/\?\?\s*paymentPackage\.price/.test(src), '화면 금액은 resolveChargeForUser 결과만 쓴다');
+  assert.ok(/resolveChargeForUser\(/.test(src), '체크아웃은 prepare 와 같은 함수로 금액을 내야 한다');
+});
+
+// 🔴 리뷰 발견(2026-09-11): prepare 가 화면 금액을 몰라, 미리보기 뒤 요율이 바뀌면 화면보다 비싸게 청구됐다.
+//   expectedAmount 는 **대조 전용**이다 — 주문 금액 인자로 흘러가는 순간 클라이언트가 가격을 정한다.
+test('prepare 는 화면 금액(expectedAmount)을 대조에만 쓰고, 체크아웃이 그 값을 보낸다', () => {
+  const route = FILES.find((f) => f.rel === 'src/app/api/payments/prepare/route.ts')!.text;
+  assert.ok(/expectedAmount !== quote\.chargeAmount/.test(route), '표시가 ≠ 청구가면 멈춰야 한다');
+  assert.ok(!/:\s*expectedAmount\b/.test(route), 'expectedAmount 를 어떤 인자·필드 값으로도 넘기면 안 된다');
+  const client = FILES.find((f) => f.rel === 'src/components/membership/toss-membership-checkout.tsx')!.text;
+  assert.ok(/expectedAmount:\s*amount\b/.test(client), '체크아웃이 표시 금액을 prepare 로 보내야 대조가 작동한다');
+});
+
+test('prepare 는 쿠폰을 resolveChargeForUser 로 계산하고 주문에 넘긴다(coupon: null 고정 금지)', () => {
+  const src = FILES.find((f) => f.rel === 'src/app/api/payments/prepare/route.ts')!.text;
+  assert.ok(/resolveChargeForUser\(/.test(src));
+  assert.ok(!/coupon:\s*null/.test(src), 'coupon: null 로 되돌리면 쿠폰이 조용히 꺼진다');
+  assert.ok(/listAmount:\s*quote\.listAmount/.test(src), '정가는 화면과 같은 quote 에서 가져온다');
 });
 
 // 전역 가격 표시 맵은 루트 레이아웃의 **전 방문자 공유 캐시**다(layout.tsx 에 인증 호출 0건).
