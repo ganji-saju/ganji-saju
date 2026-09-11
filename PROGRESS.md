@@ -1,5 +1,53 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-11 — 🔴 선점 가입 탈취 차단 (confirm-email 삭제 · 소셜 연결 가드 · 카카오 이메일 확인 · identities 해시) + 안내 문구
+
+쿠폰 합산 상한 조사(`docs/coupon-lookup-cap-proposal.md` 별건 1)에서 발견. 마이그레이션 없음.
+
+### 사슬
+
+`signup` 이 메일함 증명 없이 '확인됨' 계정을 만든다 → 공격자가 피해자 이메일로 먼저 가입 → 피해자가 같은 이메일로
+구글 로그인하면 GoTrue 가 **기존 계정에 자동 연결**한다(선점 방어는 '미확인' 계정에만 돈다) → 공격자 비밀번호가 산 채로
+피해자 구글이 붙는다. `/api/auth/confirm-email` 은 이메일 주소만으로 아무 계정이나 '확인됨'으로 바꿔 이를 도왔다(가입 여부 오라클 포함).
+
+### 수정
+
+- `confirm-email` 라우트 삭제. 미확인 계정은 "아이디 / 비밀번호 찾기" 메일 링크로 푼다.
+- `social-link-guard.ts`: 소셜 콜백에서 **관리자 API 로 다시 읽은 계정**에 email+소셜이 같이 있으면 비밀번호를 1회 무작위화
+  (+ `app_metadata.social_link_guard_at`) → 같은 id_token 으로 재로그인 → 나머지 세션 끊기 → 무작위 비밀번호로 실제 로그인되는지
+  확인(경합 방지). 판정·쓰기 실패는 로그인 중단(실패-닫힘). 사주 귀속은 가드 뒤.
+- 카카오: id_token 에 email 이 실리면 user/me 로 **인증된 같은 이메일**인지 확인한 뒤에만 로그인(`kakao-email-claim.ts`).
+- 076 원장 키를 위조 가능한 `user_metadata` 대신 `identities` 에서(`kakaoUidHashFromIdentities`, 탈퇴 라우트 포함).
+
+### 독립 보안 리뷰(upstream GoTrue 소스 대조) — 반영
+
+| # | 지적 | 반영 |
+|---|---|---|
+| 🔴 Critical | GoTrue 는 자동 연결 때 **연결 전** 계정을 응답(identities 에 새 소셜 없음) → 탈취가 일어나는 바로 그 로그인에서 가드가 'ok'. 옛 가짜 DB 가 연결 후 모양이라 테스트가 못 잡음 | 항상 `getUserById` 로 판정, 가짜를 GoTrue 응답 모양으로 |
+| Medium | 다시 읽은 계정을 버려 카카오 해시가 낡은 identities 를 봄 | 다시 읽은 계정을 반환 |
+| Medium | `/login?reason=valueOf` → 로그인 페이지 크래시 | 자기 키만 조회(`hasOwnProperty.call` — `Object.hasOwn` 은 구형 iOS WebView 에 없음) |
+| Medium | 서비스 키 없는 환경에서 소셜 로그인 500 | 설정 점검에서 `fail('config')` |
+| Medium ⚠️ | 관리자 변경 직전 공격자 `updateUser({password})` 가 우리 값 위에 써지는 경합 | 무작위 비밀번호로 로그인 확인, 실패 시 표식 해제(다음 로그인 재실행). 표식은 **확인 실패 때만** 지운다 — 재로그인 실패에도 지우면 id_token 재사용 거부 GoTrue 에서 영영 못 들어온다 |
+
+### 안내 문구 (영향: 실사용 이메일 가입자 1명 — 사용자 확인. 메일 공지 대신 화면 안내)
+
+- 가드 사유가 `error=oauth_provider` 로 와서 "제공자 설정이 아직 완료되지 않았습니다 — 개발자 콘솔 확인"이 뜨던 것을 사유별 안내로
+  (`relogin_required`·`link_guard`·`no_user`·`kakao_email_unverified`·`kakao_email_check_failed`). 새 사유가 생기면 테스트가 문구 누락을 잡는다.
+- 이메일 로그인 실패 문구에 "카카오·Google 로 로그인한 적 있는 이메일이면 비밀번호가 해제됐을 수 있다"를 붙였다 — **틀린 비밀번호 전원에게 같은 문구**(가입 여부 비노출).
+
+### ⚠️ 남는 것 (코드로 못 닫음)
+
+- **카카오 id_token 을 GoTrue 에 직접 내는 경로**는 우리 콜백을 안 거친다. 카카오 콘솔에 `account_email` 동의항목이 있고 Client Secret 이
+  꺼져 있으면, 미인증 이메일 id_token 으로 남의 기존 계정에 공격자 카카오를 붙일 수 있다(⚠️검증필요). 닫는 법: 콘솔에서 Client Secret 사용 +
+  Vercel `KAKAO_CLIENT_SECRET`(콜백은 이미 지원) 또는 `account_email` 동의항목 해제. 프로덕션의 구글+카카오 1계정이 이 경로인지는 미확인(조회 승인 필요).
+- 경합 확인은 재로그인 뒤 한 번 — 본문을 천천히 보내 늘린 요청의 늦은 쓰기는 못 본다. 공격자의 이미 발급된 access JWT 는 만료(≤1h)까지 PostgREST 에서 유효.
+- 근본 해법은 가입 때 메일함 증명(`signup` 의 `email_confirm: true` 제거) — 이메일 가입이 사실상 1명이라 전환 비용이 작다. 결정 대기.
+
+### 검증
+
+유닛 전체 통과 · tsc · 뮤테이션 8/8 red(첫 연결 판정·확인 생략·재로그인 실패 시 표식 삭제·app_metadata 스프레드·프로토타입 인덱싱·
+카카오 인증 무시·콜백 결과 무시·revoke 실패 통과). 프로덕션 점검(읽기 전용, 2026-09-11): 계정 59개 중 탈취 모양은 1개, 심어 둔 프로필·전화 없음.
+
 ## 2026-09-11 — 🔴 비로그인 사주가 공개 anon 키로 누구에게나 조회되던 RLS 정책을 닫음 (migration 082)
 
 계정 탈취 조사(confirm-email) 중 발견. `001_initial.sql:54` 의 readings SELECT 정책이

@@ -27,6 +27,20 @@ export function getProviderLabel(value: string | null | undefined): string {
   return '소셜';
 }
 
+/**
+ * 2026-09-11 — 선점 가입 탈취 가드(social-link-guard · 카카오 이메일 확인)가 로그인을 멈춘 사유. 설정 문제가 아니다.
+ *   콜백은 이것도 `error=oauth_provider` 로 보내서, 여기 없으면 "개발자 콘솔을 확인해 주세요"가 뜬다.
+ */
+const GUARD_REASON_MESSAGES: Record<string, (providerLabel: string) => string> = {
+  relogin_required: (p) =>
+    `보안 확인을 위해 ${p}로 한 번 더 로그인해 주세요. 이 계정의 기존 비밀번호는 보호를 위해 해제됐어요 — 이메일 로그인도 쓰시려면 "비밀번호를 잊으셨나요?"로 다시 설정할 수 있어요.`,
+  link_guard: () => '계정 보안 확인을 끝내지 못해 로그인을 멈췄어요. 잠시 후 다시 시도해 주세요. 계속되면 카카오톡 문의로 알려 주세요.',
+  no_user: () => '계정 보안 확인을 끝내지 못해 로그인을 멈췄어요. 잠시 후 다시 시도해 주세요. 계속되면 카카오톡 문의로 알려 주세요.',
+  kakao_email_unverified: () =>
+    '카카오 계정의 이메일이 인증되지 않아 로그인을 멈췄어요. 카카오 계정 설정에서 이메일 인증을 마친 뒤 다시 시도해 주세요.',
+  kakao_email_check_failed: () => '카카오 계정 확인을 끝내지 못했어요. 잠시 후 다시 시도해 주세요.',
+};
+
 export function getOAuthLoginError(
   error: string | null | undefined,
   provider: string | null | undefined,
@@ -36,6 +50,12 @@ export function getOAuthLoginError(
 
   if (error === 'oauth_config') {
     return '로그인 환경변수가 비어 있습니다. Supabase URL과 공개 키를 운영 환경에 설정해 주세요.';
+  }
+
+  // 자기 키만: reason 은 URL 에서 온다 — `reason=valueOf` 면 프로토타입 함수를 불러 로그인 페이지가 죽는다.
+  //   (Object.hasOwn 은 iOS 15.4 미만 WebView 에 없어 쓰지 않는다 — 이 파일은 로그인 페이지 번들에 들어간다.)
+  if (error === 'oauth_provider' && reason && Object.prototype.hasOwnProperty.call(GUARD_REASON_MESSAGES, reason)) {
+    return GUARD_REASON_MESSAGES[reason](providerLabel);
   }
 
   // 연결 실패는 설정 종류와 무관하게 같은 말을 해야 한다 — 어느 단계에서 끊겼든 사용자가

@@ -7,7 +7,7 @@ import {
   currentPeriodKeys,
   isLedgeredBenefit,
 } from './withdrawal-ledger';
-import { kakaoUidHashFromUserMetadata } from '@/lib/kakao/uid-hash';
+import { kakaoUidHash, kakaoUidHashFromIdentities } from '@/lib/kakao/uid-hash';
 
 describe('원장 대상 benefit', () => {
   it('무료 메뉴 4종만 대상 — 유료 멤버십 쿼터는 건드리지 않는다', () => {
@@ -37,23 +37,14 @@ describe('currentPeriodKeys', () => {
   });
 });
 
-describe('kakaoUidHashFromUserMetadata', () => {
-  it('provider_id / sub 어느 쪽이든 카카오 회원번호를 읽는다(실측: 둘 다 존재)', () => {
-    const a = kakaoUidHashFromUserMetadata({ provider_id: '1234567890' });
-    const b = kakaoUidHashFromUserMetadata({ sub: '1234567890' });
-    expect(a).toBe(b);
-    expect(a).toMatch(/^[0-9a-f]{64}$/);
+describe('kakaoUidHashFromIdentities', () => {
+  it('카카오 신원의 id(회원번호)로 해시한다 — 기존 원장 키(sha256(회원번호))와 같다', () => {
+    expect(kakaoUidHashFromIdentities([{ provider: 'kakao', id: '1234567890' }])).toBe(kakaoUidHash('1234567890'));
   });
-
-  it('카카오가 아닌 계정(식별자 없음)은 null — 보호가 걸리지 않는다', () => {
-    expect(kakaoUidHashFromUserMetadata({ email: 'a@b.c' })).toBeNull();
-    expect(kakaoUidHashFromUserMetadata(null)).toBeNull();
-    expect(kakaoUidHashFromUserMetadata({ provider_id: '   ' })).toBeNull();
-  });
-
-  it('숫자로 와도 같은 키가 나온다', () => {
-    expect(kakaoUidHashFromUserMetadata({ provider_id: 1234567890 })).toBe(
-      kakaoUidHashFromUserMetadata({ provider_id: '1234567890' })
-    );
+  it('카카오 신원이 없으면 null — user_metadata 의 값은 보지 않는다(위조 가능)', () => {
+    expect(kakaoUidHashFromIdentities([{ provider: 'google', id: '999' }])).toBeNull();
+    expect(kakaoUidHashFromIdentities([{ provider: 'email', id: 'x' }])).toBeNull();
+    expect(kakaoUidHashFromIdentities(null)).toBeNull();
+    expect(kakaoUidHashFromIdentities([{ provider: 'kakao', id: '   ' }])).toBeNull();
   });
 });
