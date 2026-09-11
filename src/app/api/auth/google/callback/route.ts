@@ -5,7 +5,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
-import { createServiceClient, supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
+import {
+  createPublicServerClient,
+  createServiceClient,
+  hasSupabaseServiceEnv,
+  supabaseAnonKey,
+  supabaseServerUrl,
+} from '@/lib/supabase/server';
 import { guardSocialSignIn } from '@/lib/auth/social-link-guard';
 import { ensureProfileRow } from '@/lib/profile';
 import { claimAnonymousReadings } from '@/lib/saju/anonymous-reading-claim';
@@ -62,7 +68,8 @@ export async function GET(req: NextRequest) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret || !supabaseServerUrl || !supabaseAnonKey) {
+  // 서비스 키 없이는 연결 가드(관리자 API)를 못 돌린다 → 로그인을 끝내지 않는다(실패-닫힘, 500 대신 안내).
+  if (!clientId || !clientSecret || !supabaseServerUrl || !supabaseAnonKey || !hasSupabaseServiceEnv) {
     return fail('config');
   }
 
@@ -112,7 +119,7 @@ export async function GET(req: NextRequest) {
 
   // 🔴 2026-09-11 선점 가입 탈취 차단 — 남이 이 이메일로 먼저 만든 비밀번호 계정에 구글이 자동 연결됐을 수 있다.
   //   가드 판정 전에는 사주 귀속(아래 claimAnonymousReadings)을 하지 않는다 — 탈취 계정이면 방금 본 사주가 공격자에게 간다.
-  const guarded = await guardSocialSignIn(supabase, await createServiceClient(), signInData, {
+  const guarded = await guardSocialSignIn(supabase, await createServiceClient(), createPublicServerClient(), signInData, {
     provider: 'google',
     token: idToken,
     nonce,

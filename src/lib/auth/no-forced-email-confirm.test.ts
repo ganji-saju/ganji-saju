@@ -31,9 +31,17 @@ test('소셜 콜백은 사주 귀속 전에 연결 가드를 돌리고, 카카�
     const guardAt = src.indexOf('guardSocialSignIn(');
     const claimAt = src.indexOf('claimAnonymousReadings(req');
     assert.ok(guardAt > 0 && claimAt > guardAt, `${provider}: 가드가 사주 귀속보다 앞서야 한다`);
-    assert.ok(!/user_metadata\)/.test(src.slice(guardAt)) || provider === 'google', `${provider}: 가드 뒤에 user_metadata 기반 해시 금지`);
+    // 호출만 하고 결과를 버리면 가드가 없는 것과 같다.
+    assert.ok(src.includes('if (!guarded.ok) return fail(guarded.reason);'), `${provider}: 가드 실패를 로그인 실패로 강제해야 한다`);
   }
   const kakao = fs.readFileSync(path.join(SRC, 'app/api/auth/kakao/callback/route.ts'), 'utf8');
-  assert.ok(kakao.indexOf('await kakaoEmailClaimIsSafe(idToken') > 0 && kakao.indexOf('await kakaoEmailClaimIsSafe(idToken') < kakao.indexOf('await supabase.auth.signInWithIdToken'), '미인증 이메일로 연결되기 전에 막아야 한다');
-  assert.ok(!kakao.includes('kakaoUidHashFromUserMetadata'), '위조 가능한 user_metadata 해시 금지');
+  const verdictAt = kakao.indexOf('kakaoEmailClaimVerdict(idToken');
+  assert.ok(verdictAt > 0 && verdictAt < kakao.indexOf('await supabase.auth.signInWithIdToken'), '미인증 이메일로 연결되기 전에 막아야 한다');
+  assert.ok(kakao.includes("if (emailVerdict !== 'ok')"), '판정 결과를 로그인 차단에 써야 한다');
+});
+
+// 사용자가 updateUser({data}) 로 덮어쓰는 user_metadata 로 카카오 해시를 만들면 076 원장을 우회한다(탈퇴 라우트 포함 전역).
+test('카카오 대조 해시는 어디서도 user_metadata 로 만들지 않는다', () => {
+  const hits = files(SRC).filter((f) => /kakaoUidHashFromUserMetadata|kakaoUidHash\([^)]*user_metadata/.test(fs.readFileSync(f, 'utf8')));
+  assert.deepEqual(hits.map((f) => path.relative(SRC, f)), []);
 });

@@ -146,7 +146,7 @@ function getPasswordLoginError(message?: string) {
   //   이메일 주소만으로 아무 계정이나 '확인됨'으로 바꿔 선점 가입 탈취를 도왔고(가입 여부 오라클·증폭 포함) 삭제했다.
   //   미확인 계정은 메일함 소유를 증명하는 비밀번호 찾기 링크(recoverVerify 가 확인까지 한다)로 푼다.
   if (normalized.includes('confirm')) {
-    return '이메일 확인이 필요한 계정이에요. 아래 "비밀번호 찾기"로 받은 메일의 링크를 누르면 바로 로그인할 수 있어요.';
+    return '이메일 확인이 필요한 계정이에요. 아래 "아이디 / 비밀번호 찾기"로 받은 메일의 링크를 누르면 바로 로그인할 수 있어요.';
   }
   return message;
 }

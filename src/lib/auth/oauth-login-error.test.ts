@@ -73,12 +73,24 @@ test('알 수 없는 error 코드는 빈 문자열 — 없는 오류를 지어�
 //   비밀번호가 해제된 사용자를 엉뚱한 콘솔로 보낸다. 가드에 새 사유가 생기면 여기서 문구 누락이 red.
 test('가드 사유는 설정 문제로 말하지 않고, 가드의 모든 사유에 전용 안내가 있다', () => {
   const guardSrc = readFileSync(path.join(__dirname, 'social-link-guard.ts'), 'utf8');
-  const reasons = [...new Set([...guardSrc.matchAll(/reason: '(\w+)'/g)].map((m) => m[1]))];
-  assert.ok(reasons.length >= 3, `가드 사유를 못 찾았다: ${reasons}`);
-  for (const reason of [...reasons, 'kakao_email_unverified']) {
+  const kakaoSrc = readFileSync(path.join(__dirname, '../../app/api/auth/kakao/callback/route.ts'), 'utf8');
+  const reasons = [
+    ...new Set([
+      ...[...guardSrc.matchAll(/reason: '(\w+)'/g)].map((m) => m[1]),
+      ...[...kakaoSrc.matchAll(/'(kakao_email_\w+)'/g)].map((m) => m[1]),
+    ]),
+  ];
+  assert.ok(reasons.length >= 5, `가드 사유를 못 찾았다: ${reasons}`);
+  for (const reason of reasons) {
     const msg = getOAuthLoginError('oauth_provider', 'google', reason);
     assert.ok(msg && !msg.includes('설정이 아직 완료되지') && !msg.includes('개발자 콘솔'), `${reason}: ${msg}`);
   }
   assert.ok(getOAuthLoginError('oauth_provider', 'kakao', 'relogin_required').includes('카카오로 한 번 더'));
   assert.ok(getOAuthLoginError('oauth_provider', 'google', 'relogin_required').includes('비밀번호를 잊으셨나요?'));
+});
+
+test('reason 이 프로토타입 이름이어도 죽지 않는다(URL 조작으로 로그인 페이지 크래시 금지)', () => {
+  for (const reason of ['valueOf', 'hasOwnProperty', 'constructor', 'toString', '__proto__']) {
+    assert.doesNotThrow(() => getOAuthLoginError('oauth_provider', 'google', reason), reason);
+  }
 });
