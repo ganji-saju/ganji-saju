@@ -1,5 +1,16 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-11 — 🔴 비로그인 사주가 공개 anon 키로 누구에게나 조회되던 RLS 정책을 닫음 (migration 082)
+
+계정 탈취 조사(confirm-email) 중 발견. `001_initial.sql:54` 의 readings SELECT 정책이
+`auth.uid() = user_id OR user_id IS NULL` 이었다 — `user_id IS NULL` 은 비로그인으로 만든 사주와 계정 삭제 뒤 남은 행이다.
+브라우저 번들에 공개된 anon 키만 있으면 REST 로 **생년월일·출생시·성별·풀이 결과**를 전부 긁을 수 있었고,
+이후 마이그레이션에 정정이 없었다(프로덕션에 그대로였는지는 확인 못 함 — 082 는 어느 쪽이든 멱등).
+
+**앱 영향 없음**: 프로덕션의 readings 읽기·쓰기는 전부 service 클라이언트(`getPrivilegedOrSessionClient`)라 RLS 를 안 타고,
+브라우저에서 readings 를 조회하는 코드는 0건이다. 가드 테스트(`readings-rls.test.ts`)가 마지막 SELECT 정책에
+`user_id IS NULL` 이 다시 들어오면 red. 082 는 수동 적용(순서 무관).
+
 ## 2026-09-11 — 할인쿠폰: 요구 6 을 "평생 1개" → **"동시에 1개"** 로 (migration 080)
 
 사용자 결정. PR3(#806) 리뷰에서 리뷰어 2명이 독립적으로 지목한 문제를 푼다.
