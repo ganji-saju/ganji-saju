@@ -3,6 +3,8 @@
 //   "Google 개발자 콘솔의 콜백 주소를 확인해 주세요" 라고 안내했다. 원인은 인증 서버에
 //   네트워크로 닿지 못한 것(Supabase 호스트 NXDOMAIN)이었고 설정은 멀쩡했다.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { getOAuthLoginError, isTransientAuthReason } from './oauth-login-error';
 
 declare const test: (name: string, fn: () => void) => void;
@@ -65,4 +67,18 @@ test('code verifier 분기는 그대로 — 연결 문제로 삼키지 않는다
 test('알 수 없는 error 코드는 빈 문자열 — 없는 오류를 지어내지 않는다', () => {
   assert.equal(getOAuthLoginError(null, 'google', null), '');
   assert.equal(getOAuthLoginError('something_else', 'google', 'fetch failed'), '');
+});
+
+// 2026-09-11 — 선점 가입 탈취 가드가 로그인을 멈춘 사유도 error=oauth_provider 로 온다. 설정 문제로 말하면
+//   비밀번호가 해제된 사용자를 엉뚱한 콘솔로 보낸다. 가드에 새 사유가 생기면 여기서 문구 누락이 red.
+test('가드 사유는 설정 문제로 말하지 않고, 가드의 모든 사유에 전용 안내가 있다', () => {
+  const guardSrc = readFileSync(path.join(__dirname, 'social-link-guard.ts'), 'utf8');
+  const reasons = [...new Set([...guardSrc.matchAll(/reason: '(\w+)'/g)].map((m) => m[1]))];
+  assert.ok(reasons.length >= 3, `가드 사유를 못 찾았다: ${reasons}`);
+  for (const reason of [...reasons, 'kakao_email_unverified']) {
+    const msg = getOAuthLoginError('oauth_provider', 'google', reason);
+    assert.ok(msg && !msg.includes('설정이 아직 완료되지') && !msg.includes('개발자 콘솔'), `${reason}: ${msg}`);
+  }
+  assert.ok(getOAuthLoginError('oauth_provider', 'kakao', 'relogin_required').includes('카카오로 한 번 더'));
+  assert.ok(getOAuthLoginError('oauth_provider', 'google', 'relogin_required').includes('비밀번호를 잊으셨나요?'));
 });
