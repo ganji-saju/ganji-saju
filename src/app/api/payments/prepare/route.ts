@@ -394,7 +394,7 @@ export async function POST(req: NextRequest) {
   const couponInput = readString(payload, 'couponCode') || null;
   // 체크아웃 화면이 표시한 최종 금액. 🔴 **대조에만** 쓴다 — 가격 계산에 쓰는 순간 클라이언트가 금액을 정한다.
   const expectedAmount = typeof payload.expectedAmount === 'number' ? payload.expectedAmount : null;
-  const quote = await resolveChargeForUser(pkg, user.id, couponInput, {
+  const quote = await resolveChargeForUser(pkg, user, couponInput, {
     env: couponEnvForHost(req.headers.get('host')),
   });
   const userId = user.id;
