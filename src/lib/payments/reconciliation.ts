@@ -62,8 +62,9 @@ export async function settlePaymentOrderFromToss(input: {
 
   // 세 번째 승인 경로 — 사용자가 인증만 마치고 창을 닫으면(토스 IN_PROGRESS) 정산·웹훅이 아래에서 직접 승인한다.
   //   confirm·나이스 return 과 같은 관문을 **결제 키를 붙이기 전에** 돌린다(붙인 뒤면 confirm 이 "승인 요청이 나갔을 수 있다"로
-  //   보고 쿠폰 검사를 건너뛴다). 토스 IN_PROGRESS 는 아직 승인 전이다. 막히면 상태를 건드리지 않고 두면 토스가 만료시킨다.
-  if (input.payment.status === 'IN_PROGRESS') {
+  //   보고 쿠폰 검사를 건너뛴다). 승인 완료(DONE)·종료 상태가 아니면 모두 승인 전이다 — IN_PROGRESS 만 보면 READY 등에서
+  //   관문 없이 키가 붙어 뒤따르는 confirm 이 검사를 건너뛴다(2026-09-12 재검증). 막히면 상태를 건드리지 않고 두면 토스가 만료시킨다.
+  if (input.payment.status !== 'DONE' && !terminalFailureStatus(input.payment.status)) {
     const approvalBlock = await checkBeforePgApproval(input.order, { approvalMayHaveBeenRequested: false });
     if (approvalBlock) return { status: 'pending', reason: `approval_blocked:${approvalBlock}` };
   }

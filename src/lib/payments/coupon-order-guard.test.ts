@@ -89,7 +89,7 @@ test('쿠폰 검사 — 승인 요청 전 할인 주문만(재진입·실패 후
 
 test('안내·응답 — 전부 "청구된 금액은 없습니다", 일시 장애만 503', () => {
   for (const block of ['order_closed', 'coupon_lookup_failed', 'coupon_expired', 'coupon_not_bound'] as const) {
-    assert.ok(approvalBlockMessage(block).includes('청구된 금액은 없습니다'), block);
+    assert.ok(approvalBlockMessage(block).includes('이번 요청으로 청구된 금액은 없습니다'), `${block}: 환불된 주문 등에서 "청구 없음" 단정 금지`);
   }
   assert.equal(approvalBlockHttpStatus('coupon_lookup_failed'), 503);
   assert.equal(approvalBlockHttpStatus('coupon_expired'), 409);
@@ -119,9 +119,9 @@ test('PG 승인 호출이 있는 모든 파일은 그보다 먼저 관문을 돌
       const at = text.indexOf(call);
       if (at >= 0) assert.ok(at > gateAt, `${file}: ${call} 가 관문보다 앞에 있다`);
     }
-    // 라우트는 "결제 키가 붙었으면 승인 요청이 나갔을 수 있다", 정산은 토스 IN_PROGRESS(승인 전)에서만 false 로 부른다.
+    // 라우트는 "결제 키가 붙었으면 승인 요청이 나갔을 수 있다", 정산은 승인 전(DONE·종료 상태가 아닌 모든 경우)에 키 연결 전 false 로 부른다.
     const expected = file.endsWith('reconciliation.ts')
-      ? /status === 'IN_PROGRESS'\) \{\s*const approvalBlock = await checkBeforePgApproval\(input\.order, \{ approvalMayHaveBeenRequested: false \}\)/
+      ? /status !== 'DONE' && !terminalFailureStatus\(input\.payment\.status\)\) \{\s*const approvalBlock = await checkBeforePgApproval\(input\.order, \{ approvalMayHaveBeenRequested: false \}\)/
       : /checkBeforePgApproval\(order, \{ approvalMayHaveBeenRequested: Boolean\(order\.paymentKey\) \}\)/;
     assert.ok(expected.test(text), `${file}: 승인 요청 여부를 잘못 넘긴다`);
     const blockBody = text.slice(gateAt, text.indexOf('return', text.indexOf('if (approvalBlock)', gateAt)));
