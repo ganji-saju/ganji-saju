@@ -14,6 +14,7 @@ import {
   buildAlreadyFulfilledResult,
   fulfillPaymentOrder,
 } from '@/lib/payments/fulfillment';
+import { approvalBlockHttpStatus, approvalBlockMessage, checkBeforePgApproval } from '@/lib/payments/coupon-order-guard';
 // 2026-05-16 PR (B1) — 결제 funnel 단계 기록.
 import { formatPgFailReason, logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 
@@ -86,6 +87,22 @@ export async function POST(req: NextRequest) {
       reason: 'payment_key_mismatch',
     });
     return NextResponse.json({ error: '이미 다른 결제 키가 연결된 주문입니다.' }, { status: 400 });
+  }
+
+  // PG 승인 직전 관문(coupon-order-guard.ts) — 닫힌 주문·죽은 쿠폰의 할인 주문은 승인하지 않는다(쿠폰 PR4 · 설계 §5-3).
+  //   결제 키를 붙이기 전에 막는다(키가 붙으면 "승인 요청이 나갔을 수 있다"로 본다). 막아도 주문 상태는 그대로 둔다.
+  const approvalBlock = await checkBeforePgApproval(order, { approvalMayHaveBeenRequested: Boolean(order.paymentKey) });
+  if (approvalBlock) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'approval_blocked',
+      metadata: { block: approvalBlock },
+    });
+    return NextResponse.json({ error: approvalBlockMessage(approvalBlock) }, { status: approvalBlockHttpStatus(approvalBlock) });
   }
 
   order = await attachPaymentKeyToOrder({ order, paymentKey, source: 'confirm' });

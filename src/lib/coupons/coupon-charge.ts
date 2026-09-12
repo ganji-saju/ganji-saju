@@ -16,6 +16,7 @@ import { dailyPeriodKey } from '@/lib/credits/member-benefits';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 import {
   COUPON_RECLAIM_AFTER_MS,
+  COUPON_ROW_COLUMNS,
   applyCouponDiscount,
   canReleaseCoupon,
   evaluateCouponRow,
@@ -33,9 +34,6 @@ import {
 export function couponEnvForHost(host: string | null | undefined): CouponEnv {
   return resolveCouponEnv(resolvePaymentOriginEnv(host), process.env.VERCEL_ENV);
 }
-
-const COUPON_COLUMNS =
-  'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, released_at, coupon_tiers(percent, max_discount_won, disabled_at)';
 
 // ─────────────────────────────────────────────────────────────
 // 새 코드 조회 예산(S2 — docs/coupon-lookup-cap-proposal.md, 사용자 채택 2026-09-11)
@@ -203,7 +201,7 @@ async function selectCoupon(
   by: 'code' | 'bound',
   value: string
 ): Promise<CouponRow | null> {
-  const query = service.from('discount_coupons').select(COUPON_COLUMNS);
+  const query = service.from('discount_coupons').select(COUPON_ROW_COLUMNS);
   const { data, error } = await (by === 'code'
     ? query.eq('code', value)
     : query.eq('bound_user_id', value).is('released_at', null)

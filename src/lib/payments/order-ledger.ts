@@ -59,6 +59,8 @@ export interface PaymentOrder {
   acceptedPolicyKinds: string[];
   recordedPolicyVersionIds: string[];
   metadata: Record<string, unknown>;
+  /** 할인 주문이면 귀속된 쿠폰(정규형). 승인 직전 재검증(coupon-order-guard)이 본다. */
+  couponCode: string | null;
   lastError: string | null;
   fulfillmentAttempts: number;
   reconciliationAttempts: number;
@@ -156,6 +158,7 @@ function mapPaymentOrder(row: PaymentOrderRow): PaymentOrder {
     acceptedPolicyKinds: readStringArray(row.accepted_policy_kinds),
     recordedPolicyVersionIds: readStringArray(row.recorded_policy_version_ids),
     metadata: readObject(row.metadata),
+    couponCode: readString(row.coupon_code),
     lastError: readString(row.last_error),
     fulfillmentAttempts: readNumber(row.fulfillment_attempts),
     reconciliationAttempts: readNumber(row.reconciliation_attempts),
