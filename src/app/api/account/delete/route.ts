@@ -13,6 +13,7 @@ import {
 } from '@/lib/supabase/server';
 import { kakaoUidHashFromIdentities } from '@/lib/kakao/uid-hash';
 import { snapshotFreeDailyUsage } from '@/lib/free-usage/withdrawal-ledger';
+import { releaseCouponsOfUser } from '@/lib/coupons/coupon-admin';
 
 const ALLOWED_REASONS = new Set([
   'not-use',
@@ -91,6 +92,8 @@ export async function POST(req: NextRequest) {
     .update({ is_active: false })
     .eq('user_id', userId)
     .then(undefined, () => undefined);
+  // 2026-09-13 할인쿠폰 — 주문이 cascade 로 지워지면 결제한 쿠폰도 24h 회수로 남에게 넘어간다. 먼저 종료한다(실패해도 탈퇴는 진행).
+  await releaseCouponsOfUser(admin, userId);
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
 

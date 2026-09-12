@@ -31,6 +31,8 @@ function baseOrder(overrides: Partial<PaymentOrder> = {}): PaymentOrder {
     recordedPolicyVersionIds: [],
     metadata: {},
     couponCode: null,
+    listAmount: null,
+    discountWon: 0,
     lastError: null,
     fulfillmentAttempts: 0,
     reconciliationAttempts: 0,

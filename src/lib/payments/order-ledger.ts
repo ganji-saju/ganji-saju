@@ -61,6 +61,9 @@ export interface PaymentOrder {
   metadata: Record<string, unknown>;
   /** 할인 주문이면 귀속된 쿠폰(정규형). 승인 직전 재검증(coupon-order-guard)이 본다. */
   couponCode: string | null;
+  /** 할인 주문의 정가·할인액 스냅샷(079). 승인 직전 관문이 소급 인하 뒤 옛 할인가 주문을 가려낸다(PR6). 정가 기록 없는 옛 주문은 null. */
+  listAmount: number | null;
+  discountWon: number;
   lastError: string | null;
   fulfillmentAttempts: number;
   reconciliationAttempts: number;
@@ -159,6 +162,8 @@ function mapPaymentOrder(row: PaymentOrderRow): PaymentOrder {
     recordedPolicyVersionIds: readStringArray(row.recorded_policy_version_ids),
     metadata: readObject(row.metadata),
     couponCode: readString(row.coupon_code),
+    listAmount: typeof row.list_amount === 'number' && Number.isFinite(row.list_amount) ? row.list_amount : null,
+    discountWon: readNumber(row.discount_won),
     lastError: readString(row.last_error),
     fulfillmentAttempts: readNumber(row.fulfillment_attempts),
     reconciliationAttempts: readNumber(row.reconciliation_attempts),

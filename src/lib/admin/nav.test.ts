@@ -88,3 +88,10 @@ test('내비: 부모는 자식이 열려 있으면 펼쳐진다', () => {
   assert.equal(navItemContainsHref(metrics, '/admin/reviews'), false);
   assert.equal(navItemContainsHref(metrics, null), false);
 });
+
+test('내비: 할인쿠폰 관리(발급·요율 = 현금 증서)는 super_admin 만 본다', () => {
+  const admin = flattenNavItems(getVisibleNavGroups('admin')).map((i) => i.href);
+  const superAdmin = flattenNavItems(getVisibleNavGroups('super_admin')).map((i) => i.href);
+  assert.ok(!admin.includes('/admin/coupons'), 'admin 에게 할인쿠폰 관리가 보이면 안 됨(페이지·액션도 super_admin 만)');
+  assert.ok(superAdmin.includes('/admin/coupons'));
+});

@@ -84,6 +84,16 @@ const ACTION_LABELS: Record<string, string> = {
   grant_lifetime_report: '평생 리포트 부여',
   grant_product: '유료상품 권한 부여',
   revoke_product: '유료상품 권한 회수',
+  // 2026-09-13 — 할인쿠폰 관리(/admin/coupons).
+  coupon_tier_update: '쿠폰 요율 변경',
+  coupon_tier_toggle: '쿠폰 등급 켜기/끄기',
+  coupon_issue: '쿠폰 발급',
+  coupon_batch_revoke: '쿠폰 배치 회수',
+  coupon_batch_restore: '쿠폰 회수 되살리기',
+  coupon_batch_expiry: '쿠폰 만료일 변경',
+  coupon_lookup: '쿠폰 보유자 조회',
+  coupon_release: '쿠폰 귀속 해제',
+  coupon_export: '쿠폰 코드 내보내기',
 };
 
 export function labelForAdminAction(action: string): string {

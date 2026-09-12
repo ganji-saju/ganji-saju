@@ -7,6 +7,7 @@ import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { refreshAdminUserSummaryForUser } from '@/lib/admin/summary-refresh';
 import { normalizeKoreanMobile } from '@/lib/kakao/phone';
+import { releaseCouponsOfUser } from '@/lib/coupons/coupon-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -171,6 +172,8 @@ export async function POST(req: NextRequest) {
       .update({ is_active: false })
       .eq('user_id', userId)
       .then(undefined, () => undefined);
+    // 할인쿠폰 — 주문 cascade 로 결제 증거가 지워지기 전에 이 계정의 쿠폰을 종료한다(/api/account/delete 와 같은 이유).
+    await releaseCouponsOfUser(service, userId);
     const { error } = await service.auth.admin.deleteUser(userId);
     if (error) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });

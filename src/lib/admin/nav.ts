@@ -79,6 +79,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         minRole: 'super_admin',
       },
       {
+        href: '/admin/coupons',
+        label: '할인쿠폰(전단)',
+        description: '요율·발급·배치 회수·귀속 해제',
+        minRole: 'super_admin',
+      },
+      {
         href: '/admin/policies',
         label: '약관·정책',
         description: '정책 버전·게시 상태',
