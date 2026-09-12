@@ -1,5 +1,40 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-12 — 🔴 돈에 닿는 DB 함수를 공개 anon 키로 누구나 부를 수 있었다 (migration 083) + 운영 도구 연동
+
+### 발견 경로
+
+Supabase 관리 접근을 새로 연결했다 — 공식 MCP 를 OAuth 로, `project_ref=bgtzkjxihlbmxehmhtwg` 로 범위 고정(`supabase-ganji`,
+로컬 설정·커밋 안 됨). 첫 보안 권고(`get_advisors`) 점검에서 나왔다. Vercel CLI 도 연동(brew, `env ls`).
+
+### 문제
+
+`add_credits`·`add_credit_lot`·`deduct_credits`·`consume_credit_lots`·`unlock_credit_feature_once`·`revoke_credit_purchase_lots`·
+`sync_credit_balance_from_lots`·`claim_payment_order_fulfillment`·`mark_payment_order_reconciliation_attempt`·`finalize_payment` 가
+**SECURITY DEFINER 인데 EXECUTE 가 PUBLIC·anon·authenticated 에 열려 있고, 본문에 호출자 확인이 없다**(pg_proc 확인).
+브라우저 번들의 anon 키로 `POST /rest/v1/rpc/add_credits` 하면 아무 계정에 전을 무한 지급, `unlock_credit_feature_once(p_cost=0)` 이면
+유료 기능 무료 개방, 남의 잔액 차감·결제 상태 조작도 된다. 040~047 에서 만들며 권한을 닫지 않았다(056·081 은 닫았다).
+같은 점검에서 크롤러 방문 보관 테이블(`site_visits_crawler_archive_20260719`, user_id·visitor_hash ≈2,540행)이 RLS 없이 anon 읽기·삭제로 열려 있었다.
+
+### 수정 (083)
+
+- 위 함수 전부 `revoke execute ... from public, anon, authenticated` + `grant ... to service_role`. `finalize_payment` 은 마이그레이션 밖에서
+  만들어져 있을 때만 닫는다. 앱은 전부 service 클라이언트로 부른다(deduct.ts·refunds.ts·order-ledger.ts) — 앱 변경 없음.
+  함수끼리 내부 호출은 소유자 권한이라 영향 없음. Edge Function 0개.
+- 보관 테이블은 정책 없이 RLS 만 켠다(service 전용, 앱은 안 읽음).
+- 그대로: `search_classic_evidence`(공개 고전 검색, anon 폴백 의도) · `handle_new_user`(가입 트리거, 직접 호출 불가).
+- 가드 `security-definer-lockdown.test.ts`: 마이그레이션의 SECURITY DEFINER 함수가 anon 권한을 안 닫으면 red(083 빼면 red 확인).
+
+### 남은 권고 (이번에 안 함)
+
+- `v_classic_evidence_flat` SECURITY DEFINER 뷰(공개 고전 원문 — 의도된 공개면으로 보임) · 함수 22개 `search_path` 미고정(WARN, anon 차단 뒤 잔여 위험 낮음) ·
+  유출 비밀번호 차단(HIBP) 꺼짐 · RLS-정책없음 37개(INFO, service 전용 설계대로).
+
+### 같이 한 점검 (읽기 전용, 사용자 승인)
+
+- 구글+카카오 계정 1개 = **super_admin**(서비스 첫날 생성, 구글 → 8일 뒤 같은 이메일 카카오 연결, 이후 27일 사용) — 운영자 본인 연결로 판단(확인 요청).
+- Supabase 브랜칭 미사용(`list_branches` 빈 목록) — 5월 브랜치용 미리보기 DB 는 없었다. Vercel 브랜치 전용 변수 21개 삭제(사용자 실행)·5월 브랜치 삭제(PR #93 머지분).
+
 ## 2026-09-11 — 🔴 선점 가입 탈취 차단 (confirm-email 삭제 · 소셜 연결 가드 · 카카오 이메일 확인 · identities 해시) + 안내 문구
 
 쿠폰 합산 상한 조사(`docs/coupon-lookup-cap-proposal.md` 별건 1)에서 발견. 마이그레이션 없음.
