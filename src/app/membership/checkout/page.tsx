@@ -3,7 +3,7 @@
 // 데이터·라우팅·결제 위젯 무수정.
 import Link from 'next/link';
 import { after } from 'next/server';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { Metadata } from 'next';
 import type { User } from '@supabase/supabase-js';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
@@ -24,7 +24,12 @@ import {
   type TasteProductId,
 } from '@/lib/payments/catalog';
 import { couponEnvForHost, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
-import { couponRejectMessage } from '@/lib/coupons/discount-coupon';
+import {
+  COUPON_INPUT_COOKIE,
+  couponRejectMessage,
+  isCouponEligiblePackage,
+} from '@/lib/coupons/discount-coupon';
+import { submitCouponInput } from './coupon-action';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
@@ -56,7 +61,7 @@ interface Props {
     from?: string;
     /** 2026-09-03 — 로그인 벽에 튕겼다가 돌아온 표식(login_returned 기록용). */
     returned?: string;
-    /** 2026-09-11 — 할인쿠폰 코드 미리보기(설계 §3-3: 입력은 GET 폼 + 서버 재렌더). */
+    /** 2026-09-11 — 할인쿠폰 코드 미리보기. QR·앱 링크용 — 직접 입력은 입력칸(서버 액션 + 쿠키, PR5)으로 받는다. */
     coupon?: string;
   }>;
 }
@@ -373,6 +378,15 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   }
 
   const requestHeaders = await headers();
+  const cookieStore = await cookies();
+  // 입력칸(서버 액션 — coupon-action.ts)이 둔 쿠키가 먼저다. 액션은 URL 을 바꾸지 않아서, QR(`?coupon=A`)로 들어와 B 를
+  //   넣었는데 URL 의 A 가 이기면 입력이 무시된다.
+  // `?coupon=` 링크는 다른 사이트가 연 것이면 미리보기하지 않는다 — 세션 쿠키가 SameSite=Lax 라 교차 사이트 최상위 GET 에도
+  //   실려, 남의 페이지가 이 사용자의 조회 예산을 대신 태울 수 있다(리뷰 발견 2026-09-11). QR·앱 링크는 'none',
+  //   사이트 안 이동은 'same-origin' 이라 정상 흐름은 그대로다. 입력칸 쿠키는 POST(Origin 검사)로만 생겨 이 가드가 필요 없다.
+  const couponInput =
+    cookieStore.get(COUPON_INPUT_COOKIE)?.value ||
+    (requestHeaders.get('sec-fetch-site') === 'cross-site' ? undefined : coupon);
 
   // 2026-07-07 — 청구·표시 금액 모두 리졸버(카탈로그 위 DB 오버라이드)로 통일.
   // 2026-09-11 할인쿠폰 — prepare 와 **같은 함수**(resolveChargeForUser)로 계산한다. 이 화면의
@@ -382,10 +396,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     ? await resolveChargeForUser(
         paymentPackage,
         viewer,
-        // 다른 사이트가 연 링크(`?coupon=`)로는 미리보기하지 않는다 — 세션 쿠키가 SameSite=Lax 라 교차 사이트 최상위 GET 에도
-        //   실려, 남의 페이지가 이 사용자의 조회 예산을 대신 태울 수 있다(리뷰 발견 2026-09-11). QR·앱 링크·직접 입력은 'none',
-        //   사이트 안 이동은 'same-origin' 이라 정상 흐름은 그대로다. 근본책은 미리보기를 POST 로(PR5).
-        requestHeaders.get('sec-fetch-site') === 'cross-site' ? undefined : coupon,
+        couponInput,
         {
           env: couponEnvForHost(requestHeaders.get('host')),
         }
@@ -417,6 +428,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       : activeMembershipPlan
         ? ('active_membership' as const)
         : null;
+  // 쿠폰 입력칸 — 결제 버튼이 있는 화면에서, 쿠폰이 붙는 상품(설계 §7)이고 적용된 쿠폰이 없을 때만.
+  //   적용 중이면 할인 행이 곧 표시다. 동시에 1개라 살아 있는 쿠폰이 붙어 있으면 새 코드는 어차피 거부된다.
+  const showCouponInput = Boolean(
+    paymentPackage && quote && !quote.couponCode && !funnelBlocked && isCouponEligiblePackage(paymentPackage)
+  );
   // 2026-09-03 — robots 는 이 경로를 disallow 하지만 지키지 않는 크롤러가 남는다.
   //   분모가 봇으로 부풀면 "결제화면까지 왔는데 안 산다"는 결론 자체가 오염된다.
   //   /api/payments/funnel · /api/visit 과 **같은 기준**으로 사람만 센다.
@@ -425,7 +441,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     userAgent: requestHeaders.get('user-agent'),
     deploymentEnv: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
   });
-  if (paymentPackage && !funnelSkipReason) {
+  // 쿠폰 입력칸 제출(서버 액션)도 이 화면을 다시 그린다. 퍼널은 건수로 세므로 그때는 또 남기지 않는다.
+  if (paymentPackage && !funnelSkipReason && !requestHeaders.has('next-action')) {
     after(() => {
       logCheckoutStage({
         stage: 'checkout_viewed',
@@ -517,6 +534,54 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     -{formatWon(quote.discountWon)}
                   </span>
                 </div>
+              ) : null}
+              {/* 2026-09-13 쿠폰 입력칸(PR5) — 접어 둔다. 펼쳐 두면 쿠폰이 없는 사람이 쿠폰을 찾으러 이탈한다.
+                  넣은 코드가 안 붙었거나(아래 사유 문구) 등록된 쿠폰이 죽었으면 펼친 채로 그려 다시 넣게 한다.
+                  입력은 서버 액션(POST)으로 받아 쿠키에 둔다 — 코드가 URL 에 남지 않는다(coupon-action.ts). */}
+              {showCouponInput ? (
+                <details
+                  className="group border-b border-[var(--app-line)] py-2"
+                  open={Boolean(couponInput || quote?.reason)}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14.4px] text-[var(--app-copy)] [&::-webkit-details-marker]:hidden">
+                    <span>쿠폰이 있으신가요?</span>
+                    <span
+                      aria-hidden="true"
+                      className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+                    >
+                      ▾
+                    </span>
+                  </summary>
+                  <form action={submitCouponInput} className="mt-2.5 flex gap-2">
+                    <input
+                      name="coupon"
+                      defaultValue={couponInput ?? ''}
+                      placeholder="ganji-10-0000"
+                      aria-label="쿠폰 코드"
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      maxLength={40}
+                      className="min-w-0 flex-1 rounded-[10px] border border-[var(--app-line)] bg-white px-3 py-2 text-[15px] text-[var(--app-ink)]"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-[10px] bg-[var(--app-ink)] px-4 py-2 text-[14.4px] font-bold text-white"
+                    >
+                      적용
+                    </button>
+                  </form>
+                  {/* 쿠폰은 로그인 계정에 붙는다(B 결정) — 비로그인이면 조회하지 않아 사유 문구가 없다. 안 알리면 "넣었는데 반응 없음"이 된다. */}
+                  {!viewer && couponInput ? (
+                    <p className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
+                      로그인하면 넣은 쿠폰이 적용돼요. 결제하기를 누르면 로그인 화면으로 이동합니다.
+                    </p>
+                  ) : null}
+                  {/* 설계 §7 — 전(재화)으로 여는 언락은 결제를 거치지 않아 쿠폰이 붙지 않는다. 이유가 안 보이면 버그 신고가 된다. */}
+                  <p className="mt-2 text-[12.6px] leading-[1.5] text-[var(--app-copy-muted)]">
+                    쿠폰은 이 화면의 카드·간편결제에만 적용돼요. 전으로 여는 경우엔 적용되지 않아요.
+                  </p>
+                </details>
               ) : null}
               {quote?.reason ? (
                 <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">

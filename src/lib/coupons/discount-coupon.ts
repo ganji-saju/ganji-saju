@@ -143,6 +143,9 @@ export function isCouponEligiblePackage(pkg: { id: string; kind: string }): bool
   return pkg.kind !== 'credits' && !COUPON_EXCLUDED_PACKAGE_IDS.has(pkg.id);
 }
 
+/** 체크아웃 입력칸(PR5)에 넣은 코드를 담는 쿠키 — 서버 액션이 쓰고 체크아웃 렌더가 읽는다. URL 에 코드를 남기지 않으려고 쓴다. */
+export const COUPON_INPUT_COOKIE = 'ganji_coupon_input';
+
 /** CouponRow 를 채우는 select 목록(PostgREST). 행 모양과 한 곳에서 같이 바뀌도록 타입 옆에 둔다. */
 export const COUPON_ROW_COLUMNS =
   'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, released_at, coupon_tiers(percent, max_discount_won, disabled_at)';

@@ -116,3 +116,38 @@ test('체크아웃은 교차 사이트 요청에서 쿠폰 미리보기를 하�
   const src = FILES.find((f) => f.rel === 'src/app/membership/checkout/page.tsx')!.text;
   assert.ok(/sec-fetch-site'\)\s*===\s*'cross-site'\s*\?\s*undefined\s*:\s*coupon/.test(src));
 });
+
+// PR5(2026-09-13) 입력칸 — 코드가 URL 에 실리면 방문기록·GA·리퍼러로 새고, 다른 사이트가 연 링크가 이 사용자의 조회 예산을
+//   태운다(위 가드는 `?coupon=` 링크용). 입력은 서버 액션(POST — Next 가 Origin 을 검사)으로 받아 체크아웃 전용 짧은 쿠키에 둔다.
+const CHECKOUT_PAGE = () => FILES.find((f) => f.rel === 'src/app/membership/checkout/page.tsx')!.text;
+
+test('쿠폰 입력칸은 서버 액션으로 받아 체크아웃 전용 짧은 쿠키에 둔다 — 코드가 URL 에 남지 않는다', () => {
+  const action = FILES.find((f) => f.rel === 'src/app/membership/checkout/coupon-action.ts');
+  assert.ok(action, '입력칸 서버 액션 파일이 있어야 한다');
+  assert.ok(/^'use server';/m.test(action.text));
+  const set = action.text.match(/\.set\(COUPON_INPUT_COOKIE,[\s\S]*?\}\)/)?.[0] ?? '';
+  for (const opt of [/httpOnly:\s*true/, /sameSite:\s*'lax'/, /path:\s*'\/membership\/checkout'/, /maxAge:\s*30 \* 60/]) {
+    assert.ok(opt.test(set), `쿠키 옵션 ${opt} 가 빠졌다`);
+  }
+  assert.ok(!/redirect\(/.test(action.text), '쿠키만 바꾸면 Next 가 같은 화면을 다시 그린다 — 코드를 실은 URL 로 보내지 않는다');
+  assert.ok(/<form action=\{submitCouponInput\}/.test(CHECKOUT_PAGE()), '입력칸은 서버 액션 폼이어야 한다');
+  assert.ok(!/method="get"/i.test(CHECKOUT_PAGE()), 'GET 폼이면 코드가 URL 에 실린다');
+});
+
+// 액션은 URL 을 바꾸지 않는다 — QR 로 들어와(`?coupon=A`) 다른 코드 B 를 입력하면 URL 의 A 가 이기면 안 된다.
+test('체크아웃은 입력칸 쿠키를 ?coupon= 링크보다 먼저 쓴다(링크의 교차 사이트 가드는 그대로)', () => {
+  assert.ok(
+    /cookieStore\.get\(COUPON_INPUT_COOKIE\)\?\.value\s*\|\|\s*\(requestHeaders\.get\('sec-fetch-site'\)\s*===\s*'cross-site'\s*\?\s*undefined\s*:\s*coupon\)/.test(
+      CHECKOUT_PAGE()
+    )
+  );
+});
+
+// payment_funnel_events 는 건수로 집계된다 — 입력칸 제출마다 checkout_viewed 가 늘면 "도달했는데 안 산다"가 부푼다.
+test('입력칸 제출로 다시 그릴 때 checkout_viewed 를 또 남기지 않는다', () => {
+  assert.ok(/if \(paymentPackage && !funnelSkipReason && !requestHeaders\.has\('next-action'\)\)/.test(CHECKOUT_PAGE()));
+});
+
+test('입력칸은 쿠폰이 붙는 상품에만 — 전이 전달물인 상품(설계 §7)엔 띄우지 않는다', () => {
+  assert.ok(/isCouponEligiblePackage\(paymentPackage\)/.test(CHECKOUT_PAGE()));
+});
