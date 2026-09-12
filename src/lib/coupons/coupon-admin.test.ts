@@ -57,6 +57,8 @@ test('pickSerials — 이미 쓴 번호를 빼고, 겹치지 않게, 4자리로 
   const taken = new Set(['0000', '0001', '0003']);
   // 주입한 난수를 쓴다(항상 0 → 남은 것 중 앞에서부터). 기본 난수가 아니라 이 인자를 쓴다는 증거.
   assert.deepEqual(pickSerials(3, taken, () => 0), ['0002', '0004', '0005']);
+  // 항상 마지막을 고르는 난수 → 첫 번호는 9999. 난수를 무시하고 앞에서부터(순차) 주면 여기서 걸린다.
+  assert.deepEqual(pickSerials(1, taken, (max) => max - 1), ['9999']);
   const many = pickSerials(500, taken, randomInt);
   assert.equal(new Set(many).size, 500, '중복 없음');
   assert.ok(many.every((s) => /^\d{4}$/.test(s) && !taken.has(s)));
@@ -476,6 +478,14 @@ test('issueCouponBatch — 접두=등급, 기존 번호 제외(1000행 넘어도
   assert.equal(out.count, 50);
 });
 
+test('issueCouponBatch — 접두는 입력한 등급에서, 기본 난수는 암호학적 난수(순차면 전단 한 장으로 이웃 번호를 추측한다)', async () => {
+  const db = fakeAdminDb();
+  await issueCouponBatch(db.client, { tier: '30', count: 20, batch: '30 전단', expiresAt: '2027-12-31T14:59:59.000Z', append: false }, ACTOR, 'production', { now: NOW });
+  assert.ok(db.t.discount_coupons.every((r) => String(r.code).startsWith('ganji30') && r.tier === '30'));
+  const serials = db.t.discount_coupons.map((r) => Number(String(r.code).slice(7))).sort((a, b) => a - b);
+  assert.notDeepEqual(serials, Array.from({ length: 20 }, (_, i) => i), '0000~0019 순차 = 난수를 안 썼다');
+});
+
 test('issueCouponBatch — 배치명 중복은 "기존 배치에 추가"를 켰을 때만, 없는 배치에 추가는 거부, staging-test 는 반복 허용', async () => {
   const db = fakeAdminDb({ coupons: [CODE_ROW('ganji100001', { batch: '강남' }), CODE_ROW('ganji100002', { batch: STAGING_TEST_BATCH })] });
   const base = { tier: '10' as const, count: 1, expiresAt: '2027-12-31T14:59:59.000Z' };
@@ -590,6 +600,14 @@ test('releaseHeldCoupon — (보유자, bound_at) CAS 로 released_at 만 찍는
   // 풀린 계정은 새 코드를 가질 수 있다(부분 유니크가 released 를 세지 않는다).
   const next = await db.client.from('discount_coupons').update({ bound_user_id: HOLDER, bound_at: NOW.toISOString() }).eq('code', 'ganji100002');
   assert.equal((next as { error: unknown }).error, null);
+});
+
+test('releaseHeldCoupon — 이미 해제된 쿠폰은 다시 찍지 않는다(해제 시각·감사 대조 근거를 덮지 않게)', async () => {
+  const boundAt = '2026-09-13T01:02:03.456789+00:00';
+  const releasedAt = ago(HOUR);
+  const db = fakeAdminDb({ coupons: [CODE_ROW('ganji100001', { bound_user_id: HOLDER, bound_at: boundAt, released_at: releasedAt })] });
+  await expectFail(releaseHeldCoupon(db.client, HOLDER, boundAt, 'production', NOW), /상태가 바뀌/);
+  assert.equal(db.t.discount_coupons[0].released_at, releasedAt);
 });
 
 test('updateCouponTier — updated_at CAS(원문), 감사 old/new, 소급은 released 제외 전 귀속(회수·만료 포함)만', async () => {
@@ -735,6 +753,8 @@ test('읽기 액션은 화면을 다시 그리지 않고, 내보내기는 감사
   for (const name of ['lookupHolderAction', 'exportBatchAction']) assert.ok(!/refresh\(|revalidate/.test(body(name)), name);
   const exp = body('exportBatchAction');
   assert.ok(exp.includes('recordCouponAudit(') && exp.indexOf('recordCouponAudit(') < exp.indexOf('csv:'), '감사 → 반환 순서');
+  assert.ok(!/\.catch\(/.test(exp), '감사 실패를 삼키면 기록 없이 코드가 나간다');
+  assert.equal((exp.match(/\btry\s*\{/g) ?? []).length, 1, '감사 호출을 안쪽 try 로 감싸 삼키지 않는다(바깥 try 하나만)');
   assert.ok(!/codes/.test(body('issueBatchAction')), '발급 응답에 코드 없음 — 코드는 내보내기로만');
 });
 
