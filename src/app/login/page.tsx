@@ -20,6 +20,7 @@ import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { getOAuthLoginError } from '@/lib/auth/oauth-login-error';
+import { passwordRejectionMessage } from '@/lib/auth/password-error';
 import { markAuthEvent } from '@/components/analytics/auth-event-tracker';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
@@ -849,9 +850,10 @@ function LoginContent({
 
     if (error) {
       setErrorMessage(
-        error.message.toLowerCase().includes('session')
-          ? '재설정 링크가 만료됐습니다. 아이디/비밀번호 찾기에서 링크를 다시 받아 주세요.'
-          : error.message
+        passwordRejectionMessage(error) ??
+          (error.message.toLowerCase().includes('session')
+            ? '재설정 링크가 만료됐습니다. 아이디/비밀번호 찾기에서 링크를 다시 받아 주세요.'
+            : error.message)
       );
       return;
     }
