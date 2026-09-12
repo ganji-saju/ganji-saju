@@ -15,14 +15,24 @@ PR6(발급)보다 **먼저** 들어가야 하는 관문. 마이그레이션 없�
 - `src/lib/payments/coupon-order-guard.ts` — `couponOrderVerdict`(순수): 죽음 판정은 `couponDeadReason` **그대로**(released·등급 회수 포함) +
   `bound_user_id === order.userId`. `checkCouponOrderBeforeApproval`: **쿠폰이 붙은 + 아직 승인 전(prepared·in_progress)** 주문만 조회 —
   일반 결제 회귀 0, 이미 PG 승인이 난 주문은 막지 않는다(막으면 돈은 나갔는데 지급이 안 된다). 조회 실패는 거부(실패-닫힘).
-- 호출: 토스 `confirm`(결제 키 연결·`confirmPayment` 앞) · 나이스페이 `return`(`approveNicepayPayment` 앞). 거부 시 주문 `canceled`(쿠폰 붙잡음이 풀린다)
-  + 퍼널 `confirm_failed/coupon_rejected` + "결제된 금액은 없습니다" 안내(토스 409 · 나이스 실패 페이지). PG 는 승인 요청이 없으면 청구하지 않는다.
+- 관문 `checkBeforePgApproval` 을 **PG 승인 호출 3곳 전부**에: 토스 `confirm`(결제 키 연결 앞) · 나이스페이 `return`(승인 API 앞) ·
+  정산 `settlePaymentOrderFromToss`(토스 IN_PROGRESS 를 직접 승인하는 세 번째 경로 — 키 연결 앞).
+- 🔴 독립 리뷰(Critical 1·Medium 3) 반영 — 처음엔 거부하며 주문을 `canceled` 로 닫았다:
+  - 같은 주문 재진입(결제 성공 화면 새로고침)이 검사 대상 밖이 되어 승인이 나가고, 원장은 canceled 를 확정 못 해 **돈만 빠질** 수 있었다
+  - 조건 없는 취소가 동시 요청에서 이미 지급된 주문을 덮어쓸 수 있었다
+  - 토스 `in_progress`(키 연결 후)는 승인 요청이 나갔을 수 있는 상태인데 "청구 없음"으로 닫을 수 있었다
+  - 정산 크론 경로에 관문이 없었다
+  → **거부해도 상태를 바꾸지 않는다**(재진입마다 같은 검사) · 결제 키가 붙은 뒤·돈이 움직인 상태는 쿠폰 검사를 건너뛴다(첫 요청 전에 이미 통과) ·
+    `payment_failed` 재시도는 검사한다 · 조회 실패는 503(재시도 가능).
+- 닫힌 주문(`canceled`·`expired`·`refunded`)은 **쿠폰과 무관하게** 승인하지 않는다 — 원장(`markPaymentOrderConfirmed`)이 이 상태의 확정을 받지 않아
+  승인하면 청구만 되고 지급이 안 된다(인증을 늦게 마친 만료 주문 — 기존 구멍).
+- 안내 "청구된 금액은 없습니다" 근거: 토스 IN_PROGRESS 는 미청구·10분 뒤 만료(공식 문서), 나이스 "승인 API를 호출하지 않는 경우 결제(승인)이 발생되지 않습니다"(공식 매뉴얼).
 - `PaymentOrder.couponCode` 를 읽어 오도록 매퍼에 추가(저장만 하고 안 읽고 있었다). 쿠폰 행 select 목록은 `CouponRow` 옆(`COUPON_ROW_COLUMNS`)으로 옮겨 공유.
 
 ### 검증
 
 유닛 전체·tsc 통과. 가드 테스트(판정 7경우 · 승인된 주문/쿠폰 없는 주문은 조회조차 안 함 · 조회 실패 거부 · 두 경로가 PG 승인보다 먼저 호출하고 결과를 무시하지 않음).
-뮤테이션 6/6 red(토스 호출 제거 · 나이스 호출 제거 · 승인된 주문도 검사 · 조회 실패 통과 · 귀속자 확인 생략 · released 무시).
+뮤테이션: 1차 6/6 · 리뷰 반영 후 7/7 red(정산 관문 제거 · 거부 시 canceled · 토스가 결제 키 무시 · 닫힌 주문 차단 제거 · 실패 재시도 미검사 · 조회 실패 통과 · 나이스 관문 무력화). 호출부 목록 테스트가 새 승인 경로 누락을 잡는다.
 
 ## 2026-09-12 — 유출 비밀번호 차단(HIBP) 켬 → 비밀번호 거부 안내를 한국어로
 

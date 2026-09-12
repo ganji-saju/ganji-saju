@@ -14,6 +14,7 @@ import { fulfillPaymentOrder, type PaymentFulfillmentResult } from '@/lib/paymen
 // 2026-07-04 admin 지표 감사 — 웹훅/정산 경유 fulfillment 가 퍼널에 전무해, confirm 라우트를
 // 못 탄 성공 건(결제 후 브라우저 이탈)이 원장에는 있는데 confirm_success 는 0 이던 괴리 수정.
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
+import { checkBeforePgApproval } from '@/lib/payments/coupon-order-guard';
 import { createClient } from '@/lib/supabase/server';
 
 export type PaymentReconciliationResult =
@@ -57,6 +58,14 @@ export async function settlePaymentOrderFromToss(input: {
 
   if (input.order.status === 'fulfilling') {
     return { status: 'pending', reason: 'fulfillment_in_progress' };
+  }
+
+  // 세 번째 승인 경로 — 사용자가 인증만 마치고 창을 닫으면(토스 IN_PROGRESS) 정산·웹훅이 아래에서 직접 승인한다.
+  //   confirm·나이스 return 과 같은 관문을 **결제 키를 붙이기 전에** 돌린다(붙인 뒤면 confirm 이 "승인 요청이 나갔을 수 있다"로
+  //   보고 쿠폰 검사를 건너뛴다). 토스 IN_PROGRESS 는 아직 승인 전이다. 막히면 상태를 건드리지 않고 두면 토스가 만료시킨다.
+  if (input.payment.status === 'IN_PROGRESS') {
+    const approvalBlock = await checkBeforePgApproval(input.order, { approvalMayHaveBeenRequested: false });
+    if (approvalBlock) return { status: 'pending', reason: `approval_blocked:${approvalBlock}` };
   }
 
   let order = await attachPaymentKeyToOrder({

@@ -16,7 +16,7 @@ import { getPackage, isTasteProductPackage, type PaymentPackage } from '@/lib/pa
 // 2026-06-27 — buildTasteProductHref 가 못 잡는 단품(money-pattern/work-flow 등)을 '구매상품 보기'
 //   위치로 보내 /membership/complete 누수 차단(결제후 위치 == 이미 구매 시 위치 불변식).
 import { buildPurchasedProductHref } from '@/lib/payments/product-scope';
-import { checkCouponOrderBeforeApproval, couponOrderRejectMessage } from '@/lib/payments/coupon-order-guard';
+import { approvalBlockMessage, checkBeforePgApproval } from '@/lib/payments/coupon-order-guard';
 import {
   attachPaymentKeyToOrder,
   getPaymentOrderByOrderId,
@@ -237,21 +237,20 @@ export async function POST(req: NextRequest) {
     return failRedirect('이미 다른 결제가 연결된 주문입니다.');
   }
 
-  // 할인쿠폰 PR4 — 할인 주문은 승인 직전에 쿠폰이 아직 살아 있고 이 주문 주인 것인지 다시 본다(설계 §5-3).
-  //   승인 API 를 부르기 전이라 나이스페이는 청구하지 않는다(인증만 된 결제는 승인 요청이 없으면 결제되지 않는다).
-  const couponReject = await checkCouponOrderBeforeApproval(order);
-  if (couponReject) {
-    await markPaymentOrderFailed({ orderId, status: 'canceled', error: `coupon_rejected:${couponReject}`, source: 'nicepay-return' });
+  // PG 승인 직전 관문(coupon-order-guard.ts) — 닫힌 주문·죽은 쿠폰의 할인 주문은 승인하지 않는다(쿠폰 PR4 · 설계 §5-3).
+  //   나이스페이는 결제 키를 승인 **뒤에** 붙이므로 키가 있으면 이미 승인된 주문이다. 막아도 주문 상태는 그대로 둔다.
+  const approvalBlock = await checkBeforePgApproval(order, { approvalMayHaveBeenRequested: Boolean(order.paymentKey) });
+  if (approvalBlock) {
     await logFunnel({
       stage: 'confirm_failed',
       userId: order.userId,
       packageId: order.packageId,
       amount,
       orderId,
-      reason: 'coupon_rejected',
-      metadata: { provider: 'nicepay', couponReason: couponReject },
+      reason: 'approval_blocked',
+      metadata: { provider: 'nicepay', block: approvalBlock },
     });
-    return failRedirect(couponOrderRejectMessage(couponReject), readRetryPath(order.metadata));
+    return failRedirect(approvalBlockMessage(approvalBlock), readRetryPath(order.metadata));
   }
 
   // 4) 서버 승인 — POST /v1/payments/{tid}
