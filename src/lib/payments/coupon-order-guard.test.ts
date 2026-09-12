@@ -37,6 +37,23 @@ test('couponOrderVerdict — 살아 있고 이 주문 주인에게 귀속된 쿠
   assert.equal(couponOrderVerdict(order, null, NOW), 'coupon_missing');
 });
 
+// PR6(2026-09-13) — 관리자 요율 소급. 소급으로 스냅샷을 내린 뒤에도 옛 prepared 주문이 옛 할인가로 승인되면 브레이크가 샌다
+//   (설계 §5-3 "요율 인하 이후에도 옛 주문이 옛 할인가로 승인된다"). 주문 할인 > 지금 스냅샷 기준 할인일 때만 거부한다.
+test('couponOrderVerdict — 소급 인하 뒤 옛 할인가 주문은 거부, 인상·비소급 변경·옛 주문은 통과', () => {
+  const discounted = { ...order, listAmount: 3_300, discountWon: 330 }; // 주문 당시 10%
+  assert.equal(couponOrderVerdict(discounted, row(), NOW), null, '그대로');
+  assert.equal(couponOrderVerdict(discounted, row({ bound_percent: 5 }), NOW), 'coupon_rate_changed', '소급 인하');
+  assert.equal(couponOrderVerdict(discounted, row({ bound_max_discount_won: 100 }), NOW), 'coupon_rate_changed', '상한 소급');
+  assert.equal(couponOrderVerdict(discounted, row({ bound_percent: 20 }), NOW), null, '인상은 고객에게 불리하지 않다');
+  assert.equal(
+    couponOrderVerdict(discounted, row({ coupon_tiers: { percent: 5, max_discount_won: null, disabled_at: null } }), NOW),
+    null,
+    '비소급 인하 — 기존 귀속자는 스냅샷을 쓴다(설계 §2 약속)'
+  );
+  assert.equal(couponOrderVerdict({ ...order, listAmount: null, discountWon: 0 }, row({ bound_percent: 5 }), NOW), null, '정가 기록 없는 주문은 근거가 없다');
+  assert.match(approvalBlockMessage('coupon_rate_changed'), /할인율이 바뀌어[\s\S]*이번 요청으로 청구된 금액은 없습니다/);
+});
+
 /** 가짜 서비스 — 테이블·조건이 맞을 때만 결과를 준다(코드를 잘못 넣는 변형도 걸리게). */
 function fakeService(result: { data: unknown; error: { message: string } | null }) {
   let queries = 0;

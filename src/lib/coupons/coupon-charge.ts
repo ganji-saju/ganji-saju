@@ -146,7 +146,7 @@ async function spendLookupBudget(
   //   동시 첫 요청 두 개가 둘 다 과금되는 건 허용한다(과소 과금보다 과다 과금 쪽이 안전하다).
   await consume(seen, 1);
   // 풀이 반·전부 찼을 때 1회씩 알린다(각 값은 하루에 한 요청만 받는다). 운영 대응: 정상 급증이면 노브 상향·그날 행 삭제,
-  //   공격이면 배치 disabled_at(080 덕에 정상 고객은 재발행 코드를 쓸 수 있다).
+  //   공격이면 /admin/coupons 에서 배치 회수(080 덕에 정상 고객은 재발행 코드를 쓸 수 있다).
   //   실제 프로덕션 배포에서만 보낸다 — staging·로컬·테스트가 운영 메일함을 채우지 않게.
   const isProductionDeploy = process.env.VERCEL_ENV === 'production';
   if (env === 'production' && isProductionDeploy && (used === Math.ceil(limit / 2) || used === limit)) {
@@ -158,9 +158,9 @@ async function spendLookupBudget(
         used === limit
           ? '지금부터 이 등급 고객의 새 코드 입력은 내일 0시까지 막힙니다(등록된 쿠폰·결제는 영향 없음).'
           : '이 속도면 오늘 안에 소진될 수 있습니다.',
-        '정상 급증이면 COUPON_POOL_* env 를 올려 재배포하거나 rate_counters 의 오늘 행을 지워 리필하세요. 공격이면 해당 배치를 disabled_at 으로 끄고 재발행하세요.',
+        '정상 급증이면 COUPON_POOL_* env 를 올려 재배포하거나 rate_counters 의 오늘 행을 지워 리필하세요. 공격이면 /admin/coupons 에서 해당 배치를 회수하고 새로 발급하세요.',
       ],
-      url: '/admin',
+      url: '/admin/coupons',
     }).catch(() => undefined));
   }
   return null;

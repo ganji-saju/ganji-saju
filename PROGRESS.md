@@ -1,5 +1,30 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-13 — 할인쿠폰 PR6: 관리자 화면 `/admin/coupons` (+ migration 085)
+
+PR5(#815) 위에 쌓은 브랜치 — 두 PR 을 **같이** 머지한다(사용자 결정: 발급 쿠폰 0장인 채로 입력칸만 먼저 내보내지 않는다).
+⚠️ **머지 전 사용자가 SQL Editor 로 085 적용**(적용 전 확인 쿼리는 파일 머리말).
+
+### 사용자 결정 (재논의 금지 — 설계 문서 §15)
+- [귀속 해제] = 계정을 푼다(보유자가 차지한 쿠폰에 `released_at`). 선점 피해자는 새 코드 1장 발급으로 구제.
+- 코드 목록은 언제든 재다운로드(super_admin, 다운로드마다 감사) · 범위 = 요율·상한·등급 on/off·발급·배치 현황/회수 + 요율 소급·만료 일괄 변경·회수 되살리기 · 085 추가.
+
+### 방식
+- 조사 워크플로(4렌즈) → 계획 → **적대적 설계 검토 3렌즈**(약 30건 지적) 반영 → TDD. 계획 정본은 설계 문서 §15.
+- `src/lib/coupons/coupon-admin.ts` — 순수 판정(발급·요율·만료 검증, 무작위 번호, 상태 분류, 배치·등급 집계, CSV, 마스킹) + service 주입 DB 함수.
+- `src/app/admin/coupons/{page,actions,coupon-admin-client}` — 서버 액션(Origin 검사 내장, 라우트 핸들러엔 CSRF 검사가 없다), 모든 export 첫 줄 super_admin 재확인.
+- 코드 평문은 CSV 내보내기 한 경로 · 감사 먼저(실패 시 미반환) · 화면·발급 응답·감사 meta·오류 문구엔 없음.
+- 환경 가드: 운영=전부, staging·로컬=`staging-test` 행만(쿼리 필터 이중), preview=거부, 로컬 Host 위조(VERCEL_ENV≠production)=거부, 요율은 운영만.
+- 요율 `updated_at` CAS · 소급=released 제외 전 귀속 · **승인 관문에 `coupon_rate_changed`**(소급 인하 뒤 옛 할인 주문 거부 — PaymentOrder 에 listAmount·discountWon 매핑).
+- 해제 `(보유자, bound_at)` CAS · 회수=살아 있는 행에 이번 스탬프 · 되살리기=그 스탬프 원문만 · keyset 페이지네이션(정렬 없는 페이지 금지).
+- 부수 수정: 탈퇴 2경로에서 삭제 **전** `releaseCouponsOfUser`(주문 cascade 로 결제한 쿠폰이 24h 회수로 남에게 가던 구멍) · 운영 메일 링크 `/admin/coupons`.
+- 085: 접두=등급 CHECK + 쿠폰·감사 테이블 anon·authenticated 권한 회수(전부 service 전용 확인).
+- 교훈: 편집 도구가 `\u` 이스케이프를 원시 문자로 저장해 `coupon-admin.ts` 가 NUL 바이트로 **git 바이너리**가 됐다 → `\p{Cc}` 로 교체 + NUL 금지 가드.
+
+### 검증
+- 유닛 전체 통과(쿠폰 관리 테스트 30여 개 — 가짜 DB 가 필터·부분 유니크·23505·23514 를 흉내, 정렬 없는 페이지 throw, 오류 문구에 코드 평문 없음 단언) · tsc(`.next/types` 잔재 제외) · `npm run build` 통과.
+- ⚠️ 관리 화면을 브라우저로는 못 봤다(로컬에 super_admin 세션이 없고 로그인은 대리 불가) — staging 에서 staging-test 배치로 발급→체크아웃 적용(PR5)→회수·되살리기·해제를 확인할 것.
+
 ## 2026-09-13 — 할인쿠폰 PR5: 체크아웃 쿠폰 입력칸
 
 앞 섹션의 PR4(#814)는 2026-09-13 머지·프로덕션 배포 완료(`a90ebb0a`, main=staging). 이번 PR 도 마이그레이션 없음.

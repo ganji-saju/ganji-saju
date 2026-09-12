@@ -14,7 +14,7 @@
 //   나이스페이: "승인 API를 호출하지 않는 경우 결제(승인)이 발생되지 않습니다"(공식 매뉴얼 Server 승인 모델).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
-import { COUPON_ROW_COLUMNS, couponDeadReason, type CouponRow } from '@/lib/coupons/discount-coupon';
+import { applyCouponDiscount, COUPON_ROW_COLUMNS, couponDeadReason, type CouponRow } from '@/lib/coupons/discount-coupon';
 import type { PaymentOrder } from './order-ledger';
 
 export type CouponOrderRejectReason =
@@ -22,11 +22,13 @@ export type CouponOrderRejectReason =
   | 'coupon_missing'
   | 'coupon_disabled'
   | 'coupon_expired'
-  | 'coupon_not_bound';
+  | 'coupon_not_bound'
+  /** 관리자가 요율·상한을 **소급 인하**한 뒤의 옛 할인 주문(PR6). */
+  | 'coupon_rate_changed';
 
 export type ApprovalBlock = 'order_closed' | CouponOrderRejectReason;
 
-type GuardOrder = Pick<PaymentOrder, 'userId' | 'couponCode' | 'status'>;
+type GuardOrder = Pick<PaymentOrder, 'userId' | 'couponCode' | 'status'> & Partial<Pick<PaymentOrder, 'listAmount' | 'discountWon'>>;
 
 /**
  * 순수 판정 — 이 할인 주문의 쿠폰이 지금도 유효한가. 거부 사유 또는 null.
@@ -34,7 +36,7 @@ type GuardOrder = Pick<PaymentOrder, 'userId' | 'couponCode' | 'status'>;
  * (§11 E)가 옛 주문에서 깨진다). 귀속자가 바뀌었으면(24h 회수로 남에게 넘어감) 이 주문의 할인은 무효다.
  */
 export function couponOrderVerdict(
-  order: Pick<GuardOrder, 'userId' | 'couponCode'>,
+  order: Omit<GuardOrder, 'status'>,
   row: CouponRow | null,
   now: Date
 ): CouponOrderRejectReason | null {
@@ -43,6 +45,14 @@ export function couponOrderVerdict(
   const dead = couponDeadReason(row, now);
   if (dead) return dead === 'expired' ? 'coupon_expired' : 'coupon_disabled';
   if (row.bound_user_id !== order.userId) return 'coupon_not_bound';
+  // PR6 요율 소급 — 주문의 할인이 **지금 스냅샷**으로 계산한 할인보다 크면 거부한다. 스냅샷 선택은 체크아웃(evaluateCouponRow
+  //   self)과 같다. 비소급 인하는 스냅샷이 그대로라 걸리지 않고, 인상은 고객에게 불리하지 않아 통과한다.
+  if (order.listAmount != null && order.discountWon) {
+    const tier = row.coupon_tiers!; // couponDeadReason 이 null 을 걸렀다
+    const percent = row.bound_percent ?? tier.percent;
+    const cap = row.bound_percent == null ? tier.max_discount_won : row.bound_max_discount_won;
+    if (order.discountWon > applyCouponDiscount(order.listAmount, percent, cap).discountWon) return 'coupon_rate_changed';
+  }
   return null;
 }
 
@@ -86,6 +96,9 @@ export function approvalBlockMessage(block: ApprovalBlock): string {
   }
   if (block === 'coupon_lookup_failed') {
     return '쿠폰을 확인하지 못해 결제를 멈췄어요. 잠시 뒤 다시 시도해 주세요. 이번 요청으로 청구된 금액은 없습니다.';
+  }
+  if (block === 'coupon_rate_changed') {
+    return '쿠폰 할인율이 바뀌어 이 할인가로는 결제하지 않았어요. 결제 화면을 다시 열면 지금 금액으로 결제할 수 있어요. 이번 요청으로 청구된 금액은 없습니다.';
   }
   return '쿠폰 사용 기간이 끝났거나 회수되어 이 할인가로는 결제하지 않았어요. 결제 화면을 다시 열면 지금 금액으로 결제할 수 있어요. 이번 요청으로 청구된 금액은 없습니다.';
 }
