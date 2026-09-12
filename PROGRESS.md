@@ -1,5 +1,15 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-12 — 유출 비밀번호 차단(HIBP) 켬 → 비밀번호 거부 안내를 한국어로
+
+사용자가 Supabase 대시보드에서 "Prevent use of leaked passwords" 를 켰다(보안 권고에서 사라진 것 확인). 이제 가입·재설정 때 유출된 적 있는
+비밀번호는 거부되는데, Supabase 는 사유를 영어 문장("Password is known to be weak…")으로 줘서 화면에 그대로 떴다.
+
+- `src/lib/auth/password-error.ts` `passwordRejectionMessage` — 오류 코드(`weak_password`·`same_password`) + 문장으로 판별해 한국어 안내. 비밀번호 사유가 아니면 null.
+- 세 곳 연결: 가입 라우트(400 + 한국어) · `/login` 재설정 모드 · `/reset-password`.
+- `/reset-password` 의 틀린 안내 제거: 'weak'·'password' 가 들어간 오류를 전부 "8자 이상으로 다시 입력"이라고 해서, 8자가 넘는 유출 비밀번호나 이전과 같은 비밀번호도 "8자 이상"으로 안내했다.
+- 테스트: 한국어 안내(영어 섞임 금지) + 세 곳이 모두 이 함수를 쓰는지. 뮤테이션 2/2 red. 카카오·구글 로그인과 연결 가드의 무작위 비밀번호는 영향 없음.
+
 ## 2026-09-12 — 남은 Supabase 보안 권고 정리 (migration 084) + 🔴 결제 내역에 멤버십 결제가 안 보이던 버그
 
 083 뒤 `get_advisors(security)` 에 남은 4종을 처리했다.

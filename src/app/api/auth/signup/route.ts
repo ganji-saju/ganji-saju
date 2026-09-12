@@ -9,6 +9,7 @@ import {
 import { upsertProfile, type UserProfile } from '@/lib/profile';
 // 2026-07-03 — 카카오 개인정보 동의항목 심사 대응: 이름·휴대폰 필수 수집.
 import { normalizeKoreanMobile } from '@/lib/kakao/phone';
+import { passwordRejectionMessage } from '@/lib/auth/password-error';
 
 type SignupGender = 'male' | 'female';
 
@@ -155,6 +156,9 @@ export async function POST(req: NextRequest) {
 
   if (error || !data.user) {
     const message = error?.message ?? '회원가입을 완료하지 못했습니다.';
+    // 유출 비밀번호 차단(HIBP) 등 비밀번호 거부는 영어 원문 대신 한국어로(사용자가 고칠 수 있는 입력 오류라 400).
+    const rejected = passwordRejectionMessage(error);
+    if (rejected) return NextResponse.json({ error: rejected }, { status: 400 });
     return NextResponse.json(
       {
         error: isExistingUserError(message)

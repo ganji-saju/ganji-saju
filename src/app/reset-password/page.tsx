@@ -8,6 +8,7 @@ import { Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LegalLinks from '@/components/legal-links';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+import { passwordRejectionMessage } from '@/lib/auth/password-error';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
@@ -30,9 +31,8 @@ function getResetError(message?: string) {
   if (normalized.includes('session') || normalized.includes('expired')) {
     return '재설정 링크가 만료됐습니다. 아이디/비밀번호 찾기에서 링크를 다시 받아 주세요.';
   }
-  if (normalized.includes('weak') || normalized.includes('password')) {
-    return '새 비밀번호는 8자 이상으로 다시 입력해 주세요.';
-  }
+  // 2026-09-12 — 예전엔 'weak'·'password' 가 들어간 오류를 전부 "8자 이상"으로 안내했다. 8자가 넘는 유출 비밀번호
+  //   (HIBP 거부)나 이전과 같은 비밀번호도 "8자 이상"이라고 해서 사용자가 이유를 알 수 없었다 → passwordRejectionMessage 가 먼저 가른다.
   return message;
 }
 
@@ -188,7 +188,7 @@ function ResetPasswordContent() {
     setIsSubmitting(false);
 
     if (error) {
-      setErrorMessage(getResetError(error.message));
+      setErrorMessage(passwordRejectionMessage(error) ?? getResetError(error.message));
       return;
     }
 
