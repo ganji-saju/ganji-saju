@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import {
   createClient,
+  createServiceClient,
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
@@ -395,6 +396,8 @@ export async function getPaymentHistory(
   }
 
   const { supabase, user } = await requireAccount(redirectPath);
+  // payment_orders 는 RLS 켜짐·정책 없음(service 전용 원장) — 세션 클라이언트로 읽으면 오류 없이 0행이다.
+  const service = await createServiceClient();
 
   const [entitlementsResponse, cashTransactionsResponse, ordersResponse] = await Promise.all([
     supabase
@@ -412,7 +415,9 @@ export async function getPaymentHistory(
       .order('created_at', { ascending: false }),
     // 2026-07-04 — 코인 sunset 이후 멤버십 결제는 credit_transactions 에 안 남아
     // 빌링 내역에 안 보이던 문제: 완료 주문 원장 보강(buildPaymentHistory 가 orderId dedupe).
-    supabase
+    // 🔴 2026-09-12 — 이 보강은 세션 클라이언트로 읽어 **한 번도 동작하지 않았다**(0행, 오류 없음 — 보안 권고 점검 중 발견).
+    //   service 로 읽되 user.id(위 getUser 로 확인된 값)로만 거른다.
+    service
       .from('payment_orders')
       .select('id, order_id, package_id, amount, status, created_at')
       .eq('user_id', user.id)
@@ -422,6 +427,7 @@ export async function getPaymentHistory(
 
   assertAccountQueryOk(entitlementsResponse.error, '상품 결제 내역');
   assertAccountQueryOk(cashTransactionsResponse.error, '전·멤버십 결제 내역');
+  assertAccountQueryOk(ordersResponse.error, '결제 주문 내역');
 
   const productEntitlements = (entitlementsResponse.data ?? []).map((row) => ({
     id: row.id,

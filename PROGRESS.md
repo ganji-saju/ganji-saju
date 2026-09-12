@@ -1,5 +1,28 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-12 — 남은 Supabase 보안 권고 정리 (migration 084) + 🔴 결제 내역에 멤버십 결제가 안 보이던 버그
+
+083 뒤 `get_advisors(security)` 에 남은 4종을 처리했다.
+
+| 권고 | 처리 |
+|---|---|
+| `function_search_path_mutable` 22개(WARN) | 084: `search_path = public, pg_temp` 고정. 22개 모두 확장 함수를 안 써서(pg_proc 확인) 해석이 기존과 같다 — 056·081 과 같은 값 + 임시 스키마 차단 |
+| `security_definer_view` `v_classic_evidence_flat`(ERROR) | 084: `security_invoker = true` + anon·authenticated 직접 조회 회수. 앱은 뷰를 직접 안 읽고 `search_classic_evidence`(소유자 postgres=BYPASSRLS)가 안에서 읽어 검색은 그대로 |
+| `auth_leaked_password_protection`(WARN) | 대시보드 토글이라 사용자 조작(Authentication → 비밀번호 설정). ⚠️ 유료 플랜 전용일 수 있음 |
+| `rls_enabled_no_policy` 38개(INFO) | 설계대로(service 전용 원장·집계). 앱 호출부를 전수 확인하다 **버그 1건 발견** ↓ |
+
+### 🔴 결제 내역(/my/billing)에 멤버십 결제가 한 번도 안 보였다
+
+`getPaymentHistory` 가 `payment_orders` 를 **세션 클라이언트**(`requireAccount` → `createClient`)로 읽었다. payment_orders 는 RLS 켜짐·정책 없음이라
+**오류 없이 0행** — 2026-07-04 에 넣은 "코인 sunset 뒤 멤버십 결제 보강"이 두 달간 한 번도 동작하지 않았다(오류 검사도 없어 조용히 비었다).
+→ 주문 원장만 service 로 읽고 `user.id`(getUser 로 확인된 값)로 거른다 + 오류 검사 추가. 가드 `billing-orders-client.test.ts`(되돌리면 red 확인).
+효과: 중복 제거(`buildPaymentHistory` 주문번호 dedupe, 테스트 있음)와 "완료 확인 안 된 주문은 금액을 추측하지 않는다"(2026-09-01) 규칙이
+관리자 화면과 같게 사용자 화면에도 적용된다. 관리자 쪽 호출부는 전부 service 로 확인.
+
+### 검증
+
+유닛 전체·tsc 통과 · 가드 뮤테이션 red. 084 는 사용자가 SQL Editor 로 적용(MCP apply_migration 은 자동 모드가 막음) → 적용 후 권고 재확인·고전 검색 RPC 동작 확인.
+
 ## 2026-09-12 — 🔴 돈에 닿는 DB 함수를 공개 anon 키로 누구나 부를 수 있었다 (migration 083) + 운영 도구 연동
 
 ### 발견 경로
