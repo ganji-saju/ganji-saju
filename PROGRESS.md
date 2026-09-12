@@ -1,5 +1,29 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-12 — 할인쿠폰 PR4: 할인 주문의 PG 승인 **직전** 재검증 (설계 §5-3)
+
+PR6(발급)보다 **먼저** 들어가야 하는 관문. 마이그레이션 없음.
+
+### 왜
+
+`payment_orders.expires_at` 을 보는 곳은 정산 크론뿐이라, 할인가가 박힌 `prepared` 주문은 결제창을 다시 열면 **무기한 승인 가능**했다.
+캠페인 종료·배치 회수(`disabled_at`)·등급 회수·새 쿠폰으로 옮김(`released_at`)·24h 회수로 남에게 넘어간 뒤에도 옛 주문이 옛 할인가로 승인된다.
+금액 대조 때문에 정가 재승인은 불가 → **승인 거부**. `fulfillPaymentOrder` 는 승인 이후라 늦다.
+
+### 방식
+
+- `src/lib/payments/coupon-order-guard.ts` — `couponOrderVerdict`(순수): 죽음 판정은 `couponDeadReason` **그대로**(released·등급 회수 포함) +
+  `bound_user_id === order.userId`. `checkCouponOrderBeforeApproval`: **쿠폰이 붙은 + 아직 승인 전(prepared·in_progress)** 주문만 조회 —
+  일반 결제 회귀 0, 이미 PG 승인이 난 주문은 막지 않는다(막으면 돈은 나갔는데 지급이 안 된다). 조회 실패는 거부(실패-닫힘).
+- 호출: 토스 `confirm`(결제 키 연결·`confirmPayment` 앞) · 나이스페이 `return`(`approveNicepayPayment` 앞). 거부 시 주문 `canceled`(쿠폰 붙잡음이 풀린다)
+  + 퍼널 `confirm_failed/coupon_rejected` + "결제된 금액은 없습니다" 안내(토스 409 · 나이스 실패 페이지). PG 는 승인 요청이 없으면 청구하지 않는다.
+- `PaymentOrder.couponCode` 를 읽어 오도록 매퍼에 추가(저장만 하고 안 읽고 있었다). 쿠폰 행 select 목록은 `CouponRow` 옆(`COUPON_ROW_COLUMNS`)으로 옮겨 공유.
+
+### 검증
+
+유닛 전체·tsc 통과. 가드 테스트(판정 7경우 · 승인된 주문/쿠폰 없는 주문은 조회조차 안 함 · 조회 실패 거부 · 두 경로가 PG 승인보다 먼저 호출하고 결과를 무시하지 않음).
+뮤테이션 6/6 red(토스 호출 제거 · 나이스 호출 제거 · 승인된 주문도 검사 · 조회 실패 통과 · 귀속자 확인 생략 · released 무시).
+
 ## 2026-09-12 — 유출 비밀번호 차단(HIBP) 켬 → 비밀번호 거부 안내를 한국어로
 
 사용자가 Supabase 대시보드에서 "Prevent use of leaked passwords" 를 켰다(보안 권고에서 사라진 것 확인). 이제 가입·재설정 때 유출된 적 있는

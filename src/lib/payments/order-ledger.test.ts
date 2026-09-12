@@ -30,6 +30,7 @@ function baseOrder(overrides: Partial<PaymentOrder> = {}): PaymentOrder {
     acceptedPolicyKinds: ['terms', 'privacy', 'refund', 'coin'],
     recordedPolicyVersionIds: [],
     metadata: {},
+    couponCode: null,
     lastError: null,
     fulfillmentAttempts: 0,
     reconciliationAttempts: 0,

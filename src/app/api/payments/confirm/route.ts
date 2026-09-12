@@ -14,6 +14,7 @@ import {
   buildAlreadyFulfilledResult,
   fulfillPaymentOrder,
 } from '@/lib/payments/fulfillment';
+import { checkCouponOrderBeforeApproval, couponOrderRejectMessage } from '@/lib/payments/coupon-order-guard';
 // 2026-05-16 PR (B1) — 결제 funnel 단계 기록.
 import { formatPgFailReason, logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 
@@ -86,6 +87,23 @@ export async function POST(req: NextRequest) {
       reason: 'payment_key_mismatch',
     });
     return NextResponse.json({ error: '이미 다른 결제 키가 연결된 주문입니다.' }, { status: 400 });
+  }
+
+  // 할인쿠폰 PR4 — 할인 주문은 승인 직전에 쿠폰이 아직 살아 있고 이 사람 것인지 다시 본다(설계 §5-3).
+  //   결제 키를 붙이기 전에 막아 PG 승인이 나가지 않게 한다(토스 인증만 된 결제는 승인 안 하면 청구되지 않는다).
+  const couponReject = await checkCouponOrderBeforeApproval(order);
+  if (couponReject) {
+    await markPaymentOrderFailed({ orderId, status: 'canceled', error: `coupon_rejected:${couponReject}`, source: 'confirm' });
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'coupon_rejected',
+      metadata: { couponReason: couponReject },
+    });
+    return NextResponse.json({ error: couponOrderRejectMessage(couponReject) }, { status: 409 });
   }
 
   order = await attachPaymentKeyToOrder({ order, paymentKey, source: 'confirm' });

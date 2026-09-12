@@ -143,6 +143,10 @@ export function isCouponEligiblePackage(pkg: { id: string; kind: string }): bool
   return pkg.kind !== 'credits' && !COUPON_EXCLUDED_PACKAGE_IDS.has(pkg.id);
 }
 
+/** CouponRow 를 채우는 select 목록(PostgREST). 행 모양과 한 곳에서 같이 바뀌도록 타입 옆에 둔다. */
+export const COUPON_ROW_COLUMNS =
+  'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, released_at, coupon_tiers(percent, max_discount_won, disabled_at)';
+
 /** discount_coupons 행 + coupon_tiers 조인. */
 export interface CouponRow {
   code: string;
