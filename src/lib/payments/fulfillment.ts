@@ -35,7 +35,7 @@ import { getUserProfileById } from '@/lib/profile';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
 import { activateMembershipSubscription, getManagedSubscription, MEMBERSHIP_PERIOD_DAYS } from '@/lib/subscription';
-import { shouldGrantCredits } from '@/lib/payments/coin-sunset';
+import { DIALOGUE_QUESTION_CREDITS, shouldGrantCredits } from '@/lib/payments/coin-sunset';
 import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
 
 async function attachOwnedReading(
@@ -221,7 +221,7 @@ export async function fulfillPaymentOrder(input: {
     const isDialogueQuestionPack =
       isTasteProductPackage(pkg) && pkg.tasteProductId === 'dialogue-entry';
     if (isDialogueQuestionPack) {
-      await addCredits(claimed.userId, 3, 'purchase', {
+      await addCredits(claimed.userId, DIALOGUE_QUESTION_CREDITS, 'purchase', {
         orderId: claimed.orderId,
         packageId: pkg.id,
         paymentKey,

@@ -94,6 +94,19 @@ test('구독 차감은 방금 refunded 로 바뀐 분기에서만(정확히 1회
 
   const webhook = read('../app/api/payments/webhook/nicepay/route.ts');
   assert.ok(/partial: \/partial\/i\.test\(status\),/.test(webhook), '부분취소는 구독 유지(관리자 부분환불과 같은 결과)');
-  // 멤버십은 전을 안 준다(카탈로그 credits=90). shouldGrantCredits(영구 false)로 막으면 옛 전 충전 주문 회수까지 꺼진다.
-  assert.ok(/packageCredits: pkg\?\.kind === 'subscription' \? 0 : \(pkg\?\.credits \?\? 0\),/.test(webhook));
+  // 회수할 전은 결제가 실제로 지급한 전(creditsToRevokeOnCancel — coin-sunset.test 에서 값으로 고정).
+  assert.ok(/packageCredits: creditsToRevokeOnCancel\(pkg\),/.test(webhook));
+});
+
+// 2026-09-14 — 관리자 "멤버십 해제"가 cancelled 라 renews_at 까지 혜택이 남고 사용자가 재개할 수 있었다(사용자 요청: 해제하면 종료).
+test('관리자 해제는 지금 만료 — status expired + renews_at 지금(재구매 때 되살아나지 않게), 그 사용자 행만', async () => {
+  const { expireMembershipNow } = await import('./subscription');
+  const db = fakeTable(null);
+  await expireMembershipNow('u1', { now: NOW, service: db.client });
+  assert.deepEqual(db.writes, [
+    { patch: { status: 'expired', renews_at: NOW.toISOString(), updated_at: NOW.toISOString() }, where: ['user_id', 'u1'] },
+  ]);
+  const route = fs.readFileSync(path.resolve(__dirname, '../app/api/admin/membership/grant/route.ts'), 'utf8');
+  assert.ok(/\} else \{\s*await expireMembershipNow\(userId\);/.test(route));
+  assert.ok(!/updateSubscriptionStatus\(userId, 'cancelled'\)/.test(route), 'cancelled 로는 혜택이 안 끊긴다');
 });
