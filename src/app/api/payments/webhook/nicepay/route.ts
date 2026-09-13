@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { NicepayPaymentObject } from '@/lib/payments/nicepay';
 import { getNicepayPayment } from '@/lib/payments/nicepay';
 import { getPackage } from '@/lib/payments/catalog';
+import { creditsToRevokeOnCancel } from '@/lib/payments/coin-sunset';
 import type { TossPaymentObject } from '@/lib/payments/order-ledger';
 import {
   getPaymentOrderByOrderId,
@@ -151,9 +152,8 @@ export async function POST(req: NextRequest) {
     const pkg = getPackage(order.packageId);
     const plan = buildCancellationRevokePlan({
       orderStatus: order.status,
-      // 2026-09-13 — 멤버십은 전을 지급하지 않는다(코인 sunset, 카탈로그 credits=90) — 카탈로그 값으로 회수하면 레거시 잔액을 깎는다.
-      //   (shouldGrantCredits 는 영구 false 라 쓰면 sunset 이전 전 충전 주문의 회수까지 꺼진다 — 구독만 뺀다.)
-      packageCredits: pkg?.kind === 'subscription' ? 0 : (pkg?.credits ?? 0),
+      // 결제가 실제로 지급한 전(멤버십 0 · 대화상담 3 · 전 충전은 카탈로그) — creditsToRevokeOnCancel.
+      packageCredits: creditsToRevokeOnCancel(pkg),
     });
 
     if (plan.revokeCredits > 0) {

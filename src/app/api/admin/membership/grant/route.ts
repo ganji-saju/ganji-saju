@@ -1,13 +1,14 @@
 // 2026-06-28 — POST /api/admin/membership/grant. 어드민 멤버십 권한 변경(super_admin 전용).
-//   action='grant': 프리미엄 멤버십 N일(기본 30) 활성화. action='revoke': 즉시 해제(cancelled).
+//   action='grant': 프리미엄 멤버십 N일(기본 30) 활성화. action='revoke': 즉시 해제 — 2026-09-14 부터 expired + renews_at=지금
+//   (예전 cancelled 는 renews_at 까지 혜택이 남고 사용자가 재개할 수 있어 해제가 안 됐다).
 //   addCredits 와 달리 전은 안 줌(멤버십 상태만). 결제 재화 지급은 재화 수동지급 별도.
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import {
   activateMembershipSubscription,
+  expireMembershipNow,
   getManagedSubscription,
-  updateSubscriptionStatus,
 } from '@/lib/subscription';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { refreshAdminUserSummaryForUser } from '@/lib/admin/summary-refresh';
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (action === 'grant') {
       await activateMembershipSubscription(userId, { plan: 'premium_monthly', days });
     } else {
-      await updateSubscriptionStatus(userId, 'cancelled');
+      await expireMembershipNow(userId);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : '멤버십 변경에 실패했습니다.';

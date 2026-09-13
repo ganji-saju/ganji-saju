@@ -171,6 +171,18 @@ export async function shortenMembershipForRefund(
   return next;
 }
 
+/** 관리자 멤버십 해제 — 혜택을 **지금** 끊는다(2026-09-14). cancelled 는 renews_at 까지 권한이 남고(isEntitledStatus)
+ *  사용자가 재개할 수 있어 해제가 안 됐다. renews_at 도 지금으로 내린다(남기면 재구매 때 activate 의 base 로 되살아난다). */
+export async function expireMembershipNow(userId: string, options: { now?: Date; service?: SupabaseClient } = {}) {
+  const client = options.service ?? (await createServiceClient());
+  const now = (options.now ?? new Date()).toISOString();
+  const { error } = await client
+    .from('subscriptions')
+    .update({ status: 'expired', renews_at: now, updated_at: now })
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+}
+
 export async function activateMembershipSubscription(
   userId: string,
   options: {
