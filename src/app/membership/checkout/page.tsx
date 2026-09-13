@@ -25,6 +25,7 @@ import {
 } from '@/lib/payments/catalog';
 import { couponEnvForHost, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
 import {
+  checkoutCouponInputMode,
   COUPON_INPUT_COOKIE,
   couponRejectMessage,
   isCouponEligiblePackage,
@@ -428,11 +429,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       : activeMembershipPlan
         ? ('active_membership' as const)
         : null;
-  // 쿠폰 입력칸 — 결제 버튼이 있는 화면에서, 쿠폰이 붙는 상품(설계 §7)이고 적용된 쿠폰이 없을 때만.
-  //   적용 중이면 할인 행이 곧 표시다. 동시에 1개라 살아 있는 쿠폰이 붙어 있으면 새 코드는 어차피 거부된다.
-  const showCouponInput = Boolean(
-    paymentPackage && quote && !quote.couponCode && !funnelBlocked && isCouponEligiblePackage(paymentPackage)
-  );
+  // 쿠폰 입력칸 — 결제 버튼이 있는 화면, 쿠폰이 붙는 상품(설계 §7)에서만. 쿠폰 없음 = 입력 · 미리보기 중(결제 전) = 다른 코드로
+  //   바꾸기 · 등록된 쿠폰 = 없음(동시에 1개라 새 코드는 어차피 거부된다). checkoutCouponInputMode 주석 참조.
+  const couponInputMode =
+    paymentPackage && quote && !funnelBlocked && isCouponEligiblePackage(paymentPackage)
+      ? checkoutCouponInputMode(quote)
+      : null;
   // 2026-09-03 — robots 는 이 경로를 disallow 하지만 지키지 않는 크롤러가 남는다.
   //   분모가 봇으로 부풀면 "결제화면까지 왔는데 안 산다"는 결론 자체가 오염된다.
   //   /api/payments/funnel · /api/visit 과 **같은 기준**으로 사람만 센다.
@@ -538,13 +540,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {/* 2026-09-13 쿠폰 입력칸(PR5) — 접어 둔다. 펼쳐 두면 쿠폰이 없는 사람이 쿠폰을 찾으러 이탈한다.
                   넣은 코드가 안 붙었거나(아래 사유 문구) 등록된 쿠폰이 죽었으면 펼친 채로 그려 다시 넣게 한다.
                   입력은 서버 액션(POST)으로 받아 쿠키에 둔다 — 코드가 URL 에 남지 않는다(coupon-action.ts). */}
-              {showCouponInput ? (
+              {couponInputMode ? (
                 <details
                   className="group border-b border-[var(--app-line)] py-2"
-                  open={Boolean(couponInput || quote?.reason)}
+                  open={couponInputMode === 'enter' && Boolean(couponInput || quote?.reason)}
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14.4px] text-[var(--app-copy)] [&::-webkit-details-marker]:hidden">
-                    <span>쿠폰이 있으신가요?</span>
+                    <span>{couponInputMode === 'change' ? '다른 쿠폰 코드 쓰기' : '쿠폰이 있으신가요?'}</span>
                     <span
                       aria-hidden="true"
                       className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
@@ -555,7 +557,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   <form action={submitCouponInput} className="mt-2.5 flex gap-2">
                     <input
                       name="coupon"
-                      defaultValue={couponInput ?? ''}
+                      defaultValue={couponInputMode === 'change' ? '' : (couponInput ?? '')}
                       placeholder="ganji-10-0000"
                       aria-label="쿠폰 코드"
                       autoComplete="off"
@@ -571,6 +573,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                       적용
                     </button>
                   </form>
+                  {couponInputMode === 'change' ? (
+                    <p className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
+                      아직 결제 전이라 바꿀 수 있어요. 새 코드를 넣으면 지금 코드 대신 적용됩니다.
+                    </p>
+                  ) : null}
                   {/* 쿠폰은 로그인 계정에 붙는다(B 결정) — 비로그인이면 조회하지 않아 사유 문구가 없다. 안 알리면 "넣었는데 반응 없음"이 된다. */}
                   {!viewer && couponInput ? (
                     <p className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">

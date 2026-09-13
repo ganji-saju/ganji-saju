@@ -6,7 +6,9 @@ import {
   STAGING_TEST_BATCH,
   applyCouponDiscount,
   canReleaseCoupon,
+  checkoutCouponInputMode,
   couponDeadReason,
+  couponRejectMessage,
   resolveCouponEnv,
   type CouponEnv,
   evaluateCouponRow,
@@ -254,4 +256,20 @@ test('canReleaseCoupon — 죽은 쿠폰만, 그리고 staging 은 staging-test 
   assert.equal(canReleaseCoupon(deadReal, NOW, 'test'), false, 'staging 이 프로덕션 행을 종료시키면 안 된다');
   assert.equal(canReleaseCoupon(deadTest, NOW, 'test'), true);
   assert.equal(canReleaseCoupon(deadReal, NOW, null), false);
+});
+
+// 2026-09-13 staging 확인 뒤 다듬기 — 회수된 쿠폰이 "사용할 수 없는 쿠폰 코드"로만 보이면 고객은 코드를 잘못 친 줄 알고 문의한다.
+test('couponRejectMessage — 회수·중지(disabled)는 전용 안내, 없는 코드는 일반 안내', () => {
+  assert.match(couponRejectMessage('disabled'), /회수|중지/);
+  assert.equal(couponRejectMessage('not_found'), '사용할 수 없는 쿠폰 코드입니다.');
+  assert.notEqual(couponRejectMessage('disabled'), couponRejectMessage('not_found'));
+});
+
+// 미리보기(아직 결제 전 — 귀속 안 됨)는 다른 코드로 바꿀 수 있어야 한다(입력칸이 30분 쿠키 동안 사라지면 못 바꾼다).
+//   등록된 쿠폰(self)은 동시에 1개라 새 코드가 어차피 거부되니 입력칸을 두지 않는다.
+test('checkoutCouponInputMode — 쿠폰 없음=입력, 미리보기=바꾸기, 등록된 쿠폰=없음', () => {
+  assert.equal(checkoutCouponInputMode({ couponCode: null, claim: null }), 'enter');
+  assert.equal(checkoutCouponInputMode({ couponCode: 'ganji100001', claim: { mode: 'claim' } }), 'change');
+  assert.equal(checkoutCouponInputMode({ couponCode: 'ganji100001', claim: { mode: 'reclaim' } }), 'change');
+  assert.equal(checkoutCouponInputMode({ couponCode: 'ganji100001', claim: { mode: 'self' } }), null);
 });

@@ -278,11 +278,27 @@ export function evaluateCouponRow(input: {
   return { ok: false, reason: 'bound_to_other' };
 }
 
+/**
+ * 체크아웃 쿠폰 입력칸 모드. 쿠폰 없음 = 'enter'(입력) · 미리보기 중(아직 결제 전 — 귀속 안 됨) = 'change'(다른 코드로 바꾸기) ·
+ * 등록된 쿠폰(self) = null — 동시에 1개라 새 코드는 어차피 거부된다. 'change' 가 없으면 한 번 넣은 코드를 쿠키가 살아 있는
+ * 30분 동안 바꿀 수 없다(staging 확인 2026-09-13).
+ */
+export function checkoutCouponInputMode(quote: {
+  couponCode: string | null;
+  claim: { mode: string } | null;
+}): 'enter' | 'change' | null {
+  if (!quote.couponCode) return 'enter';
+  return quote.claim?.mode === 'self' ? null : 'change';
+}
+
 /** 체크아웃·prepare 가 보여 주는 문구. 이유별 구분은 사용자가 다음 행동을 고를 수 있을 만큼만. */
 export function couponRejectMessage(reason: CouponRejectReason): string {
   switch (reason) {
     case 'expired':
       return '사용 기간이 지난 쿠폰입니다.';
+    case 'disabled':
+      // 배치 회수·등급 중지·해제(released). "사용할 수 없는 코드"로만 보이면 코드를 잘못 친 줄 알고 문의한다(staging 확인 2026-09-13).
+      return '회수되었거나 사용이 중지된 쿠폰입니다.';
     case 'bound_to_other':
       return '이미 다른 분이 사용 중인 쿠폰입니다.';
     case 'account_has_other':
