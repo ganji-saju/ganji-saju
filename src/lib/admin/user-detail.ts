@@ -126,7 +126,8 @@ export function determineRefundEligibility(
   },
   // 2026-08-24 — 번들 주문(결제 완료 상태만 전달할 것). 구성품 entitlement 는 amount=null 이라
   //   entitlement 필터에 절대 안 잡힌다 — 주문 원장이 번들 환불의 유일한 금액 실체다.
-  paidOrders: ReadonlyArray<BundleOrderRefundCandidate> = []
+  //   2026-09-13 — **필수**. 요약(summary-refresh)이 빠뜨려 목록 배지·"환불 가능" 필터가 상세 화면과 달랐다(번들·고아 주문 누락).
+  paidOrders: ReadonlyArray<BundleOrderRefundCandidate>
 ): RefundEligibility {
   const items: RefundEligibleItem[] = entitlements
     .filter((e) => typeof e.amount === 'number' && e.amount > 0)
@@ -156,7 +157,12 @@ export function determineRefundEligibility(
     // ⚠️ 카탈로그에 없는 상품이라고 건너뛰지 않는다 — 프로덕션 카탈로그에 없는(개편 전용·폐지)
     //   상품의 결제가 실재하고, 그걸 못 잡으면 **돈을 받아 놓고 환불할 방법이 없다.**
     //   이름만 없을 뿐 금액·paymentKey 는 주문에 다 있다.
-    if (order.order_id && seenOrderIds.has(order.order_id)) continue; // 중복 방지
+    // 🔴 2026-09-13 — 번들은 **주문 단위 항목이 유일한 환불 창구**다(구성품은 amount=null 이라 위 목록에 없고,
+    //   실행은 구성품을 일괄 회수한다). 구성품의 주문번호로 중복을 판정하면 구성품이 지급된 번들이 목록에서
+    //   통째로 빠진다(관리자 화면으로 환불 불가). 금액 없는 **단품** 이용권은 종전대로 둔다 — 주문 단위 환불은
+    //   요청 product_id 에 패키지 id 를 실어 단품 이용권을 회수하지 못한다(환불됐는데 열람이 남는다).
+    const isBundleOrder = Boolean(pkg && isBundlePackage(pkg));
+    if (order.order_id && seenOrderIds.has(order.order_id) && !isBundleOrder) continue; // 중복 방지
     if (typeof order.amount !== 'number' || order.amount <= 0) continue;
     items.push({
       kind: 'bundle-order',

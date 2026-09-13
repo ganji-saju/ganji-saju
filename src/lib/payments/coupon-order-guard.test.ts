@@ -137,10 +137,13 @@ test('PG 승인 호출이 있는 모든 파일은 그보다 먼저 관문을 돌
       if (at >= 0) assert.ok(at > gateAt, `${file}: ${call} 가 관문보다 앞에 있다`);
     }
     // 라우트는 "결제 키가 붙었으면 승인 요청이 나갔을 수 있다", 정산은 승인 전(DONE·종료 상태가 아닌 모든 경우)에 키 연결 전 false 로 부른다.
+    // PR7 — 결과를 그대로 받아 그대로 판정해야 한다. `.then(b => b === 'coupon_expired' ? null : b)` 처럼 특정 거부만 삼켜도
+    //   `if (approvalBlock)` 문자열은 남아 초록이었다(뮤테이션 실측) → 호출이 `);` 로 끝나고 그 결과를 곧바로 본다.
+    //   (포매터가 줄을 바꿔도 되게 공백은 \s* 로 둔다)
     const expected = file.endsWith('reconciliation.ts')
-      ? /status !== 'DONE' && !terminalFailureStatus\(input\.payment\.status\)\) \{\s*const approvalBlock = await checkBeforePgApproval\(input\.order, \{ approvalMayHaveBeenRequested: false \}\)/
-      : /checkBeforePgApproval\(order, \{ approvalMayHaveBeenRequested: Boolean\(order\.paymentKey\) \}\)/;
-    assert.ok(expected.test(text), `${file}: 승인 요청 여부를 잘못 넘긴다`);
+      ? /status !== 'DONE' && !terminalFailureStatus\(input\.payment\.status\)\) \{\s*const approvalBlock = await checkBeforePgApproval\(\s*input\.order,\s*\{\s*approvalMayHaveBeenRequested: false,?\s*\}\s*\);\s*if \(approvalBlock\) return /
+      : /const approvalBlock = await checkBeforePgApproval\(\s*order,\s*\{\s*approvalMayHaveBeenRequested: Boolean\(order\.paymentKey\),?\s*\}\s*\);\s*if \(approvalBlock\) \{/;
+    assert.ok(expected.test(text), `${file}: 승인 요청 여부를 잘못 넘기거나 관문 결과를 가공한다`);
     const blockBody = text.slice(gateAt, text.indexOf('return', text.indexOf('if (approvalBlock)', gateAt)));
     assert.ok(text.includes('if (approvalBlock)'), `${file}: 관문 결과를 무시한다`);
     assert.ok(!/markPaymentOrder\w*\(/.test(blockBody), `${file}: 막힐 때 주문 상태를 바꾼다(재진입 시 검사를 건너뛰는 원인)`);

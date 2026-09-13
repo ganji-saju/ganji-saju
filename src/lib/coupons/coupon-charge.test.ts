@@ -38,6 +38,8 @@ interface FakeDb {
   codeLookups: number;
   /** true 면 RPC 가 오류를 낸다(장애 흉내). */
   rpcDown?: boolean;
+  /** true 면 payment_orders 조회가 오류를 낸다(장애 흉내). */
+  ordersDown?: boolean;
 }
 
 function cmp(a: unknown, b: unknown) {
@@ -94,6 +96,7 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
         db.inserted.push(row);
         return { data: row, error: null };
       }
+      if (table === 'payment_orders' && db.ordersDown) return { data: null, error: { message: 'orders down' } };
       const hits = rowsOf().filter((row) => matches(row, filters));
       if (table === 'discount_coupons' && !patch && filters.some((f) => f.op === 'eq' && f.col === 'code')) {
         db.codeLookups += 1;
@@ -236,6 +239,27 @@ test('coupon-charge — 요구 7: 귀속된 계정은 코드를 다시 안 넣�
   assert.equal(db.rpcCalls, 0, '본인 코드는 조회 예산을 쓰지 않는다');
 });
 
+// 설계 §13-8 — 위 테스트는 주문이 없어 "결제를 마치면 쿠폰이 닫힌다"(1회용) 회귀가 초록으로 지나갔다(뮤테이션 실측).
+//   실제 흐름 그대로: 첫 결제만 코드 입력 → 주문 생성 → 결제 완료가 쌓인 상태에서 다음 상품.
+test('coupon-charge — §13-8: 귀속 계정이 서로 다른 상품 3건을 결제하면 결제 완료 주문이 쌓여도 전부 할인', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001')] });
+  for (const [i, pkgId] of ['taste_today_detail', 'taste_tarot_daily', 'membership_premium'].entries()) {
+    const pkg = getPackage(pkgId)!;
+    const quote = await resolveChargeForUser(pkg, { id: 'u1' }, i === 0 ? 'ganji-30-0001' : null, opts(db));
+    assert.equal(quote.claim?.mode, i === 0 ? 'claim' : 'self', pkgId);
+    const bound = await bind(db, quote.claim!, 'u1');
+    await createPaymentOrder(
+      { userId: 'u1', pkg, listAmount: quote.listAmount, coupon: bound, acceptedKinds: [], recordedPolicyVersionIds: [] },
+      db.client
+    );
+    const order = db.inserted.at(-1)!;
+    assert.equal(order.amount, pkg.price - Math.floor((pkg.price * 30) / 100), pkgId);
+    assert.equal(order.coupon_code, 'ganji300001', pkgId);
+    db.orders.push({ ...order, status: 'fulfilled' });
+  }
+  assert.equal(db.updates, 1, '귀속은 첫 결제 한 번뿐 — 본인 재사용은 스냅샷을 덮어쓰지 않는다');
+});
+
 test('coupon-charge — 관리자가 요율을 내려도 이미 귀속된 고객은 스냅샷대로, 새 고객은 새 요율', async () => {
   const db = fakeDb({
     coupons: [
@@ -266,6 +290,16 @@ test('coupon-charge — 요구 4: 동시에 두 명이 같은 코드를 넣어�
   assert.equal(again.reason, 'bound_to_other');
   assert.equal(again.chargeAmount, 3300);
   assert.equal(again.claim, null);
+});
+
+// PR7 리뷰(적대적 검증 실측) — `if (error || !data) return true` 를 false 로 바꿔도 전 스위트가 초록이었다.
+//   장애 중에 24시간 지난 남의 쿠폰을 가져가면, 결제 중이던 원래 주인의 주문은 승인 관문에서 막히고 쿠폰도 잃는다.
+test('coupon-charge — 회수 판단용 주문 조회가 실패하면 "주문이 있다"로 본다(요구 4 — 쓰던 사람 보호)', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(25 * HOUR), bound_percent: 30 })] });
+  db.ordersDown = true;
+  const quote = await resolveChargeForUser(TODAY_DETAIL, { id: 'u2' }, 'ganji-30-0001', opts(db));
+  assert.equal(quote.claim, null);
+  assert.equal(quote.reason, 'bound_to_other');
 });
 
 test('coupon-charge — 24시간 미결제 회수: 결제 흔적이 없으면 다른 사람이 가져간다', async () => {

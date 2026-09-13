@@ -450,6 +450,54 @@ test('번들 구성품 5행은 주문 금액을 한 번만 계상한다(5배 부
   assert.equal(result.entries.length, 5);
 });
 
+// 2026-09-13 — 금액 없는 carrier 가 **카탈로그 정가**를 받아, 쿠폰으로 8,910원 낸 번들이 결제내역·LTV 에 9,900원으로 떴다.
+//   금액은 주문 원장에 있다(설계 §9 가 미뤄 둔 "번들 정가 표시"가 쿠폰 도입으로 실제 오표시가 된 것).
+test('번들 carrier 는 주문 원장의 실결제액으로 계상한다(쿠폰 할인·가격 변경)', () => {
+  const result = buildPaymentHistory({
+    productEntitlements: [bundleComponent('e1', 'score-total'), bundleComponent('e2', 'work-flow')],
+    creditTransactions: [],
+    paymentOrders: [
+      {
+        id: 'o1',
+        order_id: 'ord_fa9c72b6',
+        package_id: 'bundle_comprehensive',
+        amount: 8910,
+        status: 'fulfilled',
+        created_at: '2026-08-30T04:00:00.000Z',
+        metadata: null,
+      },
+    ],
+  });
+  assert.equal(result.totalSpentWon, 8910);
+  assert.deepEqual(result.entries.map((e) => e.amountWon).filter((won) => won !== null), [8910]);
+});
+
+// PR7 리뷰 — 금액은 **주문 원장이 정본**이다. 원장에만 있는 주문(쿠폰 할인 멤버십 49,000 → 34,300)은 원장 금액으로,
+//   금액 없는 단품 이용권은 metadata.amount 보다 원장 금액이 먼저다(원장 금액을 모를 때만 metadata → 카탈로그).
+test('결제내역 금액 우선순위 — 원장 전용 주문·금액 없는 단품 이용권 모두 원장의 실결제액', () => {
+  const ledgerOnly = buildPaymentHistory({
+    productEntitlements: [],
+    creditTransactions: [],
+    paymentOrders: [
+      { id: 'o1', order_id: 'ord_m', package_id: 'membership_premium', amount: 34300, status: 'fulfilled', created_at: '2026-09-13T00:00:00.000Z', metadata: null },
+    ],
+  });
+  assert.equal(ledgerOnly.totalSpentWon, 34300);
+
+  const single = (orderAmount: number | null) =>
+    buildPaymentHistory({
+      productEntitlements: [
+        { ...bundleComponent('e1', 'today-detail'), order_id: 'ord_s', package_id: 'taste_today_detail', metadata: { amount: 3300 } },
+      ],
+      creditTransactions: [],
+      paymentOrders: [
+        { id: 'o2', order_id: 'ord_s', package_id: 'taste_today_detail', amount: orderAmount, status: 'fulfilled', created_at: '2026-09-13T00:00:00.000Z', metadata: null },
+      ],
+    }).totalSpentWon;
+  assert.equal(single(2310), 2310, '원장 금액이 metadata 보다 먼저');
+  assert.equal(single(null), 3300, '원장 금액을 모르면 metadata');
+});
+
 test('구성품이 자기 금액을 가지면 그대로 계상한다(단건 결제 회귀 방지)', () => {
   const rows: ProductEntitlementHistoryRow[] = [
     { ...bundleComponent('e1', 'score-total'), amount: 3300, package_id: null, order_id: 'ord_a' },

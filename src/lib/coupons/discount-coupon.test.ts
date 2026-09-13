@@ -71,6 +71,10 @@ test('applyCouponDiscount — 원 단위 절사', () => {
   assert.equal(applyCouponDiscount(9900, 50).chargeAmount, 4950);
   // 49,000 × 50% = 24,500
   assert.equal(applyCouponDiscount(49000, 50).chargeAmount, 24500);
+  // PR7 — 위 값은 전부 나누어떨어져 floor 를 round·ceil 로 바꿔도 초록이었다(뮤테이션 실측).
+  //   3,333 × 30% = 999.9 → 999 (관리자 가격 편집으로 끝수가 생긴다). 요율도 소수면 버린다.
+  assert.deepEqual(applyCouponDiscount(3333, 30), { percent: 30, discountWon: 999, chargeAmount: 2334 });
+  assert.equal(applyCouponDiscount(3300, 10.9).percent, 10);
 });
 
 test('applyCouponDiscount — 상한 50% 는 입력 검증이 아니라 여기서 자른다', () => {

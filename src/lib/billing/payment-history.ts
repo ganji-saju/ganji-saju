@@ -290,6 +290,8 @@ export function buildPaymentHistory(
   //   ⚠️paymentOrders 를 안 넘기는 호출부에서는 이 판정을 하지 않는다(근거가 없으므로 기존 동작 유지).
   const hasOrderLedger = Boolean(input.paymentOrders && input.paymentOrders.length > 0);
   const completedOrderIds = new Set((input.paymentOrders ?? []).map((o) => o.order_id));
+  // 2026-09-13 — 금액 없는 carrier 는 정가를 추측하지 않고 주문 원장의 실결제액을 쓴다(쿠폰 할인·가격 변경 반영).
+  const orderAmountById = new Map((input.paymentOrders ?? []).map((o) => [o.order_id, o.amount]));
   const entitlementOrderIds = new Set(
     input.productEntitlements
       .map((e) => e.order_id)
@@ -303,7 +305,9 @@ export function buildPaymentHistory(
       const isBundleComponent = Boolean(row.order_id) && !carriers.has(row.id);
       const orderUnconfirmed =
         hasOrderLedger && Boolean(row.order_id) && !completedOrderIds.has(row.order_id as string);
-      return isBundleComponent || orderUnconfirmed ? { ...entry, amountWon: null } : entry;
+      if (isBundleComponent || orderUnconfirmed) return { ...entry, amountWon: null };
+      const ledgerAmount = row.order_id ? orderAmountById.get(row.order_id) : undefined;
+      return typeof ledgerAmount === 'number' ? { ...entry, amountWon: ledgerAmount } : entry;
     }),
     // 🔴 2026-09-08 — 같은 주문이 두 테이블에 다 적히면 **이중 계상**된다.
     //   평생리포트 결제는 product_entitlements(amount=35,000)와 credit_transactions

@@ -63,7 +63,7 @@ test('determineRefundEligibility: amount>0 만 환불 대상, 합계', () => {
     { id: 'b', product_id: 'today-detail', amount: 550, order_id: null, payment_key: 'pk2', package_id: null, created_at: '2026-05-02T00:00:00Z', metadata: null },
     { id: 'c', product_id: 'freebie', amount: 0, order_id: null, payment_key: null, package_id: null, created_at: '2026-05-03T00:00:00Z', metadata: null },
   ];
-  const result = determineRefundEligibility(entitlements);
+  const result = determineRefundEligibility(entitlements, undefined, []);
   assert.equal(result.items.length, 2); // amount 0 인 c 제외
   assert.equal(result.totalRefundableWon, 49550);
   assert.equal(result.totalProductRefundableWon, 49550);
@@ -210,6 +210,39 @@ test('이용권이 사라진 단품 주문도 환불 목록에 잡힌다(고아 
   assert.equal(refund.items[0].amountWon, 990);
   assert.equal(refund.items[0].paymentKey, 'tid-orphan');
   assert.equal(refund.totalProductRefundableWon, 990);
+});
+
+// 🔴 설계 §13-9 — 할인 결제의 환불액은 실결제액(order.amount)이다. 위 픽스처들은 금액이 카탈로그가와 같아
+//   "정가로 환불" 회귀가 초록으로 지나간다 → 카탈로그가(오늘 자세히 3,300 · 종합 리포트 9,900)와 **다른** 할인가로 고정한다.
+//   2026-09-13 — 구성품(amount=null)이 지급된 번들 주문이 목록에서 통째로 빠지고 있었다(관리자 화면으로 환불 불가):
+//   구성품의 주문번호까지 "이미 잡힌 주문"으로 셌기 때문이다. 구성품은 금액이 없어 목록에 없다.
+//   단, 금액 없는 **단품** 이용권의 주문은 종전대로 뺀다(주문 단위 환불이 단품 이용권을 회수하지 못한다).
+test('환불 목록 금액은 할인 후 실결제액 — 단품 이용권 · 구성품이 지급된 번들 · 고아 주문(§13-9)', () => {
+  const component = (id: string, productId: string) =>
+    ({ id, product_id: productId, scope_key: null, amount: null, payment_key: 'pk_b', order_id: 'ord_b', created_at: '2026-09-13T01:00:00Z' }) as never;
+  const refund = determineRefundEligibility(
+    [
+      { id: 'ent-d', product_id: 'today-detail', scope_key: null, amount: 2970, payment_key: 'pk_d', order_id: 'ord_d', created_at: '2026-09-13T02:00:00Z' } as never,
+      component('c1', 'score-total'),
+      component('c2', 'work-flow'),
+      component('c3', 'today-detail'),
+      { id: 'ent-n', product_id: 'today-detail', scope_key: null, amount: null, payment_key: 'pk_n', order_id: 'ord_n', created_at: '2026-09-12T00:00:00Z' } as never,
+    ],
+    undefined,
+    [
+      { id: 'row-b', order_id: 'ord_b', package_id: 'bundle_comprehensive', amount: 8910, payment_key: 'pk_b', created_at: '2026-09-13T01:00:00Z' },
+      { id: 'row-n', order_id: 'ord_n', package_id: 'taste_today_detail', amount: 2970, payment_key: 'pk_n', created_at: '2026-09-12T00:00:00Z' },
+      { id: 'row-o', order_id: 'ord_o', package_id: 'taste_today_detail', amount: 2970, payment_key: 'pk_o', created_at: '2026-09-13T00:00:00Z' },
+      // 이용권으로 이미 잡힌 주문 — 두 번 세지 않는다.
+      { id: 'row-d', order_id: 'ord_d', package_id: 'taste_today_detail', amount: 2970, payment_key: 'pk_d', created_at: '2026-09-13T02:00:00Z' },
+    ]
+  );
+  const amountsOf = (orderId: string) => refund.items.filter((i) => i.orderId === orderId).map((i) => i.amountWon);
+  assert.deepEqual(amountsOf('ord_d'), [2970], '단품 이용권');
+  assert.deepEqual(amountsOf('ord_b'), [8910], '구성품이 지급된 번들');
+  assert.deepEqual(amountsOf('ord_o'), [2970], '이용권이 사라진 주문');
+  assert.deepEqual(amountsOf('ord_n'), [], '금액 없는 단품 이용권이 남아 있는 주문 — 주문 단위로 환불하면 열람이 남는다');
+  assert.equal(refund.totalProductRefundableWon, 2970 + 8910 + 2970);
 });
 
 // 2026-08-26 회귀 가드 — 🔴 사용자 제보: "990원 결제하고 대화 3번 안 했는데 이미 사용된 거라고
