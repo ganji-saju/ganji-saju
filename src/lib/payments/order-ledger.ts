@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
-import { shortenMembershipForRefund } from '@/lib/subscription';
+import { lockMembershipContentForRefund, shortenMembershipForRefund } from '@/lib/subscription';
 import type { PolicyKind } from '@/shared/policies/types';
 
 export type PaymentOrderStatus =
@@ -528,16 +528,48 @@ export function membershipDaysToRemove(
   return typeof days === 'number' && days > 0 ? days : 0;
 }
 
-/** 멤버십 지급이 구독에 더한 일수를 주문에 누적 기록한다 — 환불은 이 값만 뺀다(지급 재시도로 두 번 돌면 60). */
-export async function recordMembershipDaysGranted(orderId: string, days: number, service?: SupabaseClient) {
+export type MembershipPeriod = { start: string; end: string };
+
+/** 주문에 기록된 지급 기간들(순수) — 모양이 틀린 항목은 버린다. 기록 이전 주문은 빈 배열(잠글 기간 없음). */
+export function readMembershipPeriods(metadata: Record<string, unknown>): MembershipPeriod[] {
+  const periods = Array.isArray(metadata.membershipPeriods) ? metadata.membershipPeriods : [];
+  return periods.filter(
+    (p): p is MembershipPeriod => typeof p?.start === 'string' && typeof p?.end === 'string'
+  );
+}
+
+/** 지급 1회가 차지한 기간(순수) — 구독의 새 renews_at 에서 일수를 거꾸로 센다. 무기한(null)이면 기간이 없다. */
+export function membershipPeriodEndingAt(renewsAt: string | null, days: number): MembershipPeriod | undefined {
+  if (!renewsAt) return undefined;
+  const end = new Date(renewsAt);
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - days);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+/** 멤버십 지급이 구독에 더한 일수를 주문에 누적 기록한다 — 환불은 이 값만 뺀다(지급 재시도로 두 번 돌면 60).
+ *  2026-09-14 — 그 일수가 차지한 기간(period)도 membershipPeriods 에 누적한다. 전액환불이 이 기간에 멤버십으로 연 열람을 지운다. */
+export async function recordMembershipDaysGranted(
+  orderId: string,
+  days: number,
+  service?: SupabaseClient,
+  period?: MembershipPeriod
+) {
   const client = service ?? (await createServiceClient());
   const { data, error } = await client.from('payment_orders').select('metadata').eq('order_id', orderId).maybeSingle();
   if (error) throw new Error(error.message);
   const metadata = readObject((data as { metadata?: unknown } | null)?.metadata);
   const prev = typeof metadata.membershipDaysGranted === 'number' ? metadata.membershipDaysGranted : 0;
+  const periods = Array.isArray(metadata.membershipPeriods) ? metadata.membershipPeriods : [];
   const { error: updateError } = await client
     .from('payment_orders')
-    .update({ metadata: { ...metadata, membershipDaysGranted: prev + days } })
+    .update({
+      metadata: {
+        ...metadata,
+        membershipDaysGranted: prev + days,
+        ...(period ? { membershipPeriods: [...periods, period] } : {}),
+      },
+    })
     .eq('order_id', orderId);
   if (updateError) throw new Error(updateError.message);
 }
@@ -592,6 +624,17 @@ export async function markPaymentOrderRefunded(input: {
       await shortenMembershipForRefund(order.userId, { days: membershipDays }).catch(async (err) => {
         const message = `membership_shorten_failed: ${err instanceof Error ? err.message : String(err)}`;
         console.error('[refund] 구독 차감 실패', { orderId: order.orderId, message });
+        await service.from('payment_orders').update({ last_error: message }).eq('order_id', order.orderId);
+      });
+      // 2026-09-14 — 전액환불(membershipDays > 0 = 부분취소 아님)이면 그 결제 기간에 멤버십으로 연 달력·상세풀이도 잠근다.
+      //   같은 분기라 1회. 실패는 위와 같이 흔적 — 전이가 끝나 재호출이 다시 잠그지 않는다.
+      await lockMembershipContentForRefund(order.userId, readMembershipPeriods(order.metadata), {
+        reason: input.reason,
+        actor: input.source,
+        paymentKey: order.paymentKey,
+      }).catch(async (err) => {
+        const message = `membership_lock_failed: ${err instanceof Error ? err.message : String(err)}`;
+        console.error('[refund] 멤버십 열람 잠금 실패', { orderId: order.orderId, message });
         await service.from('payment_orders').update({ last_error: message }).eq('order_id', order.orderId);
       });
     }

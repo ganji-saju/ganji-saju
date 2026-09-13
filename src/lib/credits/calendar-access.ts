@@ -75,7 +75,10 @@ export async function recordFortuneCalendarMonthAccess(
   userId: string,
   readingKey: string,
   year: number,
-  month: number
+  month: number,
+  // 2026-09-14 — 멤버십 혜택으로 연 행 표식. 멤버십 전액환불이 이 표식으로 그 결제 기간의 열람을 지운다
+  //   (lockMembershipContentForRefund). 판정·RPC dedup 은 contains 라 키가 하나 더 붙어도 그대로 매치된다.
+  via?: 'membership'
 ) {
   const service = await createServiceClient();
   const { error } = await service.from('credit_transactions').insert({
@@ -83,7 +86,7 @@ export async function recordFortuneCalendarMonthAccess(
     amount: 0,
     type: 'use',
     feature: 'calendar',
-    metadata: getFortuneCalendarMonthAccessMetadata(readingKey, year, month),
+    metadata: { ...getFortuneCalendarMonthAccessMetadata(readingKey, year, month), ...(via ? { via } : {}) },
   });
 
   if (error) {
@@ -108,7 +111,7 @@ export async function unlockFortuneCalendarMonth(
   // [멤버십 게이트] 전 앞에 삽입: premium 은 달력 무제한(MEMBER_QUOTAS.premium.calendarMonthly=null).
   //   2026-09-01 — 월쿼터 소진 분기는 plus 등급 전용이었고 그 등급이 사라져 함께 삭제했다.
   if (await getMemberTier(userId)) {
-    await recordFortuneCalendarMonthAccess(userId, readingKey, year, month);
+    await recordFortuneCalendarMonthAccess(userId, readingKey, year, month, 'membership');
     return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
   }
 

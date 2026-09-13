@@ -285,7 +285,9 @@ export async function POST(req: NextRequest) {
     counselorId,
     occurredOn: todayKey,
     now,
-    accessSource: responseAccess,
+    // 2026-09-14 — 멤버십 혜택으로 만든 스냅샷 표식. /today-fortune/snapshots/[id] 는 권한 검사 없이 보여주므로
+    //   멤버십 전액환불이 이 표식으로 스냅샷까지 지운다(lockMembershipContentForRefund). 응답의 access 값은 그대로.
+    accessSource: 'viaMembership' in access && access.viaMembership ? 'membership' : responseAccess,
   });
 
   return NextResponse.json({

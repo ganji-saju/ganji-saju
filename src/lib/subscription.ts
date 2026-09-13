@@ -171,6 +171,76 @@ export async function shortenMembershipForRefund(
   return next;
 }
 
+/**
+ * 멤버십 전액환불 — 그 결제 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람을 지운다(2026-09-14 사용자 결정).
+ * 창마다 [start, min(end, 지금)) 안에 만든 via:'membership' 열람 행(카카오 쿠폰 등 표식 없는 0원 행은 보존)과
+ * access_source 'membership' 스냅샷(/today-fortune/snapshots/[id] 는 권한 검사 없이 보여준다)을 삭제한다.
+ * 🔴 무효 표시가 아니라 삭제 — unlock_credit_feature_once 는 행이 남아 있으면 reused(무과금)로 다시 연다.
+ * 원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회). DB 오류는 던진다 — 호출부가 흔적을 남긴다.
+ */
+export async function lockMembershipContentForRefund(
+  userId: string,
+  windows: ReadonlyArray<{ start: string; end: string }>,
+  options: { reason: string; actor?: string | null; paymentKey?: string | null; now?: Date },
+  service?: SupabaseClient
+): Promise<{ accessDeleted: number; snapshotsDeleted: number }> {
+  if (!userId) throw new Error('사용자 없이 열람을 지우지 않는다');
+  const now = options.now ?? new Date();
+  const ranges = windows
+    .map((w) => ({ start: new Date(w.start), end: new Date(Math.min(new Date(w.end).getTime(), now.getTime())) }))
+    .filter((w) => !Number.isNaN(w.start.getTime()) && !Number.isNaN(w.end.getTime()) && w.start < w.end)
+    .map((w) => ({ start: w.start.toISOString(), end: w.end.toISOString() }));
+  if (ranges.length === 0) return { accessDeleted: 0, snapshotsDeleted: 0 };
+
+  const client = service ?? (await createServiceClient());
+  let accessDeleted = 0;
+  let snapshotsDeleted = 0;
+  for (const range of ranges) {
+    const { data: access, error } = await client
+      .from('credit_transactions')
+      .delete()
+      .eq('user_id', userId)
+      .eq('type', 'use')
+      .in('feature', ['calendar', 'detail_report'])
+      .contains('metadata', { via: 'membership' })
+      .gte('created_at', range.start)
+      .lt('created_at', range.end)
+      .select('id');
+    if (error) throw new Error(error.message);
+    const { data: snapshots, error: snapshotError } = await client
+      .from('today_fortune_result_snapshots')
+      .delete()
+      .eq('user_id', userId)
+      .eq('access_source', 'membership')
+      .gte('created_at', range.start)
+      .lt('created_at', range.end)
+      .select('id');
+    if (snapshotError) throw new Error(snapshotError.message);
+    accessDeleted += access?.length ?? 0;
+    snapshotsDeleted += snapshots?.length ?? 0;
+  }
+
+  // 감사 1행(revokeEntitlementsOfPayment 와 같은 feature). 실패해도 잠금 자체는 유효.
+  const { error: auditError } = await client.from('credit_transactions').insert({
+    user_id: userId,
+    amount: 0,
+    type: 'purchase',
+    feature: 'entitlement_revoke',
+    metadata: {
+      kind: 'membership_content_locked',
+      accessDeleted,
+      snapshotsDeleted,
+      windows: ranges,
+      reason: options.reason,
+      actor: options.actor ?? null,
+      paymentKey: options.paymentKey ?? null,
+      lockedAt: now.toISOString(),
+    },
+  });
+  if (auditError) console.warn('membership content lock audit write failed', auditError);
+  return { accessDeleted, snapshotsDeleted };
+}
+
 /** 관리자 멤버십 해제 — 혜택을 **지금** 끊는다(2026-09-14). cancelled 는 renews_at 까지 권한이 남고(isEntitledStatus)
  *  사용자가 재개할 수 있어 해제가 안 됐다. renews_at 도 지금으로 내린다(남기면 재구매 때 activate 의 base 로 되살아난다). */
 export async function expireMembershipNow(userId: string, options: { now?: Date; service?: SupabaseClient } = {}) {
