@@ -77,17 +77,10 @@ test('recordMembershipDaysGranted — 주문 metadata 에 누적(재시도로 �
   assert.equal((retry.writes[0].patch.metadata as Record<string, unknown>).membershipDaysGranted, 60);
 });
 
-// 원장 함수·지급·웹훅은 DB·PG 를 직접 불러 행동 테스트가 안 된다 — 호출 위치를 소스로 고정한다.
-test('구독 차감은 방금 refunded 로 바뀐 분기에서만(정확히 1회) · 실패는 주문에 흔적 · 지급이 일수를 기록 · 웹훅은 부분취소·전 회수 구분', () => {
+// 지급·웹훅은 DB·PG 를 직접 불러 행동 테스트가 안 된다 — 호출 위치를 소스로 고정한다.
+//   (원장 전이 markPaymentOrderRefunded 는 아래 "markPaymentOrderRefunded 실행" 테스트가 가짜 DB 로 실제로 돌린다.)
+test('지급이 일수를 기록 · 웹훅은 부분취소·전 회수 구분', () => {
   const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
-  const ledger = read('payments/order-ledger.ts');
-  const refunded = ledger.slice(ledger.indexOf('export async function markPaymentOrderRefunded'));
-  const transitioned = refunded.slice(refunded.indexOf('if (data) {'), refunded.indexOf('// 갱신된 행이 없음'));
-  const idempotent = refunded.slice(refunded.indexOf('// 갱신된 행이 없음'), refunded.indexOf('\n}\n'));
-  assert.ok(/\.neq\('status', 'refunded'\)/.test(refunded), '이미 refunded 면 전이하지 않는 조건부 UPDATE 가 1회 보장의 근거다');
-  assert.ok(/const membershipDays = membershipDaysToRemove\(order, input\.partial === true\);\s*if \(membershipDays > 0\) \{\s*await shortenMembershipForRefund\(order\.userId, \{ days: membershipDays \}\)\.catch\(/.test(transitioned));
-  assert.ok(/membership_shorten_failed[\s\S]*\.update\(\{ last_error: message \}\)/.test(transitioned), '실패를 삼키면 영구 누락 — 주문에 흔적');
-  assert.ok(!/shortenMembershipForRefund/.test(idempotent), '멱등 재호출 분기에서 또 빼면 관리자 환불·통보가 겹칠 때 두 번 빠진다');
 
   const fulfillment = read('payments/fulfillment.ts');
   assert.ok(
@@ -120,37 +113,51 @@ test('관리자 해제는 지금 만료 — status expired + renews_at 지금(�
 // ─────────────────────────────────────────────────────────────
 type Row = Record<string, unknown>;
 
-/** delete().eq().in().contains().gte().lt().select() · insert() 흉내 — SQL 처럼 `NULL = x` 는 거짓. 필터 인자는 calls 에 기록. */
-function fakeDb(tables: Record<string, Row[]>, failOn?: string) {
+/** PostgREST 흉내 — select·delete·update 체인(then/maybeSingle 로 실행) · insert. SQL 처럼 `NULL = x` 는 거짓. 필터 인자는 calls 에 기록. */
+function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
+  const failing = [failOn].flat();
   const inserted: Row[] = [];
   const calls: Array<{ table: string; op: string; args: unknown[] }> = [];
   const client = {
     from(table: string) {
       const filters: Array<(row: Row) => boolean> = [];
+      let mode: 'select' | 'delete' | 'update' = 'select';
+      let patch: Row = {};
       const log = (op: string, args: unknown[]) => calls.push({ table, op, args });
       const at = (r: Row, col: string) => (r[col] == null ? NaN : Date.parse(String(r[col])));
-      const chain = {
-        delete: () => (log('delete', []), chain),
-        eq: (col: string, val: unknown) => (log('eq', [col, val]), filters.push((r) => r[col] != null && r[col] === val), chain),
-        in: (col: string, vals: unknown[]) => (log('in', [col, vals]), filters.push((r) => vals.includes(r[col])), chain),
-        contains: (col: string, obj: Row) => (
-          log('contains', [col, obj]),
-          filters.push((r) => Object.entries(obj).every(([k, v]) => (r[col] as Row | null)?.[k] === v)),
-          chain
-        ),
-        gte: (col: string, v: string) => (log('gte', [col, v]), filters.push((r) => at(r, col) >= Date.parse(v)), chain),
-        lt: (col: string, v: string) => (log('lt', [col, v]), filters.push((r) => at(r, col) < Date.parse(v)), chain),
-        select: () => {
-          if (failOn === table) return Promise.resolve({ data: null, error: { message: 'boom' } });
-          const hits = (tables[table] ?? []).filter((r) => filters.every((f) => f(r)));
-          tables[table] = (tables[table] ?? []).filter((r) => !hits.includes(r));
-          return Promise.resolve({ data: hits, error: null });
+      const run = () => {
+        if (failing.includes(table)) return { data: null, error: { message: 'boom' } };
+        const rows = tables[table] ?? [];
+        const hits = rows.filter((r) => filters.every((f) => f(r)));
+        if (mode === 'delete') tables[table] = rows.filter((r) => !hits.includes(r));
+        if (mode === 'update') hits.forEach((r) => Object.assign(r, patch));
+        return { data: hits, error: null };
+      };
+      const chain: Record<string, unknown> = {};
+      const filter = (op: string, args: unknown[], f: (r: Row) => boolean) => (log(op, args), filters.push(f), chain);
+      Object.assign(chain, {
+        select: () => chain,
+        delete: () => ((mode = 'delete'), log('delete', []), chain),
+        update: (p: Row) => ((mode = 'update'), (patch = p), log('update', [p]), chain),
+        eq: (col: string, val: unknown) => filter('eq', [col, val], (r) => r[col] != null && r[col] === val),
+        neq: (col: string, val: unknown) => filter('neq', [col, val], (r) => r[col] != null && r[col] !== val),
+        in: (col: string, vals: unknown[]) => filter('in', [col, vals], (r) => vals.includes(r[col])),
+        not: (col: string, op: string, list: string) =>
+          filter('not', [col, op, list], (r) => op === 'in' && !list.slice(1, -1).split(',').includes(String(r[col]))),
+        contains: (col: string, obj: Row) =>
+          filter('contains', [col, obj], (r) => Object.entries(obj).every(([k, v]) => (r[col] as Row | null)?.[k] === v)),
+        gte: (col: string, v: string) => filter('gte', [col, v], (r) => at(r, col) >= Date.parse(v)),
+        lt: (col: string, v: string) => filter('lt', [col, v], (r) => at(r, col) < Date.parse(v)),
+        maybeSingle: () => {
+          const { data, error } = run();
+          return Promise.resolve({ data: data?.[0] ?? null, error });
         },
+        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(run()).then(resolve, reject),
         insert: (rows: Row | Row[]) => {
           inserted.push(...[rows].flat());
           return Promise.resolve({ error: null });
         },
-      };
+      });
       return chain;
     },
   };
@@ -167,33 +174,50 @@ const use = (id: string, userId: string, feature: string, createdAt: string, met
   created_at: createdAt,
   metadata: meta,
 });
+/** 멤버십으로 연 오늘 상세 행 — created_at 은 UTC, dayKey 는 KST 날짜(실제 기록과 같게). */
+const memberDetail = (id: string, createdAt: string, dayKey: string, userId = 'u1') =>
+  use(id, userId, 'detail_report', createdAt, {
+    kind: 'today_fortune_premium_access',
+    sourceSessionId: `sess_${id}`,
+    readingKey: 'rk1',
+    dayKey,
+    via: 'membership',
+  });
+const snap = (id: string, occurredOn: string, createdAt: string, extra: Row = {}) => ({
+  id,
+  user_id: 'u1',
+  scope_key: `today-detail:rk1:${occurredOn}:general`,
+  occurred_on: occurredOn,
+  concern_id: 'general',
+  access_source: 'membership',
+  created_at: createdAt,
+  ...extra,
+});
+const ids = (rows: Row[] | undefined) => (rows ?? []).map((r) => r.id);
 
-test('lockMembershipContentForRefund — 창 안의 멤버십 열람·스냅샷만 지우고, 창 밖·쿠폰·다른 사용자·다른 기능은 남긴다', async () => {
+test('lockMembershipContentForRefund — 창 안의 멤버십 열람 행만 지운다(창 밖·쿠폰·다른 사용자·다른 기능·지급 행은 남긴다) · 감사에 지운 것의 식별자', async () => {
   const { lockMembershipContentForRefund } = await import('./subscription');
   const db = fakeDb({
     credit_transactions: [
-      use('cal_in', 'u1', 'calendar', '2026-09-01T00:00:00.000Z', { kind: 'fortune_calendar_month_access', via: 'membership' }), // 시작 경계 포함
-      use('det_in', 'u1', 'detail_report', '2026-09-05T00:00:00.000Z', { kind: 'today_fortune_premium_access', via: 'membership' }),
+      use('cal_in', 'u1', 'calendar', '2026-09-01T00:00:00.000Z', { kind: 'fortune_calendar_month_access', readingKey: 'rk1', yearMonth: '2026-09', via: 'membership' }), // 시작 경계 포함
+      memberDetail('det_in', '2026-09-05T00:00:00.000Z', '2026-09-05'),
       use('det_before', 'u1', 'detail_report', '2026-08-31T23:59:59.000Z', { via: 'membership' }), // 앞 결제 기간
       use('det_after_now', 'u1', 'detail_report', '2026-09-10T00:00:00.000Z', { via: 'membership' }), // min(end, now) 끝 경계 제외
-      use('coupon', 'u1', 'detail_report', '2026-09-05T00:00:00.000Z', { kind: 'today_fortune_premium_access' }), // 카카오 쿠폰(표식 없음)
       use('other_user', 'u2', 'calendar', '2026-09-05T00:00:00.000Z', { via: 'membership' }),
       use('dialogue', 'u1', 'dialogue', '2026-09-05T00:00:00.000Z', { via: 'membership' }),
       { id: 'grant', user_id: 'u1', type: 'purchase', feature: 'calendar', created_at: '2026-09-05T00:00:00.000Z', metadata: { via: 'membership' } },
     ],
     today_fortune_result_snapshots: [
-      { id: 's_in', user_id: 'u1', access_source: 'membership', created_at: '2026-09-05T00:00:00.000Z' },
-      { id: 's_paid', user_id: 'u1', access_source: 'taste-product', created_at: '2026-09-05T00:00:00.000Z' },
-      { id: 's_null', user_id: 'u1', access_source: null, created_at: '2026-09-05T00:00:00.000Z' },
-      { id: 's_before', user_id: 'u1', access_source: 'membership', created_at: '2026-08-20T00:00:00.000Z' },
-      { id: 's_u2', user_id: 'u2', access_source: 'membership', created_at: '2026-09-05T00:00:00.000Z' },
+      snap('s_in', '2026-09-05', '2026-09-05T00:00:00.000Z'),
+      snap('s_calendar_day', '2026-09-01', '2026-09-01T02:00:00.000Z', { access_source: 'coin-session' }), // 달력만 연 날은 상세 스냅샷을 잠글 날이 아니다
     ],
+    product_entitlements: [],
   });
   const result = await lockMembershipContentForRefund('u1', [P], { reason: 'admin_refund', actor: 'admin', paymentKey: 'pk_m', now: LOCK_NOW }, db.client);
 
   assert.deepEqual(result, { accessDeleted: 2, snapshotsDeleted: 1 });
-  assert.deepEqual(db.tables.credit_transactions.map((r) => r.id), ['det_before', 'det_after_now', 'coupon', 'other_user', 'dialogue', 'grant']);
-  assert.deepEqual(db.tables.today_fortune_result_snapshots.map((r) => r.id), ['s_paid', 's_null', 's_before', 's_u2']);
+  assert.deepEqual(ids(db.tables.credit_transactions), ['det_before', 'det_after_now', 'other_user', 'dialogue', 'grant']);
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s_calendar_day']);
   assert.equal(db.inserted.length, 1, '감사행은 창 개수와 무관하게 1개');
   assert.deepEqual(db.inserted[0], {
     user_id: 'u1',
@@ -204,6 +228,11 @@ test('lockMembershipContentForRefund — 창 안의 멤버십 열람·스냅샷�
       kind: 'membership_content_locked',
       accessDeleted: 2,
       snapshotsDeleted: 1,
+      access: [
+        { feature: 'calendar', kind: 'fortune_calendar_month_access', readingKey: 'rk1', yearMonth: '2026-09', dayKey: null },
+        { feature: 'detail_report', kind: 'today_fortune_premium_access', readingKey: 'rk1', yearMonth: null, dayKey: '2026-09-05' },
+      ],
+      snapshots: [{ id: 's_in', scopeKey: 'today-detail:rk1:2026-09-05:general' }],
       windows: [{ start: P.start, end: LOCK_NOW.toISOString() }],
       reason: 'admin_refund',
       actor: 'admin',
@@ -211,6 +240,94 @@ test('lockMembershipContentForRefund — 창 안의 멤버십 열람·스냅샷�
       lockedAt: LOCK_NOW.toISOString(),
     },
   });
+  assert.ok(!JSON.stringify(db.inserted[0]).includes('sess_'), '감사엔 지정한 식별자만(metadata 를 통째로 복사하지 않는다)');
+});
+
+// 리뷰 실측(과소 잠금): 'membership' 표식은 그날 첫 POST 스냅샷에만 붙는다. 같은 멤버십 행으로 연 GET(coin-session)·주제 전환(reused)·
+//   다른 사주(coin-daily) 스냅샷이 남아 스냅샷 링크·/my/results 로 계속 보였다 → 스냅샷은 표식이 아니라 **날** 로 판정한다.
+test('멤버십만인 날 — 그날 스냅샷은 표식과 무관하게 전부 잠근다(GET·주제 전환·다른 사주) · 멤버십 상세 행이 없는 날·다른 사용자는 남긴다', async () => {
+  const { lockMembershipContentForRefund } = await import('./subscription');
+  const db = fakeDb({
+    credit_transactions: [memberDetail('d5', '2026-09-05T01:00:00.000Z', '2026-09-05')],
+    today_fortune_result_snapshots: [
+      snap('s_mem', '2026-09-05', '2026-09-05T01:00:00.000Z'),
+      snap('s_get', '2026-09-05', '2026-09-05T02:00:00.000Z', { access_source: 'coin-session' }),
+      snap('s_concern', '2026-09-05', '2026-09-05T03:00:00.000Z', { access_source: 'reused', concern_id: 'love' }),
+      snap('s_other_saju', '2026-09-05', '2026-09-05T04:00:00.000Z', { access_source: 'coin-daily', scope_key: 'today-detail:rk2:2026-09-05:general' }),
+      snap('s_no_member_day', '2026-09-06', '2026-09-06T01:00:00.000Z', { access_source: 'coin-session' }),
+      { ...snap('s_u2', '2026-09-05', '2026-09-05T01:00:00.000Z'), user_id: 'u2' },
+    ],
+    product_entitlements: [],
+  });
+  const result = await lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, db.client);
+  assert.deepEqual(result, { accessDeleted: 1, snapshotsDeleted: 4 });
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s_no_member_day', 's_u2']);
+});
+
+// 반대 방향(과다 잠금): 그날 전·카드·쿠폰으로도 열 수 있었다면 그날 스냅샷은 산 것이다 — 멤버십 환불이 지우면 안 된다.
+test('그날 다른 근거가 있으면 그날 스냅샷 유지 — 전 결제(charged)·today-detail 카드 이용권(KST 날짜)·카카오 쿠폰 · 멤버십만인 날만 잠김', async () => {
+  const { lockMembershipContentForRefund } = await import('./subscription');
+  const db = fakeDb({
+    credit_transactions: [
+      memberDetail('d5', '2026-09-05T01:00:00.000Z', '2026-09-05'),
+      memberDetail('d6', '2026-09-06T01:00:00.000Z', '2026-09-06'),
+      memberDetail('d7', '2026-09-07T01:00:00.000Z', '2026-09-07'),
+      memberDetail('d8', '2026-09-08T01:00:00.000Z', '2026-09-08'),
+      { ...use('charged5', 'u1', 'detail_report', '2026-09-05T05:00:00.000Z', { kind: 'today_fortune_premium_access', dayKey: '2026-09-05', charged: true }), amount: -1 },
+      use('coupon7', 'u1', 'detail_report', '2026-09-07T05:00:00.000Z', { kind: 'today_fortune_premium_access', dayKey: '2026-09-07' }),
+      use('u2_charged8', 'u2', 'detail_report', '2026-09-08T05:00:00.000Z', { dayKey: '2026-09-08', charged: true }), // 다른 사용자 근거는 무관
+      use('member_prev8', 'u1', 'detail_report', '2026-08-08T05:00:00.000Z', { via: 'membership' }), // 창 밖 멤버십 행은 근거가 아니다
+    ],
+    today_fortune_result_snapshots: [
+      snap('s5', '2026-09-05', '2026-09-05T01:00:00.000Z'),
+      snap('s6', '2026-09-06', '2026-09-06T01:00:00.000Z'),
+      snap('s7', '2026-09-07', '2026-09-07T01:00:00.000Z'),
+      snap('s8', '2026-09-08', '2026-09-08T01:00:00.000Z'),
+    ],
+    product_entitlements: [
+      // UTC 09-05 15:00 = KST 09-06 00:00 — 카드 이용권의 날짜는 KST(hasTodayDetailEntitlementForDay 와 같은 기준).
+      { id: 'card6', user_id: 'u1', product_id: 'today-detail', created_at: '2026-09-05T15:00:00.000Z' },
+      { id: 'card_u2', user_id: 'u2', product_id: 'today-detail', created_at: '2026-09-08T01:00:00.000Z' },
+    ],
+  });
+  const result = await lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, db.client);
+  assert.deepEqual(result, { accessDeleted: 4, snapshotsDeleted: 1 }, '멤버십 열람 행은 날과 무관하게 전부 지운다(근거 있는 날은 그 근거가 연다)');
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s5', 's6', 's7']);
+  assert.deepEqual(ids(db.tables.credit_transactions), ['charged5', 'coupon7', 'u2_charged8', 'member_prev8'], '근거 행은 그대로');
+});
+
+test('창 밖 스냅샷 유지 — 잠글 날이어도 창 시작 전(앞 기간)에 만든 스냅샷은 남긴다', async () => {
+  const { lockMembershipContentForRefund } = await import('./subscription');
+  const db = fakeDb({
+    // 창 시작 09-01 00:00Z = KST 09-01 09:00. 같은 KST 날에 앞 기간(08:00)과 이 기간(10:00) 이 겹친다.
+    credit_transactions: [
+      memberDetail('d1_prev', '2026-08-31T23:00:00.000Z', '2026-09-01'), // 앞 기간 멤버십 행 — 남지만 "다른 근거"는 아니다
+      memberDetail('d1', '2026-09-01T01:00:00.000Z', '2026-09-01'),
+    ],
+    today_fortune_result_snapshots: [
+      snap('s_prev_period', '2026-09-01', '2026-08-31T23:00:00.000Z'),
+      snap('s_this_period', '2026-09-01', '2026-09-01T01:00:00.000Z'),
+    ],
+    product_entitlements: [],
+  });
+  await lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, db.client);
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s_prev_period']);
+  assert.deepEqual(ids(db.tables.credit_transactions), ['d1_prev']);
+});
+
+test('주제 단품(재물·일, 전역) 보유자 — 그 주제 스냅샷은 단품이 연 것이라 남긴다', async () => {
+  const { lockMembershipContentForRefund } = await import('./subscription');
+  const db = fakeDb({
+    credit_transactions: [memberDetail('d5', '2026-09-05T01:00:00.000Z', '2026-09-05')],
+    today_fortune_result_snapshots: [
+      snap('s_general', '2026-09-05', '2026-09-05T01:00:00.000Z'),
+      snap('s_wealth', '2026-09-05', '2026-09-05T02:00:00.000Z', { concern_id: 'wealth', access_source: 'topic-product' }),
+      snap('s_career', '2026-09-05', '2026-09-05T03:00:00.000Z', { concern_id: 'career' }),
+    ],
+    product_entitlements: [{ id: 'mp', user_id: 'u1', product_id: 'money-pattern', created_at: '2026-07-01T00:00:00.000Z' }],
+  });
+  await lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, db.client);
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s_wealth'], '일(work-flow)은 안 샀으니 career 는 잠긴다');
 });
 
 test('lockMembershipContentForRefund — 기간이 이미 끝났으면 end 까지(끝 시각 행은 다음 기간 몫) · 여러 창 합산', async () => {
@@ -226,28 +343,111 @@ test('lockMembershipContentForRefund — 기간이 이미 끝났으면 end 까�
     today_fortune_result_snapshots: [],
   });
   assert.deepEqual(await lockMembershipContentForRefund('u1', [P], { reason: 'r', now: later }, db.client), { accessDeleted: 1, snapshotsDeleted: 0 });
-  assert.deepEqual(db.tables.credit_transactions.map((r) => r.id), ['p2', 'after'], 'end(10/01) 시각 행은 이 기간이 아니다');
+  assert.deepEqual(ids(db.tables.credit_transactions), ['p2', 'after'], 'end(10/01) 시각 행은 이 기간이 아니다');
   assert.deepEqual(await lockMembershipContentForRefund('u1', [P, second], { reason: 'r', now: later }, db.client), { accessDeleted: 1, snapshotsDeleted: 0 });
-  assert.deepEqual(db.tables.credit_transactions.map((r) => r.id), ['after']);
+  assert.deepEqual(ids(db.tables.credit_transactions), ['after']);
 });
 
-test('lockMembershipContentForRefund — 빈·미래·깨진 창은 DB 를 건드리지 않는다 · 사용자 없으면 던진다', async () => {
+// 리뷰: 기간 기록 없는 옛 주문은 조용히 건너뛰었다 → 건너뛴 사유를 감사행으로(last_error 아님 — 실패가 아니다).
+test('lockMembershipContentForRefund — 기간 기록 없음·미래·깨진 창은 지우지 않고 건너뛴 사유를 감사행으로 · 사용자 없으면 던진다', async () => {
   const { lockMembershipContentForRefund } = await import('./subscription');
-  for (const windows of [[], [{ start: '2026-11-01T00:00:00.000Z', end: '2026-12-01T00:00:00.000Z' }], [{ start: 'x', end: 'y' }]]) {
-    const db = fakeDb({ credit_transactions: [use('x', 'u1', 'calendar', '2026-09-05T00:00:00.000Z', { via: 'membership' })] });
-    assert.deepEqual(await lockMembershipContentForRefund('u1', windows, { reason: 'r', now: LOCK_NOW }, db.client), { accessDeleted: 0, snapshotsDeleted: 0 });
-    // 미래 창 = 앞 기간에 이어 붙은 결제를 그 기간 시작 전에 환불 — 지금까지 연 건 앞 결제 몫이다.
-    assert.equal(db.calls.length, 0, `창 ${JSON.stringify(windows)}`);
-    assert.equal(db.inserted.length, 0);
+  const future = { start: '2026-11-01T00:00:00.000Z', end: '2026-12-01T00:00:00.000Z' };
+  const cases: Array<[Array<{ start: string; end: string }>, string]> = [
+    [[], 'no_membership_periods'],
+    [[future], 'no_elapsed_window'], // 앞 기간에 이어 붙은 결제를 그 기간 시작 전에 환불 — 지금까지 연 건 앞 결제 몫이다.
+    [[{ start: 'x', end: 'y' }], 'no_elapsed_window'],
+  ];
+  for (const [windows, skipReason] of cases) {
+    const db = fakeDb({ credit_transactions: [memberDetail('x', '2026-09-05T00:00:00.000Z', '2026-09-05')] });
+    assert.deepEqual(await lockMembershipContentForRefund('u1', windows, { reason: 'r', paymentKey: 'pk', now: LOCK_NOW }, db.client), { accessDeleted: 0, snapshotsDeleted: 0 });
+    assert.equal(db.calls.length, 0, `창 ${JSON.stringify(windows)} — 지우는 쿼리 없음`);
+    assert.deepEqual(db.inserted, [
+      {
+        user_id: 'u1',
+        amount: 0,
+        type: 'purchase',
+        feature: 'entitlement_revoke',
+        metadata: { kind: 'membership_content_lock_skipped', skipReason, windows, reason: 'r', actor: null, paymentKey: 'pk', lockedAt: LOCK_NOW.toISOString() },
+      },
+    ]);
   }
   await assert.rejects(lockMembershipContentForRefund('', [P], { reason: 'r' }, fakeDb({}).client));
 });
 
 test('lockMembershipContentForRefund — DB 오류는 던진다(호출부가 주문에 흔적)', async () => {
   const { lockMembershipContentForRefund } = await import('./subscription');
-  for (const table of ['credit_transactions', 'today_fortune_result_snapshots']) {
-    await assert.rejects(lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, fakeDb({}, table).client), /boom/);
+  for (const table of ['credit_transactions', 'today_fortune_result_snapshots', 'product_entitlements']) {
+    const tables = { credit_transactions: [memberDetail('d5', '2026-09-05T01:00:00.000Z', '2026-09-05')] };
+    await assert.rejects(lockMembershipContentForRefund('u1', [P], { reason: 'r', now: LOCK_NOW }, fakeDb(tables, table).client), /boom/, table);
   }
+});
+
+// ── 훅 실행 — 원장 전이 함수를 가짜 DB 로 실제로 돌린다(소스 모양 고정만으로는 분기가 실제로 타는지 모른다).
+//   dispatchGaRefund 는 VERCEL_ENV=production 이 아니면 DB·네트워크 전에 돌아간다(여기선 항상 그렇다 — 아래 가드).
+const OLD_PERIOD = { start: '2026-01-01T00:00:00.000Z', end: '2026-01-31T00:00:00.000Z' }; // 실행 시각과 무관하게 이미 지난 창
+function refundDb(failOn: string[] = []) {
+  return fakeDb(
+    {
+      payment_orders: [
+        {
+          order_id: 'ord_m',
+          user_id: 'u1',
+          package_id: 'membership_premium',
+          status: 'fulfilled',
+          amount: 49000,
+          payment_key: 'pk_m',
+          metadata: { membershipDaysGranted: 30, membershipPeriods: [OLD_PERIOD] },
+        },
+      ],
+      subscriptions: [{ user_id: 'u1', renews_at: '2099-02-01T00:00:00.000Z' }],
+      credit_transactions: [memberDetail('d_jan', '2026-01-10T01:00:00.000Z', '2026-01-10')],
+      today_fortune_result_snapshots: [snap('s_jan', '2026-01-10', '2026-01-10T01:00:00.000Z')],
+      product_entitlements: [],
+    },
+    failOn
+  );
+}
+
+test('markPaymentOrderRefunded 실행 — 전액이면 구독 차감 + 잠금 · partial 이면 둘 다 안 함 · 멱등 재호출은 다시 잠그지 않음', async () => {
+  assert.notEqual(process.env.VERCEL_ENV, 'production', 'GA refund 가 네트워크를 타지 않는 전제');
+  const { markPaymentOrderRefunded } = await import('./payments/order-ledger');
+  const input = { orderId: 'ord_m', reason: 'admin_refund', source: 'admin-refund' as const };
+
+  const full = refundDb();
+  await markPaymentOrderRefunded(input, full.client);
+  assert.equal(full.tables.payment_orders[0].status, 'refunded');
+  assert.equal(full.tables.subscriptions[0].renews_at, '2099-01-02T00:00:00.000Z', '구독에서 30일');
+  assert.deepEqual(ids(full.tables.credit_transactions), [], '멤버십 열람 행 잠금');
+  assert.deepEqual(ids(full.tables.today_fortune_result_snapshots), [], '멤버십만인 날 스냅샷 잠금');
+  assert.equal(full.inserted.length, 1);
+  assert.equal((full.inserted[0].metadata as Row).kind, 'membership_content_locked');
+  assert.equal((full.inserted[0].metadata as Row).paymentKey, 'pk_m');
+  assert.equal(full.tables.payment_orders[0].last_error, 'admin_refund', '실패 없으면 환불 사유 그대로');
+
+  // 멱등: 이미 refunded — 사이에 새로 생긴 멤버십 행이 있어도 다시 잠그지 않는다(관리자 환불·나이스 통보·정산 겹침).
+  full.tables.credit_transactions.push(memberDetail('d_jan2', '2026-01-11T01:00:00.000Z', '2026-01-11'));
+  const again = await markPaymentOrderRefunded(input, full.client);
+  assert.equal(again.orderId, 'ord_m', '기존 행을 돌려준다');
+  assert.deepEqual(ids(full.tables.credit_transactions), ['d_jan2']);
+  assert.equal(full.inserted.length, 1, '감사행도 1개 그대로');
+  assert.equal(full.tables.subscriptions[0].renews_at, '2099-01-02T00:00:00.000Z', '두 번 빼지 않는다');
+
+  const partial = refundDb();
+  await markPaymentOrderRefunded({ ...input, partial: true }, partial.client);
+  assert.equal(partial.tables.payment_orders[0].status, 'refunded');
+  assert.deepEqual(ids(partial.tables.credit_transactions), ['d_jan'], '부분환불은 잠그지 않는다(B단계)');
+  assert.deepEqual(ids(partial.tables.today_fortune_result_snapshots), ['s_jan']);
+  assert.equal(partial.inserted.length, 0);
+  assert.equal(partial.tables.subscriptions[0].renews_at, '2099-02-01T00:00:00.000Z');
+});
+
+// 리뷰: 구독 차감 실패와 잠금 실패가 겹치면 뒤의 last_error 가 앞을 덮어 하나가 사라졌다.
+test('markPaymentOrderRefunded 실행 — 차감·잠금이 둘 다 실패하면 last_error 에 환불 사유와 둘 다 남는다', async () => {
+  const { markPaymentOrderRefunded } = await import('./payments/order-ledger');
+  const db = refundDb(['subscriptions', 'credit_transactions']);
+  await markPaymentOrderRefunded({ orderId: 'ord_m', reason: 'admin_refund', source: 'admin-refund' }, db.client);
+  assert.equal(db.tables.payment_orders[0].last_error, 'admin_refund | membership_shorten_failed: boom | membership_lock_failed: boom');
+  assert.equal(db.tables.payment_orders[0].status, 'refunded', '후처리 실패가 전이를 되돌리지 않는다');
 });
 
 test('recordMembershipDaysGranted — 기간을 membershipPeriods 에 누적(재시도 = 2개) · 기간 없으면 키를 만들지 않는다', async () => {
@@ -269,18 +469,15 @@ test('recordMembershipDaysGranted — 기간을 membershipPeriods 에 누적(재
   assert.deepEqual(readMembershipPeriods({}), [], '기록 이전 주문 — 잠글 기간 없음');
 });
 
-test('잠금 훅은 방금 refunded 로 바뀐 분기에서 구독 차감 뒤(전액환불만) · 실패는 흔적 · 멱등 분기엔 없음 · 멤버십 경로만 via 표식', () => {
+test('잠금 훅은 구독 차감 뒤 · 멤버십 경로만 via 표식', () => {
   const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
+  // 분기·멱등·흔적은 "markPaymentOrderRefunded 실행" 테스트가 실제로 돌려 본다. 여기선 실행으로 안 드러나는 순서만.
   const ledger = read('payments/order-ledger.ts');
   const refunded = ledger.slice(ledger.indexOf('export async function markPaymentOrderRefunded'));
-  const transitioned = refunded.slice(refunded.indexOf('if (data) {'), refunded.indexOf('// 갱신된 행이 없음'));
-  const idempotent = refunded.slice(refunded.indexOf('// 갱신된 행이 없음'), refunded.indexOf('\n}\n'));
   assert.ok(
-    /if \(membershipDays > 0\) \{\s*await shortenMembershipForRefund\([\s\S]*?\}\);\s*(\/\/[^\n]*\n\s*)*await lockMembershipContentForRefund\(order\.userId, readMembershipPeriods\(order\.metadata\), \{[\s\S]*?paymentKey: order\.paymentKey,\s*\}\)\.catch\(/.test(transitioned),
-    '전액환불(membershipDays > 0 — 부분취소면 0) 분기 안에서, 구독 차감 뒤에'
+    /if \(membershipDays > 0\) \{[\s\S]*?await shortenMembershipForRefund\([\s\S]*?await lockMembershipContentForRefund\(/.test(refunded),
+    '구독 차감 뒤에 잠근다'
   );
-  assert.ok(/membership_lock_failed[\s\S]*\.update\(\{ last_error: message \}\)/.test(transitioned), '실패를 삼키면 영구 누락 — 주문에 흔적');
-  assert.ok(!/lockMembershipContentForRefund/.test(idempotent), '멱등 재호출 분기에서는 잠그지 않는다');
 
   const calendar = read('credits/calendar-access.ts');
   assert.ok(/if \(await getMemberTier\(userId\)\) \{\s*await recordFortuneCalendarMonthAccess\(userId, readingKey, year, month, 'membership'\);/.test(calendar));
