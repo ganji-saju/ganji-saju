@@ -21,17 +21,26 @@ export interface CancellationRevokePlan {
   revokeGrants: boolean;
 }
 
-/** 지급이 일어난(혹은 일어나던) 상태에서만 회수한다. */
+/** 지급이 일어난(혹은 일어나던) 상태에서만 전을 회수한다. */
 const GRANTED_STATUSES: readonly PaymentOrderStatus[] = ['fulfilled', 'fulfilling'];
+/** 이용권은 지급이 **일어났을 수 있는** 상태면 회수한다 — 결제키 회수는 지급이 없으면 0행이라 넓게 잡는다.
+ *  지급 도중 실패(fulfillment_failed — 구성품 일부만 지급)도 남은 권한을 거둔다. 이미 환불 표기된 주문의 재통보는 0행(멱등). */
+const GRANT_POSSIBLE_STATUSES: readonly PaymentOrderStatus[] = [
+  'confirmed',
+  'fulfilling',
+  'fulfilled',
+  'fulfillment_failed',
+  'refunded',
+];
 
 export function buildCancellationRevokePlan(
   input: CancellationRevokeInput
 ): CancellationRevokePlan {
   const granted = GRANTED_STATUSES.includes(input.orderStatus);
-  if (!granted) {
-    return { revokeCredits: 0, revokeGrants: false };
-  }
-  return { revokeCredits: input.packageCredits > 0 ? input.packageCredits : 0, revokeGrants: true };
+  return {
+    revokeCredits: granted && input.packageCredits > 0 ? input.packageCredits : 0,
+    revokeGrants: GRANT_POSSIBLE_STATUSES.includes(input.orderStatus),
+  };
 }
 
 /** 결제 승인(=돈을 받음)까지 간 것으로 볼 수 있는 상태. */

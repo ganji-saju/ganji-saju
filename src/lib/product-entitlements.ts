@@ -4,6 +4,7 @@ import {
 } from '@/lib/supabase/server';
 import type { TasteProductId } from '@/lib/payments/catalog';
 import {
+  buildLifetimeReportScopeKey,
   buildMonthlyCalendarScopeKey,
   buildReadingProductScopeKey,
   buildTodayDetailScopeKey,
@@ -496,11 +497,6 @@ export async function grantTasteProductEntitlement(
   return entitlement as TasteProductEntitlement;
 }
 
-/**
- * 2026-07-10 — PG 취소 통보 회수용. 주문이 실제로 지급한 이용권을 order_id 로 열거한다.
- * 지급(grantProductEntitlement)이 order_id 를 남기므로 번들이면 구성품이 여러 행으로 나온다.
- * 회수를 패키지 정의가 아니라 **실제 지급 기록**에 맞추기 위한 조회다.
- */
 // 특정 사용자의 특정 상품 이용권 전체(최신순). 정확일치(scope_key)로 못 잡는 스코프를
 // 후처리 매칭(예: lifetime-report 의 이름 해시 드리프트 보정)하기 위한 소스.
 export async function listProductEntitlementsByProduct(
@@ -685,15 +681,24 @@ export async function revokeEntitlementsOfPayment(
     orderId: r.order_id,
     amount: r.amount,
   }));
-  const legacy: Revoked[] = ((legacyRows ?? []) as Array<{ metadata: Record<string, unknown> | null }>).map(({ metadata }) => ({
-    productId: metadata?.productId ?? metadata?.kind ?? null,
-    scopeKey: metadata?.scopeKey ?? metadata?.readingKey ?? null,
-    orderId: metadata?.orderId ?? null,
-    amount: metadata?.amount ?? null,
-  }));
+  // 레거시 metadata 를 이용권 행과 같은 모양으로(전역 null → 'global', 평생리포트 kind·readingKey → 'lifetime-report'·'lifetime:…').
+  const legacy: Revoked[] = ((legacyRows ?? []) as Array<{ metadata: Record<string, unknown> | null }>).map(({ metadata }) => {
+    const m = metadata ?? {};
+    const lifetime = m.kind === 'lifetime_report';
+    return {
+      productId: lifetime ? 'lifetime-report' : (m.productId ?? null),
+      scopeKey: lifetime
+        ? typeof m.readingKey === 'string' ? buildLifetimeReportScopeKey(m.readingKey) : null
+        : normalizeEntitlementScopeKey(typeof m.scopeKey === 'string' ? m.scopeKey : null),
+      orderId: m.orderId ?? null,
+      amount: m.amount ?? null,
+    };
+  });
 
-  // 감사 — 지운 이용권마다(이용권 행이 없던 레거시 전용 권한은 레거시 행 기준). 실패해도 회수 자체는 유효.
-  const audited = deleted.length > 0 ? deleted : legacy;
+  // 감사 — 회수한 권한마다: 이용권 행 + 이용권 행이 없던 권한(흡수된 구성품·레거시 전용)의 레거시 행. 실패해도 회수 자체는 유효.
+  const keyOf = (item: Revoked) => `${item.productId}|${item.scopeKey}`;
+  const deletedKeys = new Set(deleted.map(keyOf));
+  const audited = [...deleted, ...legacy.filter((item) => !deletedKeys.has(keyOf(item)))];
   if (audited.length > 0) {
     const revokedAt = new Date().toISOString();
     const { error: auditError } = await client.from('credit_transactions').insert(

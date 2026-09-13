@@ -15,18 +15,23 @@ import {
 
 declare const test: (name: string, fn: () => void) => void;
 
-test('지급된 주문(fulfilled·fulfilling)은 그 결제의 이용권을 회수한다 — credits=0 인 단품도(이번 사고의 회귀 차단)', () => {
-  for (const orderStatus of ['fulfilled', 'fulfilling'] as const) {
-    assert.deepEqual(buildCancellationRevokePlan({ orderStatus, packageCredits: 0 }), { revokeCredits: 0, revokeGrants: true }, orderStatus);
+test('지급이 일어났을 수 있는 주문은 그 결제의 이용권을 회수한다 — credits=0 단품·지급 도중 실패·재통보 포함', () => {
+  // 결제키 회수는 지급이 없으면 0행이라 넓게 잡는다. fulfillment_failed(구성품 일부만 지급)를 빼면 남은 권한이 환불 뒤에도 열린다.
+  for (const orderStatus of ['confirmed', 'fulfilling', 'fulfilled', 'fulfillment_failed', 'refunded'] as const) {
+    assert.equal(buildCancellationRevokePlan({ orderStatus, packageCredits: 0 }).revokeGrants, true, orderStatus);
   }
 });
 
-test('전 패키지는 전도 회수한다(기존 동작 보존)', () => {
+test('전은 지급된 주문(fulfilled·fulfilling)에서만 회수한다(기존 동작 보존)', () => {
   assert.deepEqual(buildCancellationRevokePlan({ orderStatus: 'fulfilled', packageCredits: 15 }), { revokeCredits: 15, revokeGrants: true });
+  assert.deepEqual(buildCancellationRevokePlan({ orderStatus: 'fulfilling', packageCredits: 15 }), { revokeCredits: 15, revokeGrants: true });
+  for (const orderStatus of ['confirmed', 'fulfillment_failed', 'refunded'] as const) {
+    assert.equal(buildCancellationRevokePlan({ orderStatus, packageCredits: 15 }).revokeCredits, 0, orderStatus);
+  }
 });
 
-test('지급되지 않은 주문(prepared/payment_failed/canceled)은 아무것도 회수하지 않는다', () => {
-  for (const orderStatus of ['prepared', 'payment_failed', 'canceled'] as const) {
+test('결제 전 주문(prepared/in_progress/payment_failed/canceled/expired)은 아무것도 회수하지 않는다', () => {
+  for (const orderStatus of ['prepared', 'in_progress', 'payment_failed', 'canceled', 'expired'] as const) {
     assert.deepEqual(buildCancellationRevokePlan({ orderStatus, packageCredits: 15 }), { revokeCredits: 0, revokeGrants: false }, orderStatus);
   }
 });

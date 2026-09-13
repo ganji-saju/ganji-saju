@@ -15,8 +15,8 @@ declare const test: (name: string, fn: () => void | Promise<void>) => void;
 // ─────────────────────────────────────────────────────────────
 type Row = Record<string, unknown>;
 
-/** delete().eq().in().contains().select() · insert() 만 흉내 — SQL 처럼 `NULL = x` 는 참이 아니다. */
-function fakeService(tables: Record<string, Row[]>) {
+/** delete().eq().in().contains().select() · insert() 만 흉내 — SQL 처럼 `NULL = x` 는 참이 아니다. failOn 은 그 단계에서 PostgREST 오류를 돌려준다. */
+function fakeService(tables: Record<string, Row[]>, failOn?: 'product_entitlements' | 'credit_transactions' | 'insert') {
   const inserted: Row[] = [];
   const client = {
     from(table: string) {
@@ -29,11 +29,13 @@ function fakeService(tables: Record<string, Row[]>) {
         contains: (col: string, obj: Row) =>
           (filters.push((r) => Object.entries(obj).every(([k, v]) => (r[col] as Row | null)?.[k] === v)), chain),
         select: () => {
+          if (deleting && failOn === table) return Promise.resolve({ data: null, error: { message: 'boom' } });
           const hits = (tables[table] ?? []).filter((r) => filters.every((f) => f(r)));
           if (deleting) tables[table] = (tables[table] ?? []).filter((r) => !hits.includes(r));
           return Promise.resolve({ data: hits, error: null });
         },
         insert: (rows: Row | Row[]) => {
+          if (failOn === 'insert') return Promise.resolve({ error: { message: 'boom' } });
           inserted.push(...[rows].flat());
           return Promise.resolve({ error: null });
         },
@@ -89,13 +91,56 @@ test('결제키 회수 — 그 결제가 만든 이용권·레거시 행만 지�
     'u2:taste_product:today-detail',
   ]);
   assert.deepEqual(
-    db.inserted.map((r) => [r.feature, (r.metadata as Row).productId, (r.metadata as Row).paymentKey]),
+    db.inserted.map((r) => [r.feature, (r.metadata as Row).productId, (r.metadata as Row).scopeKey, (r.metadata as Row).paymentKey]),
     [
-      ['entitlement_revoke', 'today-detail', 'pk_b'],
-      ['entitlement_revoke', 'money-pattern', 'pk_b'],
+      ['entitlement_revoke', 'today-detail', 'today:rk', 'pk_b'],
+      ['entitlement_revoke', 'money-pattern', 'global', 'pk_b'],
+      // 흡수된 구성품 — 이용권 행은 없고 레거시만 지워졌다. 이것도 회수한 권한이라 감사가 남아야 한다(리뷰 발견).
+      ['entitlement_revoke', 'score-total', 'reading:rk', 'pk_b'],
     ],
-    '지운 이용권마다 감사 행'
+    '회수한 권한마다 감사 행 — 전역 레거시(null)는 이용권 행(global)과 같은 권한이라 한 번만'
   );
+});
+
+test('결제키 회수 — 평생리포트 레거시(feature=lifetime_report)도 지우고, 수동 지급·다른 type 행은 남긴다', async () => {
+  const db = fakeService({
+    product_entitlements: [
+      { user_id: 'u1', product_id: 'lifetime-report', scope_key: 'lifetime:rk', order_id: 'ord_l', payment_key: 'pk_l', amount: 49000 },
+    ],
+    credit_transactions: [
+      { user_id: 'u1', type: 'purchase', feature: 'lifetime_report', metadata: { kind: 'lifetime_report', readingKey: 'rk', orderId: 'ord_l', paymentKey: 'pk_l' } },
+      { user_id: 'u1', type: 'purchase', feature: 'lifetime_report', metadata: { kind: 'lifetime_report', readingKey: 'rk', paymentKey: null } }, // 수동 지급
+      { user_id: 'u1', type: 'use', feature: 'taste_product', metadata: { kind: 'taste_product', productId: 'today-detail', paymentKey: 'pk_l' } },
+    ],
+  });
+  assert.deepEqual(await revokeEntitlementsOfPayment('u1', 'pk_l', { reason: 'r' }, db.client), {
+    revoked: true,
+    productTableDeleted: 1,
+    legacyDeleted: 1,
+  });
+  assert.deepEqual(db.tables.credit_transactions.map((r) => `${r.type}:${(r.metadata as Row).paymentKey}`), ['purchase:null', 'use:pk_l']);
+  assert.deepEqual(
+    db.inserted.map((r) => [(r.metadata as Row).productId, (r.metadata as Row).scopeKey]),
+    [['lifetime-report', 'lifetime:rk']],
+    '레거시(kind·readingKey)도 이용권 행과 같은 권한으로 보고 감사는 한 번'
+  );
+});
+
+test('결제키 회수 — 삭제 오류는 던지고(요청은 revoke_pending → 재시도), 감사 기록 실패는 회수를 되돌리지 않는다', async () => {
+  const seed = () => ({
+    product_entitlements: [{ user_id: 'u1', product_id: 'today-detail', scope_key: 'today:rk', order_id: 'o', payment_key: 'pk', amount: 3300 }],
+    credit_transactions: [legacy('u1', { productId: 'today-detail', scopeKey: 'today:rk', orderId: 'o', paymentKey: 'pk' })],
+  });
+  const peFails = fakeService(seed(), 'product_entitlements');
+  await assert.rejects(revokeEntitlementsOfPayment('u1', 'pk', { reason: 'r' }, peFails.client), /boom/);
+  assert.equal(peFails.tables.credit_transactions.length, 1, '앞 단계가 실패하면 레거시도 그대로(다음 재시도가 둘 다 지운다)');
+
+  const ctFails = fakeService(seed(), 'credit_transactions');
+  await assert.rejects(revokeEntitlementsOfPayment('u1', 'pk', { reason: 'r' }, ctFails.client), /boom/);
+
+  const auditFails = fakeService(seed(), 'insert');
+  assert.equal((await revokeEntitlementsOfPayment('u1', 'pk', { reason: 'r' }, auditFails.client)).revoked, true);
+  assert.equal(auditFails.tables.product_entitlements.length, 0);
 });
 
 test('결제키 회수 — 이용권 행 없이 레거시에만 남은 권한도 회수하고, 아무것도 없으면 revoked=false(고아 주문)', async () => {
@@ -145,8 +190,13 @@ test('환불·PG 취소 회수 경로는 전부 결제키 회수를 쓰고, (상
   assert.deepEqual(callers(/\brevokeProductEntitlement\(/), ['app/api/admin/product-entitlement/revoke/route.ts']);
   const route = files.find((f) => f.rel === 'app/api/admin/refund/route.ts')!.text;
   assert.ok(/revokeEntitlementsOfPayment\(args\.userId, args\.paymentKey,/.test(route));
+  // 고아 주문(지울 권한 없음)은 '회수 실패'가 아니다 — 빠지면 PG 취소 뒤 장부가 revoke_pending 에 갇힌다.
+  assert.ok(/return \{ revoked: result\.revoked, nothingToRevoke: !result\.revoked \};/.test(route));
   const webhook = files.find((f) => f.rel === 'app/api/payments/webhook/nicepay/route.ts')!.text;
-  assert.ok(/revokeEntitlementsOfPayment\(order\.userId, order\.paymentKey,/.test(webhook));
+  // 회수 여부는 **갱신 전** 주문 상태로(refunded 표기 뒤 상태로 보면 늘 미회수), 실패는 이벤트 failed 로 드러낸다.
+  assert.ok(/orderStatus: order\.status,/.test(webhook));
+  assert.ok(/if \(plan\.revokeGrants\) \{\s*try \{\s*await revokeEntitlementsOfPayment\(order\.userId, order\.paymentKey,/.test(webhook));
+  assert.ok(/revokeFailure \? \{ eventHash, status: 'failed'/.test(webhook), '회수 실패를 processed 로 덮으면 추적이 끊긴다');
 });
 
 // 환불 회수가 legacy credit_transactions grant 행을 정확히 겨냥하는지 검증한다.

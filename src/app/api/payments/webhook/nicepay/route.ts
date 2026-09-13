@@ -160,19 +160,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 이용권 회수 실패가 취소 통보 처리를 막지 않게 try — 남은 권한은 수동 보정 대상(결제키가 없으면 넓게 지우지 않는다).
+    // 이용권 회수 실패가 취소 통보 처리를 막지 않게 try — 결제키가 없으면 넓게 지우지 않고 던진다.
+    //   2026-09-13 — 실패를 'processed' 로 덮으면 추적이 끊긴다(주문은 이미 refunded 라 재통보도 회수를 안 함) →
+    //   이벤트를 failed 로 남겨 수동 보정 대상으로 드러낸다(결제키 회수는 멱등이라 다시 돌려도 안전).
+    let revokeFailure: string | null = null;
     if (plan.revokeGrants) {
       try {
         await revokeEntitlementsOfPayment(order.userId, order.paymentKey, { reason: 'nicepay-cancel', actor: 'webhook' });
       } catch (revokeError) {
-        console.error('[nicepay-webhook] 이용권 회수 실패', {
-          orderId,
-          error: revokeError instanceof Error ? revokeError.message : String(revokeError),
-        });
+        revokeFailure = revokeError instanceof Error ? revokeError.message : String(revokeError);
+        console.error('[nicepay-webhook] 이용권 회수 실패', { orderId, error: revokeFailure });
       }
     }
 
-    await markPaymentWebhookEvent({ eventHash, status: 'processed' });
+    await markPaymentWebhookEvent(
+      revokeFailure ? { eventHash, status: 'failed', error: `revoke_failed: ${revokeFailure}` } : { eventHash, status: 'processed' }
+    );
     return ok();
   } catch (err) {
     // 처리 실패해도 'OK' 로 응답하고 failed 로 기록(수동 보정 대상). 통보 재수신은 멱등으로 흡수.
