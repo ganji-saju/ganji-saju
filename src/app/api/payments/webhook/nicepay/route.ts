@@ -15,7 +15,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { NicepayPaymentObject } from '@/lib/payments/nicepay';
 import { getNicepayPayment } from '@/lib/payments/nicepay';
 import { getPackage } from '@/lib/payments/catalog';
-import { shouldGrantCredits } from '@/lib/payments/coin-sunset';
 import type { TossPaymentObject } from '@/lib/payments/order-ledger';
 import {
   getPaymentOrderByOrderId,
@@ -132,6 +131,8 @@ export async function POST(req: NextRequest) {
         source: 'webhook',
         // 재조회 실패 시엔 통보 본문을 넘긴다 — 파싱은 보수적이라 못 읽으면 조용히 now() 폴백.
         payment: canceledPayment ?? (payload as TossPaymentObject),
+        // 부분취소는 멤버십 구독을 유지한다(관리자 부분환불과 같은 결과).
+        partial: /partial/i.test(status),
       });
     } else {
       await markPaymentOrderFailed({
@@ -150,8 +151,9 @@ export async function POST(req: NextRequest) {
     const pkg = getPackage(order.packageId);
     const plan = buildCancellationRevokePlan({
       orderStatus: order.status,
-      // 2026-09-13 — 지급과 같은 조건으로. 코인 sunset 뒤 멤버십은 전을 안 준다(카탈로그 credits=90) — 카탈로그 값으로 회수하면 레거시 잔액을 깎는다.
-      packageCredits: pkg && shouldGrantCredits(pkg) ? pkg.credits : 0,
+      // 2026-09-13 — 멤버십은 전을 지급하지 않는다(코인 sunset, 카탈로그 credits=90) — 카탈로그 값으로 회수하면 레거시 잔액을 깎는다.
+      //   (shouldGrantCredits 는 영구 false 라 쓰면 sunset 이전 전 충전 주문의 회수까지 꺼진다 — 구독만 뺀다.)
+      packageCredits: pkg?.kind === 'subscription' ? 0 : (pkg?.credits ?? 0),
     });
 
     if (plan.revokeCredits > 0) {
