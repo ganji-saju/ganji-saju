@@ -1,6 +1,6 @@
 // 2026-05-25 Phase 2 — 환불 자동화 오케스트레이션.
 //   2단계 워크플로우: admin 요청(request) → super_admin 승인·실행(approve).
-//   상태머신 + Toss cancel(멱등) + revokeProductEntitlement. 진짜 원자성은 불가(Toss 외부)라
+//   상태머신 + Toss cancel(멱등) + 권한 회수(결제키 기준). 진짜 원자성은 불가(Toss 외부)라
 //   refund_requests 상태로 실패 안전·재시도. 결정 로직(아래 순수 함수)은 단위 테스트로 고정.
 //   ※ 실제 Toss 환불 실행은 라이브 super_admin(사람). 여기 코드는 DI 로 mock 테스트.
 
@@ -173,7 +173,7 @@ export interface RefundExecutionDeps {
   loadTossPayment?(
     paymentKey: string
   ): Promise<{ ok: true; payment: TossRefundPaymentSnapshot } | { ok: false; error?: string }>;
-  /** revokeProductEntitlement wrapper. */
+  /** 권한 회수. 이용권(product)은 결제키로 그 결제의 권한 전부(revokeEntitlementsOfPayment), 전 결제는 lot 회수. */
   revoke(args: {
     userId: string;
     productId: string;
@@ -219,7 +219,7 @@ async function finishRefundWithRevoke(
       creditTransactionId: req.credit_transaction_id,
     });
     // 🔴 2026-08-27 — 회수할 게 **없는 것**과 회수에 **실패한 것**은 다르다.
-    //   revokeProductEntitlement 는 DB 오류면 throw 하고, 지울 행이 없으면 revoked:false 를
+    //   회수 함수(revokeEntitlementsOfPayment)는 DB 오류면 throw 하고, 지울 행이 없으면 revoked:false 를
     //   돌려준다. 고아 주문(이용권이 이미 사라진 결제)은 후자인데 실패로 처리돼
     //   "revoke failed after toss success" 로 막혔다 — **돈은 이미 나간 뒤**라 장부만
     //   revoke_pending 에 갇힌다. 호출부가 '없음'을 명시하면 완료로 넘긴다.

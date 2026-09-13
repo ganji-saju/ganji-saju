@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { cancelPayment, getPayment } from '@/lib/payments/toss';
-import { getPackage, isBundlePackage } from '@/lib/payments/catalog';
 import {
   cancelNicepayPayment,
   getNicepayPayment,
@@ -22,7 +21,7 @@ import {
   isFullRefund,
   resolveCancellationTerminalStatus,
 } from '@/lib/payments/cancellation';
-import { revokeBundleEntitlement, revokeProductEntitlement } from '@/lib/product-entitlements';
+import { revokeEntitlementsOfPayment } from '@/lib/product-entitlements';
 import {
   buildCreditRefundItem,
   type CreditRefundLotRow,
@@ -41,7 +40,6 @@ import {
 import { revokeCreditPurchaseLots } from '@/lib/credits/refunds';
 import { loadPurchaseCreditLots } from '@/lib/admin/credit-lots';
 
-type RevokeProductId = Parameters<typeof revokeProductEntitlement>[1];
 type ServiceClient = Awaited<ReturnType<typeof createServiceClient>>;
 
 async function buildCreditRefundRequestItem(service: ServiceClient, creditTransactionId: string) {
@@ -262,8 +260,8 @@ export async function POST(req: NextRequest) {
 
     // 2026-08-24 — 번들(종합 리포트 등) 환불 요청은 **주문(payment_orders) 단위**.
     //   번들 grant 는 구성품별 amount=null(묶음가가 총액)이라 entitlement 기준 환불 목록에
-    //   잡히지 않는다 — 유일한 금액 실체가 주문 원장이다. scope_key 에는 주문의 slug 를
-    //   싣는다(승인 시 revokeBundleEntitlement 가 confirm 의 grant 와 동일 분해로 회수할 때 필요).
+    //   잡히지 않는다 — 유일한 금액 실체가 주문 원장이다. 승인 시 회수는 결제키로 그 결제의 권한 전부
+    //   (revokeEntitlementsOfPayment)라 product_id·scope_key 는 기록용이다.
     const bundleOrderId = typeof body?.bundleOrderId === 'string' ? body.bundleOrderId : null;
     if (bundleOrderId) {
       const { data: orderRow } = await service
@@ -290,7 +288,6 @@ export async function POST(req: NextRequest) {
       if (!order) {
         return NextResponse.json({ ok: false, error: '주문을 찾을 수 없습니다.' }, { status: 404 });
       }
-      const bundlePkg = getPackage(order.package_id);
       if (!['confirmed', 'fulfilling', 'fulfilled'].includes(order.status)) {
         return NextResponse.json(
           { ok: false, error: `환불 가능한 주문 상태가 아닙니다(${order.status}).` },
@@ -542,27 +539,13 @@ export async function POST(req: NextRequest) {
         return { revoked: result.revoked };
       }
 
-      // 2026-08-24 — 번들 환불: 구성품 전체를 confirm 의 grant 와 동일 분해로 일괄 회수(#632 대칭).
-      //   scope_key 에는 요청 생성 시 주문의 slug 를 실어뒀다(scope 해석 입력).
-      const maybeBundle = args.productId ? getPackage(args.productId) : undefined;
-      if (maybeBundle && isBundlePackage(maybeBundle)) {
-        const results = await revokeBundleEntitlement(maybeBundle.id, args.userId, args.scopeKey, {
-          reason: args.reason,
-          actor: args.actor,
-          paymentKey: args.paymentKey,
-        });
-        // 지울 구성품이 하나도 없으면 '회수 실패' 가 아니라 '회수할 게 없음' 이다.
-        //   (DB 오류는 throw 되므로 여기까지 오지 않는다.)
-        const anyRevoked = results.some((r) => r.revoked);
-        return { revoked: anyRevoked, nothingToRevoke: !anyRevoked };
-      }
-
-      const result = await revokeProductEntitlement(
-        args.userId,
-        args.productId as RevokeProductId,
-        args.scopeKey,
-        { reason: args.reason, actor: args.actor, paymentKey: args.paymentKey }
-      );
+      // 🔴 2026-09-13 — 회수는 **그 결제가 만든 권한만**(결제키). 이용권 단품·번들·고아 주문·평생리포트가 한 경로다.
+      //   예전엔 (user, product, scope) 로 지워 번들 환불이 따로 산 같은 이용권까지 지웠고, 주문 단위 환불은
+      //   product_id 가 패키지 id 라 아무것도 못 지웠다(프로덕션 감사 행 5건 실측). 결제키는 요청 생성 때 필수다.
+      const result = await revokeEntitlementsOfPayment(args.userId, args.paymentKey, {
+        reason: args.reason,
+        actor: args.actor,
+      });
       // 🔴 2026-08-27 — 고아 주문(이용권이 이미 사라진 결제)은 지울 행이 없어 revoked:false 다.
       //   그걸 실패로 올리면 **PG 취소는 됐는데** 장부가 revoke_pending 에 갇힌다.
       return { revoked: result.revoked, nothingToRevoke: !result.revoked };

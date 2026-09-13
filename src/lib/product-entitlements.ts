@@ -2,8 +2,9 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import { getPackage, isBundlePackage, type TasteProductId } from '@/lib/payments/catalog';
+import type { TasteProductId } from '@/lib/payments/catalog';
 import {
+  buildLifetimeReportScopeKey,
   buildMonthlyCalendarScopeKey,
   buildReadingProductScopeKey,
   buildTodayDetailScopeKey,
@@ -11,14 +12,13 @@ import {
   parseLifetimeReportReadingKey,
   parseMonthlyCalendarScopeKey,
   parseYearCoreScopeKey,
-  resolvePaymentProductScope,
   type PaidProductId,
 } from '@/lib/payments/product-scope';
 import {
   readingKeyMatchesCurrentSaju,
   sajuIdentityFromReadingKey,
 } from '@/lib/saju/reading-identity';
-import { revokeBundleComponents, type BundleRevokeResult } from '@/lib/payments/bundle';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export {
   buildMonthlyCalendarScopeKey,
@@ -497,31 +497,6 @@ export async function grantTasteProductEntitlement(
   return entitlement as TasteProductEntitlement;
 }
 
-/**
- * 2026-07-10 — PG 취소 통보 회수용. 주문이 실제로 지급한 이용권을 order_id 로 열거한다.
- * 지급(grantProductEntitlement)이 order_id 를 남기므로 번들이면 구성품이 여러 행으로 나온다.
- * 회수를 패키지 정의가 아니라 **실제 지급 기록**에 맞추기 위한 조회다.
- */
-export async function listProductEntitlementsByOrder(
-  orderId: string
-): Promise<Array<{ userId: string; productId: PaidProductId; scopeKey: string | null }>> {
-  if (!orderId) return [];
-  const service = await createServiceClient();
-  const { data, error } = await service
-    .from('product_entitlements')
-    .select('user_id, product_id, scope_key')
-    .eq('order_id', orderId);
-
-  if (error || !data) return [];
-  return (data as Array<{ user_id: string; product_id: string; scope_key: string | null }>).map(
-    (row) => ({
-      userId: row.user_id,
-      productId: row.product_id as PaidProductId,
-      scopeKey: row.scope_key,
-    })
-  );
-}
-
 // 특정 사용자의 특정 상품 이용권 전체(최신순). 정확일치(scope_key)로 못 잡는 스코프를
 // 후처리 매칭(예: lifetime-report 의 이름 해시 드리프트 보정)하기 위한 소스.
 export async function listProductEntitlementsByProduct(
@@ -584,6 +559,8 @@ export interface RevokeProductEntitlementResult {
 // grant 조회 매칭에 걸리지 않음).
 // ※ Toss 결제 취소(/v1/payments/{paymentKey}/cancel)는 이 함수 밖 — 반환된
 //   paymentKey 로 호출부(admin/스크립트)가 별도 처리한다.
+// 🔴 2026-09-13 — 환불·PG 취소는 revokeEntitlementsOfPayment(결제키)를 쓴다. 이 함수는 (user, product, scope) 로
+//   지워 다른 결제의 권한까지 지울 수 있어 **관리자 수동 부여 회수 전용**으로 남긴다(가드 테스트가 호출부를 고정).
 export async function revokeProductEntitlement(
   userId: string,
   productId: PaidProductId,
@@ -659,32 +636,82 @@ export async function revokeProductEntitlement(
   };
 }
 
-// 묶음(bundle) 결제 환불 시 구성품 entitlement 일괄 회수. revokeBundleComponents(순수,
-// bundle.test 로 고정)에 실제 의존성(scope 해석·단건 회수)을 주입한 운영용 진입점.
-// 운영자/admin 이 (bundlePackageId, userId, slug, reason)로 호출하면 confirm 의 grant 와
-// 동일한 분해로 모든 구성품을 회수한다.
-export async function revokeBundleEntitlement(
-  bundlePackageId: string,
+/**
+ * 환불·PG 취소 회수 — **그 결제가 만든 권한만** 지운다(2026-09-13). 번들·단품·고아 주문·평생리포트가 한 경로다.
+ *
+ * 지급은 이용권 행과 레거시 grant 행(credit_transactions)에 같은 결제키를 싣는다(fulfillment · bundle grant ·
+ * recordLegacy*). 그래서 결제키로 둘 다 지우면 대칭이 된다. 예전 (user, product, scope) 회수가 틀린 이유:
+ * - 유니크 행을 먼저 산 주문이 차지한다 → 번들 환불이 따로 산 같은 이용권·무료 지급까지 지웠다.
+ * - 주문 단위 환불은 요청 product_id 가 패키지 id 라 아무것도 못 지웠다.
+ * - 전역 상품은 레거시 scopeKey(null) ≠ 회수 필터('global') → 환불 뒤에도 열람이 되살아났다.
+ * 따로 산 행에 흡수된 결제(단품 뒤 번들)는 자기 레거시 행만 지워진다 — 먼저 산 쪽 권한은 그대로다.
+ * ⚠️ 결제키·사용자가 비면 던진다 — 넓게 지우는 경로를 만들지 않는다. 레거시는 grant feature 만(같은 결제키의 전 원장·감사 행 보존).
+ */
+export async function revokeEntitlementsOfPayment(
   userId: string,
-  slug: string | null,
-  options: { reason: string; actor?: string | null; paymentKey?: string | null }
-): Promise<BundleRevokeResult[]> {
-  const bundle = getPackage(bundlePackageId);
-  if (!bundle || !isBundlePackage(bundle)) return [];
+  paymentKey: string | null | undefined,
+  options: { reason: string; actor?: string | null },
+  service?: SupabaseClient
+): Promise<{ revoked: boolean; productTableDeleted: number; legacyDeleted: number }> {
+  if (!userId || !paymentKey) throw new Error('결제키 없이 이용권을 회수하지 않는다');
+  const client = service ?? (await createServiceClient());
 
-  return revokeBundleComponents(
-    bundle,
-    {
-      userId,
-      slug,
-      reason: options.reason,
-      actor: options.actor ?? null,
-      paymentKey: options.paymentKey ?? null,
-    },
-    {
-      resolveScope: (input) => resolvePaymentProductScope(input),
-      revoke: (uid, productId, scopeKey, opts) =>
-        revokeProductEntitlement(uid, productId, scopeKey, opts),
-    }
-  );
+  const { data: rows, error } = await client
+    .from('product_entitlements')
+    .delete()
+    .eq('user_id', userId)
+    .eq('payment_key', paymentKey)
+    .select('product_id, scope_key, order_id, amount');
+  if (error) throw new Error(error.message);
+
+  const { data: legacyRows, error: legacyError } = await client
+    .from('credit_transactions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('type', 'purchase')
+    .in('feature', ['taste_product', 'lifetime_report'])
+    .contains('metadata', { paymentKey })
+    .select('metadata');
+  if (legacyError) throw new Error(legacyError.message);
+
+  type Revoked = { productId: unknown; scopeKey: unknown; orderId: unknown; amount: unknown };
+  const deleted: Revoked[] = ((rows ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    productId: r.product_id,
+    scopeKey: r.scope_key,
+    orderId: r.order_id,
+    amount: r.amount,
+  }));
+  // 레거시 metadata 를 이용권 행과 같은 모양으로(전역 null → 'global', 평생리포트 kind·readingKey → 'lifetime-report'·'lifetime:…').
+  const legacy: Revoked[] = ((legacyRows ?? []) as Array<{ metadata: Record<string, unknown> | null }>).map(({ metadata }) => {
+    const m = metadata ?? {};
+    const lifetime = m.kind === 'lifetime_report';
+    return {
+      productId: lifetime ? 'lifetime-report' : (m.productId ?? null),
+      scopeKey: lifetime
+        ? typeof m.readingKey === 'string' ? buildLifetimeReportScopeKey(m.readingKey) : null
+        : normalizeEntitlementScopeKey(typeof m.scopeKey === 'string' ? m.scopeKey : null),
+      orderId: m.orderId ?? null,
+      amount: m.amount ?? null,
+    };
+  });
+
+  // 감사 — 회수한 권한마다: 이용권 행 + 이용권 행이 없던 권한(흡수된 구성품·레거시 전용)의 레거시 행. 실패해도 회수 자체는 유효.
+  const keyOf = (item: Revoked) => `${item.productId}|${item.scopeKey}`;
+  const deletedKeys = new Set(deleted.map(keyOf));
+  const audited = [...deleted, ...legacy.filter((item) => !deletedKeys.has(keyOf(item)))];
+  if (audited.length > 0) {
+    const revokedAt = new Date().toISOString();
+    const { error: auditError } = await client.from('credit_transactions').insert(
+      audited.map((item) => ({
+        user_id: userId,
+        amount: 0,
+        type: 'purchase',
+        feature: 'entitlement_revoke',
+        metadata: { kind: 'entitlement_revoked', ...item, reason: options.reason, actor: options.actor ?? null, paymentKey, revokedAt },
+      }))
+    );
+    if (auditError) console.warn('entitlement revoke audit write failed', auditError);
+  }
+
+  return { revoked: audited.length > 0, productTableDeleted: deleted.length, legacyDeleted: legacy.length };
 }

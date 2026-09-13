@@ -5,8 +5,8 @@
 //   콘텐츠가 열렸다**. 원인은 webhook/nicepay 가 `pkg.credits > 0` 일 때만 회수했기 때문.
 //   score-total·today-detail·year-core·lifetime 같은 단품은 credits=0 이라 분기에 걸리지 않는다.
 //
-// 회수는 **지급과 대칭**이어야 한다. 지급이 order_id 로 entitlement 를 남기므로,
-// 회수도 order_id 로 열거해 전부 제거한다(번들이면 구성품 전부).
+// 회수는 **지급과 대칭**이어야 한다. 지급이 이용권·레거시 행에 결제키를 남기므로, 회수 대상은 결제키로 정한다
+// (revokeEntitlementsOfPayment — 행동 테스트는 product-entitlements.revoke.test.ts). 여기선 "회수하는 상태인가"만 본다.
 import assert from 'node:assert/strict';
 import {
   buildCancellationRevokePlan,
@@ -15,79 +15,25 @@ import {
 
 declare const test: (name: string, fn: () => void) => void;
 
-const ENT_SCORE = { userId: 'user-1', productId: 'score-total', scopeKey: 'saju:abc' } as const;
-const ENT_TODAY = { userId: 'user-1', productId: 'today-detail', scopeKey: 'today:abc' } as const;
-
-test('단품(credits=0) 지급분도 회수한다 — 이번 사고의 회귀 차단', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilled',
-    packageCredits: 0,
-    entitlements: [ENT_SCORE],
-  });
-  assert.equal(plan.revokeCredits, 0);
-  assert.deepEqual(plan.revokeEntitlements, [ENT_SCORE]);
-  assert.equal(plan.hasWork, true);
-});
-
-test('번들 지급분은 구성품 전부 회수한다', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilled',
-    packageCredits: 0,
-    entitlements: [ENT_SCORE, ENT_TODAY],
-  });
-  assert.deepEqual(plan.revokeEntitlements, [ENT_SCORE, ENT_TODAY]);
-});
-
-test('전 패키지는 전을 회수한다(기존 동작 보존)', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilled',
-    packageCredits: 15,
-    entitlements: [],
-  });
-  assert.equal(plan.revokeCredits, 15);
-  assert.deepEqual(plan.revokeEntitlements, []);
-  assert.equal(plan.hasWork, true);
-});
-
-test('전 + 이용권을 함께 준 주문은 둘 다 회수한다', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilled',
-    packageCredits: 15,
-    entitlements: [ENT_SCORE],
-  });
-  assert.equal(plan.revokeCredits, 15);
-  assert.deepEqual(plan.revokeEntitlements, [ENT_SCORE]);
-});
-
-test('지급되지 않은 주문(prepared/payment_failed)은 아무것도 회수하지 않는다', () => {
-  for (const orderStatus of ['prepared', 'payment_failed', 'canceled'] as const) {
-    const plan = buildCancellationRevokePlan({
-      orderStatus,
-      packageCredits: 15,
-      entitlements: [ENT_SCORE],
-    });
-    assert.equal(plan.revokeCredits, 0, `${orderStatus} 는 전을 회수하지 않는다`);
-    assert.deepEqual(plan.revokeEntitlements, [], `${orderStatus} 는 이용권을 회수하지 않는다`);
-    assert.equal(plan.hasWork, false);
+test('지급이 일어났을 수 있는 주문은 그 결제의 이용권을 회수한다 — credits=0 단품·지급 도중 실패·재통보 포함', () => {
+  // 결제키 회수는 지급이 없으면 0행이라 넓게 잡는다. fulfillment_failed(구성품 일부만 지급)를 빼면 남은 권한이 환불 뒤에도 열린다.
+  for (const orderStatus of ['confirmed', 'fulfilling', 'fulfilled', 'fulfillment_failed', 'refunded'] as const) {
+    assert.equal(buildCancellationRevokePlan({ orderStatus, packageCredits: 0 }).revokeGrants, true, orderStatus);
   }
 });
 
-test('fulfilling(지급 진행 중) 주문도 이미 남은 이용권은 회수한다', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilling',
-    packageCredits: 0,
-    entitlements: [ENT_SCORE],
-  });
-  assert.deepEqual(plan.revokeEntitlements, [ENT_SCORE], '부분 지급 잔재를 남기면 안 된다');
+test('전은 지급된 주문(fulfilled·fulfilling)에서만 회수한다(기존 동작 보존)', () => {
+  assert.deepEqual(buildCancellationRevokePlan({ orderStatus: 'fulfilled', packageCredits: 15 }), { revokeCredits: 15, revokeGrants: true });
+  assert.deepEqual(buildCancellationRevokePlan({ orderStatus: 'fulfilling', packageCredits: 15 }), { revokeCredits: 15, revokeGrants: true });
+  for (const orderStatus of ['confirmed', 'fulfillment_failed', 'refunded'] as const) {
+    assert.equal(buildCancellationRevokePlan({ orderStatus, packageCredits: 15 }).revokeCredits, 0, orderStatus);
+  }
 });
 
-test('회수할 게 없으면 hasWork=false', () => {
-  const plan = buildCancellationRevokePlan({
-    orderStatus: 'fulfilled',
-    packageCredits: 0,
-    entitlements: [],
-  });
-  assert.equal(plan.hasWork, false);
+test('결제 전 주문(prepared/in_progress/payment_failed/canceled/expired)은 아무것도 회수하지 않는다', () => {
+  for (const orderStatus of ['prepared', 'in_progress', 'payment_failed', 'canceled', 'expired'] as const) {
+    assert.deepEqual(buildCancellationRevokePlan({ orderStatus, packageCredits: 15 }), { revokeCredits: 0, revokeGrants: false }, orderStatus);
+  }
 });
 
 // 2026-07-13 — 취소 통보 시 종료 상태 판정.
