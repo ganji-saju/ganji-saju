@@ -274,9 +274,9 @@ export async function updatePaymentOrderPolicyVersions(orderId: string, policyVe
   return mapPaymentOrder(data as PaymentOrderRow);
 }
 
-export async function getPaymentOrderByOrderId(orderId: string) {
-  const service = await createServiceClient();
-  const { data, error } = await service
+export async function getPaymentOrderByOrderId(orderId: string, service?: SupabaseClient) {
+  const client = service ?? (await createServiceClient());
+  const { data, error } = await client
     .from('payment_orders')
     .select('*')
     .eq('order_id', orderId)
@@ -581,8 +581,8 @@ export async function markPaymentOrderRefunded(input: {
   payment?: TossPaymentObject | null;
   /** 부분취소 — 원장은 refunded 로 표기하되 멤버십 구독은 유지한다. */
   partial?: boolean;
-}) {
-  const service = await createServiceClient();
+}, service?: SupabaseClient) {
+  const client = service ?? (await createServiceClient());
   const now = new Date();
   // 2026-08-26 — 귀속일은 **PG 가 실제로 취소한 시각**. 못 읽으면 지금(감지 시각)으로 폴백.
   //   항상 now() 를 쓰면 뒤늦게 감지된 과거 취소가 오늘 환불로 잡혀 그날 순매출이 마이너스가 된다.
@@ -599,7 +599,7 @@ export async function markPaymentOrderRefunded(input: {
   // 멱등: 이미 refunded 인 주문은 다시 스탬프하지 않는다(neq 로 제외). 재호출(관리자 재승인·
   //   통보 재수신)마다 refunded_at 을 now 로 덮으면 환불 귀속일이 미래로 드리프트해 마감된
   //   과거 지표가 사후에 바뀐다. 최초 1회만 stamp 하고, 이미 refunded 면 기존 행을 반환한다.
-  const { data, error } = await service
+  const { data, error } = await client
     .from('payment_orders')
     .update(patch)
     .eq('order_id', input.orderId)
@@ -621,28 +621,34 @@ export async function markPaymentOrderRefunded(input: {
     //   재호출이 차감을 다시 하지 않으므로 수동 보정 대상으로 드러내야 한다.
     const membershipDays = membershipDaysToRemove(order, input.partial === true);
     if (membershipDays > 0) {
-      await shortenMembershipForRefund(order.userId, { days: membershipDays }).catch(async (err) => {
-        const message = `membership_shorten_failed: ${err instanceof Error ? err.message : String(err)}`;
-        console.error('[refund] 구독 차감 실패', { orderId: order.orderId, message });
-        await service.from('payment_orders').update({ last_error: message }).eq('order_id', order.orderId);
-      });
+      // 실패는 이어 붙여 한 번에 남긴다 — 차감·잠금이 둘 다 실패하면 뒤의 것이 앞을 덮어 하나가 사라지던 문제(2026-09-14 리뷰).
+      const failures: string[] = [];
+      const note = (label: string) => (err: unknown) => {
+        const message = `${label}: ${err instanceof Error ? err.message : String(err)}`;
+        console.error('[refund] 멤버십 환불 후처리 실패', { orderId: order.orderId, message });
+        failures.push(message);
+      };
+      await shortenMembershipForRefund(order.userId, { days: membershipDays, service: client }).catch(note('membership_shorten_failed'));
       // 2026-09-14 — 전액환불(membershipDays > 0 = 부분취소 아님)이면 그 결제 기간에 멤버십으로 연 달력·상세풀이도 잠근다.
       //   같은 분기라 1회. 실패는 위와 같이 흔적 — 전이가 끝나 재호출이 다시 잠그지 않는다.
-      await lockMembershipContentForRefund(order.userId, readMembershipPeriods(order.metadata), {
-        reason: input.reason,
-        actor: input.source,
-        paymentKey: order.paymentKey,
-      }).catch(async (err) => {
-        const message = `membership_lock_failed: ${err instanceof Error ? err.message : String(err)}`;
-        console.error('[refund] 멤버십 열람 잠금 실패', { orderId: order.orderId, message });
-        await service.from('payment_orders').update({ last_error: message }).eq('order_id', order.orderId);
-      });
+      await lockMembershipContentForRefund(
+        order.userId,
+        readMembershipPeriods(order.metadata),
+        { reason: input.reason, actor: input.source, paymentKey: order.paymentKey },
+        client
+      ).catch(note('membership_lock_failed'));
+      if (failures.length > 0) {
+        await client
+          .from('payment_orders')
+          .update({ last_error: [input.reason, ...failures].join(' | ') })
+          .eq('order_id', order.orderId);
+      }
     }
     return order;
   }
 
   // 갱신된 행이 없음 = 이미 refunded(멱등 재호출). 기존 행을 그대로 반환.
-  const existing = await getPaymentOrderByOrderId(input.orderId);
+  const existing = await getPaymentOrderByOrderId(input.orderId, client);
   if (!existing) {
     throw new Error('환불 상태를 저장하지 못했습니다.');
   }

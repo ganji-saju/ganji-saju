@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient, createServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import type { SubscriptionPlan } from '@/lib/payments/catalog';
+import { TOPIC_PRODUCT_BY_CONCERN } from '@/app/api/today-fortune/unlock/route-helpers';
 
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired';
 
@@ -171,12 +172,23 @@ export async function shortenMembershipForRefund(
   return next;
 }
 
+/** created_at(ISO) → KST 날짜 'YYYY-MM-DD'. 한국은 DST 가 없어 +9h 고정. */
+const kstDayOf = (iso: string) => new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(0, 10);
+
+type LockedAccessRow = { feature: string; created_at: string; metadata: Record<string, unknown> | null };
+
 /**
  * 멤버십 전액환불 — 그 결제 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람을 지운다(2026-09-14 사용자 결정).
- * 창마다 [start, min(end, 지금)) 안에 만든 via:'membership' 열람 행(카카오 쿠폰 등 표식 없는 0원 행은 보존)과
- * access_source 'membership' 스냅샷(/today-fortune/snapshots/[id] 는 권한 검사 없이 보여준다)을 삭제한다.
+ * ① 창마다 [start, min(end, 지금)) 안에 만든 via:'membership' 열람 행을 지운다(카카오 쿠폰 등 표식 없는 0원 행은 보존).
+ * ② 스냅샷(/today-fortune/snapshots/[id]·/my/results 는 권한 검사 없이 보여준다)은 **날 단위**로 판정한다 — 지운 상세 행의 KST 날짜 중
+ *    그날 다른 열람 근거(표식 없는 상세 행 = 전 결제·쿠폰·레거시, 그날 today-detail 카드 이용권)가 없는 날의 스냅샷을 창 안에서 지운다.
+ *    같은 날 멤버십 행 하나로 연 다른 스냅샷(주제 전환·GET·다른 사주)도 같이 잠기고, 카드로 산 날은 멤버십 환불이 건드리지 않는다.
+ *    주제 단품(재물·일, 전역) 보유자의 그 주제 스냅샷도 남긴다.
  * 🔴 무효 표시가 아니라 삭제 — unlock_credit_feature_once 는 행이 남아 있으면 reused(무과금)로 다시 연다.
  * 원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회). DB 오류는 던진다 — 호출부가 흔적을 남긴다.
+ * ponytail: 기간은 지급 때 기록한 그대로다. 연속 결제 A·B 중 A 를 환불하면 구독이 30일 당겨져 B 의 실제 사용 시간이
+ *   기록(B 원래 창)보다 앞으로 옮겨가는데, 기록은 고치지 않는다 → 뒤에 B 를 환불하면 당겨진 구간에서 연 열람은 못 잠근다(과소 잠금).
+ *   고치려면 A 환불 때 뒤 주문들의 membershipPeriods 를 같은 일수만큼 당겨 써야 한다.
  */
 export async function lockMembershipContentForRefund(
   userId: string,
@@ -190,13 +202,40 @@ export async function lockMembershipContentForRefund(
     .map((w) => ({ start: new Date(w.start), end: new Date(Math.min(new Date(w.end).getTime(), now.getTime())) }))
     .filter((w) => !Number.isNaN(w.start.getTime()) && !Number.isNaN(w.end.getTime()) && w.start < w.end)
     .map((w) => ({ start: w.start.toISOString(), end: w.end.toISOString() }));
-  if (ranges.length === 0) return { accessDeleted: 0, snapshotsDeleted: 0 };
 
   const client = service ?? (await createServiceClient());
-  let accessDeleted = 0;
-  let snapshotsDeleted = 0;
+  // 감사 1행(revokeEntitlementsOfPayment 와 같은 feature). 실패해도 잠금 자체는 유효.
+  const audit = async (metadata: Record<string, unknown>) => {
+    const { error } = await client.from('credit_transactions').insert({
+      user_id: userId,
+      amount: 0,
+      type: 'purchase',
+      feature: 'entitlement_revoke',
+      metadata: {
+        ...metadata,
+        reason: options.reason,
+        actor: options.actor ?? null,
+        paymentKey: options.paymentKey ?? null,
+        lockedAt: now.toISOString(),
+      },
+    });
+    if (error) console.warn('membership content lock audit write failed', error);
+  };
+  if (ranges.length === 0) {
+    // 기간 기록이 없는 옛 주문(기록 도입 전 지급)·아직 시작 안 한 기간(연속 결제의 뒤 결제) — 조용히 넘기지 않고 사유를 남긴다.
+    await audit({
+      kind: 'membership_content_lock_skipped',
+      skipReason: windows.length === 0 ? 'no_membership_periods' : 'no_elapsed_window',
+      windows,
+    });
+    return { accessDeleted: 0, snapshotsDeleted: 0 };
+  }
+
+  const access: LockedAccessRow[] = [];
+  const snapshots: Array<{ id: string; scope_key: string }> = [];
+  let evidence: { days: Set<string>; topicConcerns: string[] } | null = null;
   for (const range of ranges) {
-    const { data: access, error } = await client
+    const { data: deleted, error } = await client
       .from('credit_transactions')
       .delete()
       .eq('user_id', userId)
@@ -205,40 +244,80 @@ export async function lockMembershipContentForRefund(
       .contains('metadata', { via: 'membership' })
       .gte('created_at', range.start)
       .lt('created_at', range.end)
-      .select('id');
+      .select('feature, created_at, metadata');
     if (error) throw new Error(error.message);
-    const { data: snapshots, error: snapshotError } = await client
+    const rows = (deleted ?? []) as LockedAccessRow[];
+    access.push(...rows);
+
+    const lockDays = new Set(rows.filter((r) => r.feature === 'detail_report').map((r) => kstDayOf(r.created_at)));
+    if (lockDays.size === 0) continue;
+    evidence ??= await loadOtherTodayDetailEvidence(client, userId);
+    const days = [...lockDays].filter((day) => !evidence!.days.has(day));
+    if (days.length === 0) continue;
+    let query = client
       .from('today_fortune_result_snapshots')
       .delete()
       .eq('user_id', userId)
-      .eq('access_source', 'membership')
+      .in('occurred_on', days)
       .gte('created_at', range.start)
-      .lt('created_at', range.end)
-      .select('id');
+      .lt('created_at', range.end);
+    if (evidence.topicConcerns.length > 0) query = query.not('concern_id', 'in', `(${evidence.topicConcerns.join(',')})`);
+    const { data: removed, error: snapshotError } = await query.select('id, scope_key');
     if (snapshotError) throw new Error(snapshotError.message);
-    accessDeleted += access?.length ?? 0;
-    snapshotsDeleted += snapshots?.length ?? 0;
+    snapshots.push(...((removed ?? []) as Array<{ id: string; scope_key: string }>));
   }
 
-  // 감사 1행(revokeEntitlementsOfPayment 와 같은 feature). 실패해도 잠금 자체는 유효.
-  const { error: auditError } = await client.from('credit_transactions').insert({
-    user_id: userId,
-    amount: 0,
-    type: 'purchase',
-    feature: 'entitlement_revoke',
-    metadata: {
-      kind: 'membership_content_locked',
-      accessDeleted,
-      snapshotsDeleted,
-      windows: ranges,
-      reason: options.reason,
-      actor: options.actor ?? null,
-      paymentKey: options.paymentKey ?? null,
-      lockedAt: now.toISOString(),
-    },
+  // 지운 것의 식별자(선례 revokeEntitlementsOfPayment 수준). 이름 등 원문은 넣지 않는다 — readingKey 는 이름 해시만 담는다.
+  await audit({
+    kind: 'membership_content_locked',
+    accessDeleted: access.length,
+    snapshotsDeleted: snapshots.length,
+    access: access.map(({ feature, metadata }) => ({
+      feature,
+      kind: metadata?.kind ?? null,
+      readingKey: metadata?.readingKey ?? null,
+      yearMonth: metadata?.yearMonth ?? null,
+      dayKey: metadata?.dayKey ?? null,
+    })),
+    snapshots: snapshots.map((row) => ({ id: row.id, scopeKey: row.scope_key })),
+    windows: ranges,
   });
-  if (auditError) console.warn('membership content lock audit write failed', auditError);
-  return { accessDeleted, snapshotsDeleted };
+  return { accessDeleted: access.length, snapshotsDeleted: snapshots.length };
+}
+
+/**
+ * 멤버십 말고 그 사용자가 오늘 상세를 열 수 있던 근거 — ①표식 없는 상세 열람 행(전 결제 charged·카카오 쿠폰 0원·레거시)의 KST 날짜
+ * ②today-detail 카드 이용권의 KST 날짜(hasTodayDetailEntitlementForDay 와 같은 기준) ③보유한 주제 단품(전역)이 여는 주제.
+ * 잠금 직후에 부르므로 이미 지운 멤버십 행은 없다(창 밖의 멤버십 행은 via 로 거른다).
+ * ponytail: 사용자 전체 이력을 한 번 읽는다 — 상세 열람이 수천 행이 되면 날짜 구간으로 좁힐 것. 레거시 taste_product 주제 구매는 안 본다.
+ */
+async function loadOtherTodayDetailEvidence(client: SupabaseClient, userId: string) {
+  const { data: detailRows, error } = await client
+    .from('credit_transactions')
+    .select('created_at, metadata')
+    .eq('user_id', userId)
+    .eq('type', 'use')
+    .eq('feature', 'detail_report');
+  if (error) throw new Error(error.message);
+  const { data: productRows, error: productError } = await client
+    .from('product_entitlements')
+    .select('product_id, created_at')
+    .eq('user_id', userId)
+    .in('product_id', ['today-detail', ...Object.values(TOPIC_PRODUCT_BY_CONCERN)]);
+  if (productError) throw new Error(productError.message);
+
+  const products = (productRows ?? []) as Array<{ product_id: string; created_at: string }>;
+  const days = new Set([
+    ...((detailRows ?? []) as Array<{ created_at: string; metadata: Record<string, unknown> | null }>)
+      .filter((row) => row.metadata?.via !== 'membership')
+      .map((row) => kstDayOf(row.created_at)),
+    ...products.filter((row) => row.product_id === 'today-detail').map((row) => kstDayOf(row.created_at)),
+  ]);
+  const held = new Set(products.map((row) => row.product_id));
+  const topicConcerns = Object.entries(TOPIC_PRODUCT_BY_CONCERN)
+    .filter(([, productId]) => held.has(productId))
+    .map(([concern]) => concern);
+  return { days, topicConcerns };
 }
 
 /** 관리자 멤버십 해제 — 혜택을 **지금** 끊는다(2026-09-14). cancelled 는 renews_at 까지 권한이 남고(isEntitledStatus)

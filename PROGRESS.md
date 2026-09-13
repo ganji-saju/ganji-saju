@@ -30,13 +30,25 @@
 
 앞 섹션(#821) 위에 쌓음. 마이그레이션 없음. 사용자 결정(3번): 전액환불이면 그 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람 금지.
 - **왜**: 멤버십 열람 행(0원 `credit_transactions`)은 영구 재열람(달력)이고, 상세는 스냅샷(`/today-fortune/snapshots/[id]`, 권한 검사 없음)으로 남아 환불 뒤에도 열렸다.
-- **방식**: 멤버십 경로 기록 2곳에 `via:'membership'`(카카오 쿠폰 0원 행과 구분, 판정·RPC dedup 은 contains 라 무영향) · 멤버십으로 만든 스냅샷 `access_source='membership'` ·
+- **방식**: 멤버십 경로 기록 2곳에 `via:'membership'`(카카오 쿠폰 0원 행과 구분, 판정·RPC dedup 은 contains 라 무영향) · 멤버십으로 만든 스냅샷 `access_source='membership'`(기록용) ·
   지급이 기간 `[renewsAt−30일, renewsAt)` 을 주문 `metadata.membershipPeriods` 에 누적 · `lockMembershipContentForRefund` 가 창 `[start, min(end, 지금))` 의
-  표식 행·스냅샷을 **삭제**(무효 표시는 RPC 가 reused 로 다시 연다) + 감사 1행(`entitlement_revoke`/`membership_content_locked`).
-  훅은 `markPaymentOrderRefunded` 전이 분기, 구독 차감 뒤, 전액환불만(1회) · 실패는 `last_error` 흔적.
-- 검증: 유닛 1,675 + node:test 191, tsc 0 · 뮤테이션 20/20 red(필터 하나씩 제거·창 경계·via 누락·훅 위치·기간 누적).
-- 남음: **B단계(부분환불)** · 이 변경 이전의 멤버십 열람 행·스냅샷엔 표식이 없어 잠기지 않음(유료 멤버십 결제 0건이라 실영향 없음) ·
-  ⚠️ 같은 날 **주제(concern) 전환**으로 만든 추가 스냅샷은 멤버십 행으로 열렸어도 access_source 가 'reused' 라 잠금 대상 밖(스냅샷 링크로 계속 보임) — 막을지 확인 필요.
+  표식 행을 **삭제**(무효 표시는 RPC 가 reused 로 다시 연다).
+  훅은 `markPaymentOrderRefunded` 전이 분기, 구독 차감 뒤, 전액환불만(1회).
+- **리뷰 반영(같은 브랜치 2번째 커밋)**:
+  - 스냅샷은 표식이 아니라 **날** 로 판정 — 표식은 그날 첫 멤버십 POST 스냅샷에만 붙어 GET(`coin-session`)·주제 전환(`reused`)·다른 사주(`coin-daily`) 스냅샷이 남던 과소 잠금.
+    지운 멤버십 상세 행의 KST 날짜 중 **그날 다른 근거가 없는 날**의 스냅샷(`occurred_on` = 그날, 창 안 `created_at`)을 지운다.
+    근거 = 표식 없는 상세 행(전 charged·카카오 쿠폰·레거시) · 그날 `today-detail` 카드 이용권(`hasTodayDetailEntitlementForDay` 와 같은 KST 기준) · 주제 단품(재물·일, 전역) 보유 시 그 주제.
+    → 카드로 산 날 스냅샷을 멤버십 환불이 지우던 과다 잠금도 같이 해결.
+  - `last_error`: 구독 차감·잠금 실패를 **이어 붙임**(`환불사유 | membership_shorten_failed: … | membership_lock_failed: …`, 전엔 뒤가 앞을 덮음).
+  - 감사 `membership_content_locked` 에 지운 항목 식별자(`access[]`: feature·kind·readingKey·yearMonth·dayKey / `snapshots[]`: id·scopeKey). 이름 등 원문·세션 id 는 안 넣음.
+  - 기간 기록 없는 옛 주문·아직 시작 안 한 창 → 감사 `membership_content_lock_skipped`(`skipReason: no_membership_periods | no_elapsed_window`). 조용히 건너뛰지 않음.
+  - `markPaymentOrderRefunded(input, service?)`·`getPaymentOrderByOrderId(id, service?)` 주입 → 가짜 DB 로 **실행** 테스트(전액=잠금 · partial=미호출 · 멱등 재호출=미호출 · 이중 실패 흔적).
+    GA refund 는 `VERCEL_ENV=production` 아니면 DB·네트워크 전에 반환(테스트 가드 assert).
+- 검증: 유닛 1,681 + node:test 191, tsc 0 · 뮤테이션 18/18 red(KST +9h·근거 via 필터·카드 근거·근거일 제외·occurred_on·창 시작·user 필터 2곳·주제 단품·상세 행만·skip 감사·감사 식별자 2종·last_error 덮어쓰기·잠금 미호출·partial 무시·멱등 가드·잠금 via 필터).
+- 남음/한계: **B단계(부분환불)** · 이 변경 이전의 멤버십 열람 행엔 표식이 없어 잠기지 않음(유료 멤버십 결제 0건이라 실영향 없음) ·
+  ⚠️ **연속 결제 A·B 타임라인 이동(리뷰 과소 잠금 3)**: A 를 환불하면 구독이 30일 당겨져 B 의 실제 사용 시간이 기록된 B 창보다 앞으로 옮겨가는데 기록은 안 고친다 →
+  뒤에 B 를 환불하면 당겨진 구간에서 연 열람은 못 잠근다(`subscription.ts` ponytail 주석, 고치려면 A 환불 때 뒤 주문들의 `membershipPeriods` 를 당겨 써야 함) ·
+  근거 판정은 레거시 `taste_product` 주제 구매(credit_transactions)는 안 봄 · 날 단위라 같은 날 **다른 사주**를 카드로 산 경우 그날 멤버십으로 연 스냅샷도 유지(사용자 의도: 근거 하나라도 있으면 유지).
 
 ## 2026-09-14 — 관리자 멤버십 해제 = 즉시 종료 · 대화상담 취소 시 전 3개 회수
 
