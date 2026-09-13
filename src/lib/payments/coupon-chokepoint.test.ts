@@ -151,3 +151,10 @@ test('입력칸 제출로 다시 그릴 때 checkout_viewed 를 또 남기지 �
 test('입력칸은 쿠폰이 붙는 상품에만 — 전이 전달물인 상품(설계 §7)엔 띄우지 않는다', () => {
   assert.ok(/isCouponEligiblePackage\(paymentPackage\)/.test(CHECKOUT_PAGE()));
 });
+
+// 2026-09-13 — 미리보기 쿠폰은 "다른 쿠폰 코드 쓰기"로 바꿀 수 있어야 한다(입력칸을 적용된 쿠폰 여부로만 숨기면 30분간 못 바꾼다).
+test('체크아웃 입력칸은 checkoutCouponInputMode 로 정한다(미리보기=바꾸기, 등록된 쿠폰=없음)', () => {
+  const src = CHECKOUT_PAGE();
+  assert.ok(/checkoutCouponInputMode\(quote\)/.test(src));
+  assert.ok(!/!quote\.couponCode && !funnelBlocked/.test(src), '적용된 쿠폰이 있다고 입력칸을 통째로 숨기면 미리보기를 못 바꾼다');
+});
