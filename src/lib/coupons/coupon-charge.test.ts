@@ -236,6 +236,27 @@ test('coupon-charge — 요구 7: 귀속된 계정은 코드를 다시 안 넣�
   assert.equal(db.rpcCalls, 0, '본인 코드는 조회 예산을 쓰지 않는다');
 });
 
+// 설계 §13-8 — 위 테스트는 주문이 없어 "결제를 마치면 쿠폰이 닫힌다"(1회용) 회귀가 초록으로 지나갔다(뮤테이션 실측).
+//   실제 흐름 그대로: 첫 결제만 코드 입력 → 주문 생성 → 결제 완료가 쌓인 상태에서 다음 상품.
+test('coupon-charge — §13-8: 귀속 계정이 서로 다른 상품 3건을 결제하면 결제 완료 주문이 쌓여도 전부 할인', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001')] });
+  for (const [i, pkgId] of ['taste_today_detail', 'taste_tarot_daily', 'membership_premium'].entries()) {
+    const pkg = getPackage(pkgId)!;
+    const quote = await resolveChargeForUser(pkg, { id: 'u1' }, i === 0 ? 'ganji-30-0001' : null, opts(db));
+    assert.equal(quote.claim?.mode, i === 0 ? 'claim' : 'self', pkgId);
+    const bound = await bind(db, quote.claim!, 'u1');
+    await createPaymentOrder(
+      { userId: 'u1', pkg, listAmount: quote.listAmount, coupon: bound, acceptedKinds: [], recordedPolicyVersionIds: [] },
+      db.client
+    );
+    const order = db.inserted.at(-1)!;
+    assert.equal(order.amount, pkg.price - Math.floor((pkg.price * 30) / 100), pkgId);
+    assert.equal(order.coupon_code, 'ganji300001', pkgId);
+    db.orders.push({ ...order, status: 'fulfilled' });
+  }
+  assert.equal(db.updates, 1, '귀속은 첫 결제 한 번뿐 — 본인 재사용은 스냅샷을 덮어쓰지 않는다');
+});
+
 test('coupon-charge — 관리자가 요율을 내려도 이미 귀속된 고객은 스냅샷대로, 새 고객은 새 요율', async () => {
   const db = fakeDb({
     coupons: [

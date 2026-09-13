@@ -81,7 +81,7 @@
 (일반 커머스의 쿠폰 UX 와 동일 — 상품면 정가, 체크아웃에서 적용. 코드 diff 0.)
 
 🔴 **금지 조항**: `getPriceDisplayMap`/`PriceProvider` 맵에 user·coupon 의존 값을 넣지 않는다.
-→ §12 가드 테스트로 고정("`buildPriceDisplayMap` 입력에 user/coupon 인자가 없다").
+→ §13-6 가드 테스트로 고정("`buildPriceDisplayMap` 입력에 user/coupon 인자가 없다").
 
 ### 3-3. 체크아웃 한 화면 안에서는 표시가 = 청구가
 
@@ -362,16 +362,25 @@ carrier 를 고르므로 금액을 넣은 행이 스캔에서 빠지고 남은 n
 
 ## 13. 가드 테스트 (불변식)
 
-1. `applyCouponDiscount` — 50% 초과 clamp / 원 단위 절사
-2. `parseCouponCode` — 정규화, 위조 등급 거부, 미발급 코드 거부
-3. **초크포인트 불변식**: `createPaymentOrder` 호출부 1곳 · PG SDK 1곳 · `payment_orders` insert 1곳
-4. **`prepare` 응답 `amount` === 생성된 `order.amount`** (타입이 못 잡는 자리)
-5. **`prepare` 가 body 에서 `discountRate|discountPercent|finalAmount` 를 읽지 않는다**
-6. **`buildPriceDisplayMap` 입력에 user/coupon 인자가 없다** (전역 캐시 오염 방지)
-7. 귀속 CAS — 동시 2요청 중 1건만 / **본인 재요청은 성공**(요구 7)
-8. 반복 사용 — 귀속 계정이 서로 다른 상품 3건 결제 시 전부 할인
-9. 환불 — 할인 결제의 환불액이 `order.amount`
-10. 만료된 쿠폰의 옛 `prepared` 주문이 승인 거부되는지(§5-3)
+> PR7(2026-09-13) — 감사 결과 10개 중 **강함 3 · 약함 6 · 없음 1**이었다. 뮤테이션 31개 중 옛 테스트가 잡은 건 1개뿐이었고
+> (문자열 정규식이 큰따옴표·별칭·구조분해·다른 파일을 못 봄, 픽스처 금액이 카탈로그가와 같아 "정가로 환불"이 초록),
+> 보강 후 **32/32 red**. 소스 스캔은 `src/lib/payments/coupon-chokepoint.test.ts`(이하 choke).
+
+| # | 불변식 | 강제 |
+|---|---|---|
+| 1 | `applyCouponDiscount` — 50% 초과 clamp / 원 단위 절사 | `discount-coupon.test.ts` (끝수 999.9·소수 요율 포함) |
+| 2 | `parseCouponCode` — 정규화, 위조 등급 거부, 미발급 코드 거부 | `discount-coupon.test.ts` · `coupon-charge.test.ts` |
+| 3 | **초크포인트**: `createPaymentOrder` 호출부 1곳 · PG SDK 1곳 · `payment_orders` insert 1곳 | choke (따옴표 무관 · upsert · 별칭 import · `AUTHNICE` 직접 호출까지) |
+| 4 | **`prepare` 응답 `amount` === 생성된 `order.amount`** (타입이 못 잡는 자리) | choke — **성공 응답 객체 안**의 금액이 `order.amount` 하나뿐 |
+| 5 | **`prepare` 가 body 에서 금액·할인율을 읽지 않는다** | choke — 읽는 키 **허용 목록** + 구조분해·전개·전달 금지 |
+| 6 | **`buildPriceDisplayMap` 입력에 user/coupon 인자가 없다** (전역 캐시 오염 방지) | choke — 체인 4파일(리졸버·맵·요청 캐시·Provider) 사용자·쿠폰·세션 금지 + 인자 0 시그니처 + 루트 레이아웃 정적(쿠키·인증·`dynamic` 금지, 맵 무가공) |
+| 7 | 귀속 CAS — 동시 2요청 중 1건만 / **본인 재요청은 성공**(요구 7) | `coupon-charge.test.ts` (⚠️ 같은 사용자의 **동시** 첫 귀속 2건은 두 번째가 409 — 돈 손실 없음, 재시도로 성공. 미수정) |
+| 8 | 반복 사용 — 귀속 계정이 서로 다른 상품 3건 결제 시 전부 할인 | `coupon-charge.test.ts` — 주문 생성·결제 완료가 쌓인 실제 흐름 + choke(본인 재사용도 `bindCouponClaim` 통과) |
+| 9 | 환불 — 할인 결제의 환불액이 `order.amount` | `user-detail.test.ts`(카탈로그가와 다른 할인가로 목록 금액) + choke(환불 요청 스냅샷 · 지급 `claimed.amount` · 정가 필드 사용처 화이트리스트) |
+| 10 | 만료된 쿠폰의 옛 `prepared` 주문이 승인 거부되는지(§5-3) | `coupon-order-guard.test.ts` (관문 결과 가공 금지) + `order-ledger.snapshot.test.ts`(읽은 주문이 `couponCode` 를 안다 — 떨어뜨리면 관문이 검사를 건너뛴다) |
+
+같이 고정한 것(§3-3·§7·§10): 결제 버튼 금액·`checkout_viewed` 값 = `quote.chargeAmount`, 서버 금액 검증 블록, 전 차감·언락 경로의 할인쿠폰 모듈 import 금지, "전으로 여는 경우엔 적용되지 않아요" 안내.
+PR7 이 고친 버그 2개(둘 다 번들 종합 리포트): 관리자 환불 목록에서 구성품이 지급된 번들 주문이 빠짐(환불 불가) · 할인된 번들이 결제내역·LTV 에 정가로 표시.
 
 ## 14. 포기한 것
 캠페인 관리 · 다중 쿠폰 스택 · 조건부 할인 · 쿠폰 이전.

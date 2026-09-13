@@ -46,7 +46,7 @@ test('createPaymentOrder: 쿠폰이 있으면 함수 안에서 할인해 amount 
   const capture: { payload?: Record<string, unknown> } = {};
   const service = fakeService(capture);
   const pkg = getPackage('taste_today_detail')!;
-  await createPaymentOrder(
+  const order = await createPaymentOrder(
     {
       userId: 'u1',
       pkg,
@@ -62,6 +62,12 @@ test('createPaymentOrder: 쿠폰이 있으면 함수 안에서 할인해 amount 
   assert.equal(capture.payload?.discount_won, 990);
   assert.equal(capture.payload?.coupon_code, 'ganji300001');
   assert.equal(capture.payload?.coupon_percent, 30);
+  // PR7 — 읽어 온 주문도 쿠폰을 안다. 매핑이 couponCode 를 떨어뜨리면 승인 관문(§5-3)이 할인 주문을
+  //   "쿠폰 없는 주문"으로 보고 검사 없이 통과시킨다(뮤테이션 실측 — 관문 로직 테스트는 전부 초록이었다).
+  assert.equal(order.couponCode, 'ganji300001');
+  assert.equal(order.listAmount, 3300);
+  assert.equal(order.discountWon, 990);
+  assert.equal(order.amount, 2310);
 });
 
 test('createPaymentOrder: 상한 50% 는 호출부가 뭘 넘기든 이 함수가 자른다', async () => {
