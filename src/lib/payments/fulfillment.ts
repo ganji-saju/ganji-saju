@@ -13,6 +13,7 @@ import {
   getPaymentOrderByOrderId,
   markPaymentOrderFailed,
   markPaymentOrderFulfilled,
+  recordMembershipDaysGranted,
   type PaymentOrder,
   type PaymentOrderSource,
   type TossPaymentObject,
@@ -33,7 +34,7 @@ import { resolveMoonlightCounselor } from '@/lib/counselors';
 import { getUserProfileById } from '@/lib/profile';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
-import { activateMembershipSubscription, getManagedSubscription } from '@/lib/subscription';
+import { activateMembershipSubscription, getManagedSubscription, MEMBERSHIP_PERIOD_DAYS } from '@/lib/subscription';
 import { shouldGrantCredits } from '@/lib/payments/coin-sunset';
 import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
 
@@ -192,8 +193,11 @@ export async function fulfillPaymentOrder(input: {
     const subscription = isSubscriptionPackage(pkg)
       ? await activateMembershipSubscription(claimed.userId, {
           plan: pkg.subscriptionPlan,
+          days: MEMBERSHIP_PERIOD_DAYS,
         })
       : null;
+    // 2026-09-13 — 구독에 실제로 더한 일수를 주문에 기록한다. 환불은 이 기록만 뺀다(미지급 0 · 재시도 누적).
+    if (subscription) await recordMembershipDaysGranted(claimed.orderId, MEMBERSHIP_PERIOD_DAYS);
 
     const entitlement =
       pkg.kind === 'lifetime_report' && paymentScope?.readingKey

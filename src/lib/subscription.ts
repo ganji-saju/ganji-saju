@@ -1,7 +1,11 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient, createServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import type { SubscriptionPlan } from '@/lib/payments/catalog';
 
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired';
+
+/** 멤버십 결제 1건이 구독에 더하는 일수. 지급이 주문에 기록하고(recordMembershipDaysGranted) 환불은 그 기록만 뺀다. */
+export const MEMBERSHIP_PERIOD_DAYS = 30;
 
 export interface ManagedSubscription {
   status: SubscriptionStatus;
@@ -127,6 +131,46 @@ export async function getViewerMemberTier(): Promise<'premium' | null> {
   }
 }
 
+/**
+ * 환불된 멤버십 결제 1건이 늘린 기간을 뺀 뒤의 구독(순수, 2026-09-13).
+ * 구독은 사용자당 1행이고 결제(30일)·관리자 부여가 renews_at 끝에 누적된다 → "지금 종료"는 다른 기간까지 날리고,
+ * 상태만 cancelled 는 혜택이 안 끊긴다(isEntitledStatus). 그래서 이 결제의 30일만 뺀다.
+ * 결과가 지금 이전이면 즉시 만료 — renews_at 도 지금으로 내린다(남기면 재구매 때 activate 의 base 로 되살아난다).
+ * renews_at 이 없는(무기한) 행은 이 결제가 만든 기간이 아니라 손대지 않는다(null).
+ * 뺄 일수는 호출부가 **주문의 지급 기록**(metadata.membershipDaysGranted)으로 정한다 — 미지급 0 · 지급 재시도 누적(60).
+ */
+export function refundedMembershipRenewal(
+  renewsAt: string | null,
+  now: Date,
+  days: number
+): { status: 'expired' | null; renewsAt: string } | null {
+  if (!renewsAt) return null;
+  const shortened = addDays(new Date(renewsAt), -days);
+  return new Date(shortened).getTime() <= now.getTime()
+    ? { status: 'expired', renewsAt: now.toISOString() }
+    : { status: null, renewsAt: shortened };
+}
+
+/** 멤버십 환불 — 구독에서 이 결제가 더한 일수를 뺀다. 원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회).
+ *  ponytail: select→update 라 같은 순간의 재구매(activate)와 겹치면 한쪽 갱신이 사라진다 — 원자 RPC 는 마이그레이션이 필요해 보류. */
+export async function shortenMembershipForRefund(
+  userId: string,
+  options: { days: number; now?: Date; service?: SupabaseClient }
+) {
+  const client = options.service ?? (await createServiceClient());
+  const now = options.now ?? new Date();
+  const { data, error } = await client.from('subscriptions').select('renews_at').eq('user_id', userId).maybeSingle();
+  if (error) throw new Error(error.message);
+  const next = refundedMembershipRenewal((data as { renews_at: string | null } | null)?.renews_at ?? null, now, options.days);
+  if (!next) return null;
+  const { error: updateError } = await client
+    .from('subscriptions')
+    .update({ renews_at: next.renewsAt, ...(next.status ? { status: next.status } : {}), updated_at: now.toISOString() })
+    .eq('user_id', userId);
+  if (updateError) throw new Error(updateError.message);
+  return next;
+}
+
 export async function activateMembershipSubscription(
   userId: string,
   options: {
@@ -139,7 +183,7 @@ export async function activateMembershipSubscription(
   const service = await createServiceClient();
   const existing = await readSubscription(userId);
   const now = new Date();
-  const days = options.days ?? 30;
+  const days = options.days ?? MEMBERSHIP_PERIOD_DAYS;
   const baseDate =
     existing?.renews_at && new Date(existing.renews_at).getTime() > now.getTime()
       ? new Date(existing.renews_at)
