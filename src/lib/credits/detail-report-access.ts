@@ -270,7 +270,10 @@ export async function recordTodayFortunePremiumAccess(
   userId: string,
   readingKey: string,
   sourceSessionId: string,
-  dayKey?: string
+  dayKey?: string,
+  // 2026-09-14 — 멤버십 혜택으로 연 행 표식(카카오 친구 쿠폰도 같은 amount 0 행을 쓰므로 구분이 필요하다).
+  //   멤버십 전액환불이 이 표식으로 그 결제 기간의 열람을 지운다(lockMembershipContentForRefund).
+  via?: 'membership'
 ) {
   const service = await createServiceClient();
   const { error } = await service.from('credit_transactions').insert({
@@ -278,7 +281,7 @@ export async function recordTodayFortunePremiumAccess(
     amount: 0,
     type: 'use',
     feature: 'detail_report',
-    metadata: getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey),
+    metadata: { ...getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey), ...(via ? { via } : {}) },
   });
 
   if (error) {
@@ -345,7 +348,7 @@ export async function unlockTodayFortunePremium(
   // [멤버십 게이트] 전 앞에 삽입: premium 은 상세풀이 무제한(MEMBER_QUOTAS.premium.detailMonthly=null).
   //   2026-09-01 — 월쿼터 소진 분기는 plus 등급 전용이었고 그 등급이 사라져 함께 삭제했다.
   if (await getMemberTier(userId)) {
-    await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
+    await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey, 'membership');
     return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
   }
 

@@ -1,5 +1,17 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 멤버십 전액환불 = 그 결제 기간에 멤버십으로 연 달력·상세풀이 잠금
+
+앞 섹션(#821) 위에 쌓음. 마이그레이션 없음. 사용자 결정(3번): 전액환불이면 그 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람 금지.
+- **왜**: 멤버십 열람 행(0원 `credit_transactions`)은 영구 재열람(달력)이고, 상세는 스냅샷(`/today-fortune/snapshots/[id]`, 권한 검사 없음)으로 남아 환불 뒤에도 열렸다.
+- **방식**: 멤버십 경로 기록 2곳에 `via:'membership'`(카카오 쿠폰 0원 행과 구분, 판정·RPC dedup 은 contains 라 무영향) · 멤버십으로 만든 스냅샷 `access_source='membership'` ·
+  지급이 기간 `[renewsAt−30일, renewsAt)` 을 주문 `metadata.membershipPeriods` 에 누적 · `lockMembershipContentForRefund` 가 창 `[start, min(end, 지금))` 의
+  표식 행·스냅샷을 **삭제**(무효 표시는 RPC 가 reused 로 다시 연다) + 감사 1행(`entitlement_revoke`/`membership_content_locked`).
+  훅은 `markPaymentOrderRefunded` 전이 분기, 구독 차감 뒤, 전액환불만(1회) · 실패는 `last_error` 흔적.
+- 검증: 유닛 1,675 + node:test 191, tsc 0 · 뮤테이션 20/20 red(필터 하나씩 제거·창 경계·via 누락·훅 위치·기간 누적).
+- 남음: **B단계(부분환불)** · 이 변경 이전의 멤버십 열람 행·스냅샷엔 표식이 없어 잠기지 않음(유료 멤버십 결제 0건이라 실영향 없음) ·
+  ⚠️ 같은 날 **주제(concern) 전환**으로 만든 추가 스냅샷은 멤버십 행으로 열렸어도 access_source 가 'reused' 라 잠금 대상 밖(스냅샷 링크로 계속 보임) — 막을지 확인 필요.
+
 ## 2026-09-14 — 관리자 멤버십 해제 = 즉시 종료 · 대화상담 취소 시 전 3개 회수
 
 앞 섹션 #820 머지·staging 동기화 완료(`5c55230e`). 마이그레이션 없음. 사용자 요청 2·4번.

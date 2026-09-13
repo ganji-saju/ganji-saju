@@ -13,6 +13,7 @@ import {
   getPaymentOrderByOrderId,
   markPaymentOrderFailed,
   markPaymentOrderFulfilled,
+  membershipPeriodEndingAt,
   recordMembershipDaysGranted,
   type PaymentOrder,
   type PaymentOrderSource,
@@ -197,7 +198,15 @@ export async function fulfillPaymentOrder(input: {
         })
       : null;
     // 2026-09-13 — 구독에 실제로 더한 일수를 주문에 기록한다. 환불은 이 기록만 뺀다(미지급 0 · 재시도 누적).
-    if (subscription) await recordMembershipDaysGranted(claimed.orderId, MEMBERSHIP_PERIOD_DAYS);
+    //   기간은 [renewsAt − 30일, renewsAt) — 앞 기간에 이어 붙으면 그 끝부터다(전액환불이 이 기간의 멤버십 열람만 지운다).
+    if (subscription) {
+      await recordMembershipDaysGranted(
+        claimed.orderId,
+        MEMBERSHIP_PERIOD_DAYS,
+        undefined,
+        membershipPeriodEndingAt(subscription.renewsAt, MEMBERSHIP_PERIOD_DAYS)
+      );
+    }
 
     const entitlement =
       pkg.kind === 'lifetime_report' && paymentScope?.readingKey
