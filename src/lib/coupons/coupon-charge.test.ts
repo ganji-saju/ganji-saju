@@ -38,6 +38,8 @@ interface FakeDb {
   codeLookups: number;
   /** true 면 RPC 가 오류를 낸다(장애 흉내). */
   rpcDown?: boolean;
+  /** true 면 payment_orders 조회가 오류를 낸다(장애 흉내). */
+  ordersDown?: boolean;
 }
 
 function cmp(a: unknown, b: unknown) {
@@ -94,6 +96,7 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
         db.inserted.push(row);
         return { data: row, error: null };
       }
+      if (table === 'payment_orders' && db.ordersDown) return { data: null, error: { message: 'orders down' } };
       const hits = rowsOf().filter((row) => matches(row, filters));
       if (table === 'discount_coupons' && !patch && filters.some((f) => f.op === 'eq' && f.col === 'code')) {
         db.codeLookups += 1;
@@ -287,6 +290,16 @@ test('coupon-charge — 요구 4: 동시에 두 명이 같은 코드를 넣어�
   assert.equal(again.reason, 'bound_to_other');
   assert.equal(again.chargeAmount, 3300);
   assert.equal(again.claim, null);
+});
+
+// PR7 리뷰(적대적 검증 실측) — `if (error || !data) return true` 를 false 로 바꿔도 전 스위트가 초록이었다.
+//   장애 중에 24시간 지난 남의 쿠폰을 가져가면, 결제 중이던 원래 주인의 주문은 승인 관문에서 막히고 쿠폰도 잃는다.
+test('coupon-charge — 회수 판단용 주문 조회가 실패하면 "주문이 있다"로 본다(요구 4 — 쓰던 사람 보호)', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001', { bound_user_id: 'u1', bound_at: ago(25 * HOUR), bound_percent: 30 })] });
+  db.ordersDown = true;
+  const quote = await resolveChargeForUser(TODAY_DETAIL, { id: 'u2' }, 'ganji-30-0001', opts(db));
+  assert.equal(quote.claim, null);
+  assert.equal(quote.reason, 'bound_to_other');
 });
 
 test('coupon-charge — 24시간 미결제 회수: 결제 흔적이 없으면 다른 사람이 가져간다', async () => {

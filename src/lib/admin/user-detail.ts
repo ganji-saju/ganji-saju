@@ -126,7 +126,8 @@ export function determineRefundEligibility(
   },
   // 2026-08-24 — 번들 주문(결제 완료 상태만 전달할 것). 구성품 entitlement 는 amount=null 이라
   //   entitlement 필터에 절대 안 잡힌다 — 주문 원장이 번들 환불의 유일한 금액 실체다.
-  paidOrders: ReadonlyArray<BundleOrderRefundCandidate> = []
+  //   2026-09-13 — **필수**. 요약(summary-refresh)이 빠뜨려 목록 배지·"환불 가능" 필터가 상세 화면과 달랐다(번들·고아 주문 누락).
+  paidOrders: ReadonlyArray<BundleOrderRefundCandidate>
 ): RefundEligibility {
   const items: RefundEligibleItem[] = entitlements
     .filter((e) => typeof e.amount === 'number' && e.amount > 0)

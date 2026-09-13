@@ -22,8 +22,8 @@ function tsFiles(dir: string, out: string[] = []): string[] {
 
 const FILES = tsFiles(SRC).map((f) => ({ rel: path.relative(ROOT, f), text: fs.readFileSync(f, 'utf8') }));
 
-/** 주석을 뺀 코드 — 설명 문구가 금지 패턴에 걸리지 않게(줄 끝 주석은 남는다). */
-const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+/** 주석을 뺀 코드 — 설명 문구가 금지 패턴에 걸리지 않게(줄 끝 주석 포함, `https://` 는 앞이 공백이 아니라 남는다). */
+const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
 
 // PR7(2026-09-13) — 처음 정규식은 작은따옴표 `.insert` · 이름 그대로의 호출 · SDK 헬퍼 두 이름만 봐서
 //   큰따옴표(layout.tsx 가 실제로 쓴다) · upsert · 별칭 import · 결제창 직접 호출이 초록으로 지나갔다(뮤테이션 실측).
@@ -46,7 +46,7 @@ test('createPaymentOrder 호출부는 prepare 1곳뿐', () => {
 test('PG 결제창을 여는 컴포넌트는 체크아웃 1곳뿐', () => {
   const hits = FILES.filter(
     (f) =>
-      /requestNicepayPayment\s*\(|loadTossPayments\s*\(|\bAUTHNICE\b|@tosspayments\//.test(f.text) &&
+      /requestNicepayPayment\s*\(|loadTossPayments\s*\(|\bAUTHNICE\b|^import (?!type\b)[^;]*from\s*['"]@tosspayments\//m.test(f.text) &&
       !f.rel.endsWith('nicepay-checkout.ts')
   ).map((f) => f.rel);
   assert.deepEqual(hits, ['src/components/membership/toss-membership-checkout.tsx'], hits.join(', '));
@@ -69,7 +69,7 @@ test('prepare 응답의 amount 는 order.amount 다 — 정가(listAmount)를 �
 test('prepare 가 요청 본문에서 읽는 키는 허용 목록뿐 — 금액·할인율은 서버가 정한다', () => {
   const src = FILES.find((f) => f.rel === 'src/app/api/payments/prepare/route.ts')!.text;
   const keys = new Set<string>();
-  const rest = src.replace(/readString\(payload, '(\w+)'\)|payload\.(\w+)/g, (_, read: string, prop: string) => {
+  const rest = src.replace(/readString\(payload, ['"](\w+)['"]\)|payload\.(\w+)/g, (_, read: string, prop: string) => {
     keys.add(read ?? prop);
     return '';
   });
@@ -79,6 +79,7 @@ test('prepare 가 요청 본문에서 읽는 키는 허용 목록뿐 — 금액�
     '새 키를 읽으려면 금액·할인에 쓰이지 않는지 확인하고 이 목록을 고쳐라'
   );
   assert.equal(rest.match(/\bpayload\b/g)?.length, 2, 'payload 는 선언과 null 검사에만 — 구조분해·전개·전달 금지');
+  assert.ok(!/nextUrl|searchParams|req\.(clone|formData|text)\(/.test(src), '요청 본문 밖(쿼리스트링 등)에서도 값을 읽지 않는다');
 });
 
 // 🔴 PR3 — 쿠폰이 붙은 뒤 폴백이 남아 있으면 "할인 실패 → 조용히 다른 금액 청구"가 된다(설계 §3-3).
@@ -100,13 +101,20 @@ test('체크아웃 화면 금액에 카탈로그 정가 폴백(?? paymentPackage
   //   정가를 넘기면 할인 결제가 전부 amount_changed 로 막힌다. 정가는 취소선 표시에만 쓴다.
   assert.ok(/amount=\{quote\.chargeAmount\}/.test(src) && /value=\{quote\.chargeAmount\}/.test(src));
   assert.ok(!/(amount|value)=\{quote\.listAmount\}/.test(src), '정가는 취소선 표시에만');
+  // 요약 금액·"X원 결제하기" 문구도 할인 후 금액(한 화면 안 표시가 = 청구가). 정가 표기는 "상품 금액" 한 줄뿐.
+  assert.ok(/const displayPrice = quote \? formatPrice\(quote\.chargeAmount\)/.test(src));
+  assert.equal(src.match(/formatPrice\(quote\.listAmount\)/g)?.length, 1);
 });
 
 // 🔴 리뷰 발견(2026-09-11): prepare 가 화면 금액을 몰라, 미리보기 뒤 요율이 바뀌면 화면보다 비싸게 청구됐다.
 //   expectedAmount 는 **대조 전용**이다 — 주문 금액 인자로 흘러가는 순간 클라이언트가 가격을 정한다.
 test('prepare 는 화면 금액(expectedAmount)을 대조에만 쓰고, 체크아웃이 그 값을 보낸다', () => {
   const route = FILES.find((f) => f.rel === 'src/app/api/payments/prepare/route.ts')!.text;
-  assert.ok(/expectedAmount !== quote\.chargeAmount/.test(route), '표시가 ≠ 청구가면 멈춰야 한다');
+  // PR7 리뷰 — 조건 전체를 본다. `&& !couponInput` 같은 면제를 끼우면 쿠폰 결제에서 대조가 꺼져도 초록이었다(실측).
+  assert.ok(
+    /if \(expectedAmount !== null && expectedAmount !== quote\.chargeAmount\) \{\s*return blockPrepare\(\s*'amount_changed'/.test(route),
+    '표시가 ≠ 청구가면 멈춰야 한다'
+  );
   assert.ok(!/:\s*expectedAmount\b/.test(route), 'expectedAmount 를 어떤 인자·필드 값으로도 넘기면 안 된다');
   const client = FILES.find((f) => f.rel === 'src/components/membership/toss-membership-checkout.tsx')!.text;
   assert.ok(/expectedAmount:\s*amount\b/.test(client), '체크아웃이 표시 금액을 prepare 로 보내야 대조가 작동한다');
@@ -120,6 +128,10 @@ test('prepare 는 쿠폰을 resolveChargeForUser 로 계산하고 주문에 넘�
   // PR7(§13-8) — 본인 재사용(mode 'self')도 bindCouponClaim 을 지나야 쿠폰이 나온다. 조건에 mode 를 끼우면
   //   귀속된 고객의 두 번째 결제부터 전부 coupon_bind_failed 409 가 된다(뮤테이션 실측).
   assert.ok(/const coupon = quote\.claim\s*\?\s*await bindCouponClaim\(quote\.claim, userId,/.test(src));
+  // PR7 리뷰 — 쿠폰이 안 붙거나 귀속이 실패하면 **멈춘다**. "로그만 남기고 진행"으로 바꾸면 화면 할인가로 대조를 통과한 뒤
+  //   coupon=null 로 정가 주문이 만들어져 버튼엔 2,310원, 청구는 3,300원이 된다(실측 — 전 스위트 초록이었다).
+  assert.ok(/if \(couponReason\) \{\s*return blockPrepare\(/.test(src));
+  assert.ok(/if \(quote\.claim && !coupon\) \{\s*return blockPrepare\(\s*'coupon_bind_failed'/.test(src));
 });
 
 // 전역 가격 표시 맵은 루트 레이아웃의 **전 방문자 공유 캐시**다(layout.tsx 에 인증 호출 0건).
@@ -133,15 +145,19 @@ const PRICE_CHAIN = [
   'src/lib/payments/price-display.ts', // getPriceDisplayMap(요청 캐시)
   'src/components/payments/price-provider.tsx', // <PriceProvider>·<Price>
 ];
+// 사용자와 무관한 이름(useReducer·sessionStorage·이벤트 할인 표시)은 걸리지 않게 — 넓은 패턴은 결국 누군가 느슨하게 고친다.
 const USER_DEPENDENT =
-  /next\/headers|\b(cookies|headers|draftMode|connection)\s*\(|\bcreateClient\s*\(|\bauth\.|getUser|getSession|coupon|discount|\buser|viewer|session/i;
+  /next\/headers|\b(cookies|headers|draftMode|connection)\s*\(|\bcreateClient\s*\(|\bauth\.|getUser|getSession|[cC]oupon|\buserId\b|\buser\.id\b|\bviewer/;
 const DYNAMIC_LAYOUT =
-  /from\s*["']next\/(headers|server)["']|\b(cookies|headers|draftMode|connection)\s*\(|@\/lib\/supabase\/|getUser|getSession|export const (dynamic|revalidate|fetchCache)\b/;
+  /from\s*["']next\/(headers|server)["']|\b(cookies|headers|draftMode|connection)\s*\(|@\/lib\/supabase\/|getUser|getSession|export const (dynamic|fetchCache)\b|export const revalidate\s*=\s*0\b/;
 
 test('가격 표시 체인(리졸버 → 맵 → Provider)은 사용자·쿠폰·세션을 모르고 인자도 받지 않는다', () => {
-  // 패턴이 헛돌지 않는지 먼저 — 막아야 할 모양을 실제로 잡는가.
-  for (const bad of ['await cookies()', 'createClient()', 'auth.getUser()', 'couponCode?: string', 'viewerId', 'applyCouponDiscount(']) {
+  // 패턴이 헛돌지 않는지 먼저 — 막아야 할 모양을 실제로 잡는가(그리고 무관한 이름은 안 잡는가).
+  for (const bad of ['await cookies()', 'createClient()', 'auth.getUser()', 'couponCode?: string', 'viewerId', 'applyCouponDiscount(', 'user.id']) {
     assert.ok(USER_DEPENDENT.test(bad), bad);
+  }
+  for (const fine of ['useReducer', 'sessionStorage', 'compareValue', 'discountLabel']) {
+    assert.ok(!USER_DEPENDENT.test(fine), fine);
   }
   for (const rel of PRICE_CHAIN) {
     const file = FILES.find((f) => f.rel === rel);
@@ -160,12 +176,17 @@ test('가격 표시 체인(리졸버 → 맵 → Provider)은 사용자·쿠폰�
 });
 
 test('루트 레이아웃은 정적이다 — 쿠키·인증·동적 선언 없이 가공하지 않은 맵을 넘긴다', () => {
-  for (const bad of ["import { cookies } from 'next/headers'", 'await headers()', "import { createClient } from '@/lib/supabase/server'", "export const dynamic = 'force-dynamic'"]) {
+  for (const bad of ["import { cookies } from 'next/headers'", 'await headers()', "import { createClient } from '@/lib/supabase/server'", "export const dynamic = 'force-dynamic'", 'export const revalidate = 0']) {
     assert.ok(DYNAMIC_LAYOUT.test(bad), bad);
   }
+  assert.ok(!DYNAMIC_LAYOUT.test('export const revalidate = 3600'), '정적 ISR 은 여전히 방문자 공유 캐시다');
   const src = FILES.find((f) => f.rel === 'src/app/layout.tsx')!.text;
   assert.ok(!DYNAMIC_LAYOUT.test(stripComments(src)), 'layout.tsx 가 요청마다 달라지면 가격 맵이 방문자 공유 캐시가 아니게 된다');
   assert.ok(/const priceMap = await getPriceDisplayMap\(\);/.test(src) && /<PriceProvider map=\{priceMap\}>/.test(src));
+  // PR7 리뷰(실측) — 레이아웃 안에 두 번째 Provider 를 끼우거나 하위 레이아웃이 자기 맵으로 감싸면 위 검사를 다 통과했다.
+  const providers = FILES.filter((f) => /<PriceProvider\b/.test(stripComments(f.text))).map((f) => f.rel);
+  assert.deepEqual(providers, ['src/app/layout.tsx'], '가격 맵 Provider 는 루트 레이아웃 한 곳뿐');
+  assert.equal(stripComments(src).match(/<PriceProvider\b/g)?.length, 1);
 });
 
 // 리뷰 발견(2026-09-11): 세션 쿠키가 SameSite=Lax 라 다른 사이트가 연 `?coupon=` 링크에도 실린다 —
@@ -230,9 +251,27 @@ test('관리자 환불 요청 스냅샷은 주문·이용권의 실결제액이�
 });
 
 test('이용권·전 지급 금액은 승인된 주문의 실결제액(claimed.amount) — 환불 스냅샷의 원천', () => {
-  const amounts = stripComments(FILES.find((f) => f.rel === 'src/lib/payments/fulfillment.ts')!.text).match(/\bamount:[^,\n]*/g) ?? [];
-  assert.equal(amounts.length, 4, amounts.join(' | '));
+  // `amount` 속성 자리 전부(단축 속성 `{ amount }` 포함, `claimed.amount` 같은 읽기는 제외)가 `amount: claimed.amount` 여야 한다.
+  const src = stripComments(FILES.find((f) => f.rel === 'src/lib/payments/fulfillment.ts')!.text);
+  const amounts = src.match(/(?<![.\w])amount(?=\s*[:,}])[^,\n}]*/g) ?? [];
+  assert.ok(amounts.length >= 4, `지급 경로 4곳(이용권 2 · 전 2)이 있어야 한다: ${amounts.join(' | ')}`);
   assert.ok(amounts.every((a) => a === 'amount: claimed.amount'), amounts.join(' | '));
+});
+
+// PR7 리뷰(적대적 검증 실측) — 주문 조회를 컬럼 목록으로 좁히다 coupon_code 를 빼면 mapPaymentOrder 가 couponCode=null 을 내고,
+//   승인 관문(§5-3)이 할인 주문을 "쿠폰 없는 주문"으로 보고 검사를 건너뛴다. 전 스위트가 초록이었다.
+test("주문 원장 조회는 select('*') — 승인 관문이 받는 주문에 쿠폰 스냅샷 컬럼이 빠지지 않는다", () => {
+  const src = FILES.find((f) => f.rel === 'src/lib/payments/order-ledger.ts')!.text;
+  assert.deepEqual([...new Set(src.match(/\.select\([^)]*\)/g))].sort(), [".select('*')", ".select('metadata')"]);
+});
+
+// 할인이 금액이 되는 곳은 createPaymentOrder 한 곳이다(50% 상한·1원 하한). 만든 뒤 금액·할인 스냅샷을 고치면 그 밖에서 금액이 정해진다
+//   (예: 요율 소급 뒤 옛 주문 "재가격" — 클라이언트는 옛 금액으로 결제해 대조에서 거부된다. 실측).
+test('주문의 금액·할인 스냅샷은 만들 때 한 번만 — payment_orders 를 고치는 UPDATE 에 금액 키가 없다', () => {
+  const hits = FILES.filter((f) =>
+    /from\(\s*['"]payment_orders['"]\s*\)[\s\S]{0,200}?\.update\(\s*\{[^}]*\b(amount|list_amount|discount_won|coupon_percent|coupon_code)\b/.test(f.text)
+  ).map((f) => f.rel);
+  assert.deepEqual(hits, []);
 });
 
 // 환불·집계·결제내역·웹훅이 `amount` 대신 정가 스냅샷을 읽기 시작하면 여기서 걸린다.

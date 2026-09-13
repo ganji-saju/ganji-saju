@@ -63,7 +63,7 @@ test('determineRefundEligibility: amount>0 만 환불 대상, 합계', () => {
     { id: 'b', product_id: 'today-detail', amount: 550, order_id: null, payment_key: 'pk2', package_id: null, created_at: '2026-05-02T00:00:00Z', metadata: null },
     { id: 'c', product_id: 'freebie', amount: 0, order_id: null, payment_key: null, package_id: null, created_at: '2026-05-03T00:00:00Z', metadata: null },
   ];
-  const result = determineRefundEligibility(entitlements);
+  const result = determineRefundEligibility(entitlements, undefined, []);
   assert.equal(result.items.length, 2); // amount 0 인 c 제외
   assert.equal(result.totalRefundableWon, 49550);
   assert.equal(result.totalProductRefundableWon, 49550);

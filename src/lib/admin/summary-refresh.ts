@@ -14,7 +14,7 @@ import {
   type CreditRefundLotRow,
   type CreditRefundTransactionRow,
 } from '@/lib/admin/credit-refunds';
-import { determineRefundEligibility } from '@/lib/admin/user-detail';
+import { determineRefundEligibility, type BundleOrderRefundCandidate } from '@/lib/admin/user-detail';
 
 type ServiceClient = Awaited<ReturnType<typeof createServiceClient>>;
 
@@ -81,7 +81,7 @@ async function computeUserSummary(
   // LTV/결제수에서 누락되던 문제: 완료 주문 원장을 세 번째 소스로(orderId dedupe).
   const { data: orderRows } = await service
     .from('payment_orders')
-    .select('id, order_id, package_id, amount, status, created_at, metadata')
+    .select('id, order_id, package_id, amount, status, created_at, payment_key, metadata')
     .eq('user_id', userId)
     .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
   const paymentOrders = (orderRows ?? []) as unknown as PaymentOrderHistoryRow[];
@@ -122,7 +122,12 @@ async function computeUserSummary(
     undefined,
     buildOrderAmountMap(orderRows as Array<{ order_id: string; amount: number }> | null)
   );
-  const refund = determineRefundEligibility(productEntitlements, creditRefund);
+  // 상세 화면(user-detail)과 같은 입력 — 번들·고아 주문은 주문 원장으로만 잡힌다.
+  const refund = determineRefundEligibility(
+    productEntitlements,
+    creditRefund,
+    (orderRows ?? []) as unknown as BundleOrderRefundCandidate[]
+  );
 
   // 2026-07-04 감사 — 만료 처리는 lazy(사용자 재방문 시)라 renews_at 이 지난 행도
   // status='active'/'cancelled' 로 남음 → 요약 저장 시 'expired' 로 정규화.

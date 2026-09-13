@@ -306,7 +306,7 @@ export function buildPaymentHistory(
       const orderUnconfirmed =
         hasOrderLedger && Boolean(row.order_id) && !completedOrderIds.has(row.order_id as string);
       if (isBundleComponent || orderUnconfirmed) return { ...entry, amountWon: null };
-      const ledgerAmount = orderAmountById.get(row.order_id ?? '');
+      const ledgerAmount = row.order_id ? orderAmountById.get(row.order_id) : undefined;
       return typeof ledgerAmount === 'number' ? { ...entry, amountWon: ledgerAmount } : entry;
     }),
     // 🔴 2026-09-08 — 같은 주문이 두 테이블에 다 적히면 **이중 계상**된다.
