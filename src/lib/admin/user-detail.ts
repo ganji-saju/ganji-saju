@@ -1,7 +1,7 @@
 // 2026-05-25 Phase 1 — 어드민 사용자 상세 + 검색 데이터 레이어.
 //   /admin/users, /admin/users/[id] 가 사용. service_role 로 own-row RLS 우회.
 //   순수 로직(팔자 추출·LLM 통계·환불 가능 판정)은 단위 테스트로 고정.
-import { getPackage, isBundlePackage } from '@/lib/payments/catalog';
+import { getPackage } from '@/lib/payments/catalog';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import {
   buildPaymentHistory,
@@ -148,8 +148,11 @@ export function determineRefundEligibility(
   //   LTV 에는 계속 잡혀 "환불했는데 금액이 안 사라진다" 로 보였다.
   //   번들 여부가 아니라 **이미 다른 소스로 잡혔는지**로 가른다 — 금액은 이용권이 아니라
   //   주문에 있다(2026-08-24 번들 수정과 같은 이유).
+  //   🔴 2026-09-13 — "잡혔다"는 **목록에 올라간 것**이다. 금액 없는 이용권(번들 구성품·금액 기록 없는 단품)의 주문번호까지
+  //   세면 그 주문이 목록에서 통째로 빠져 관리자 화면으로 환불할 수 없었다. 주문 단위 환불도 결제키로 그 결제의 권한을
+  //   전부 회수하므로(revokeEntitlementsOfPayment) 번들·단품 구분이 필요 없다.
   const seenOrderIds = new Set<string>();
-  for (const e of entitlements) if (e.order_id) seenOrderIds.add(e.order_id);
+  for (const item of items) if (item.orderId) seenOrderIds.add(item.orderId);
   for (const c of creditEligibility.items) if (c.orderId) seenOrderIds.add(c.orderId);
 
   for (const order of paidOrders) {
@@ -157,12 +160,7 @@ export function determineRefundEligibility(
     // ⚠️ 카탈로그에 없는 상품이라고 건너뛰지 않는다 — 프로덕션 카탈로그에 없는(개편 전용·폐지)
     //   상품의 결제가 실재하고, 그걸 못 잡으면 **돈을 받아 놓고 환불할 방법이 없다.**
     //   이름만 없을 뿐 금액·paymentKey 는 주문에 다 있다.
-    // 🔴 2026-09-13 — 번들은 **주문 단위 항목이 유일한 환불 창구**다(구성품은 amount=null 이라 위 목록에 없고,
-    //   실행은 구성품을 일괄 회수한다). 구성품의 주문번호로 중복을 판정하면 구성품이 지급된 번들이 목록에서
-    //   통째로 빠진다(관리자 화면으로 환불 불가). 금액 없는 **단품** 이용권은 종전대로 둔다 — 주문 단위 환불은
-    //   요청 product_id 에 패키지 id 를 실어 단품 이용권을 회수하지 못한다(환불됐는데 열람이 남는다).
-    const isBundleOrder = Boolean(pkg && isBundlePackage(pkg));
-    if (order.order_id && seenOrderIds.has(order.order_id) && !isBundleOrder) continue; // 중복 방지
+    if (order.order_id && seenOrderIds.has(order.order_id)) continue; // 중복 방지
     if (typeof order.amount !== 'number' || order.amount <= 0) continue;
     items.push({
       kind: 'bundle-order',

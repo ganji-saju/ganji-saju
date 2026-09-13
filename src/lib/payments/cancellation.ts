@@ -1,30 +1,24 @@
 // 2026-07-10 — PG 취소 통보 시 무엇을 회수할지 결정하는 순수 로직.
 //
-// 회수는 지급과 대칭이어야 한다. 지급(fulfillment)은 order_id 를 달아 entitlement 를 남기므로,
-// 회수도 order_id 로 열거한 결과를 그대로 받는다(번들이면 구성품이 여러 행으로 들어온다).
+// 회수는 지급과 대칭이어야 한다. 지급은 이용권 행과 레거시 grant 행에 같은 결제키를 싣는다 →
+// 회수는 결제키로 그 결제가 만든 권한 전부(번들 구성품·레거시 전용 권한 포함, revokeEntitlementsOfPayment).
+// 2026-09-13 — 예전엔 order_id 로 이용권 행을 열거해 (상품, 범위)로 지웠다: 레거시에만 남은 권한을 놓치고,
+//   레거시 삭제가 범위 기준이라 다른 결제 몫을 지우거나(흡수) 전역 상품(null ≠ 'global')을 못 지웠다.
 //
 // 이전 버그: webhook/nicepay 가 `pkg.credits > 0` 일 때만 회수해서, credits=0 인 단품
 //   (score-total·today-detail·year-core·lifetime)은 환불 후에도 이용권이 남았다.
 import type { PaymentOrderStatus } from '@/lib/payments/order-ledger';
 
-export interface RevokableEntitlement {
-  userId: string;
-  productId: string;
-  scopeKey: string | null;
-}
-
 export interface CancellationRevokeInput {
   orderStatus: PaymentOrderStatus;
   /** 패키지가 지급하는 전(코인) 수량. 단품은 0. */
   packageCredits: number;
-  /** order_id 로 조회한 실제 지급 이용권. 없으면 빈 배열. */
-  entitlements: readonly RevokableEntitlement[];
 }
 
 export interface CancellationRevokePlan {
   revokeCredits: number;
-  revokeEntitlements: RevokableEntitlement[];
-  hasWork: boolean;
+  /** 이 결제가 만든 이용권을 회수하는가(지급이 일어난 상태). 대상은 결제키로 정한다. */
+  revokeGrants: boolean;
 }
 
 /** 지급이 일어난(혹은 일어나던) 상태에서만 회수한다. */
@@ -35,17 +29,9 @@ export function buildCancellationRevokePlan(
 ): CancellationRevokePlan {
   const granted = GRANTED_STATUSES.includes(input.orderStatus);
   if (!granted) {
-    return { revokeCredits: 0, revokeEntitlements: [], hasWork: false };
+    return { revokeCredits: 0, revokeGrants: false };
   }
-
-  const revokeCredits = input.packageCredits > 0 ? input.packageCredits : 0;
-  const revokeEntitlements = [...input.entitlements];
-
-  return {
-    revokeCredits,
-    revokeEntitlements,
-    hasWork: revokeCredits > 0 || revokeEntitlements.length > 0,
-  };
+  return { revokeCredits: input.packageCredits > 0 ? input.packageCredits : 0, revokeGrants: true };
 }
 
 /** 결제 승인(=돈을 받음)까지 간 것으로 볼 수 있는 상태. */

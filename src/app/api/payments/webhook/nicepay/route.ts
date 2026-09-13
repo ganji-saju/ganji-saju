@@ -29,10 +29,7 @@ import {
   buildCancellationRevokePlan,
   resolveCancellationTerminalStatus,
 } from '@/lib/payments/cancellation';
-import {
-  listProductEntitlementsByOrder,
-  revokeProductEntitlement,
-} from '@/lib/product-entitlements';
+import { revokeEntitlementsOfPayment } from '@/lib/product-entitlements';
 
 export const runtime = 'nodejs';
 
@@ -147,13 +144,12 @@ export async function POST(req: NextRequest) {
     // 5) 지급분 회수 — 전(코인) + 상품 이용권. 회수는 지급과 대칭이어야 한다.
     //    2026-07-10 사고: 여기서 `pkg.credits > 0` 만 보고 회수해서, credits=0 인 단품
     //      (score-total·today-detail·year-core·lifetime)은 환불 후에도 이용권이 남았다.
-    //      실제 지급 기록(order_id 로 열거)에 맞춰 회수한다 — 번들이면 구성품 전부.
+    //      2026-09-13 — 이용권은 결제키로 그 결제가 만든 권한 전부(번들 구성품·레거시 전용 권한 포함).
     //    ⚠️ 음수 잔액(이미 사용한 전)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
     const pkg = getPackage(order.packageId);
     const plan = buildCancellationRevokePlan({
       orderStatus: order.status,
       packageCredits: pkg?.credits ?? 0,
-      entitlements: await listProductEntitlementsByOrder(orderId),
     });
 
     if (plan.revokeCredits > 0) {
@@ -164,19 +160,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 이용권 회수 실패가 취소 통보 처리를 막지 않게 개별 try — 남은 행은 수동 보정 대상.
-    for (const entitlement of plan.revokeEntitlements) {
+    // 이용권 회수 실패가 취소 통보 처리를 막지 않게 try — 남은 권한은 수동 보정 대상(결제키가 없으면 넓게 지우지 않는다).
+    if (plan.revokeGrants) {
       try {
-        await revokeProductEntitlement(
-          entitlement.userId,
-          entitlement.productId as Parameters<typeof revokeProductEntitlement>[1],
-          entitlement.scopeKey,
-          { reason: 'nicepay-cancel', actor: 'webhook', paymentKey: order.paymentKey }
-        );
+        await revokeEntitlementsOfPayment(order.userId, order.paymentKey, { reason: 'nicepay-cancel', actor: 'webhook' });
       } catch (revokeError) {
         console.error('[nicepay-webhook] 이용권 회수 실패', {
           orderId,
-          productId: entitlement.productId,
           error: revokeError instanceof Error ? revokeError.message : String(revokeError),
         });
       }
