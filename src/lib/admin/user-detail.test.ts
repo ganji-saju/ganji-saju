@@ -216,7 +216,7 @@ test('이용권이 사라진 단품 주문도 환불 목록에 잡힌다(고아 
 //   "정가로 환불" 회귀가 초록으로 지나간다 → 카탈로그가(오늘 자세히 3,300 · 종합 리포트 9,900)와 **다른** 할인가로 고정한다.
 //   2026-09-13 — 구성품(amount=null)이 지급된 번들 주문이 목록에서 통째로 빠지고 있었다(관리자 화면으로 환불 불가):
 //   구성품의 주문번호까지 "이미 잡힌 주문"으로 셌기 때문이다. 구성품은 금액이 없어 목록에 없다.
-//   단, 금액 없는 **단품** 이용권의 주문은 종전대로 뺀다(주문 단위 환불이 단품 이용권을 회수하지 못한다).
+//   금액 기록 없는 단품 이용권의 주문도 같다 — 주문 단위 환불이 결제키로 그 이용권까지 회수한다(2026-09-13, 전엔 패키지 id 라 못 지웠다).
 test('환불 목록 금액은 할인 후 실결제액 — 단품 이용권 · 구성품이 지급된 번들 · 고아 주문(§13-9)', () => {
   const component = (id: string, productId: string) =>
     ({ id, product_id: productId, scope_key: null, amount: null, payment_key: 'pk_b', order_id: 'ord_b', created_at: '2026-09-13T01:00:00Z' }) as never;
@@ -241,8 +241,8 @@ test('환불 목록 금액은 할인 후 실결제액 — 단품 이용권 · �
   assert.deepEqual(amountsOf('ord_d'), [2970], '단품 이용권');
   assert.deepEqual(amountsOf('ord_b'), [8910], '구성품이 지급된 번들');
   assert.deepEqual(amountsOf('ord_o'), [2970], '이용권이 사라진 주문');
-  assert.deepEqual(amountsOf('ord_n'), [], '금액 없는 단품 이용권이 남아 있는 주문 — 주문 단위로 환불하면 열람이 남는다');
-  assert.equal(refund.totalProductRefundableWon, 2970 + 8910 + 2970);
+  assert.deepEqual(amountsOf('ord_n'), [2970], '금액 기록 없는 단품 이용권이 남은 주문 — 환불 창구가 없으면 안 된다');
+  assert.equal(refund.totalProductRefundableWon, 2970 + 8910 + 2970 + 2970);
 });
 
 // 2026-08-26 회귀 가드 — 🔴 사용자 제보: "990원 결제하고 대화 3번 안 했는데 이미 사용된 거라고
