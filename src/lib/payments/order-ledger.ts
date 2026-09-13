@@ -628,13 +628,18 @@ export async function markPaymentOrderRefunded(input: {
         console.error('[refund] 멤버십 환불 후처리 실패', { orderId: order.orderId, message });
         failures.push(message);
       };
-      await shortenMembershipForRefund(order.userId, { days: membershipDays, service: client }).catch(note('membership_shorten_failed'));
+      // 차감 직전 renews_at — 잠금이 "이 주문 기간이 아직 구독의 끝인가"를 본다. 차감이 실패하면 모름(undefined) → 잠금은 건너뛴다.
+      let renewsAtBeforeRefund: string | null | undefined;
+      await shortenMembershipForRefund(order.userId, { days: membershipDays, service: client }).then(
+        (shortened) => void (renewsAtBeforeRefund = shortened.previousRenewsAt),
+        note('membership_shorten_failed')
+      );
       // 2026-09-14 — 전액환불(membershipDays > 0 = 부분취소 아님)이면 그 결제 기간에 멤버십으로 연 달력·상세풀이도 잠근다.
-      //   같은 분기라 1회. 실패는 위와 같이 흔적 — 전이가 끝나 재호출이 다시 잠그지 않는다.
+      //   같은 분기라 1회. 기간이 구독의 현재 끝이 아니면 지우지 않고 skip 감사행(수동 처리). 실패는 위와 같이 흔적.
       await lockMembershipContentForRefund(
         order.userId,
         readMembershipPeriods(order.metadata),
-        { reason: input.reason, actor: input.source, paymentKey: order.paymentKey },
+        { reason: input.reason, actor: input.source, paymentKey: order.paymentKey, orderId: order.orderId, renewsAtBeforeRefund },
         client
       ).catch(note('membership_lock_failed'));
       if (failures.length > 0) {

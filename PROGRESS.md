@@ -19,9 +19,26 @@
   - `markPaymentOrderRefunded(input, service?)`·`getPaymentOrderByOrderId(id, service?)` 주입 → 가짜 DB 로 **실행** 테스트(전액=잠금 · partial=미호출 · 멱등 재호출=미호출 · 이중 실패 흔적).
     GA refund 는 `VERCEL_ENV=production` 아니면 DB·네트워크 전에 반환(테스트 가드 assert).
 - 검증: 유닛 1,681 + node:test 191, tsc 0 · 뮤테이션 18/18 red(KST +9h·근거 via 필터·카드 근거·근거일 제외·occurred_on·창 시작·user 필터 2곳·주제 단품·상세 행만·skip 감사·감사 식별자 2종·last_error 덮어쓰기·잠금 미호출·partial 무시·멱등 가드·잠금 via 필터).
+- **재리뷰 반영(같은 브랜치 3번째 커밋)**:
+  - 🛡️ **안전 조건(사용자 대리 결정 — 안전 기본값)**: 지급 때 기록한 창은 이후 타임라인 변화(앞 결제 환불 차감·관리자 해제·재구매)로 실제 사용 시간과 어긋나
+    **다른 결제의 열람을 지웠다**(PROBE2 해제→재구매→환불, PROBE3 연속 A·B→A 환불→C 재구매→B 환불). 이제 자동 잠금은
+    ① 환불하는 주문의 **마지막 기록 기간 end = 환불 직전 구독 `renews_at`(±1초)** 이고 ② **다른 주문이 같은 끝을 기록하지 않았을 때**만 한다
+    (②는 PROBE3 변형 — A 환불로 당겨진 끝에 C 가 이어 붙으면 C 의 끝이 B 와 정확히 같아 ①만으론 통과해 C 의 열람을 지웠다).
+    환불 직전 `renews_at` 은 `shortenMembershipForRefund` 가 이미 읽는 값을 `previousRenewsAt` 으로 반환해 넘긴다(차감 → 잠금 순서 유지).
+  - 조건 불충족 = **삭제 0 + 감사행** `membership_content_lock_skipped`: `skipReason` = `window_not_current`(`orderEnd`·`subscriptionRenewsAt`, 같은 끝을 가진 주문이면 `claimedByOrderId`)
+    · 구독 행 없음/무기한도 `window_not_current`(`subscriptionRenewsAt: null`) · 구독 차감 실패로 끝을 모르면 `subscription_unknown`(+ `last_error` 에 차감 실패) · 기존 `no_membership_periods`·`no_elapsed_window`.
+    skip 은 실패가 아니라 `last_error` 엔 안 남는다.
+  - **수동 처리 경로**: `credit_transactions` 에서 `feature='entitlement_revoke'` · `metadata->>kind='membership_content_lock_skipped'` 행을 찾아(`paymentKey`·`windows`·`orderEnd`·`subscriptionRenewsAt`)
+    그 사용자의 실제 타임라인(주문들 `metadata.membershipPeriods`·환불·관리자 해제 이력)을 보고 지울 창을 정해 수동 삭제. 자동 재시도 경로는 없다(원장 전이 1회).
+  - **부분 실패 멱등**: 순서를 ① 창 안 멤버십 열람 행 **읽기**(잠글 날·근거 계산) → ② 스냅샷 삭제 → ③ ①에서 읽은 **id 만** 열람 행 삭제(100개씩) → ④ 감사로 바꿈.
+    ②·③ 어디서 실패해도 열람 행이 남아 재실행이 같은 끝 상태를 만든다(전엔 ①에서 지운 뒤 실패하면 재실행 {0,0}·스냅샷 영구 잔존).
+  - 근거 조회(표식 없는 상세 행)를 **잠글 날 범위(첫~마지막 KST 날)** 로 좁히고 `created_at,id` 정렬 + `range` 1000행 페이지네이션(전엔 사용자 이력 전체 1회 = 1000행 절단 위험).
+  - 주제→단품 매핑 `TOPIC_PRODUCT_BY_CONCERN` 을 `src/lib/today-fortune/topic-products.ts` 로 옮김(lib→app 의존 제거). `route-helpers` 는 재수출(기존 import 경로 유지, 사본 없음).
+  - 테스트: 부분 실패 후 재실행 2종 · 창 끝 이후 스냅샷 유지(`.lt(created_at, 창 끝)` 제거가 초록이던 공백) · 근거 날짜 범위·페이지 2장 · PROBE2(원장 실행)·PROBE3 두 변형 · 정상(가장 최근·이어진 기간, 재시도 누적) · skip 사유 6종.
+  - 검증: 유닛 1,687 + node:test 191, tsc 0 · 뮤테이션 11/11 red(스냅샷 창 끝·옛 삭제 순서·±1초·같은 끝 다른 주문·구독 모름 skip·페이지네이션·근거 날짜 좁히기·자기 주문 제외·다른 주문 user 필터·원장의 직전 renews_at 전달·shorten 직전 값 반환).
 - 남음/한계: **B단계(부분환불)** · 이 변경 이전의 멤버십 열람 행엔 표식이 없어 잠기지 않음(유료 멤버십 결제 0건이라 실영향 없음) ·
-  ⚠️ **연속 결제 A·B 타임라인 이동(리뷰 과소 잠금 3)**: A 를 환불하면 구독이 30일 당겨져 B 의 실제 사용 시간이 기록된 B 창보다 앞으로 옮겨가는데 기록은 안 고친다 →
-  뒤에 B 를 환불하면 당겨진 구간에서 연 열람은 못 잠근다(`subscription.ts` ponytail 주석, 고치려면 A 환불 때 뒤 주문들의 `membershipPeriods` 를 당겨 써야 함) ·
+  연속 결제 타임라인 이동(앞 결제 환불·관리자 해제 뒤 환불)은 이제 지우지 않고 **skip → 수동 처리**(과다 삭제 대신 과소 잠금을 택함) ·
+  ⚠️ 관리자 부여(`/admin/membership/grant`)는 주문을 안 남겨, 앞 결제 환불로 당겨진 끝에 관리자 부여가 정확히 같은 끝을 만들면 ②가 못 잡는다(재현 조건이 좁음) ·
   근거 판정은 레거시 `taste_product` 주제 구매(credit_transactions)는 안 봄 · 날 단위라 같은 날 **다른 사주**를 카드로 산 경우 그날 멤버십으로 연 스냅샷도 유지(사용자 의도: 근거 하나라도 있으면 유지).
 
 ## 2026-09-14 — 관리자 멤버십 해제 = 즉시 종료 · 대화상담 취소 시 전 3개 회수
