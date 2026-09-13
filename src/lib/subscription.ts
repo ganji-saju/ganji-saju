@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient, createServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import type { SubscriptionPlan } from '@/lib/payments/catalog';
 
@@ -125,6 +126,45 @@ export async function getViewerMemberTier(): Promise<'premium' | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * 환불된 멤버십 결제 1건이 늘린 기간을 뺀 뒤의 구독(순수, 2026-09-13).
+ * 구독은 사용자당 1행이고 결제(30일)·관리자 부여가 renews_at 끝에 누적된다 → "지금 종료"는 다른 기간까지 날리고,
+ * 상태만 cancelled 는 혜택이 안 끊긴다(isEntitledStatus). 그래서 이 결제의 30일만 뺀다.
+ * 결과가 지금 이전이면 즉시 만료 — renews_at 도 지금으로 내린다(남기면 재구매 때 activate 의 base 로 되살아난다).
+ * renews_at 이 없는(무기한) 행은 이 결제가 만든 기간이 아니라 손대지 않는다(null).
+ * ponytail: 지급 재시도로 activate 가 두 번 돈 결제(+60일)는 30일이 남는다 — 결제별 기간 기록이 생기면 그 값을 뺀다.
+ */
+export function refundedMembershipRenewal(
+  renewsAt: string | null,
+  now: Date,
+  days = 30
+): { status: 'expired' | null; renewsAt: string } | null {
+  if (!renewsAt) return null;
+  const shortened = addDays(new Date(renewsAt), -days);
+  return new Date(shortened).getTime() <= now.getTime()
+    ? { status: 'expired', renewsAt: now.toISOString() }
+    : { status: null, renewsAt: shortened };
+}
+
+/** 멤버십 환불 — 구독에서 이 결제분을 뺀다. 원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회). */
+export async function shortenMembershipForRefund(
+  userId: string,
+  options: { now?: Date; service?: SupabaseClient } = {}
+) {
+  const client = options.service ?? (await createServiceClient());
+  const now = options.now ?? new Date();
+  const { data, error } = await client.from('subscriptions').select('renews_at').eq('user_id', userId).maybeSingle();
+  if (error) throw new Error(error.message);
+  const next = refundedMembershipRenewal((data as { renews_at: string | null } | null)?.renews_at ?? null, now);
+  if (!next) return null;
+  const { error: updateError } = await client
+    .from('subscriptions')
+    .update({ renews_at: next.renewsAt, ...(next.status ? { status: next.status } : {}), updated_at: now.toISOString() })
+    .eq('user_id', userId);
+  if (updateError) throw new Error(updateError.message);
+  return next;
 }
 
 export async function activateMembershipSubscription(

@@ -3,7 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
-import type { PaymentPackage } from '@/lib/payments/catalog';
+import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
+import { shortenMembershipForRefund } from '@/lib/subscription';
 import type { PolicyKind } from '@/shared/policies/types';
 
 export type PaymentOrderStatus =
@@ -554,6 +555,11 @@ export async function markPaymentOrderRefunded(input: {
     //   차감된다. 여기(원장 함수)에 두면 admin·웹훅·정산 세 경로가 한 번에 커버된다.
     //   ⚠️ 방금 refunded 로 바뀐 경우에만 — 멱등 재호출은 위 neq 가드로 여기 안 온다.
     await dispatchGaRefund(order.orderId, order.amount).catch(() => undefined);
+    // 2026-09-13 — 멤버십 환불은 이 결제가 늘린 30일을 구독에서 뺀다(지급과 대칭). 여기(방금 refunded 로 바뀐 분기)라
+    //   관리자 환불·나이스 통보·정산이 겹쳐도 정확히 1회다. 실패는 던진다 — 전이는 이미 끝나 재호출이 다시 안 오므로 드러내야 한다.
+    if (getPackage(order.packageId)?.kind === 'subscription') {
+      await shortenMembershipForRefund(order.userId);
+    }
     return order;
   }
 
