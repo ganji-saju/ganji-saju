@@ -88,14 +88,15 @@ function secondsUntilKstMidnight(now: Date = new Date()): number {
  */
 export async function isFreeDailyUsed(
   surface: FreeSurface,
-  userId: string | null | undefined
+  userId: string | null | undefined,
+  now: Date = new Date()
 ): Promise<boolean> {
   // 전면 유료화 잠금 — 무료 할당량 자체가 0. 멤버 면제(isFreeDailyExempt)는 그대로 살아 있어
   //   결제한 사용자는 호출부에서 이 검사를 건너뛴다.
   if (isPaywallLockdown()) return true;
 
   const conf = FREE_DAILY_SURFACES[surface];
-  const periodKey = dailyPeriodKey();
+  const periodKey = dailyPeriodKey(now);
 
   if (userId) {
     const used = await getMemberBenefitUsed(userId, conf.benefit, periodKey);
@@ -114,13 +115,16 @@ export async function isFreeDailyUsed(
 /**
  * 1회 소비 처리. 이미 소진이면 false(호출부가 차단 응답).
  * 쿠키 set 은 route handler 응답에 실어야 하므로 cookieToSet 을 돌려준다.
+ * `now` — 요청 시작 시각. 판정(isFreeDailyUsed)·결과 날짜와 같은 값을 넘겨야 KST 자정 경계에서
+ *   다음 날 할당량을 태우지 않는다(오늘운세: 결과·실행기록은 D, 소비는 D+1 로 갈리던 것).
  */
 export async function consumeFreeDaily(
   surface: FreeSurface,
-  userId: string | null | undefined
+  userId: string | null | undefined,
+  now: Date = new Date()
 ): Promise<{ allowed: boolean; cookie: { name: string; value: string; maxAge: number } }> {
   const conf = FREE_DAILY_SURFACES[surface];
-  const periodKey = dailyPeriodKey();
+  const periodKey = dailyPeriodKey(now);
   const cookie = {
     name: conf.cookie,
     value: periodKey,

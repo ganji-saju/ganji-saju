@@ -1,5 +1,26 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
+
+브랜치 `fix/today-fortune-replay-account`(PR·머지 전).
+- **왜**: 차단은 계정 기준(`isFreeDailyUsed` → membership_benefit_usage)인데 재열람 면제는 기기 전용이었다(host-only 쿠키 `gj_free_today_sig` + 탭 sessionStorage).
+  새 탭·다른 브라우저·앱 전환·staging↔운영 전환 뒤엔 자기 결과도 429 → '다시 열어보기' ② 재POST 도 같은 429 → 3,300원 오늘 자세히 CTA(결과 화면에만 있음)까지 사라졌다.
+- **방식**(`src/app/api/today-fortune/route.ts`): 게이트 판정을 순수 함수 `isTodayReplay` 로 export. 쿠키 서명 일치 **또는** 로그인 계정의 오늘(`occurredOn === dailyPeriodKey(now)`)
+  실행기록(`listTodayFortuneRunsForUser` 재사용, 쿠키가 안 맞을 때만 조회) 중 **쿠키 서명과 같은 필드**(정규화 생년월일·시·분·시간모름·성별·양음력·timeRule)가 같고
+  `sajuIdentityKey`(4기둥+성별, #699 정본)도 같은 게 있으면 replayGranted(추가 소비·서명 갱신 없음). 면제 범위는 쿠키보다 넓지 않다.
+  클라이언트 무변경 — ② 는 거부된 같은 프로필(`lastProfileRef`)을 재POST 하므로 서버 통과로 결과 화면·결제 CTA 가 복원된다.
+- 리뷰 반영(적대적 리뷰): ① 첫 구현은 정체성만 봐서 **분·같은 시진 안 시각·timeRule·양음력만 바꾼 입력이 통과**했다 — 정체성은 같아도 `buildSignatureSeed` 가
+  그 값들을 섞어 다른 문구(오늘 조언·기회·주의 7~10키)가 나오고, 쌍둥이(같은 시진·성별)도 통과했다. 쿠키 필드 동일 조건을 붙여 막음(출생지는 원래 쿠키 필드가 아니라 #699 프리셋↔좌표 드리프트는 계속 통과).
+  ② KST 자정 경계: 서명·게이트·소비 기간키가 `now` 뒤 await 이후 시각이라 결과·run 은 D, 소비·쿠키는 D+1 로 갈렸다 → `dailyPeriodKey(now)` + `isFreeDailyUsed`/`consumeFreeDaily` 에 선택 인자 `now`(다른 호출부 무변경).
+- 부수: 익명 서명 안정화 — `unknown = unknownBirthTime || !hour`(시각 '모름' 기본값 hour '' + false 가 저장 정규화 뒤 true 로 바뀌어 서명이 갈리던 것).
+- 검증: `replay.spec.ts` 12건(같은 입력 오늘 run 통과 · 가족 · 어제 run · 분/시각/timeRule/음력 변형 4종 차단 · 출생지 경로 드리프트 통과 · 익명 쿠키 · hour '' 서명 ·
+  POST 배선 2건: vi.mock 으로 로그인·쿠키 없음·소진 상태에서 같은 입력 200+소비 없음 / 가족 429). 뮤테이션 5종(필드 비교 삭제·계정 조회 끊기·쿠키 전용·옛 서명·날짜 비교 삭제) 모두 red.
+- 남은 것: **가족(다른 사람) 입력 429 화면엔 결제 경로가 없다** — 제품 결정으로 남김. 멤버 면제로 오늘 run 을 만든 뒤 같은 날 멤버십이 끝난 사용자는 같은 입력 재열람이 통과된다(같은 결과 재계산).
+- 참고: 아래 원장 섹션의 '086 수동 적용 필요'는 **2026-09-14 적용·#824 머지·드리프트 0 완료**.
+- 참고(나이스 인계 1번 후속, 같은 날 오후 — 이 PR 에 문서만): 샌드박스 통보 URL 을 staging 으로 바꿔도 **실거래 통보(결제·취소)는 오지 않고 TEST 핑만** 온다
+  (QA 타로 결제·관리자 API 취소 후 4분 0건). 샌드박스 API 취소 응답의 `orderId` 는 요청한 `cxl…` 이 아니라 **원주문** → API 취소 통보도 원주문일 가능성이 높다.
+  `docs/nicepay-v2-cancel-facts.md` 갱신. QA 계정 `ganjisaju12+nicepay-qa`(샌드박스 결제키 `UT0033304m…`), 타로 주문은 refunded 로 정리.
+
 ## 2026-09-14 — 나이스 V2 취소 통보 스키마 확정(인계 1번) — 샌드박스 결제 없이
 
 정본 `docs/nicepay-v2-cancel-facts.md`. 공식 매뉴얼(nicepayments/nicepay-manual) 조사 + 교차검증 워크플로와 **운영 DB 읽기 전용 집계**(사용자 승인 — 키 이름·건수만)로 확정했다.
