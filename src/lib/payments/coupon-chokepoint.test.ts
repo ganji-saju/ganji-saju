@@ -246,7 +246,8 @@ test('체크아웃 입력칸은 checkoutCouponInputMode 로 정한다(미리보�
 // ─────────────────────────────────────────────────────────────
 test('관리자 환불 요청 스냅샷은 주문·이용권의 실결제액이고, 환불액 = 원결제액', () => {
   const src = FILES.find((f) => f.rel === 'src/app/api/admin/refund/route.ts')!.text;
-  assert.ok(/amount: order\.amount,\s*original_amount: order\.amount,/.test(src), '주문 단위(번들·고아 주문·멤버십)');
+  // 2026-09-14 — 주문 단위는 멤버십 일부 환불액을 받는다(비우면 order.amount). 원결제액 자리는 여전히 실청구액.
+  assert.ok(/const amount = requested \?\? order\.amount;/.test(src) && /amount,\s*original_amount: order\.amount,/.test(src), '주문 단위(번들·고아 주문·멤버십)');
   assert.ok(/amount: e\.amount,\s*original_amount: e\.amount,/.test(src), '이용권 단위');
 });
 

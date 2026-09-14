@@ -193,6 +193,8 @@ export interface RefundExecutionDeps {
 export interface RefundExecutionResult {
   status: RefundStatus;
   error?: string;
+  /** 완료 시 PG 응답 — 일부 취소 뒤 멤버십 연산이 cancels[] 의 새 취소 거래를 읽는다. */
+  response?: unknown;
 }
 
 async function finishRefundWithRevoke(
@@ -241,7 +243,7 @@ async function finishRefundWithRevoke(
 
   const completed = nextRefundStatus('processing', 'revoke_ok') ?? 'completed';
   await deps.setStatus(req.id, completed, { tossResponse, errorMessage: null });
-  return { status: completed };
+  return { status: completed, response: tossResponse };
 }
 
 /**

@@ -222,9 +222,17 @@ export async function refundMembershipPeriod(
   const end = ms(period.end_at);
   const shift = t < start ? end - start : t < end ? end - t : 0;
   await updatePeriod(client, period.id, { voided_at: now.toISOString(), void_reason: 'refund' });
+  await pullLaterAndSyncSubscription(client, userId, end, shift, now);
+  return true;
+}
+
+/** start_at ≥ from 인 살아 있는 기간을 shift 만큼 당기고(start_at 오름차순 — 배제 제약이 받는 순서) 구독을 살아 있는 끝에 맞춘다
+ *  (남은 게 없거나 끝이 지금 이전이면 즉시 만료, renews_at = 지금). */
+async function pullLaterAndSyncSubscription(client: SupabaseClient, userId: string, from: number, shift: number, now: Date) {
+  const t = now.getTime();
   const rest = await livePeriods(client, userId);
   for (const row of rest) {
-    if (shift === 0 || ms(row.start_at) < end) continue;
+    if (shift === 0 || ms(row.start_at) < from) continue;
     row.start_at = iso(ms(row.start_at) - shift);
     row.end_at = iso(ms(row.end_at) - shift);
     await updatePeriod(client, row.id, { start_at: row.start_at, end_at: row.end_at });
@@ -232,7 +240,58 @@ export async function refundMembershipPeriod(
   const last = lastEnd(rest);
   const expired = last === null || last <= t;
   await updateSubscriptionEnd(client, userId, expired ? t : last, expired, now);
-  return true;
+}
+
+/** 일부 환불로 잘린 조각(무효 행)의 void_reason — 취소 거래(나이스 cancels[].tid) 단위 적용 기록이다. */
+export const partialRefundMarker = (cancelTid: string) => `partial_refund:${cancelTid}`;
+
+/**
+ * 멤버십 일부 환불(설계 연산 4, 2026-09-14 사용자 결정) — 환불 비율만큼 그 결제 기간 P=[s,e) 를 뒤에서 줄인다.
+ *   k = round(30일 × 부분환불액 / 주문금액)(ms) · newEnd = e − k · 뒤 기간 당김 = max(0, e − max(newEnd, t)).
+ *   잘린 조각 [newEnd, e) 는 이 주문의 **무효 행**(void_reason partial_refund:<취소 거래 tid>, voided_at t)으로 남긴다 →
+ *   ① 잠금 창이 lockMembershipContentForRefund 규칙 그대로 [newEnd, min(e, t)) 가 되고 ② 같은 취소 거래를 두 번 적용하지 않는 기록이 된다
+ *   (관리자 부분취소 경로와 나중에 오는 partialCancelled 통보가 겹쳐도 1회 — 마이그레이션 없음).
+ * 순서: 조각 insert(무효라 배제 제약 밖) → P 끝 줄이기 → 당기기(오름차순) → 구독. 조각을 먼저 쓰므로 그 뒤에서 끊기면 재시도는
+ *   'duplicate' 로 멈추고 덜 줄어든 채(사용자 쪽 이득) 남는다 — throw 는 호출부가 last_error·운영 메일로 드러낸다.
+ * 반환: 'applied' · 'duplicate'(이 취소 거래를 이미 적용) · 'missing'(살아 있는 P 없음) · 'full'(남는 길이 ≤ 0 — 아무것도 안 바꿨다, 호출부가 전액 환불로).
+ * ponytail: 같은 취소 거래를 동시에(ms 단위로 겹쳐) 적용하면 둘 다 조각을 못 보고 두 번 당길 수 있다 — 원자 RPC 로 옮길 때 같이(위 원장 머리말과 같은 한계).
+ */
+export async function partialRefundMembershipPeriod(
+  userId: string,
+  orderId: string,
+  options: { cancelTid: string; refundAmount: number; orderAmount: number; now?: Date; service?: SupabaseClient }
+): Promise<'applied' | 'duplicate' | 'missing' | 'full'> {
+  if (!options.cancelTid || !(options.refundAmount > 0) || !(options.orderAmount > 0)) {
+    throw new Error('일부 환불 입력이 올바르지 않습니다(취소 거래·금액)');
+  }
+  const client = options.service ?? (await createServiceClient());
+  const now = options.now ?? new Date();
+  const t = now.getTime();
+  const marker = partialRefundMarker(options.cancelTid);
+  const rows = await userPeriods(client, userId, orderId);
+  if (rows.some((row) => row.void_reason === marker)) return 'duplicate';
+  const period = rows.find((row) => row.voided_at == null);
+  if (!period) return 'missing';
+
+  const start = ms(period.start_at);
+  const end = ms(period.end_at);
+  const k = Math.round((MEMBERSHIP_PERIOD_DAYS * 86_400_000 * options.refundAmount) / options.orderAmount);
+  const newEnd = end - k;
+  if (newEnd <= start) return 'full';
+
+  const { error } = await client.from('membership_periods').insert({
+    user_id: userId,
+    source: 'payment',
+    order_id: orderId,
+    start_at: iso(newEnd),
+    end_at: iso(end),
+    voided_at: now.toISOString(),
+    void_reason: marker,
+  });
+  if (error) throw new Error(error.message);
+  await updatePeriod(client, period.id, { end_at: iso(newEnd) });
+  await pullLaterAndSyncSubscription(client, userId, end, Math.max(0, end - Math.max(newEnd, t)), now);
+  return 'applied';
 }
 
 /** created_at(ISO) → KST 날짜 'YYYY-MM-DD'. 한국은 DST 가 없어 +9h 고정. */
@@ -263,8 +322,9 @@ async function readAllPages<T>(query: () => PageQuery): Promise<T[]> {
 }
 
 /**
- * 멤버십 전액환불 — 그 결제 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람을 지운다(2026-09-14 사용자 결정).
+ * 멤버십 전액·일부 환불 — 그 결제 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람을 지운다(2026-09-14 사용자 결정).
  * 창은 표(membership_periods)의 이 주문 무효 행 그대로 = [start_at, min(end_at, voided_at)) — 환불(무효) 시각까지 이 결제가 쓴 시간.
+ *   일부 환불은 잘린 조각이 무효 행이라 창 = [newEnd, min(e, t)) — 줄어든 뒤쪽 날짜에 연 것만(연산 4).
  *   살아 있는 기간은 겹치지 않는 사슬이라 다른 결제·관리자 부여 창과 겹치지 않는다 → 지급 때 추정한 창·"구독 끝과 같은가"·
  *   "다른 주문이 같은 끝을 기록했나" 휴리스틱은 삭제(2026-09-14 원장). 관리자 해제로 무효된 미래 기간은 창이 비어 잠글 게 없다.
  * 감사 먼저(write-ahead): ① 지울 열람 행·스냅샷을 **읽어** 식별자 계산 → ② 감사행 insert(실패하면 아무것도 안 지운다)

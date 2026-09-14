@@ -109,6 +109,38 @@ export function buildCancelOrderId(originalOrderId: string): string {
   return `cxl${unique}_${originalOrderId}`.slice(0, 64);
 }
 
+/** buildCancelOrderId 가 만든 취소 요청 번호인가(`cxl` + 12hex + `_` + 원주문 번호, 64자에서 잘릴 수 있다).
+ *  API 취소 통보의 orderId 가 원주문인지 이 번호인지 운영 미실측이라(docs/nicepay-v2-cancel-facts.md ⚠️) 둘 다 같은 주문으로 본다. */
+export function isCancelOrderIdOf(value: string, originalOrderId: string): boolean {
+  const match = /^cxl[0-9a-f]{12}_(.+)$/.exec(value);
+  return !!match && originalOrderId.startsWith(match[1]);
+}
+
+/**
+ * 결제 통보 서명 대조 — signature = hex(sha256(tid + amount + ediDate + SecretKey)). 값은 **수신 본문 그대로**(ediDate 는 받은 문자열).
+ * ⚠️ status·orderId·cancels 는 서명 범위 밖이다 — 서명이 맞아도 상태는 재조회로 확인한다(webhook/nicepay 위조 가드).
+ */
+export function verifyNicepayWebhookSignature(input: { tid: unknown; amount: unknown; ediDate: unknown; signature: string }): boolean {
+  const expected = nicepaySha256Hex(`${input.tid ?? ''}${input.amount ?? ''}${input.ediDate ?? ''}${getSecretKey()}`);
+  const a = Buffer.from(expected, 'utf8');
+  const b = Buffer.from(input.signature.toLowerCase(), 'utf8');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * 결제 객체의 취소 1건 — cancelTid(없으면 객체의 cancelledTid)로 cancels[] 에서 찾고, 둘 다 없으면 마지막 원소(명세: cancelledTid 는 선택).
+ * 금액은 cancels[].amount(최상위 cancelAmt 는 없다). 못 찾거나 금액이 0 이하면 null.
+ */
+export function pickNicepayCancel(payment: Record<string, unknown>, cancelTid?: string | null): { tid: string; amount: number } | null {
+  const cancels = (Array.isArray(payment.cancels) ? payment.cancels : []).filter(
+    (c): c is Record<string, unknown> => !!c && typeof c === 'object'
+  );
+  const tid = cancelTid || (typeof payment.cancelledTid === 'string' ? payment.cancelledTid : null);
+  const hit = tid ? cancels.find((c) => c.tid === tid) : cancels[cancels.length - 1];
+  const amount = Number(hit?.amount);
+  return hit && typeof hit.tid === 'string' && amount > 0 ? { tid: hit.tid, amount } : null;
+}
+
 // ⚠️ ediDate 포맷은 공식 확정 필요. 일단 ISO 8601.
 function buildEdiDate(now: Date = new Date()): string {
   return now.toISOString();

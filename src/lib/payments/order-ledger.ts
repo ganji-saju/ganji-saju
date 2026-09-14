@@ -5,7 +5,7 @@ import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
-import { lockMembershipContentForRefund, refundMembershipPeriod } from '@/lib/subscription';
+import { lockMembershipContentForRefund, partialRefundMembershipPeriod, refundMembershipPeriod } from '@/lib/subscription';
 import type { PolicyKind } from '@/shared/policies/types';
 
 export type PaymentOrderStatus =
@@ -307,16 +307,18 @@ export async function getPaymentOrderForUser(orderId: string, userId: string) {
   return order;
 }
 
-/** payment_key 로 주문 로드(환불 완료 시 원주문 status 갱신용). */
+/** payment_key 로 주문 로드(환불 완료 시 원주문 status 갱신 · 나이스 통보는 tid 로 주문을 찾는다). DB 오류는 던진다(통보 재전송으로 복구). */
 export async function getPaymentOrderByPaymentKey(
-  paymentKey: string
+  paymentKey: string,
+  service?: SupabaseClient
 ): Promise<PaymentOrder | null> {
-  const service = await createServiceClient();
-  const { data } = await service
+  const client = service ?? (await createServiceClient());
+  const { data, error } = await client
     .from('payment_orders')
     .select('*')
     .eq('payment_key', paymentKey)
     .maybeSingle();
+  if (error) throw new Error(error.message);
   return data ? mapPaymentOrder(data as PaymentOrderRow) : null;
 }
 
@@ -521,8 +523,6 @@ export async function markPaymentOrderRefunded(input: {
   reason: string;
   source: PaymentOrderSource;
   payment?: TossPaymentObject | null;
-  /** 부분취소 — 원장은 refunded 로 표기하되 멤버십 구독은 유지한다. */
-  partial?: boolean;
 }, service?: SupabaseClient) {
   const client = service ?? (await createServiceClient());
   const now = new Date();
@@ -558,9 +558,10 @@ export async function markPaymentOrderRefunded(input: {
     //   차감된다. 여기(원장 함수)에 두면 admin·웹훅·정산 세 경로가 한 번에 커버된다.
     //   ⚠️ 방금 refunded 로 바뀐 경우에만 — 멱등 재호출은 위 neq 가드로 여기 안 온다.
     await dispatchGaRefund(order.orderId, order.amount).catch(() => undefined);
-    // 멤버십 전액환불 — 여기(방금 refunded 로 바뀐 분기)라 관리자 환불·나이스 통보·정산이 겹쳐도 정확히 1회다. 부분취소는 구독 유지(B단계).
+    // 멤버십 전액환불 — 여기(방금 refunded 로 바뀐 분기)라 관리자 환불·나이스 통보·정산이 겹쳐도 정확히 1회다.
+    //   일부 환불은 이 함수를 부르지 않는다(주문은 결제 상태 그대로) — applyPartialRefund.
     //   실패는 삼키지 않고 주문 last_error(이어 붙임)·운영 메일로 드러낸다 — 전이는 이미 끝나 재호출이 다시 하지 않는다(수동 보정 대상).
-    if (input.partial !== true && getPackage(order.packageId)?.kind === 'subscription') {
+    if (getPackage(order.packageId)?.kind === 'subscription') {
       const failures: string[] = [];
       const note = (label: string) => (err: unknown) => {
         const message = `${label}: ${err instanceof Error ? err.message : String(err)}`;
@@ -585,19 +586,7 @@ export async function markPaymentOrderRefunded(input: {
         { reason: input.reason, actor: input.source, paymentKey: order.paymentKey },
         client
       ).catch(note('membership_lock_failed'));
-      if (failures.length > 0) {
-        await client
-          .from('payment_orders')
-          .update({ last_error: [input.reason, ...failures].join(' | ') })
-          .eq('order_id', order.orderId);
-        if (process.env.VERCEL_ENV === 'production') {
-          await sendOpsAlertEmail({
-            subject: '[환불] 멤버십 환불 후처리 실패 — 수동 확인',
-            lines: [`주문 ${order.orderId} · 사용자 ${order.userId}`, ...failures, '주문 last_error 와 credit_transactions(entitlement_revoke) 감사행을 확인하세요.'],
-            url: '/admin/users',
-          }).catch(() => undefined);
-        }
-      }
+      await reportMembershipRefundFailures(client, order, input.reason, failures);
     }
     return order;
   }
@@ -608,6 +597,63 @@ export async function markPaymentOrderRefunded(input: {
     throw new Error('환불 상태를 저장하지 못했습니다.');
   }
   return existing;
+}
+
+/** 멤버십 환불 후처리 실패 → 주문 last_error(환불 사유 뒤로 이어 붙임) + 운영 메일(프로덕션만, 실패 무시). */
+async function reportMembershipRefundFailures(client: SupabaseClient, order: PaymentOrder, reason: string, failures: string[]) {
+  if (failures.length === 0) return;
+  await client
+    .from('payment_orders')
+    .update({ last_error: [reason, ...failures].join(' | ') })
+    .eq('order_id', order.orderId);
+  if (process.env.VERCEL_ENV === 'production') {
+    await sendOpsAlertEmail({
+      subject: '[환불] 멤버십 환불 후처리 실패 — 수동 확인',
+      lines: [`주문 ${order.orderId} · 사용자 ${order.userId}`, ...failures, '주문 last_error 와 credit_transactions(entitlement_revoke) 감사행을 확인하세요.'],
+      url: '/admin/users',
+    }).catch(() => undefined);
+  }
+}
+
+/**
+ * 2026-09-14 — PG 일부 취소 1건(취소 거래 cancelTid, 금액 amount = 나이스 cancels[].amount)의 원장 반영. 관리자 부분취소 경로와 partialCancelled 통보가 같이 부른다.
+ *   주문은 결제 상태 그대로 둔다(refunded 표기·이용권 회수·GA 전액 환불 없음). 멤버십이 아니면 아무것도 안 한다(이용권 유지 — 관리자 부분환불 정책과 대칭).
+ *   멤버십이면 연산 4(partialRefundMembershipPeriod — 취소 거래 단위 1회) → 줄어든 뒤쪽 창 잠금. 남는 길이가 없으면 전액 환불 경로로 넘긴다.
+ *   이미 refunded 인 주문(전액 뒤 늦게 온 일부 통보)은 'skipped'. 원장·잠금 실패는 last_error·운영 메일(전액 경로와 같다).
+ */
+export async function applyPartialRefund(
+  input: { orderId: string; cancelTid: string; amount: number; reason: string; source: PaymentOrderSource; payment?: TossPaymentObject | null },
+  service?: SupabaseClient
+): Promise<'applied' | 'duplicate' | 'missing' | 'full' | 'skipped' | 'failed'> {
+  const client = service ?? (await createServiceClient());
+  const order = await getPaymentOrderByOrderId(input.orderId, client);
+  if (!order) throw new Error(`주문 없음: ${input.orderId}`);
+  if (order.status === 'refunded' || getPackage(order.packageId)?.kind !== 'subscription') return 'skipped';
+
+  const failures: string[] = [];
+  const outcome = await partialRefundMembershipPeriod(order.userId, order.orderId, {
+    cancelTid: input.cancelTid,
+    refundAmount: input.amount,
+    orderAmount: order.amount,
+    service: client,
+  }).catch((err) => {
+    failures.push(`membership_partial_failed: ${err instanceof Error ? err.message : String(err)}`);
+    return 'failed' as const;
+  });
+  if (outcome === 'full') {
+    await markPaymentOrderRefunded({ orderId: order.orderId, reason: input.reason, source: input.source, payment: input.payment }, client);
+    return 'full';
+  }
+  if (outcome === 'missing' && order.fulfilledAt) {
+    failures.push(`membership_period_missing: 표에 이 결제의 살아 있는 기간 없음 — 일부 환불 ${input.amount}원(${input.cancelTid}) 수동 반영`);
+  }
+  if (outcome === 'applied') {
+    await lockMembershipContentForRefund(order.userId, order.orderId, { reason: input.reason, actor: input.source, paymentKey: order.paymentKey }, client).catch(
+      (err) => failures.push(`membership_lock_failed: ${err instanceof Error ? err.message : String(err)}`)
+    );
+  }
+  await reportMembershipRefundFailures(client, order, input.reason, failures);
+  return outcome;
 }
 
 export async function touchPaymentOrderReconciled(orderId: string) {

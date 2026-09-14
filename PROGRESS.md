@@ -1,5 +1,36 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 나이스 취소 통보 위조 가드 + 멤버십 일부 환불(설계 연산 4)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund`(기반 `fix/nicepay-webhook-redelivery` = PR #826, 미머지). 사용자 결정 (가)·(나). PR·머지 전 — **#826 먼저 머지**.
+tid 우선 조회와 부분취소 처리는 같은 PR 에 있다. tid 조회만 먼저 나가면 부분취소 통보가 전액 회수로 켜진다.
+- (가) **위조 가드**(`webhook/nicepay/route.ts`)
+  - 주문은 `payload.tid === order.paymentKey` 로 찾는다. orderId 는 보조다. 다른 주문을 가리키면 `tid_mismatch`/`order_id_mismatch` 로 거부한다. 우리가 만든 `cxl…_원주문` 번호는 같은 주문으로 본다.
+  - 서명(`sha256(tid+amount+ediDate+Secret)`)이 오면 대조한다.
+  - `getNicepayPayment(tid)` 재조회 결과로 판정한다. 전액 통보는 cancelled 여야 하고, 일부 통보는 cancelled·partialCancelled 둘 다 받는다. orderId·amount 도 주문과 맞아야 한다.
+  - 불일치는 `ignored` + `forgery_guard:<사유>` + 프로덕션 운영 메일로 남긴다.
+  - 재조회 일시 오류는 failed + non-OK(#826 규칙)로 처리한다. PG 가 결과 코드로 거절하면 불일치로 본다.
+  - status 는 명세 enum 두 개만 받는다(`canceled`·대문자 삭제).
+- (나) **일부 환불**
+  - `partialRefundMembershipPeriod`(subscription.ts): k=round(30일×환불액/주문금액) ms, newEnd=e−k, 잠금 창 [newEnd,min(e,t)), 당김 max(0,e−max(newEnd,t)).
+  - 잘린 조각은 이 주문의 **무효 행**(`partial_refund:<취소 tid>`)으로 남긴다. 그래서 잠금은 기존 `lockMembershipContentForRefund` 그대로 쓰고, 이 행이 같은 취소 거래를 두 번 적용하지 않는 기록이 된다. 마이그레이션은 없다.
+  - `applyPartialRefund`(order-ledger.ts)는 통보와 관리자 경로가 같이 쓴다. 주문은 결제 상태 그대로 둔다. 멤버십이 아니면 무동작이고, 남는 길이가 0이면 전액 전이로 넘긴다. 실패는 last_error·운영 메일로 남긴다.
+  - `markPaymentOrderRefunded` 의 `partial` 플래그는 삭제했다.
+  - partialCancelled 통보는 재조회 cancels[] 에서 이번 거래와 금액을 찾는다(cancelledTid → 마지막 원소 순).
+- **관리자**
+  - 멤버십 주문 단위(bundle-order) 항목에 일부 환불 금액 입력칸을 뒀다. 요청 API 가 0<금액≤주문금액 정수를 검증하고, 멤버십만 받는다.
+  - 승인 → cancelAmt 부분취소 → 응답 cancels[] 의 새 tid 로 `applyPartialRefund` 를 부른다. 잔액이 0 이면 전액 경로다.
+  - PG 거절 사유에 결과 코드(샌드박스 U128)를 붙여 화면에 보인다.
+- ⚠️ **지표**: 매출·환불 집계(`analytics-rollup`·`refund-breakdown`)는 status='refunded' 주문의 전체 금액만 센다. 그래서 일부 환불만 있는 주문의 환불액은 지표에 **안 잡힌다**(예전엔 통보가 전액을 잡았다).
+  - 고치려면 두 집계기 + 뒤따르는 전액 환불과의 이중 계상 규칙까지 손대야 한다. 이번엔 손대지 않았다(마이그레이션은 불필요).
+  - 운영 부분환불이 생기면 금액을 수동으로 보정한다.
+- ⚠️ 관리자 화면에서 같은 주문의 두 번째 환불(부분 뒤 부분/잔여)은 기존 중복 방지(completed 요청 존재 → 409) 때문에 막힌다. 콘솔 취소 + 통보로는 처리된다.
+- 검증
+  - subscription-refund.test 에 일부 환불 7건을 추가했다: 진행 중·미래·끝난 기간·두 번·중복·전액 전환·부분 뒤 전액·ms·B 당김.
+  - route.spec(webhook) 20건: 위조 7종 + 일부 3건. admin refund route.spec 11건.
+  - 수정 전 red: webhook spec 10/20, admin spec 11/11. 뮤테이션 7종(당김식·중복 검사·full 판정·재조회 status·orderId 대조·결과코드 분기·partial 분기)이 각각 red.
+  - npm test 0 fail · test:spec 345 · tsc 0.
+
 ## 2026-09-14 — 나이스 통보 재전송 수정 리뷰 반영(전 회수 주문 단위 잠금 · 전이 뒤 재처리 흔적 · 이용권 감사 순서)
 
 브랜치 `fix/nicepay-webhook-redelivery` 후속 커밋(PR·머지 전). 적대적 리뷰 3건(중 1 · 저 2) 모두 반영.
