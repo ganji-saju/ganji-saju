@@ -1,5 +1,19 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 멤버십 기간 원장 드리프트 매일 자동 확인 + 운영 메일
+
+브랜치 `feat/membership-drift-daily-check`(PR·머지 전). 사용자 결정: 086 드리프트를 매일 확인하고 1명이라도 어긋나면 운영 메일.
+- **라우트** `src/app/api/admin/audits/membership-drift/route.ts` — 인증은 payment-idempotency 감사와 같다(Bearer CRON_SECRET timing-safe 비교, 아니면 세션 super_admin).
+  vercel.json 크론 `0 1 * * *`(KST 10:00). 응답 `{ ok, chainVsRenews, entitledWithoutEnd, users:[{userId, checks, renewsAt(R), chainEnd(E)}], alerted }` — R·E 는 086 정리 SQL 입력값.
+- **판정** `src/lib/membership-drift.ts` `findMembershipDrift`(순수) = 086 머리말 쿼리 두 개(ms 비교). DB 읽기는 service + `readAllPages`(subscription.ts 에서 export,
+  정렬 키 인자 추가 — periods `id` · subscriptions `user_id`(PK, id 없음)). 읽기 범위는 "끝이 지금보다 미래"인 행만(살아 있는 기간 end_at > now · 구독 renews_at > now) — 판정 결과는 전체 읽기와 같다.
+- **메일** 프로덕션(VERCEL_ENV=production)에서만 `sendOpsAlertEmail` — 두 건수 · uuid 최대 20명(+외 N명) · `/admin/users/<id>` 링크 · 086 머리말 정리 SQL 안내. 이메일·이름 없음.
+  메일 실패는 삼키지 않는다: console.error + 응답 `alertError` + **500**(Vercel 크론 실패로 보이게). 조회 실패도 500.
+- 검증: `membership-drift.spec.ts` 14건(0 · P1 · P2 2모양 · 구독 없음 · 행 없음 · 권한 없는 구독 무시 · 무효·과거 무시 · 여러 사용자 · ms 표기차 · 페이지네이션 · 메일 본문) +
+  `route.spec.ts` 10건(크론/틀린 시크릿/시크릿 미설정/admin 403/super_admin · 메일 0/프로덕션/비프로덕션/실패 500/조회 실패). 판정 뮤테이션 7종 모두 red.
+- 설계 문서 `docs/membership-period-ledger-design.md` 의 "주기 실행은 사용자 결정" 줄을 매일 자동 확인으로 교체.
+- ⚠️ 수신자 env `ADMIN_ALERT_EMAILS`(없으면 INTERNAL_VERIFICATION_EMAILS)·`RESEND_API_KEY` 가 프로덕션에 없으면 어긋남이 생긴 날 메일이 못 가고 500 만 남는다(어긋남 0 인 날은 메일 경로를 안 탄다) — 배포 후 env 존재를 `vercel env ls` 로 확인.
+
 ## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
 
 브랜치 `fix/today-fortune-replay-account`(PR·머지 전).

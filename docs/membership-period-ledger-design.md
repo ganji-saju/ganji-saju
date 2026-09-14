@@ -79,7 +79,8 @@
   → ③ 곧바로 main 머지 + staging 밀기 → ④ 프로덕션·staging 배포와 main push E2E 가 끝난 뒤 드리프트 쿼리 재실행, 0 이 아니면 멈추고 보고(머리말의 정리 SQL).
   ②~④ 사이 관리자 멤버십 부여/해제·멤버십 환불 금지, 옛 코드 런타임(프리뷰·로컬 dev·옛 브랜치 — 같은 DB)에선 계속 금지. 드리프트 = `chain_vs_renews`(살아 있는 사슬 끝이
   미래인데 renews_at 과 다름) + `entitled_without_end`(권한 남은 구독인데 renews_at 에서 끝나는 살아 있는 행 없음). 적용 직후 확인만으로는 ②~④ 사이 옛 코드가 만든 어긋남을 못 본다.
-  ⚠️ 드리프트 쿼리를 주기적으로(헬스·일일 크론) 돌릴지는 사용자 결정 — 지금은 1회성.
+  **매일 자동 확인(2026-09-14 사용자 결정)**: `/api/admin/audits/membership-drift`(vercel.json 크론 `0 1 * * *` = KST 10:00 · super_admin 수동 호출 가능)가 같은
+  두 판정을 `src/lib/membership-drift.ts` 로 돌리고, 1명이라도 어긋나면 프로덕션에서 운영 메일(uuid·관리자 링크·이 머리말 정리 SQL 안내 — 개인정보 없음)을 보낸다.
 - **E2E 픽스처**(`e2e/fixtures/entitlement-helpers.ts`): seed = 그 사용자의 살아 있는 행 무효(e2e_reset) → admin_grant 행 [지금, +30일) → 구독 upsert,
   cleanup = 살아 있는 행 무효 → 구독 expired. 구독만 쓰던 픽스처가 공유 DB 에 어긋남을 남겨 ④ 를 거짓 경보로 멈추고 해제된 기간을 되살릴 수 있었다.
 - 주문 `metadata.membershipPeriods` 는 더 쓰지도 읽지도 않는다(A단계 브랜치 미머지라 프로덕션 주문엔 없다).
