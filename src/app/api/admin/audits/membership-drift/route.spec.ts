@@ -28,13 +28,19 @@ function req(authorization?: string) {
   }) as unknown as NextRequest;
 }
 
+let timeoutSpy: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv('CRON_SECRET', 'cron-secret');
   vi.stubEnv('VERCEL_ENV', 'production');
-  vi.mocked(runMembershipDriftAudit).mockResolvedValue(NO_DRIFT);
+  vi.mocked(runMembershipDriftAudit).mockReset().mockResolvedValue(NO_DRIFT); // reset — 앞 테스트의 Once 큐가 새지 않게
+  // 재확인 대기(5초)는 즉시 — 지연 값만 단언한다.
+  timeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void) => (fn(), 0)) as never);
 });
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  timeoutSpy.mockRestore();
+});
 
 describe('인증', () => {
   it('크론(Bearer CRON_SECRET)은 세션 없이 통과', async () => {
@@ -70,9 +76,33 @@ describe('인증', () => {
 });
 
 describe('운영 메일', () => {
-  it('어긋남 0 이면 메일 없음', async () => {
+  it('어긋남 0 이면 메일 없음 — 재확인도 안 한다', async () => {
     await GET(req('Bearer cron-secret'));
     expect(sendOpsAlertEmail).not.toHaveBeenCalled();
+    expect(runMembershipDriftAudit).toHaveBeenCalledTimes(1);
+  });
+
+  it('첫 읽기만 어긋나고 5초 뒤 재확인에서 풀리면(지급 중 틈) 메일 없음·ok', async () => {
+    vi.mocked(runMembershipDriftAudit).mockResolvedValueOnce(DRIFT).mockResolvedValueOnce(NO_DRIFT);
+    const res = await GET(req('Bearer cron-secret'));
+    expect(await res.json()).toEqual({ ok: true, chainVsRenews: 0, entitledWithoutEnd: 0, users: [], alerted: false });
+    expect(runMembershipDriftAudit).toHaveBeenCalledTimes(2);
+    expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 5_000);
+    expect(sendOpsAlertEmail).not.toHaveBeenCalled();
+  });
+
+  it('두 번 다 어긋난 사용자만 메일 — 재확인에서 새로 잡힌 사용자는 다음 날로', async () => {
+    const user = (userId: string) => ({ ...DRIFT.users[0], userId });
+    vi.mocked(runMembershipDriftAudit)
+      .mockResolvedValueOnce({ chainVsRenews: ['u1', 'u2'], entitledWithoutEnd: [], users: [user('u1'), user('u2')] })
+      .mockResolvedValueOnce({ chainVsRenews: ['u1', 'u3'], entitledWithoutEnd: [], users: [user('u1'), user('u3')] });
+    vi.mocked(sendOpsAlertEmail).mockResolvedValue({ id: 'm1', to: ['ops@example.com'] });
+    const body = await (await GET(req('Bearer cron-secret'))).json();
+    expect(body).toMatchObject({ ok: false, chainVsRenews: 1, users: [user('u1')], alerted: true });
+    const text = vi.mocked(sendOpsAlertEmail).mock.calls[0][0].lines.join('\n');
+    expect(text).toContain('/admin/users/u1');
+    expect(text).not.toContain('u2');
+    expect(text).not.toContain('u3');
   });
 
   it('어긋남 있으면 프로덕션에서 메일(uuid·관리자 링크) + alerted true', async () => {

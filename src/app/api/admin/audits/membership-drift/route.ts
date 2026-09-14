@@ -11,6 +11,8 @@ import { buildMembershipDriftAlert, runMembershipDriftAudit } from '@/lib/member
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
+const RECHECK_DELAY_MS = 5_000;
+
 function safeEqual(a: string, b: string): boolean {
   const ab = Buffer.from(a);
   const bb = Buffer.from(b);
@@ -44,6 +46,18 @@ async function handle(req: NextRequest) {
   let drift;
   try {
     drift = await runMembershipDriftAudit();
+    if (drift.users.length > 0) {
+      // 지급·해제·환불은 기간 행과 구독을 따로 쓴다(원자적 아님) — 그 틈에 읽혔거나 offset 페이지가 밀린 정상 사용자를 거른다.
+      // 잠시 뒤 다시 읽어 두 번 다 어긋난 사용자만 남긴다(값은 두 번째 읽기).
+      await new Promise((resolve) => setTimeout(resolve, RECHECK_DELAY_MS));
+      const first = new Set(drift.users.map((user) => user.userId));
+      const again = await runMembershipDriftAudit();
+      drift = {
+        chainVsRenews: again.chainVsRenews.filter((id) => first.has(id)),
+        entitledWithoutEnd: again.entitledWithoutEnd.filter((id) => first.has(id)),
+        users: again.users.filter((user) => first.has(user.userId)),
+      };
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'audit_failed';
     console.error('[membership-drift-audit] 조회 실패', message);

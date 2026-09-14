@@ -1,6 +1,6 @@
 // 2026-09-14 — 멤버십 기간 원장(086 membership_periods) 드리프트 매일 점검(사용자 결정).
 //   불변식: 살아 있는(voided_at null) 기간의 max(end_at) = subscriptions.renews_at.
-//   판정은 086 머리말의 드리프트 쿼리 두 개와 같다(값은 ms 로 비교 — 086 이 경계를 ms 로 맞췄다):
+//   판정은 086 머리말의 드리프트 쿼리 두 개와 같다(값은 µs 로 비교 — Postgres 정밀도. 086 이 경계를 ms 로 맞췄지만 renews_at 엔 제약이 없다):
 //     chain_vs_renews:      살아 있는 사슬 끝이 지금보다 미래인데 그 사용자의 renews_at 과 다름(구독 행 없음 포함, status 무관).
 //     entitled_without_end: 권한 남은 구독(active·cancelled, renews_at 미래)인데 end_at = renews_at 인 살아 있는 행이 없음.
 //   정리 SQL 은 supabase/migrations/086_membership_periods.sql 머리말 "드리프트 정리".
@@ -25,7 +25,11 @@ export interface MembershipDrift {
   users: DriftUser[];
 }
 
-const ms = (value: string) => Date.parse(value);
+/**
+ * µs 정수(Postgres timestamptz 정밀도) — Date.parse 는 소수 4~6째 자리를 버려 µs 가 남은 renews_at 을 "일치" 로 본다(086 쿼리의 is distinct from 은 어긋남).
+ * end_at 은 ms_precision 제약으로 항상 ms 라, µs 가 남은 renews_at 은 어떤 end_at 과도 같지 않다(정리 전에 R 을 ms 로 잘라야 한다).
+ */
+const us = (value: string) => Date.parse(value) * 1000 + Number(((/\.(\d+)/.exec(value)?.[1] ?? '') + '000000').slice(3, 6));
 
 /** 순수 판정 — 입력 행을 스스로 거른다(무효 행·과거 기간은 무시). */
 export function findMembershipDrift(
@@ -33,32 +37,32 @@ export function findMembershipDrift(
   subscriptions: DriftSubscriptionRow[],
   now: Date
 ): MembershipDrift {
-  const nowMs = now.getTime();
+  const nowUs = now.getTime() * 1000;
   const chainEnd = new Map<string, number>();
   const liveEnds = new Map<string, Set<number>>();
   for (const row of periods) {
     if (row.voided_at !== null) continue;
-    const end = ms(row.end_at);
+    const end = us(row.end_at);
     chainEnd.set(row.user_id, Math.max(chainEnd.get(row.user_id) ?? -Infinity, end));
     if (!liveEnds.has(row.user_id)) liveEnds.set(row.user_id, new Set());
     liveEnds.get(row.user_id)!.add(end);
   }
   const subByUser = new Map(subscriptions.map((sub) => [sub.user_id, sub]));
-  const renewsMs = (userId: string) => {
+  const renewsUs = (userId: string) => {
     const renews = subByUser.get(userId)?.renews_at;
-    return renews ? ms(renews) : null;
+    return renews ? us(renews) : null;
   };
 
   const chainVsRenews = [...chainEnd]
-    .filter(([userId, end]) => end > nowMs && renewsMs(userId) !== end)
+    .filter(([userId, end]) => end > nowUs && renewsUs(userId) !== end)
     .map(([userId]) => userId);
   const entitledWithoutEnd = subscriptions
     .filter((sub) => {
-      const renews = renewsMs(sub.user_id);
+      const renews = renewsUs(sub.user_id);
       return (
         (sub.status === 'active' || sub.status === 'cancelled') &&
         renews !== null &&
-        renews > nowMs &&
+        renews > nowUs &&
         !liveEnds.get(sub.user_id)?.has(renews)
       );
     })
@@ -73,7 +77,7 @@ export function findMembershipDrift(
         ...(entitledWithoutEnd.includes(userId) ? (['entitled_without_end'] as const) : []),
       ],
       renewsAt: subByUser.get(userId)?.renews_at ?? null,
-      chainEnd: end === undefined ? null : new Date(end).toISOString(),
+      chainEnd: end === undefined ? null : new Date(Math.floor(end / 1000)).toISOString(),
     };
   });
   return { chainVsRenews, entitledWithoutEnd, users };
@@ -81,7 +85,9 @@ export function findMembershipDrift(
 
 /**
  * DB 에서 읽어 판정한다(service — 086 표는 RLS on·정책 없음).
- * 읽기 범위: 판정에 쓰이는 행만 — 둘 다 "끝이 지금보다 미래" 가 필요하다(renews_at ≤ now·null 이면 구독 행 없음과 같은 결과).
+ * 읽기 범위: 기간은 살아 있고 끝이 미래인 행만(과거 사슬은 chain_vs_renews 대상이 아니다).
+ * 구독은 전부(사용자당 1행) — renews_at 이 과거여도 P2(구독 끝 < 사슬 끝)의 R 로 메일·응답에 원값이 나가야 한다.
+ *   R 을 null 로 내보내면 086 정리 SQL 이 "모든 살아 있는 행 무효" 로 읽혀 과거 결제 행까지 무효 처리된다.
  */
 export async function runMembershipDriftAudit(
   options: { client?: SupabaseClient; now?: Date } = {}
@@ -94,7 +100,7 @@ export async function runMembershipDriftAudit(
     ['id']
   );
   const subscriptions = await readAllPages<DriftSubscriptionRow>(
-    () => client.from('subscriptions').select('user_id, status, renews_at').gt('renews_at', nowIso),
+    () => client.from('subscriptions').select('user_id, status, renews_at'),
     ['user_id']
   );
   return findMembershipDrift(periods, subscriptions, now);
@@ -109,6 +115,7 @@ export function buildMembershipDriftAlert(drift: MembershipDrift, origin = 'http
   return {
     subject: `[멤버십] 기간 원장 어긋남 ${drift.users.length}명 — 수동 정리 필요`,
     lines: [
+      '정리 전에 /api/admin/audits/membership-drift 수동 호출(super_admin)로 한 번 더 확인하세요 — 지급·해제가 두 표를 따로 쓰는 틈에 읽혔으면 다시 0 입니다.',
       `chain_vs_renews ${drift.chainVsRenews.length}건 · entitled_without_end ${drift.entitledWithoutEnd.length}건 (살아 있는 기간의 끝 ≠ subscriptions.renews_at).`,
       ...shown.map(
         (user) =>
