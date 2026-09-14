@@ -50,25 +50,49 @@ export function freeTodayReplaySignature(payload: TodayFortuneBirthPayload): str
   return h.toString(16);
 }
 
+// 쿠키 서명과 같은 필드(생년월일시·시간모름·성별·양음력·timeRule)를 정규화 입력에서 뽑은 키.
+//   run 엔 원시 payload 가 없어 BirthInput(양력 정규화)으로 비교한다 — 양음력은 calendarType 으로 갈린다.
+function replayFieldsKey(input: BirthInput, calendarType: string, timeRule: string): string {
+  const unknown = input.unknownTime || input.hour === undefined;
+  return JSON.stringify([
+    input.year, input.month, input.day,
+    unknown ? '' : input.hour,
+    unknown ? '' : (input.minute ?? ''),
+    input.gender ?? '',
+    calendarType,
+    timeRule,
+  ]);
+}
+
+type ReplayRun = { occurredOn: string; input: BirthInput; calendarType: string; timeRule: string };
+
 /**
  * 오늘 이미 무료 1회를 쓴 요청이 '같은 날 같은 사람 재열람'인가(소비 없이 통과).
  *   ① 기기 쿠키 서명 일치(익명 폴백 — 같은 탭/브라우저) 또는
- *   ② 로그인 계정의 오늘 실행기록 중 사주 정체성(4기둥+성별, #699 정본)이 이번 입력과 같은 것.
+ *   ② 로그인 계정의 오늘 실행기록 중 쿠키 서명 필드가 같고 사주 정체성(4기둥+성별, #699 정본)도 같은 것.
  *   ②가 없으면 새 탭·다른 브라우저·호스트 전환만으로 자기 결과를 다시 못 봤다(쿠키는 기기 전용).
- *   다른 사람(가족) 입력은 정체성이 달라 여전히 차단된다.
+ *   면제 범위는 쿠키보다 넓히지 않는다 — 분·timeRule·양음력만 바꿔도 문구 시드가 돌아 다른 결과가
+ *   나오므로(buildSignatureSeed) 가족·쌍둥이·같은 사람 변형 입력은 여전히 차단된다.
  */
 export function isTodayReplay(args: {
   cookieValue: string | undefined;
   replaySignature: string;
-  identity: string | null;
+  input: BirthInput;
+  calendarType: string;
+  timeRule: string;
   todayKey: string;
-  runs: ReadonlyArray<{ occurredOn: string; input: BirthInput }>;
+  runs: ReadonlyArray<ReplayRun>;
 }): boolean {
   if (args.cookieValue === args.replaySignature) return true;
-  if (!args.identity) return false;
-  return args.runs.some(
-    (run) => run.occurredOn === args.todayKey && sajuIdentityKey(run.input) === args.identity
+  const fields = replayFieldsKey(args.input, args.calendarType, args.timeRule);
+  const same = args.runs.filter(
+    (run) =>
+      run.occurredOn === args.todayKey &&
+      replayFieldsKey(run.input, run.calendarType, run.timeRule) === fields
   );
+  if (same.length === 0) return false;
+  const identity = sajuIdentityKey(args.input);
+  return identity !== null && same.some((run) => sajuIdentityKey(run.input) === identity);
 }
 
 /**
@@ -171,10 +195,10 @@ export async function POST(req: NextRequest) {
   //   실패했을 때 사용자가 결과도 못 받고 오늘 기회만 잃는다.
   //   (검사~소비 사이 동시 요청이 둘 다 통과할 수 있으나, 무료 티어 제한이라 감수.)
   const memberExempt = await isFreeDailyExempt(user?.id ?? null);
-  const todayKey = dailyPeriodKey();
+  const todayKey = dailyPeriodKey(now); // 서명·게이트·run 날짜(result.dateKey)를 같은 시각에 묶는다
   const replaySignature = `${todayKey}:${freeTodayReplaySignature(payload)}`;
   let replayGranted = false;
-  if (!memberExempt && (await isFreeDailyUsed('today', user?.id ?? null))) {
+  if (!memberExempt && (await isFreeDailyUsed('today', user?.id ?? null, now))) {
     // 같은 날 같은 사람의 재요청이면 소비 없이 통과(다시 열어보기). 계정 조회는 쿠키가 안 맞을 때만.
     const cookieValue = req.cookies.get(FREE_TODAY_REPLAY_COOKIE)?.value;
     const runs =
@@ -185,7 +209,9 @@ export async function POST(req: NextRequest) {
       isTodayReplay({
         cookieValue,
         replaySignature,
-        identity: sajuIdentityKey(parsed.input),
+        input: parsed.input,
+        calendarType: payload.calendarType,
+        timeRule: payload.timeRule,
         todayKey,
         runs,
       })
@@ -322,7 +348,7 @@ export async function POST(req: NextRequest) {
   //   쿠키는 응답에 실어야 브라우저에 남고, 계정 카운트는 RPC 가 원자적으로 올린다.
   //   replayGranted(오늘 이미 소비한 같은 입력의 재열람)면 소비도 서명 갱신도 하지 않는다.
   if (!memberExempt && !replayGranted) {
-    const spent = await consumeFreeDaily('today', user?.id ?? null);
+    const spent = await consumeFreeDaily('today', user?.id ?? null, now);
     const cookieAttrs = {
       httpOnly: true,
       sameSite: 'lax' as const,
