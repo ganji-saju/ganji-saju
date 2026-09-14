@@ -1,5 +1,21 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 다른 사람 사주 결제 경로 적대적 리뷰 반영(가족 이름 · 멤버 중복결제 · 돌아가기 · 테스트)
+
+브랜치 `fix/today-fortune-other-saju-checkout` 두 번째 커밋(PR·머지 전).
+- **[중] 가족 상세가 계정 주인 이름으로 불림**: 이 경로는 run 기록이 없어(만들면 #825 재열람이 가족 무료 결과를 내줌) 스냅샷 이름 해석이
+  ①원본 이름 없음 ②미등록 가족 ③run 없음 → ④계정 표시명으로 떨어졌다. 버튼(`prepareTodayDetailCheckout`)이 reading 별 폼 이름을
+  localStorage(`rememberTodayDetailName`, unlock-marker.ts)에 남기고, 상세가 unlock GET/POST 에 `name` 으로 넘겨 `resolveNamedReadingInput` 의
+  ③(nameHint, 20자 · 등록 가족 이름보다 뒤)로 쓴다. input.name 엔 넣지 않는다(toSlug 해시 → scope 흔들림). 한계: 결제를 다른 브라우저에서 열면 기존 폴백.
+- **[하] 로그아웃 멤버가 로그인 후 3,300원 재결제**: 결제 화면 today-detail 분기에서 프리미엄 멤버(`computeMemberFreeEligible`)면 결제창 대신
+  '멤버십으로 바로 열기'(`MemberTodayDetailOpenButton` — 열기 표식 후 상세 → POST unlock 이 멤버십 혜택으로 기록). 퍼널 blocked=active_membership.
+- **[하] 착지 '돌아가기' 막다른 길**: `-limit` 진입이면 착지 URL 에 `from=limit`(buildTasteProductHref · buildPurchasedProductHref) → 상세 backHref=/today-fortune.
+- **[하] 테스트 빈칸**: `/start` 분기 jsdom 3건(딥링크·선택화면·다른 오류) · checkout-reading 로그인 신규 reading 소유자 + `recordTodayFortuneRun` 0회 ·
+  unlock route.spec(GET/POST name → nameHint) · 상세 클라 jsdom(GET/POST 에 name) · 이름 해석 단위 3건 · from=limit 단위 · 멤버 버튼 jsdom + 결제 화면 배선 가드.
+  뮤테이션 12종(각 수정 되돌리기) 전부 red 확인. tsc 0 · npm test 1694 · test:spec 331 green.
+- **반려(사용자 결정 필요)**: "그날 아무 사주로든 오늘 자세히 1회 사면 가족 것도 열림"(`hasTodayDetailEntitlementForDay` 가 scope_key 를 안 봄) — 2026-06-05
+  일일 만료 정책의 기존 규칙. 좁히려면 checkout·prepare·unlock 세 곳을 같은 scope 함수로 동시에 바꿔야 해(어긋나면 결제하고 못 여는 사고) 이 PR 범위 밖.
+
 ## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
 
 브랜치 `fix/today-fortune-other-saju-checkout`(PR·머지 전).

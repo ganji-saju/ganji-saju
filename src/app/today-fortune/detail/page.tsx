@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 export default async function TodayFortuneDetailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sourceSessionId?: string; concern?: string; paid?: string }>;
+  searchParams: Promise<{ sourceSessionId?: string; concern?: string; paid?: string; from?: string }>;
 }) {
-  const { sourceSessionId, concern, paid } = await searchParams;
+  const { sourceSessionId, concern, paid, from } = await searchParams;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
@@ -26,6 +26,8 @@ export default async function TodayFortuneDetailPage({
         sourceSessionId={sourceSessionId}
         concern={concern}
         paidProduct={paid}
+        // 2026-09-14 — 하루 1회 차단 화면에서 산 경우 무료 결과가 없어 '돌아가기'를 입력 화면으로.
+        backHref={from === 'limit' ? '/today-fortune' : undefined}
       />
     </AppShell>
   );

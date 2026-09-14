@@ -31,3 +31,28 @@ export function consumePendingUnlock(sourceSessionId: string): boolean {
   }
   return false;
 }
+
+// 2026-09-14 — 하루 1회에 막힌 다른 사람 사주의 결제 경로엔 무료 실행기록(run)이 없어, 결제 후 상세 스냅샷이
+//   폼 이름을 모르고 계정 주인 이름으로 호명했다. 버튼이 reading 별로 폼 이름을 남기고 상세가 unlock 에 넘긴다.
+//   localStorage — 로그인·결제창 왕복(탭·팝업)을 건너야 한다.
+// ponytail: 이 브라우저 한정. 다른 기기에서 열면 기존 폴백(계정 표시명) — 필요해지면 주문 metadata 로 옮긴다.
+const DETAIL_NAME_PREFIX = 'moonlight:today-detail:name:';
+
+export function rememberTodayDetailName(readingId: string, name: string | null | undefined) {
+  const trimmed = name?.trim();
+  if (typeof window === 'undefined' || !trimmed) return;
+  try {
+    window.localStorage.setItem(`${DETAIL_NAME_PREFIX}${readingId}`, trimmed);
+  } catch {
+    // 저장소 차단 — 계정 표시명 폴백.
+  }
+}
+
+export function readTodayDetailName(readingId: string): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    return window.localStorage.getItem(`${DETAIL_NAME_PREFIX}${readingId}`) ?? '';
+  } catch {
+    return '';
+  }
+}

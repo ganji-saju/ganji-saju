@@ -47,6 +47,8 @@ async function getOrCreateTodayDetailSnapshot(input: {
   occurredOn: string;
   now: Date;
   accessSource: string | null;
+  /** 2026-09-14 — 폼 이름(하루 1회에 막힌 사주의 결제 경로엔 run 이 없어 클라가 넘긴다). 표시 전용. */
+  nameHint: string;
 }) {
   const scopeKey = buildTodayFortuneResultSnapshotScopeKey({
     readingKey: input.readingKey,
@@ -71,6 +73,7 @@ async function getOrCreateTodayDetailSnapshot(input: {
     counselorId: input.counselorId,
     now: input.now,
     accessSource: input.accessSource,
+    nameHint: input.nameHint,
   });
   if (written) {
     return {
@@ -87,6 +90,7 @@ async function getOrCreateTodayDetailSnapshot(input: {
     concernId: input.concernId,
     counselorId: input.counselorId,
     now: input.now,
+    nameHint: input.nameHint,
   });
   return {
     snapshotId: null,
@@ -181,6 +185,7 @@ export async function GET(req: NextRequest) {
     occurredOn: todayKey,
     now,
     accessSource,
+    nameHint: req.nextUrl.searchParams.get('name') ?? '',
   });
 
   return NextResponse.json({
@@ -288,6 +293,7 @@ export async function POST(req: NextRequest) {
     // 2026-09-14 — 멤버십 혜택으로 만든 스냅샷 표식(기록용). 전액환불 잠금은 이 표식이 아니라 **날** 로 판정한다 —
     //   표식은 그날 첫 스냅샷에만 붙어 GET·주제 전환 스냅샷을 놓쳤다(lockMembershipContentForRefund). 응답의 access 값은 그대로.
     accessSource: 'viaMembership' in access && access.viaMembership ? 'membership' : responseAccess,
+    nameHint: readString(payload ?? {}, 'name'),
   });
 
   return NextResponse.json({

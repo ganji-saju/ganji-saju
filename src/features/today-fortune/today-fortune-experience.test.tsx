@@ -25,6 +25,7 @@ vi.mock('@/features/unified-intake/submit-today', async (importOriginal) => ({
 }));
 
 import { TodayFortuneExperience } from './today-fortune-experience';
+import { readTodayDetailName } from '@/lib/today-fortune/unlock-marker';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -86,6 +87,7 @@ describe('오늘운세 하루 1회 차단 화면의 결제 경로', () => {
     root = createRoot(host);
     mocks.push.mockReset();
     fetchMock.mockReset();
+    localStorage.clear();
     vi.stubGlobal('fetch', fetchMock);
   });
   afterEach(() => {
@@ -112,6 +114,8 @@ describe('오늘운세 하루 1회 차단 화면의 결제 경로', () => {
     expect(mocks.push).toHaveBeenCalledWith(
       '/membership/checkout?product=today-detail&slug=reading-dad&scope=love_contact&from=today-fortune-limit'
     );
+    // run 기록이 없는 경로 — 결제 후 상세가 그 사람 이름으로 부르도록 폼 이름을 reading 별로 남긴다.
+    expect(readTodayDetailName('reading-dad')).toBe('아버지');
   });
 
   it('reading 을 못 받으면 결제 화면으로 가지 않고 안내만 보인다', async () => {

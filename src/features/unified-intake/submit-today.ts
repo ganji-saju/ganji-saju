@@ -15,6 +15,7 @@ import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { TodayFortuneBirthPayload, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import { applyProfileToTodayPayload, type UnifiedBirthProfile } from './birth-profile-store';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { rememberTodayDetailName } from '@/lib/today-fortune/unlock-marker';
 
 const INITIAL_TODAY_PAYLOAD: TodayFortuneBirthPayload = {
   concernId: 'general',
@@ -82,6 +83,8 @@ export async function prepareTodayDetailCheckout(
   if (!response.ok || !data?.readingId) {
     throw new Error(data?.error ?? '결제 화면을 여는 중 오류가 있었어요. 잠시 뒤 다시 눌러 주세요.');
   }
+  // 이 경로엔 run 기록이 없어 결제 후 상세가 폼 이름을 모른다 — reading 별로 남겨 unlock 에 넘긴다.
+  rememberTodayDetailName(data.readingId, profile.name);
   const params = new URLSearchParams({
     product: 'today-detail',
     slug: data.readingId,

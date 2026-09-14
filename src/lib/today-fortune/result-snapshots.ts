@@ -98,15 +98,18 @@ export const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
 //   reading.input 을 쓰고(슬러그 안정), 이 named 사본은 메시지 빌더에만 넘긴다.
 /**
  * 이 사주를 누구로 호명할지 해석한다.
- *   우선순위: ①원본 input.name ②등록된 본인·가족(정체성 매칭) ③그 실행에 쓴 폼 이름(run 기록)
+ *   우선순위: ①원본 input.name ②등록된 본인·가족(정체성 매칭) ③그 실행에 쓴 폼 이름(run 기록 · 없으면 nameHint)
  *   ④계정 표시명(프로필→소셜). ④까지 비면 호출부가 '달빛이' 폴백.
  *   ③이 있어야 "무료는 철수 · 결제 후 상세는 계정 주인 이름"으로 갈리지 않는다.
+ *   2026-09-14 — 하루 1회에 막힌 사주의 결제 경로(checkout-reading)는 run 이 없다(만들면 무료 재열람 누출).
+ *   그 폼 이름은 클라가 nameHint 로 넘긴다 — 표시 전용이고 input.name 엔 넣지 않는다(toSlug 해시 → scope 흔들림).
  */
 export async function resolveNamedReadingInput(
   input: BirthInput,
   userId: string | null | undefined,
   deps: SnapshotDisplayNameDeps = DEFAULT_SNAPSHOT_NAME_DEPS,
-  sourceSessionId?: string | null
+  sourceSessionId?: string | null,
+  nameHint?: string | null
 ): Promise<BirthInput> {
   // 이미 이름이 있으면 조회 자체가 불필요(그게 대상자 이름이다).
   if (input.name?.trim()) return input;
@@ -118,6 +121,7 @@ export async function resolveNamedReadingInput(
       // 가족 조회 실패는 비차단 — 다음 후보로 진행.
     }
   }
+  if (!subjectName) subjectName = nameHint?.trim().slice(0, 20) || null;
   if (!subjectName && userId && sourceSessionId && deps.loadRunDisplayName) {
     try {
       subjectName = await deps.loadRunDisplayName(userId, sourceSessionId);
@@ -192,6 +196,8 @@ export interface BuildTodayFortuneSnapshotContentInput {
   now?: Date;
   /** 표시 이름 해석 deps 주입(테스트용). 미지정 시 프로필/소셜 메타 조회. */
   nameDeps?: SnapshotDisplayNameDeps;
+  /** 결제 경로가 넘긴 폼 이름(run 기록이 없을 때의 ③) — resolveNamedReadingInput 참조. */
+  nameHint?: string | null;
 }
 
 export interface StoreTodayFortuneResultSnapshotInput
@@ -289,6 +295,7 @@ export async function buildTodayFortuneSnapshotContent({
   counselorId,
   now = new Date(),
   nameDeps = DEFAULT_SNAPSHOT_NAME_DEPS,
+  nameHint,
 }: BuildTodayFortuneSnapshotContentInput) {
   const todaySajuData = buildFreshTodaySajuData(reading.input, { now });
   // 2026-06-05 Bug A — reading.input(오늘 payload)엔 이름이 없어 detail hero 가 '달빛이' 로
@@ -300,7 +307,8 @@ export async function buildTodayFortuneSnapshotContent({
     reading.input,
     reading.userId,
     nameDeps,
-    sourceSessionId
+    sourceSessionId,
+    nameHint
   );
   const freeResult = buildTodayFortuneFreeResult(namedInput, todaySajuData, {
     concernId,

@@ -13,7 +13,7 @@ import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-pane
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
-import { consumePendingUnlock } from '@/lib/today-fortune/unlock-marker';
+import { consumePendingUnlock, readTodayDetailName } from '@/lib/today-fortune/unlock-marker';
 import type {
   ConcernId,
   TodayFortuneFreeResult,
@@ -125,6 +125,8 @@ export function TodayFortuneDetailClient({
       //   marker 있음 (무료 페이지의 handleUnlock 이 방금 set) → POST (deduct trigger 의도)
       //   marker 없음 (새로고침 / 직접 URL) → GET (read-only). entitlement false 면 무료 페이지 redirect.
       const isFirstTimeUnlock = consumePendingUnlock(activeSourceSessionId);
+      // 2026-09-14 — 하루 1회 결제 경로에서 남긴 폼 이름(없으면 빈 값 — 서버가 기존 순서로 해석).
+      const name = readTodayDetailName(activeSourceSessionId);
 
       try {
         const response = isFirstTimeUnlock
@@ -135,6 +137,7 @@ export function TodayFortuneDetailClient({
                 sourceSessionId: activeSourceSessionId,
                 concernId,
                 counselorId,
+                name,
               }),
             })
           : await fetch(
@@ -142,6 +145,7 @@ export function TodayFortuneDetailClient({
                 sourceSessionId: activeSourceSessionId,
                 concernId,
                 counselorId: counselorId ?? '',
+                name,
               }).toString()}`,
               { cache: 'no-store' },
             );

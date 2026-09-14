@@ -9,6 +9,27 @@ import { useState } from 'react';
 import { usePriceLabel } from '@/components/payments/price-provider';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import { prepareTodayDetailCheckout } from '@/features/unified-intake/submit-today';
+import { markPendingUnlock } from '@/lib/today-fortune/unlock-marker';
+
+/**
+ * 결제 화면의 멤버십 포함 안내(프리미엄 멤버). 상세 화면은 표식이 있어야 POST unlock(멤버십 혜택 기록)으로 연다 —
+ * 표식 없이 가면 GET 이 '미보유'로 보고 무료 결과 화면으로 돌려보낸다(premium-lock-card 멤버 분기와 같은 방식).
+ */
+export function MemberTodayDetailOpenButton({ slug, href }: { slug: string; href: string }) {
+  const router = useRouter();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        markPendingUnlock(slug);
+        router.push(href);
+      }}
+      className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+    >
+      멤버십으로 바로 열기
+    </button>
+  );
+}
 
 export function TodayDetailCheckoutButton({
   profile,

@@ -29,10 +29,16 @@ vi.mock('@/server/today-fortune/build-today-fortune', () => ({
 vi.mock('@/server/ai/today-fortune/service', () => ({
   generateTodayFortuneNarrative: vi.fn(),
 }));
+// 이름을 넘기려고 run 을 남기면 #825 재열람 판정(isTodayReplay)이 그 run 을 보고 가족 무료 결과를 내준다 — 0회여야 한다.
+vi.mock('@/lib/today-fortune/run-log', () => ({
+  recordTodayFortuneRun: vi.fn(),
+  listTodayFortuneRunsForUser: vi.fn(async () => []),
+}));
 
 import { createReading, findReadingByInput } from '@/lib/saju/readings';
 import { consumeFreeDaily, isFreeDailyUsed } from '@/lib/free-usage/daily-limit';
 import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-fortune';
+import { recordTodayFortuneRun } from '@/lib/today-fortune/run-log';
 import { POST } from './route';
 
 const family = {
@@ -71,6 +77,13 @@ describe('POST /api/today-fortune/checkout-reading', () => {
     expect(createReading).not.toHaveBeenCalled();
   });
 
+  it('로그인 계정 + 기존 reading 없음 → 그 계정 소유로 새로 만든다(이름은 input 에 넣지 않음 — scope 해시 보존)', async () => {
+    const res = await post({ ...family, name: '아버지' });
+    expect(await res.json()).toEqual({ ok: true, readingId: 'new-reading' });
+    expect(vi.mocked(createReading).mock.calls[0][1]).toBe('user-1');
+    expect(vi.mocked(createReading).mock.calls[0][0].name).toBeUndefined();
+  });
+
   it('비로그인은 소유자 없는 reading 을 만든다(로그인은 결제 버튼이 요구)', async () => {
     mocks.user = null;
     const res = await post(family);
@@ -85,6 +98,7 @@ describe('POST /api/today-fortune/checkout-reading', () => {
     expect(buildTodayFortuneFreeResult).not.toHaveBeenCalled();
     expect(isFreeDailyUsed).not.toHaveBeenCalled();
     expect(consumeFreeDaily).not.toHaveBeenCalled();
+    expect(recordTodayFortuneRun).not.toHaveBeenCalled();
   });
 
   it('생년월일이 비면 400 — reading 을 만들지 않는다', async () => {
