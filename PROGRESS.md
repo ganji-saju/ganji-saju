@@ -1,5 +1,26 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 멤버십 결제별 기간 원장(membership_periods) — 환불 잠금 창을 표에서
+
+아래 섹션(A단계, `fix/membership-refund-content-lock`) 위에 쌓음. 브랜치 `feat/membership-period-ledger`(PR·머지 전). 설계 정본 `docs/membership-period-ledger-design.md`.
+- **왜**: 구독은 사용자당 1행에 결제·관리자 부여가 끝에 누적돼 결제별 실제 기간이 없었다 → 환불 잠금(되돌릴 수 없는 삭제)을 추정 창으로 했고,
+  연속 결제·부여·해제·재구매 조합마다 과다(남의 기간 삭제)·과소(못 잠금)가 새로 터졌다(리뷰 3회). A단계는 안전 휴리스틱(skip → 수동)으로 막았을 뿐.
+  유료 멤버십 결제 0건(2026-09-13 실측) — 지금이 가장 싸다.
+- **방식**: 표 `membership_periods`(결제·관리자 부여·legacy 행, 살아 있는 기간은 겹치지 않는 사슬, `renews_at` = 살아 있는 max(end_at)).
+  - 지급: 사슬 끝(또는 지금)에 [base, base+30일) 행 + 구독 upsert. **같은 주문 행이 있으면 새 행·연장 없음**(+60 버그 제거), 앞 시도가 구독 갱신 전에 끊겼으면 구독만 맞춤.
+  - 전액환불(`refundMembershipPeriod`): P 무효(refund) → P 뒤 기간을 P 가 비운 시간만큼 당김 → 구독 = 살아 있는 끝(없거나 지났으면 즉시 만료).
+  - 관리자 해제(#821 유지): 진행 중 기간은 지금에서 끝, 미래 기간 무효(admin_revoke), 구독 expired + renews_at 지금.
+  - 잠금: 창 = 표의 P 무효 행 [start, min(end, voided_at)) — **claimant·window_not_current·metadata.membershipPeriods 휴리스틱 삭제**.
+    A단계 규칙(via:'membership' 행 · 스냅샷 날 단위 · 근거 범위+정렬 페이지네이션) 유지. **감사 먼저**(식별자 insert → 스냅샷 → 열람 행, 감사 실패면 안 지움).
+  - 훅: 표에 P 가 없으면(086 이전 지급) #820 일수 차감 폴백 + **표도 새 끝에서 자름** + 잠금 skip(`no_refunded_period`). 원장 실패면 폴백 차감을 겹치지 않음.
+    후처리 실패는 last_error 이어 붙임 + 운영 메일(프로덕션만). 부분취소는 구독 유지(그대로).
+- 🔴 **migration `086_membership_periods.sql` 수동 적용 필요** — SQL Editor 로 **앱 머지 전에**(없으면 지급·부여·해제·환불 전부 실패). 머리말의 적용 전/후 확인 쿼리
+  (legacy 백필 수 = 권한 남은 구독 수, anon/authenticated 권한 0행, RLS on). RLS on·정책 없음 + `revoke all … from public, anon, authenticated`.
+- 검증: 유닛 1,689 + vitest 302, tsc 0 · 시나리오(연속 A·B→A 환불 / B 먼저 환불 / 해제→재구매→옛 환불 / 환불→재구매→환불 / 부여 끼기 / 재시도 멱등·찢긴 재시도·무효 주문 재시도 /
+  해제 / 폴백 / 감사 먼저+부분 실패 재실행 / 스냅샷 날 규칙 / 정렬 없는 range 거부) · 뮤테이션 21/21 red.
+- 남음: **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 환불·재구매 경합 — RPC 로 옮길 때) ·
+  잠금 ①(창 안 멤버십 열람 행)은 1000행 미만 가정 · 레거시 taste_product 주제 구매는 근거로 안 봄.
+
 ## 2026-09-14 — 멤버십 전액환불 = 그 결제 기간에 멤버십으로 연 달력·상세풀이 잠금
 
 앞 섹션(#821) 위에 쌓음. 마이그레이션 없음. 사용자 결정(3번): 전액환불이면 그 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람 금지.
