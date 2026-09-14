@@ -15,7 +15,7 @@ import {
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   buildTodayDetailScopeKey,
-  hasTodayDetailEntitlementForDay,
+  hasTodayDetailEntitlementForSaju,
 } from '@/lib/product-entitlements';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import type { ConcernId } from '@/lib/today-fortune/types';
@@ -152,10 +152,10 @@ export async function GET(req: NextRequest) {
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
       //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
-      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   제거하고 당일 entitlement 만 본다 — 2026-09-14 부터 **이 사주로 산 것만**(hasTodayDetailEntitlementForSaju).
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
-        hasTodayDetailEntitlementForDay(userId, todayKey),
+        hasTodayDetailEntitlementForSaju(userId, todayKey, { readingKey, slug: sourceSessionId }),
       // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
       getTopicProductEntitlement: (userId, productId) =>
         getTasteProductEntitlement(userId, productId as TasteProductId, null),
@@ -251,10 +251,10 @@ export async function POST(req: NextRequest) {
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
       //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
-      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   제거하고 당일 entitlement 만 본다 — 2026-09-14 부터 **이 사주로 산 것만**(hasTodayDetailEntitlementForSaju).
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
-        hasTodayDetailEntitlementForDay(userId, todayKey),
+        hasTodayDetailEntitlementForSaju(userId, todayKey, { readingKey, slug: sourceSessionId }),
       // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
       getTopicProductEntitlement: (userId, productId) =>
         getTasteProductEntitlement(userId, productId as TasteProductId, null),

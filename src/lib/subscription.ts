@@ -399,7 +399,7 @@ export async function lockMembershipContentForRefund(
 
 /**
  * 멤버십 말고 그 사용자가 오늘 상세를 열 수 있던 근거 — ①표식 없는 상세 열람 행(전 결제 charged·카카오 쿠폰 0원·레거시)의 KST 날짜
- * ②today-detail 카드 이용권의 KST 날짜(hasTodayDetailEntitlementForDay 와 같은 기준) ③보유한 주제 단품(전역)이 여는 주제.
+ * ②today-detail 카드 이용권의 KST 날짜(hasTodayDetailEntitlementForSaju 와 같은 기준) ③보유한 주제 단품(전역)이 여는 주제.
  * ①은 잠글 날 범위(firstDay~lastDay, KST)로 좁혀 페이지 단위로 읽는다(readAllPages).
  * 멤버십 행(창 밖 포함)은 via 로 거른다 — 근거가 아니다.
  * ③은 이용권 행(범위 무관 — 게이트의 전역 판정보다 넓게 남긴다) + 앱 게이트(getTasteProductEntitlement)의 레거시 전 구매 판정 그대로.

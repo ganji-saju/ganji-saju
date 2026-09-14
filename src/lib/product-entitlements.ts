@@ -289,32 +289,64 @@ export async function listTasteProductEntitlementScopeKeys(
   return [...scopeKeys];
 }
 
-// 2026-05-24 today-detail 결제 정합성 — 같은 날(KST) today-detail 결제분 자동 인정.
-//   readingKey 가 이름 해시 등으로 흔들리거나 과거 readingId(slug) scope 로 결제한
-//   분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을 결제했으면 그날
-//   열람을 허용한다. '오늘 자세히 보기'는 (사람×날) 단위 제품이라 안전한 fallback.
-export async function hasTodayDetailEntitlementForDay(
+// 2026-09-14 사용자 결정 — 오늘 자세히(3,300원)는 **산 사주만** 열린다.
+//   전에는 (user, today-detail, 오늘 created_at) 만 봐서 그날 아무 사주로 1번 사면 가족 사주도
+//   결제 화면·결제 준비·열기에서 열렸다. 결제 화면(checkTodayDetailAccess)·결제 준비(prepare)·
+//   열기(unlock GET/POST)가 모두 이 판정 하나를 쓴다(today-detail-saju-entitlement.test 가드).
+//   사주 대조는 scope(today:<readingKey>)의 #699 사주 정체성 매칭 — 출생지 프리셋 vs 검색처럼
+//   입력 경로만 다른 같은 사주는 열린다. 날짜 경계는 KST 자정(이전과 같다).
+const TODAY_DETAIL_SCOPE_PREFIX = 'today:';
+
+export interface TodayDetailSajuRef {
+  readingKey?: string | null;
+  slug?: string | null;
+}
+
+export function todayDetailRowsOpenSaju(
+  rows: Array<{ scope_key: string | null; created_at: string }>,
+  dayKey: string,
+  current: TodayDetailSajuRef
+): boolean {
+  const startMs = Date.parse(`${dayKey}T00:00:00+09:00`);
+  if (Number.isNaN(startMs)) return false;
+  const endMs = startMs + 86_400_000;
+  const currentIdentity = sajuIdentityFromReadingKey(current.readingKey);
+
+  return rows.some((row) => {
+    const createdMs = Date.parse(row.created_at);
+    if (!(createdMs >= startMs && createdMs < endMs)) return false;
+    const stored = row.scope_key?.startsWith(TODAY_DETAIL_SCOPE_PREFIX)
+      ? row.scope_key.slice(TODAY_DETAIL_SCOPE_PREFIX.length).trim()
+      : '';
+    // 레거시 — 어느 쪽이든 사주로 특정되지 않으면(scope 없음·'global'·옛 readingId 키, 현재 사주
+    //   미해석) 누구 것인지 모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상
+    //   today:<readingKey> 라 이런 행은 해석 실패 때만 생긴다 — 산 사람을 잠그는 쪽보다 넓게 둔다.
+    if (!sajuIdentityFromReadingKey(stored) || !currentIdentity) return true;
+    return readingKeyMatchesCurrentSaju(stored, [current.readingKey, current.slug], currentIdentity);
+  });
+}
+
+export async function hasTodayDetailEntitlementForSaju(
   userId: string | null | undefined,
-  dayKey: string
+  dayKey: string,
+  current: TodayDetailSajuRef
 ): Promise<boolean> {
   if (!userId || !hasSupabaseServiceEnv) return false;
 
   const startMs = Date.parse(`${dayKey}T00:00:00+09:00`);
   if (Number.isNaN(startMs)) return false;
-  const endMs = startMs + 86_400_000;
 
   const service = await createServiceClient();
   const { data, error } = await service
     .from('product_entitlements')
-    .select('id')
+    .select('scope_key, created_at')
     .eq('user_id', userId)
     .eq('product_id', 'today-detail')
     .gte('created_at', new Date(startMs).toISOString())
-    .lt('created_at', new Date(endMs).toISOString())
-    .limit(1);
+    .lt('created_at', new Date(startMs + 86_400_000).toISOString());
 
-  if (error) return false;
-  return Boolean(data && data.length > 0);
+  if (error || !data) return false;
+  return todayDetailRowsOpenSaju(data, dayKey, current);
 }
 
 async function recordLegacyTasteProductTransaction(

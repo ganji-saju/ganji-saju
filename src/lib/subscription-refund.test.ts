@@ -540,7 +540,7 @@ test('그날 다른 근거가 있으면 그날 스냅샷 유지 — 전 결제(c
       snap('s8', '2026-09-08', '2026-09-08T01:00:00.000Z'),
     ],
     product_entitlements: [
-      // UTC 09-05 15:00 = KST 09-06 00:00 — 카드 이용권의 날짜는 KST(hasTodayDetailEntitlementForDay 와 같은 기준).
+      // UTC 09-05 15:00 = KST 09-06 00:00 — 카드 이용권의 날짜는 KST(hasTodayDetailEntitlementForSaju 와 같은 기준).
       { id: 'card6', user_id: 'u1', product_id: 'today-detail', created_at: '2026-09-05T15:00:00.000Z' },
       { id: 'card_u2', user_id: 'u2', product_id: 'today-detail', created_at: '2026-09-08T01:00:00.000Z' },
     ],

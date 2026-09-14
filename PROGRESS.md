@@ -15,6 +15,7 @@
   뮤테이션 12종(각 수정 되돌리기) 전부 red 확인. tsc 0 · npm test 1694 · test:spec 331 green.
 - **반려(사용자 결정 필요)**: "그날 아무 사주로든 오늘 자세히 1회 사면 가족 것도 열림"(`hasTodayDetailEntitlementForDay` 가 scope_key 를 안 봄) — 2026-06-05
   일일 만료 정책의 기존 규칙. 좁히려면 checkout·prepare·unlock 세 곳을 같은 scope 함수로 동시에 바꿔야 해(어긋나면 결제하고 못 여는 사고) 이 PR 범위 밖.
+- **[사용자 결정 2026-09-14] 오늘 자세히는 산 사주만 열린다**(세 번째 커밋): `hasTodayDetailEntitlementForDay` → `hasTodayDetailEntitlementForSaju`(판정 `todayDetailRowsOpenSaju`) — 오늘(KST) 이용권 중 scope `today:<readingKey>` 가 #699 정체성(`readingKeyMatchesCurrentSaju`)으로 이 사주인 것만. 결제 화면·prepare·unlock GET/POST 동일 함수(가드 테스트). 레거시(scope 없음·옛 readingId·현재 사주 미해석)는 누구 것인지 몰라 전처럼 그날 넓게 연다. 남은 틈: unlock 의 coin-daily(전·멤버·쿠폰 당일 기록) 폴백은 여전히 사주 무관.
 
 ## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
 

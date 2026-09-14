@@ -17,7 +17,7 @@ import {
 } from '@/lib/payments/product-scope';
 import {
   getTasteProductEntitlement,
-  hasTodayDetailEntitlementForDay,
+  hasTodayDetailEntitlementForSaju,
 } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -317,7 +317,10 @@ export async function POST(req: NextRequest) {
         isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail';
 
       const entitlement = isTodayDetail
-        ? await hasTodayDetailEntitlementForDay(user.id, todayKey)
+        ? await hasTodayDetailEntitlementForSaju(user.id, todayKey, {
+            readingKey: paymentScope.readingKey,
+            slug: paymentScope.slug,
+          })
         : isTasteProductPackage(pkg)
           ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
           : await getLifetimeReportEntitlement(
