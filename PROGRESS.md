@@ -2,24 +2,28 @@
 
 ## 2026-09-14 — 멤버십 결제별 기간 원장(membership_periods) — 환불 잠금 창을 표에서
 
-아래 섹션(A단계, `fix/membership-refund-content-lock`) 위에 쌓음. 브랜치 `feat/membership-period-ledger`(PR·머지 전). 설계 정본 `docs/membership-period-ledger-design.md`.
+아래 섹션(A단계, `fix/membership-refund-content-lock`) 위에 쌓음. 브랜치 `feat/membership-period-ledger`(PR·머지 전). 설계 정본 `docs/membership-period-ledger-design.md`("구현하며 정한 것 — 최종").
 - **왜**: 구독은 사용자당 1행에 결제·관리자 부여가 끝에 누적돼 결제별 실제 기간이 없었다 → 환불 잠금(되돌릴 수 없는 삭제)을 추정 창으로 했고,
   연속 결제·부여·해제·재구매 조합마다 과다(남의 기간 삭제)·과소(못 잠금)가 새로 터졌다(리뷰 3회). A단계는 안전 휴리스틱(skip → 수동)으로 막았을 뿐.
   유료 멤버십 결제 0건(2026-09-13 실측) — 지금이 가장 싸다.
-- **방식**: 표 `membership_periods`(결제·관리자 부여·legacy 행, 살아 있는 기간은 겹치지 않는 사슬, `renews_at` = 살아 있는 max(end_at)).
-  - 지급: 사슬 끝(또는 지금)에 [base, base+30일) 행 + 구독 upsert. **같은 주문 행이 있으면 새 행·연장 없음**(+60 버그 제거), 앞 시도가 구독 갱신 전에 끊겼으면 구독만 맞춤.
-  - 전액환불(`refundMembershipPeriod`): P 무효(refund) → P 뒤 기간을 P 가 비운 시간만큼 당김 → 구독 = 살아 있는 끝(없거나 지났으면 즉시 만료).
+- **방식**: 표 `membership_periods`(결제·관리자 부여·legacy 행, 살아 있는 기간은 겹치지 않는 사슬 — **DB 배제 제약**, `renews_at` = 살아 있는 max(end_at)).
+  - 지급: base = max(지금, 사슬 끝)에 [base, base+30일) 행 + 구독 upsert. **같은 주문 행이 있으면 새 행·연장 없음**(+60 버그 제거), 앞 시도가 구독 갱신 전에 끊겼으면 구독만 맞춤.
+    **상향 자가치유**: 구독 renews_at 이 사슬 끝보다 뒤면(옛 코드 지급·수동 연장) 그 틈을 legacy 행으로 먼저 메운다. 하향(구독이 앞)은 흡수 안 함 — 드리프트 쿼리로.
+  - 전액환불(`refundMembershipPeriod`): P 무효(refund) → P 뒤 기간을 P 가 비운 시간만큼 당김(오름차순) → 구독 = 살아 있는 끝(없거나 지났으면 즉시 만료).
   - 관리자 해제(#821 유지): 진행 중 기간은 지금에서 끝, 미래 기간 무효(admin_revoke), 구독 expired + renews_at 지금.
   - 잠금: 창 = 표의 P 무효 행 [start, min(end, voided_at)) — **claimant·window_not_current·metadata.membershipPeriods 휴리스틱 삭제**.
-    A단계 규칙(via:'membership' 행 · 스냅샷 날 단위 · 근거 범위+정렬 페이지네이션) 유지. **감사 먼저**(식별자 insert → 스냅샷 → 열람 행, 감사 실패면 안 지움).
-  - 훅: 표에 P 가 없으면(086 이전 지급) #820 일수 차감 폴백 + **표도 새 끝에서 자름** + 잠금 skip(`no_refunded_period`). 원장 실패면 폴백 차감을 겹치지 않음.
-    후처리 실패는 last_error 이어 붙임 + 운영 메일(프로덕션만). 부분취소는 구독 유지(그대로).
-- 🔴 **migration `086_membership_periods.sql` 수동 적용 필요** — SQL Editor 로 **앱 머지 전에**(없으면 지급·부여·해제·환불 전부 실패). 머리말의 적용 전/후 확인 쿼리
-  (legacy 백필 수 = 권한 남은 구독 수, anon/authenticated 권한 0행, RLS on). RLS on·정책 없음 + `revoke all … from public, anon, authenticated`.
-- 검증: 유닛 1,689 + vitest 302, tsc 0 · 시나리오(연속 A·B→A 환불 / B 먼저 환불 / 해제→재구매→옛 환불 / 환불→재구매→환불 / 부여 끼기 / 재시도 멱등·찢긴 재시도·무효 주문 재시도 /
-  해제 / 폴백 / 감사 먼저+부분 실패 재실행 / 스냅샷 날 규칙 / 정렬 없는 range 거부) · 뮤테이션 21/21 red.
-- 남음: **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 환불·재구매 경합 — RPC 로 옮길 때) ·
-  잠금 ①(창 안 멤버십 열람 행)은 1000행 미만 가정 · 레거시 taste_product 주제 구매는 근거로 안 봄.
+    A단계 규칙(via:'membership' 행 · 스냅샷 날 단위) 유지 · ①(열람 행)과 근거 조회가 같은 정렬 페이지 루프 · 근거에 **레거시 전 주제 구매**(앱 게이트와 같은 판정) 포함.
+    **감사 먼저**(식별자 insert → 스냅샷 → 열람 행, 감사 실패면 안 지움).
+  - 훅: **#820 일수 차감 폴백 삭제**(정본은 표 하나 — 폴백이 사슬을 잘라 뒤 결제 행을 무효로 만들던 버그 포함). 표에 없는 **지급된** 주문 환불 = 표·구독 무변경 +
+    last_error `membership_period_missing`(수동 차감) + 운영 메일, 잠금 skip(`no_refunded_period`). 후처리 실패는 last_error 이어 붙임 + 운영 메일(프로덕션만). 부분취소는 구독 유지.
+- 🔴 **migration `086_membership_periods.sql` 수동 적용 + 배포 절차**(머리말): ① 적용 전 확인 → ② SQL Editor 적용·드리프트 0 → ③ 곧바로 PR 머지·배포 →
+  ④ 배포 완료 직후 드리프트 쿼리 재실행(0 아니면 멈추고 보고). **②~④ 사이 관리자 멤버십 부여/해제·멤버십 환불 금지**. btree_gist(extensions) + 배제 제약 ·
+  RLS on·정책 없음 + `revoke all … from public, anon, authenticated` · legacy 백필.
+- 검증: 유닛 1,688 + node:test 191 + vitest 302, tsc 0 · 로컬 PG 17 로 086 실제 적용(2회 멱등, search_path=public): 백필 legacy 2 = 권한 남은 구독 2 · 드리프트 0/0 ·
+  P1 흉내 1/1 · P2 흉내 1/0 · 겹침 insert·무효 되살리기·무효 전 당기기 거부(23P01), 맞닿음·무효·다른 사용자·무효 먼저 당기기 허용 · anon 권한 0행·RLS on ·
+  뮤테이션 16/16 red(상향 치유·경보·레거시 근거·① 페이지·id 정렬·무효 전 당기기·가짜 DB 겹침/정렬/절단 가드 등).
+- 남음: **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
+  구독 끝 어긋남은 가능 — RPC 로 옮길 때) · 하향 드리프트(옛 코드 해제·환불)는 배포 절차·드리프트 쿼리로만 막는다.
 
 ## 2026-09-14 — 🔜 세션 인계: 멤버십 결제별 기간 원장(진행 중) + 남은 결정
 

@@ -1,11 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient, createServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
-import type { SubscriptionPlan } from '@/lib/payments/catalog';
+import type { SubscriptionPlan, TasteProductId } from '@/lib/payments/catalog';
 import { TOPIC_PRODUCT_BY_CONCERN } from '@/lib/today-fortune/topic-products';
 
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired';
 
-/** 멤버십 결제 1건이 구독에 더하는 일수. 기간의 정본은 membership_periods(086) — 주문의 지급 기록(recordMembershipDaysGranted)은 086 이전 주문 환불 폴백용. */
+/** 멤버십 결제 1건이 구독에 더하는 일수. 기간의 정본은 membership_periods(086). */
 export const MEMBERSHIP_PERIOD_DAYS = 30;
 
 export interface ManagedSubscription {
@@ -132,31 +132,11 @@ export async function getViewerMemberTier(): Promise<'premium' | null> {
   }
 }
 
-/**
- * 환불된 멤버십 결제 1건이 늘린 기간을 뺀 뒤의 구독(순수, 2026-09-13).
- * 구독은 사용자당 1행이고 결제(30일)·관리자 부여가 renews_at 끝에 누적된다 → "지금 종료"는 다른 기간까지 날리고,
- * 상태만 cancelled 는 혜택이 안 끊긴다(isEntitledStatus). 그래서 이 결제의 30일만 뺀다.
- * 결과가 지금 이전이면 즉시 만료 — renews_at 도 지금으로 내린다(남기면 재구매 때 activate 의 base 로 되살아난다).
- * renews_at 이 없는(무기한) 행은 이 결제가 만든 기간이 아니라 손대지 않는다(null).
- * 뺄 일수는 호출부가 **주문의 지급 기록**(metadata.membershipDaysGranted)으로 정한다 — 미지급 0.
- * 2026-09-14 원장 이후엔 membership_periods 에 기간이 없는 옛 주문(086 이전 지급)의 폴백에만 쓴다(shortenMembershipForRefund).
- */
-export function refundedMembershipRenewal(
-  renewsAt: string | null,
-  now: Date,
-  days: number
-): { status: 'expired' | null; renewsAt: string } | null {
-  if (!renewsAt) return null;
-  const shortened = addDays(new Date(renewsAt), -days);
-  return new Date(shortened).getTime() <= now.getTime()
-    ? { status: 'expired', renewsAt: now.toISOString() }
-    : { status: null, renewsAt: shortened };
-}
-
 // ── 멤버십 기간 원장(membership_periods, migration 086 · 설계 docs/membership-period-ledger-design.md) ──
 //   불변식: 살아 있는(voided_at null) 기간은 겹치지 않는 사슬이고 subscriptions.renews_at = 살아 있는 max(end_at).
 //   지급·관리자 부여·해제·환불이 전부 이 표를 먼저 고치고 구독을 그 끝에 맞춘다 — 환불 잠금 창도 이 표에서 나온다.
-//   ponytail: 여러 문장(select→update)이라 같은 사용자의 동시 변경(환불과 재구매가 같은 순간)은 한쪽이 사라질 수 있다 — 원자 RPC 로 옮길 때 같이.
+//   겹침은 DB 배제 제약(membership_periods_live_no_overlap)이 막는다 — 모든 update 는 겹침을 만들지 않는 순서로 한다(무효 먼저·당기기는 start_at 오름차순).
+//   ponytail: 여러 문장(select→update)이라 같은 사용자의 동시 변경은 한쪽이 23P01(겹침)로 실패하거나 구독 끝이 어긋날 수 있다 — 원자 RPC 로 옮길 때 같이.
 type PeriodRow = {
   id: string;
   order_id: string | null;
@@ -220,9 +200,11 @@ async function cutLivePeriodsAt(client: SupabaseClient, userId: string, at: numb
  * 멤버십 전액환불(설계 연산 2) — 그 결제의 기간 행 P 를 무효(refund)로 하고, P 뒤에 이어 붙은 기간을 P 가 비운 시간만큼 당긴다
  *   (환불이 P 시작 전 = P 전체 · 진행 중 = P.end − 지금 · 이미 끝남 = 0). 구독은 살아 있는 끝으로 맞추고, 남은 게 없거나 끝이 지금 이전이면
  *   즉시 만료(renews_at = 지금 — 남기면 재구매 때 activate 의 base 로 되살아난다).
- * 반환: 표가 이 주문을 아는가. false = 086 이전 지급 → 호출부가 #820 일수 차감(shortenMembershipForRefund)으로 폴백.
+ * 반환: 표가 이 주문을 아는가. false = 표에 이 주문 기간이 없다(086 적용~배포 사이 옛 코드 지급 등) — 아무것도 안 바꾸고,
+ *   호출부가 지급된 주문이면 'membership_period_missing' 으로 드러낸다(구독 수동 차감). 폴백 차감(#820)은 삭제 — 정본은 표 하나.
  *   이미 무효인 P(관리자 해제로 무효된 미래 기간·재호출)는 아무것도 안 바꾸고 true.
- * 순서: P 무효 → 당기기 → 구독. 중간에 끊기면 겹침이 아니라 "덜 당겨진 틈"(사용자 쪽 이득)만 남는다 — 호출부가 last_error·운영 메일로 드러낸다.
+ * 순서: P 무효 → 당기기(start_at 오름차순) → 구독 — 배제 제약이 받아들이는 유일한 순서. 중간에 끊기면 겹침이 아니라 "덜 당겨진 틈"(사용자 쪽 이득)만
+ *   남는다 — 호출부가 last_error·운영 메일로 드러낸다.
  * 원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회).
  */
 export async function refundMembershipPeriod(
@@ -254,24 +236,6 @@ export async function refundMembershipPeriod(
   return true;
 }
 
-/** 표에 기간이 없는 옛 주문(086 이전 지급)의 환불 폴백(#820) — 구독에서 지급 기록(metadata.membershipDaysGranted) 일수만 뺀다.
- *  표도 그 새 끝에서 자른다 — 안 자르면 백필된 legacy 행이 옛 끝을 기억해 다음 결제의 base 로 뺀 기간이 되살아난다.
- *  원장 전이(markPaymentOrderRefunded)가 방금 일어났을 때만 부른다(정확히 1회). */
-export async function shortenMembershipForRefund(
-  userId: string,
-  options: { days: number; now?: Date; service?: SupabaseClient }
-) {
-  const client = options.service ?? (await createServiceClient());
-  const now = options.now ?? new Date();
-  const { data, error } = await client.from('subscriptions').select('renews_at').eq('user_id', userId).maybeSingle();
-  if (error) throw new Error(error.message);
-  const next = refundedMembershipRenewal((data as { renews_at: string | null } | null)?.renews_at ?? null, now, options.days);
-  if (!next) return null;
-  await cutLivePeriodsAt(client, userId, ms(next.renewsAt), now, 'refund');
-  await updateSubscriptionEnd(client, userId, ms(next.renewsAt), next.status === 'expired', now);
-  return next;
-}
-
 /** created_at(ISO) → KST 날짜 'YYYY-MM-DD'. 한국은 DST 가 없어 +9h 고정. */
 const kstDayOf = (value: string) => new Date(Date.parse(value) + 9 * 3_600_000).toISOString().slice(0, 10);
 /** KST 날짜 'YYYY-MM-DD' 의 시작 시각(ISO). */
@@ -280,6 +244,24 @@ type LockedAccessRow = { id: string; feature: string; created_at: string; metada
 type LockRange = { start: string; end: string };
 const PAGE = 1000; // PostgREST 기본 max-rows
 const ID_CHUNK = 100; // .in('id', …) 는 URL 에 실린다 — uuid 100개 ≈ 4KB
+type PageQuery = PromiseLike<{ data: unknown; error: { message: string } | null }> & {
+  order(column: string, options: { ascending: boolean }): PageQuery;
+  range(from: number, to: number): PageQuery;
+};
+/** 끝까지 페이지로 읽는다(PostgREST 1000행 절단 방지). created_at·id(유일 키)로 안정 정렬 — 없으면 페이지가 행을 건너뛰거나 겹친다. */
+async function readAllPages<T>(query: () => PageQuery): Promise<T[]> {
+  const rows: T[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await query()
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true })
+      .range(offset, offset + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const page = (data ?? []) as T[];
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+  }
+}
 
 /**
  * 멤버십 전액환불 — 그 결제 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람을 지운다(2026-09-14 사용자 결정).
@@ -293,7 +275,6 @@ const ID_CHUNK = 100; // .in('id', …) 는 URL 에 실린다 — uuid 100개 �
  *   주제 단품(재물·일, 전역) 보유자의 그 주제 스냅샷은 남긴다. 카카오 쿠폰 등 표식 없는 0원 행은 보존.
  * 🔴 무효 표시가 아니라 삭제 — unlock_credit_feature_once 는 행이 남아 있으면 reused(무과금)로 다시 연다.
  * 원장 전이(markPaymentOrderRefunded)가 refundMembershipPeriod 뒤에 부른다. DB 오류는 던진다 — 호출부가 흔적을 남긴다.
- * ponytail: 창 하나의 멤버십 열람 행은 1000행 미만으로 본다(30일·멤버십 경로) — 넘으면 ①도 range 페이지네이션.
  */
 export async function lockMembershipContentForRefund(
   userId: string,
@@ -346,17 +327,17 @@ export async function lockMembershipContentForRefund(
   const access: LockedAccessRow[] = [];
   const lockDaysByRange: Array<Set<string>> = [];
   for (const range of ranges) {
-    const { data, error } = await client
-      .from('credit_transactions')
-      .select('id, feature, created_at, metadata')
-      .eq('user_id', userId)
-      .eq('type', 'use')
-      .in('feature', ['calendar', 'detail_report'])
-      .contains('metadata', { via: 'membership' })
-      .gte('created_at', range.start)
-      .lt('created_at', range.end);
-    if (error) throw new Error(error.message);
-    const rows = (data ?? []) as LockedAccessRow[];
+    const rows = await readAllPages<LockedAccessRow>(() =>
+      client
+        .from('credit_transactions')
+        .select('id, feature, created_at, metadata')
+        .eq('user_id', userId)
+        .eq('type', 'use')
+        .in('feature', ['calendar', 'detail_report'])
+        .contains('metadata', { via: 'membership' })
+        .gte('created_at', range.start)
+        .lt('created_at', range.end)
+    );
     access.push(...rows);
     lockDaysByRange.push(new Set(rows.filter((r) => r.feature === 'detail_report').map((r) => kstDayOf(r.created_at))));
   }
@@ -420,15 +401,15 @@ export async function lockMembershipContentForRefund(
 /**
  * 멤버십 말고 그 사용자가 오늘 상세를 열 수 있던 근거 — ①표식 없는 상세 열람 행(전 결제 charged·카카오 쿠폰 0원·레거시)의 KST 날짜
  * ②today-detail 카드 이용권의 KST 날짜(hasTodayDetailEntitlementForDay 와 같은 기준) ③보유한 주제 단품(전역)이 여는 주제.
- * ①은 잠글 날 범위(firstDay~lastDay, KST)로 좁혀 페이지 단위로 읽는다(PostgREST 1000행 절단 방지, created_at·id 로 안정 정렬).
- * 멤버십 행(창 밖 포함)은 via 로 거른다 — 근거가 아니다. 레거시 taste_product 주제 구매는 안 본다.
+ * ①은 잠글 날 범위(firstDay~lastDay, KST)로 좁혀 페이지 단위로 읽는다(readAllPages).
+ * 멤버십 행(창 밖 포함)은 via 로 거른다 — 근거가 아니다.
+ * ③은 이용권 행(범위 무관 — 게이트의 전역 판정보다 넓게 남긴다) + 앱 게이트(getTasteProductEntitlement)의 레거시 전 구매 판정 그대로.
  */
 async function loadOtherTodayDetailEvidence(client: SupabaseClient, userId: string, firstDay: string, lastDay: string) {
   const from = kstDayStart(firstDay);
   const until = new Date(Date.parse(kstDayStart(lastDay)) + 24 * 3_600_000).toISOString();
-  const detailRows: Array<{ created_at: string; metadata: Record<string, unknown> | null }> = [];
-  for (let offset = 0; ; offset += PAGE) {
-    const { data, error } = await client
+  const detailRows = await readAllPages<{ created_at: string; metadata: Record<string, unknown> | null }>(() =>
+    client
       .from('credit_transactions')
       .select('created_at, metadata')
       .eq('user_id', userId)
@@ -436,14 +417,7 @@ async function loadOtherTodayDetailEvidence(client: SupabaseClient, userId: stri
       .eq('feature', 'detail_report')
       .gte('created_at', from)
       .lt('created_at', until)
-      .order('created_at', { ascending: true })
-      .order('id', { ascending: true })
-      .range(offset, offset + PAGE - 1);
-    if (error) throw new Error(error.message);
-    const page = (data ?? []) as typeof detailRows;
-    detailRows.push(...page);
-    if (page.length < PAGE) break;
-  }
+  );
   const { data: productRows, error: productError } = await client
     .from('product_entitlements')
     .select('product_id, created_at')
@@ -457,6 +431,13 @@ async function loadOtherTodayDetailEvidence(client: SupabaseClient, userId: stri
     ...products.filter((row) => row.product_id === 'today-detail').map((row) => kstDayOf(row.created_at)),
   ]);
   const held = new Set(products.map((row) => row.product_id));
+  // 동적 import — 정적이면 순환(product-entitlements → product-scope → credits/detail-report-access → subscription).
+  const { getLegacyTasteProductEntitlement } = await import('@/lib/product-entitlements');
+  for (const productId of Object.values(TOPIC_PRODUCT_BY_CONCERN)) {
+    if (!held.has(productId) && (await getLegacyTasteProductEntitlement(userId, productId as TasteProductId, null, client))) {
+      held.add(productId);
+    }
+  }
   const topicConcerns = Object.entries(TOPIC_PRODUCT_BY_CONCERN)
     .filter(([, productId]) => held.has(productId))
     .map(([concern]) => concern);
@@ -475,7 +456,10 @@ export async function expireMembershipNow(userId: string, options: { now?: Date;
 
 /**
  * 멤버십 지급(설계 연산 1) — 결제(orderId)면 source 'payment', 없으면 관리자 부여('admin_grant').
- * 기간 [base, base+days) 를 사슬 끝에 붙이고 구독을 그 끝으로. base = max(지금, 살아 있는 끝 ?? 구독 renews_at).
+ * 기간 [base, base+days) 를 사슬 끝에 붙이고 구독을 그 끝으로. base = max(지금, 살아 있는 끝).
+ * 상향 자가치유: 구독 renews_at 이 max(지금, 살아 있는 끝)보다 뒤면 그 틈을 legacy 행으로 먼저 메운다(→ base = renews_at) — 표가 추적 못 한 시간
+ *   (086 적용~배포 사이 옛 코드 지급·수동 SQL 연장). base 만 올리면 이 결제 환불 때 구독이 사슬 끝으로 내려가 그 시간이 사라진다.
+ *   하향(renews_at < 살아 있는 끝)은 흡수하지 않는다 — 찢긴 지급(행만 쓰고 구독 갱신 실패)과 구별이 안 돼 유료 행을 지울 수 있다(086 드리프트 쿼리로 막는다).
  * 같은 결제의 기간 행이 이미 있으면(지급 재시도) 새 행·연장 없음 → granted false(+60 버그 제거). 단 앞 시도가 행만 쓰고
  * 구독 갱신 전에 끊겼으면(구독 끝 < 살아 있는 끝) 구독만 살아 있는 끝으로 맞춘다.
  */
@@ -505,17 +489,18 @@ export async function activateMembershipSubscription(
       return { subscription: mapSubscription(existing), granted: false };
     }
   } else {
-    const base = Math.max(now.getTime(), end ?? (existing?.renews_at ? ms(existing.renews_at) : 0));
-    const endAt = addDays(new Date(base), days);
-    const { error: insertError } = await client.from('membership_periods').insert({
-      user_id: userId,
-      source: options.orderId ? 'payment' : 'admin_grant',
-      order_id: options.orderId ?? null,
-      start_at: iso(base),
-      end_at: endAt,
-    });
-    if (insertError) throw new Error(insertError.message);
-    end = ms(endAt);
+    const insert = async (source: string, start: number, endAt: number) => {
+      const { error } = await client
+        .from('membership_periods')
+        .insert({ user_id: userId, source, order_id: source === 'payment' ? options.orderId : null, start_at: iso(start), end_at: iso(endAt) });
+      if (error) throw new Error(error.message);
+    };
+    const tail = Math.max(now.getTime(), end ?? 0);
+    const renews = existing?.renews_at ? ms(existing.renews_at) : 0;
+    if (renews > tail) await insert('legacy', tail, renews);
+    const base = Math.max(tail, renews);
+    end = ms(addDays(new Date(base), days));
+    await insert(options.orderId ? 'payment' : 'admin_grant', base, end);
   }
 
   const { data, error } = await client

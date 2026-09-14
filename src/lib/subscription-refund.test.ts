@@ -2,53 +2,37 @@
 //   "지금 종료"는 다른 기간까지 날리고, 상태만 cancelled 는 혜택이 안 끊긴다(isEntitledStatus 가 cancelled 를 권한으로 본다).
 // 2026-09-14 — 결제별 기간 원장(membership_periods, 086 · docs/membership-period-ledger-design.md). 지급·부여·해제·환불이 전부 표를 갱신하고
 //   환불 잠금 창은 표의 그 결제 행에서 나온다(추정 창·claimant·window_not_current 휴리스틱 삭제). 아래 시나리오는 실제 연산을 가짜 DB 로 돌린다.
+//   리뷰 반영: #820 일수 차감 폴백 삭제(정본은 표 하나) · 상향 자가치유 · 겹침 배제 제약(가짜 DB 도 흉내) · 레거시 전 주제 근거 · 잠금 ① 페이지네이션.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import {
-  activateMembershipSubscription,
-  expireMembershipNow,
-  lockMembershipContentForRefund,
-  refundedMembershipRenewal,
-  refundMembershipPeriod,
-  shortenMembershipForRefund,
-} from './subscription';
-import { markPaymentOrderRefunded, membershipDaysToRemove, recordMembershipDaysGranted } from './payments/order-ledger';
+import { activateMembershipSubscription, expireMembershipNow, lockMembershipContentForRefund, refundMembershipPeriod } from './subscription';
+import { markPaymentOrderRefunded } from './payments/order-ledger';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 const NOW = new Date('2026-09-13T00:00:00.000Z');
 const DAY = 86_400_000;
 
-test('환불된 결제가 더한 일수만 뺀다 — 남은 기간(다른 결제·관리자 부여)은 유지', () => {
-  assert.deepEqual(refundedMembershipRenewal('2026-11-12T00:00:00.000Z', NOW, 30), { status: null, renewsAt: '2026-10-13T00:00:00.000Z' });
-  assert.deepEqual(refundedMembershipRenewal('2026-12-12T00:00:00.000Z', NOW, 60), { status: null, renewsAt: '2026-10-13T00:00:00.000Z' });
-});
-
-test('빼고 나면 지금 이전이면 즉시 만료 — renews_at 도 지금으로(재구매 때 옛 기간이 되살아나지 않게)', () => {
-  assert.deepEqual(refundedMembershipRenewal('2026-10-01T00:00:00.000Z', NOW, 30), { status: 'expired', renewsAt: NOW.toISOString() });
-  assert.deepEqual(refundedMembershipRenewal('2026-10-13T00:00:00.000Z', NOW, 30), { status: 'expired', renewsAt: NOW.toISOString() }, '딱 지금이면 만료');
-});
-
-test('renews_at 이 없는(무기한) 행은 이 결제가 만든 기간이 아니라 손대지 않는다', () => {
-  assert.equal(refundedMembershipRenewal(null, NOW, 30), null);
-});
-
-test('뺄 일수(086 이전 주문 폴백)는 지급 기록 그대로 — 미지급 0 · 부분취소 0 · 멤버십 아님 0', () => {
-  const membership = (metadata: Record<string, unknown>) => ({ packageId: 'membership_premium', metadata });
-  assert.equal(membershipDaysToRemove(membership({ membershipDaysGranted: 30 }), false), 30);
-  assert.equal(membershipDaysToRemove(membership({}), false), 0, '승인만 되고 지급 전 실패한 주문 — 받은 적 없는 기간을 빼면 관리자 부여분이 깎인다');
-  assert.equal(membershipDaysToRemove(membership({ membershipDaysGranted: 30 }), true), 0, '부분취소는 구독 유지');
-  assert.equal(membershipDaysToRemove({ packageId: 'taste_today_detail', metadata: { membershipDaysGranted: 30 } }, false), 0);
-});
-
 // ─────────────────────────────────────────────────────────────
 // 가짜 DB — PostgREST 흉내. select·delete·update·upsert 체인(then/maybeSingle/single 로 실행) · insert(표에도 들어간다) · order/range.
-//   SQL 처럼 `NULL = x` 는 거짓 · 필터 인자는 calls 에 기록 · **정렬 없는 range 는 throw**(PostgREST 는 순서를 보장하지 않는다).
+//   SQL 처럼 `NULL = x` 는 거짓 · 필터 인자는 calls 에 기록 · **유일 키(id)로 끝나지 않는 정렬의 range 는 throw**(같은 created_at 이
+//   페이지 경계에 걸리면 행을 건너뛰거나 겹친다) · range 없는 select 는 1000행에서 자른다(PostgREST max-rows).
+//   membership_periods 는 배제 제약(membership_periods_live_no_overlap)을 흉내 — 같은 사용자의 살아 있는 [start, end) 가 겹치는 insert·update 는
+//   23P01 로 거부(update 는 되돌린다) → 모든 시나리오가 "겹치지 않는 사슬" 불변식을 자동으로 검증한다.
 //   failOn 은 'table'(모든 연산) 또는 'table:delete'·'table:insert' 처럼 연산 하나만.
 // ─────────────────────────────────────────────────────────────
 type Row = Record<string, unknown>;
+const MAX_ROWS = 1000;
+const EXCLUDED = { code: '23P01', message: 'conflicting key value violates exclusion constraint "membership_periods_live_no_overlap"' };
+const liveClash = (a: Row, b: Row) =>
+  a !== b &&
+  a.user_id === b.user_id &&
+  a.voided_at == null &&
+  b.voided_at == null &&
+  Date.parse(String(a.start_at)) < Date.parse(String(b.end_at)) &&
+  Date.parse(String(b.start_at)) < Date.parse(String(a.end_at));
 
 function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
   const failing = [failOn].flat();
@@ -77,9 +61,16 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
         }
         const matched = rows.filter((r) => filters.every((f) => f(r)));
         for (const col of [...sorts].reverse()) matched.sort((a, b) => String(a[col]).localeCompare(String(b[col])));
-        const hits = window ? matched.slice(window[0], window[1] + 1) : matched;
+        const hits = window ? matched.slice(window[0], window[1] + 1) : mode === 'select' ? matched.slice(0, MAX_ROWS) : matched;
         if (mode === 'delete') tables[table] = rows.filter((r) => !hits.includes(r));
-        if (mode === 'update') hits.forEach((r) => Object.assign(r, patch));
+        if (mode === 'update') {
+          const before = hits.map((r) => ({ ...r }));
+          hits.forEach((r) => Object.assign(r, patch));
+          if (table === 'membership_periods' && hits.some((a) => rows.some((b) => liveClash(a, b)))) {
+            hits.forEach((r, i) => Object.assign(r, before[i]));
+            return { data: null, error: EXCLUDED };
+          }
+        }
         return { data: hits, error: null };
       };
       const chain: Record<string, unknown> = {};
@@ -101,7 +92,7 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
         lt: (col: string, v: string) => filter('lt', [col, v], (r) => at(r, col) < Date.parse(v)),
         order: (col: string) => (log('order', [col]), sorts.push(col), chain),
         range: (from: number, to: number) => {
-          if (sorts.length === 0) throw new Error(`${table}: 정렬 없는 range`);
+          if (sorts[sorts.length - 1] !== 'id') throw new Error(`${table}: 유일 키(id)로 끝나지 않는 정렬의 range`);
           return log('range', [from, to]), (window = [from, to]), chain;
         },
         maybeSingle: () => {
@@ -117,9 +108,14 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
           log('insert', [rows]);
           if (fails('insert')) return Promise.resolve({ error: { message: 'boom' } });
           const list = [rows].flat();
-          inserted.push(...list);
           const defaults = table === 'membership_periods' ? { voided_at: null, void_reason: null } : {};
-          (tables[table] ??= []).push(...list.map((r) => ({ id: `${table}_${++seq}`, ...defaults, ...r })));
+          const next = list.map((r) => ({ id: `${table}_${++seq}`, ...defaults, ...r }));
+          const existing = (tables[table] ??= []);
+          if (table === 'membership_periods' && next.some((a) => [...existing, ...next].some((b) => liveClash(a, b)))) {
+            return Promise.resolve({ error: EXCLUDED });
+          }
+          inserted.push(...list);
+          existing.push(...next);
           return Promise.resolve({ error: null });
         },
       });
@@ -133,33 +129,39 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
 const ids = (rows: Row[] | undefined) => (rows ?? []).filter((r) => r.feature !== 'entitlement_revoke').map((r) => r.id);
 const audits = (db: { inserted: Row[] }) => db.inserted.filter((r) => r.feature === 'entitlement_revoke').map((r) => r.metadata as Row);
 
-test('가짜 DB 는 정렬 없는 range 를 거부한다(페이지가 행을 건너뛰거나 겹치는 코드를 초록으로 두지 않게)', () => {
+test('가짜 DB 는 유일 키(id)로 끝나지 않는 정렬의 range 를 거부한다(페이지가 행을 건너뛰거나 겹치는 코드를 초록으로 두지 않게)', () => {
   const db = fakeDb({ t: [] });
-  assert.throws(() => (db.client.from('t').select('*') as unknown as { range: (a: number, b: number) => unknown }).range(0, 999), /정렬 없는 range/);
+  type Q = { order: (c: string) => Q; range: (a: number, b: number) => unknown };
+  const q = () => db.client.from('t').select('*') as unknown as Q;
+  assert.throws(() => q().range(0, 999), /유일 키\(id\)/);
+  assert.throws(() => q().order('created_at').range(0, 999), /유일 키\(id\)/, '같은 created_at 이 페이지 경계에 걸리면 순서가 흔들린다');
+  assert.doesNotThrow(() => q().order('created_at').order('id').range(0, 999));
 });
 
-// select→update 흉내 — eq 인자까지 기록한다(엉뚱한 컬럼으로 바꾸면 프로덕션에선 0행 갱신 = 조용한 미기록).
-function fakeTable(row: Record<string, unknown> | null) {
-  const writes: Array<{ patch: Record<string, unknown>; where: [string, unknown] }> = [];
-  const client = {
-    from: () => {
-      let patch: Record<string, unknown> | null = null;
-      const chain = {
-        select: () => chain,
-        update: (p: Record<string, unknown>) => ((patch = p), chain),
-        eq: (col: string, val: unknown) => (patch ? Promise.resolve((writes.push({ patch, where: [col, val] }), { error: null })) : chain),
-        maybeSingle: () => Promise.resolve({ data: row, error: null }),
-      };
-      return chain;
-    },
-  };
-  return { client: client as unknown as SupabaseClient, writes };
-}
+test('가짜 DB 는 range 없는 select 를 1000행에서 자른다(PostgREST max-rows) — 페이지 없이 읽는 코드를 초록으로 두지 않게', async () => {
+  const db = fakeDb({ t: Array.from({ length: 1001 }, (_, i) => ({ id: i })) });
+  const { data } = (await db.client.from('t').select('*')) as { data: Row[] };
+  assert.equal(data.length, 1000);
+});
 
-test('recordMembershipDaysGranted(호환용) — 주문 metadata 에 일수 누적, 다른 키는 보존 · 기간 배열(membershipPeriods)은 더 안 만든다', async () => {
-  const first = fakeTable({ metadata: { origin: { env: 'production' } } });
-  await recordMembershipDaysGranted('ord_m', 30, first.client);
-  assert.deepEqual(first.writes, [{ patch: { metadata: { origin: { env: 'production' }, membershipDaysGranted: 30 } }, where: ['order_id', 'ord_m'] }]);
+test('가짜 DB 는 살아 있는 기간 겹침을 거부한다(배제 제약 흉내, 23P01) — 맞닿음·다른 사용자·무효 행은 허용 · 거부된 update 는 되돌린다', async () => {
+  const period = (id: string, start: string, end: string) => ({ id, user_id: 'u1', source: 'admin_grant', order_id: null, start_at: start, end_at: end, voided_at: null, void_reason: null });
+  const db = fakeDb({ membership_periods: [period('a', '2026-07-01T00:00:00.000Z', '2026-07-31T00:00:00.000Z')] });
+  const table = () => db.client.from('membership_periods');
+  const clash = await table().insert({ user_id: 'u1', source: 'admin_grant', start_at: '2026-07-30T00:00:00.000Z', end_at: '2026-08-10T00:00:00.000Z' });
+  assert.equal(clash.error?.code, '23P01');
+  assert.equal(db.tables.membership_periods.length, 1, '거부된 insert 는 표에 없다');
+  for (const ok of <Row[]>[
+    { user_id: 'u1', source: 'admin_grant', start_at: '2026-07-31T00:00:00.000Z', end_at: '2026-08-10T00:00:00.000Z' }, // 맞닿음
+    { user_id: 'u2', source: 'admin_grant', start_at: '2026-07-10T00:00:00.000Z', end_at: '2026-07-20T00:00:00.000Z' }, // 다른 사용자
+    { user_id: 'u1', source: 'admin_grant', start_at: '2026-07-10T00:00:00.000Z', end_at: '2026-07-20T00:00:00.000Z', voided_at: '2026-07-05T00:00:00.000Z' }, // 무효 행
+  ]) {
+    assert.equal((await table().insert(ok)).error, null);
+  }
+  const voided = db.tables.membership_periods.find((r) => r.voided_at != null)!;
+  assert.equal((await table().update({ voided_at: null }).eq('id', voided.id as string)).error?.code, '23P01', '무효 행을 되살려 겹치게');
+  assert.equal(voided.voided_at, '2026-07-05T00:00:00.000Z', '거부된 update 는 되돌린다');
+  assert.equal((await table().update({ start_at: '2026-07-20T00:00:00.000Z' }).eq('start_at', '2026-07-31T00:00:00.000Z')).error?.code, '23P01', '당겨서 겹치게');
 });
 
 // ── 시나리오 — 실제 연산(지급·부여·해제·환불+잠금)을 한 사용자 타임라인으로 돌린다 ──
@@ -364,21 +366,26 @@ test('관리자 해제(#821) — 진행 중 기간은 지금에서 끝, 미래 �
   assert.ok(!/updateSubscriptionStatus\(userId, 'cancelled'\)/.test(route), 'cancelled 로는 혜택이 안 끊긴다');
 });
 
-test('086 이전 주문 폴백(shortenMembershipForRefund) — 구독에서 일수만 빼고 표(legacy 백필 행)도 새 끝에서 자른다 · 만료면 지금', async () => {
-  const legacy = () => [{ id: 'l', user_id: 'u1', source: 'legacy', order_id: null, start_at: T('09-01'), end_at: T('11-12'), voided_at: null, void_reason: null }];
-  const keep = fakeDb({ subscriptions: [{ user_id: 'u1', status: 'active', renews_at: T('11-12') }], membership_periods: legacy() });
-  assert.deepEqual(await shortenMembershipForRefund('u1', { days: 30, now: NOW, service: keep.client }), { status: null, renewsAt: T('10-13') });
-  assert.deepEqual([keep.tables.subscriptions[0].status, keep.tables.subscriptions[0].renews_at], ['active', T('10-13')]);
-  assert.equal(keep.tables.membership_periods[0].end_at, T('10-13'), '안 자르면 다음 결제가 옛 끝에 붙어 뺀 기간이 되살아난다');
+// 리뷰 BUG1(P1): 086 적용~배포 사이 옛 코드 결제 O 가 구독만 +30일 — base 를 표 끝으로 잡으면 새 결제 Q 가 O 의 30일을 덮어 유료 기간이 사라진다.
+test('상향 자가치유(P1) — 구독 끝이 표보다 뒤면 그 틈을 legacy 행으로 메우고 이어 붙인다 · 새 결제 환불은 옛 구독 끝으로 복귀 · 행이 없어도 같다', async () => {
+  const w = world();
+  w.db.tables.membership_periods.push({ id: 'l', user_id: 'u1', source: 'legacy', order_id: null, start_at: T('09-01'), end_at: T('09-30'), voided_at: null, void_reason: null });
+  w.db.tables.subscriptions.push({ user_id: 'u1', status: 'active', plan: PLAN, renews_at: T('10-30') }); // 옛 코드 결제 O
+  await w.buy('ord_q', T('09-10'));
+  assert.deepEqual(w.chain(), [
+    ['legacy', T('09-01'), T('09-30')],
+    ['legacy', T('09-30'), T('10-30')],
+    ['ord_q', T('10-30'), T('11-29')],
+  ]);
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('11-29') }, 'O 의 30일 뒤에 붙는다(10-30 이 아니라)');
+  assert.deepEqual(await w.refund('ord_q', T('09-15')), { accessDeleted: 0, snapshotsDeleted: 0 });
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('10-30') }, 'Q 환불은 Q 만 — O 의 30일은 남는다');
 
-  const end = fakeDb({ subscriptions: [{ user_id: 'u1', status: 'active', renews_at: T('10-01') }], membership_periods: legacy() });
-  await shortenMembershipForRefund('u1', { days: 30, now: NOW, service: end.client });
-  assert.deepEqual([end.tables.subscriptions[0].status, end.tables.subscriptions[0].renews_at], ['expired', NOW.toISOString()]);
-  assert.equal(end.tables.membership_periods[0].end_at, NOW.toISOString());
-
-  const none = fakeDb({ subscriptions: [], membership_periods: [] });
-  assert.equal(await shortenMembershipForRefund('u1', { days: 30, now: NOW, service: none.client }), null);
-  assert.equal(none.calls.filter((c) => c.op === 'update').length, 0, '구독 행이 없으면 쓰지 않는다');
+  const bare = world();
+  bare.db.tables.subscriptions.push({ user_id: 'u1', status: 'active', plan: PLAN, renews_at: T('10-30') });
+  await bare.grant(10, T('09-10'));
+  assert.deepEqual(bare.chain(), [['legacy', T('09-10'), T('10-30')], ['admin_grant', T('10-30'), T('11-09')]], '관리자 부여도 같은 경로 · 틈은 지금부터');
+  assert.deepEqual(bare.sub(), { status: 'active', renewsAt: T('11-09') });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -533,6 +540,22 @@ test('주제 단품(재물·일, 전역) 보유자 — 그 주제 스냅샷은 �
   });
   await lock(db);
   assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), ['s_wealth'], '일(work-flow)은 안 샀으니 career 는 잠긴다');
+
+  // 레거시 전 구매(credit_transactions taste_product) — 앱 게이트(getTasteProductEntitlement 2순위)가 여는 주제는 근거다.
+  const legacy = lockDb({
+    credit_transactions: [
+      memberDetail('d5', '2026-09-05T01:00:00.000Z', '2026-09-05'),
+      { id: 'wf', user_id: 'u1', type: 'purchase', feature: 'taste_product', created_at: '2026-06-01T00:00:00.000Z', metadata: { kind: 'taste_product', productId: 'work-flow', scopeKey: null } },
+      { id: 'mp_u2', user_id: 'u2', type: 'purchase', feature: 'taste_product', created_at: '2026-06-01T00:00:00.000Z', metadata: { kind: 'taste_product', productId: 'money-pattern', scopeKey: null } },
+    ],
+    today_fortune_result_snapshots: [
+      snap('s_general', '2026-09-05', '2026-09-05T01:00:00.000Z'),
+      snap('s_wealth', '2026-09-05', '2026-09-05T02:00:00.000Z', { concern_id: 'wealth' }),
+      snap('s_career', '2026-09-05', '2026-09-05T03:00:00.000Z', { concern_id: 'career', access_source: 'topic-product' }),
+    ],
+  });
+  await lock(legacy);
+  assert.deepEqual(ids(legacy.tables.today_fortune_result_snapshots), ['s_career'], '다른 사용자의 레거시 구매는 근거가 아니다');
 });
 
 test('lockMembershipContentForRefund — 표에 무효된 이 주문 기간이 없으면(086 이전 지급·환불 연산 실패) 지우지 않고 사유를 감사행으로 · 사용자 없으면 던진다', async () => {
@@ -623,16 +646,25 @@ test('다른 근거 조회 — 잠글 날 범위(KST)로 좁히고 1000행 넘�
   assert.deepEqual(
     evidence.filter((c) => c.op === 'range').map((c) => c.args),
     [
-      [0, 999],
+      [0, 999], // ① 창 안 멤버십 열람 행(3행 — 1페이지)
+      [0, 999], // 근거 1페이지(꽉 참)
       [1000, 1999],
     ]
   );
 });
 
+// 리뷰(과소): ①(창 안 멤버십 열람 행)도 range 없이 읽으면 1000행에서 잘려 나머지는 영구히 안 잠긴다(재실행도 같은 1000행만 본다).
+test('잠금 ① — 창 안 멤버십 열람 행이 1000행을 넘어도 정렬된 페이지로 전부 지운다', async () => {
+  const many = Array.from({ length: 1205 }, (_, i) => mcal(`m${String(i).padStart(4, '0')}`, new Date(Date.parse(P.start) + i * 60_000).toISOString()));
+  const db = lockDb({ credit_transactions: many });
+  assert.deepEqual(await lock(db), { accessDeleted: 1205, snapshotsDeleted: 0 });
+  assert.deepEqual(ids(db.tables.credit_transactions), []);
+});
+
 // ── 훅 실행 — 원장 전이 함수를 가짜 DB 로 실제로 돌린다(실제 시각 기준 — 창은 지금 전후로 잡는다).
 //   dispatchGaRefund·운영 메일은 VERCEL_ENV=production 이 아니면 DB·네트워크 전에 돌아간다(여기선 항상 그렇다 — 아래 가드).
 const kstDay = (value: string) => new Date(Date.parse(value) + 9 * 3_600_000).toISOString().slice(0, 10);
-function hookDb(options: { ledger?: boolean; failOn?: string[] } = {}) {
+function hookDb(options: { ledger?: boolean; fulfilled?: boolean; failOn?: string[] } = {}) {
   const base = Date.now();
   const at = (days: number) => new Date(base + days * DAY).toISOString();
   const viewAt = at(-5);
@@ -641,7 +673,7 @@ function hookDb(options: { ledger?: boolean; failOn?: string[] } = {}) {
   const db = fakeDb(
     {
       payment_orders: [
-        { order_id: 'ord_m', user_id: 'u1', package_id: 'membership_premium', status: 'fulfilled', amount: 49000, payment_key: 'pk_m', metadata: { membershipDaysGranted: 30 } },
+        { order_id: 'ord_m', user_id: 'u1', package_id: 'membership_premium', status: 'fulfilled', amount: 49000, payment_key: 'pk_m', metadata: {}, fulfilled_at: options.fulfilled === false ? null : at(-10) },
       ],
       subscriptions: [{ user_id: 'u1', status: 'active', renews_at: ledger ? at(50) : at(20) }],
       membership_periods: ledger
@@ -689,25 +721,49 @@ test('markPaymentOrderRefunded 실행 — 전액이면 원장(무효·당기기�
   assert.ok(partial.tables.membership_periods.every((r) => r.voided_at == null), '부분환불은 기간·구독 유지');
 });
 
-test('markPaymentOrderRefunded 실행 — 표에 없는 086 이전 주문은 #820 일수 차감 폴백(legacy 행도 자름) + 잠금 skip 감사', async () => {
+// #820 일수 차감 폴백은 삭제 — 표에 없는 주문의 구독을 추정으로 깎지 않고 드러낸다(086 적용~배포 사이 옛 코드 지급 등, 수동 차감).
+test('markPaymentOrderRefunded 실행 — 표에 없는 지급 주문은 표·구독 무변경 + last_error membership_period_missing · 지급 안 된 주문은 경보 없음', async () => {
   const { db } = hookDb({ ledger: false });
+  const before = JSON.stringify([db.tables.subscriptions, db.tables.membership_periods]);
   await markPaymentOrderRefunded(input, db.client);
-  assert.equal(db.tables.subscriptions[0].status, 'expired', '남은 20일 − 30일 = 지금 이전 → 즉시 만료');
-  assert.ok(Math.abs(Date.parse(String(db.tables.subscriptions[0].renews_at)) - Date.now()) < 5000);
-  assert.equal(db.tables.membership_periods[0].end_at, db.tables.subscriptions[0].renews_at, 'legacy 행도 같은 끝');
+  assert.equal(JSON.stringify([db.tables.subscriptions, db.tables.membership_periods]), before, '구독·표를 추정으로 깎지 않는다');
   assert.deepEqual(ids(db.tables.credit_transactions), ['d_m'], '창을 모르면 지우지 않는다');
   assert.equal(audits(db)[0].skipReason, 'no_refunded_period');
-  assert.equal(db.tables.payment_orders[0].last_error, 'admin_refund');
+  assert.match(String(db.tables.payment_orders[0].last_error), /^admin_refund \| membership_period_missing: /);
+
+  const unpaid = hookDb({ ledger: false, fulfilled: false }).db;
+  const unpaidBefore = JSON.stringify([unpaid.tables.subscriptions, unpaid.tables.membership_periods]);
+  await markPaymentOrderRefunded(input, unpaid.client);
+  assert.equal(JSON.stringify([unpaid.tables.subscriptions, unpaid.tables.membership_periods]), unpaidBefore);
+  assert.equal(unpaid.tables.payment_orders[0].last_error, 'admin_refund', '받은 적 없는 기간 — 경보 없음');
 });
 
-// 후처리 실패는 last_error 에 환불 사유 뒤로 이어 붙인다(덮지 않는다). 원장 실패 시 폴백 차감을 겹치지 않는다(두 번 빼기 방지).
-test('markPaymentOrderRefunded 실행 — 원장·잠금 실패는 last_error 에 이어 붙여 흔적 · 원장 실패면 폴백 차감 없음 · 감사 실패면 지우지 않음', async () => {
+// 리뷰 M1: 해제로 무효된 옛 결제의 환불은 "표가 아는 주문"(무효 행 있음) — 경보도 차감도 없어야 한다.
+test('markPaymentOrderRefunded 실행 — 해제 → 재구매 Q → 해제로 무효된 옛 결제 P 환불: Q·구독 active 유지 · membership_period_missing 없음', async () => {
+  const { db, at } = hookDb();
+  db.tables.membership_periods = [];
+  db.tables.subscriptions = [];
+  const op = (days: number) => ({ plan: PLAN, now: new Date(at(days)), service: db.client });
+  await activateMembershipSubscription('u1', { ...op(-10), orderId: 'ord_o' });
+  await activateMembershipSubscription('u1', { ...op(-9), orderId: 'ord_m' }); // P = O 뒤 미래 기간
+  await expireMembershipNow('u1', { now: new Date(at(-5)), service: db.client }); // O 는 해제 시각에서 끝, P 무효(admin_revoke)
+  await activateMembershipSubscription('u1', { ...op(-3), orderId: 'ord_q' });
+  const before = JSON.stringify([db.tables.subscriptions, db.tables.membership_periods]);
+  await markPaymentOrderRefunded(input, db.client);
+  assert.equal(JSON.stringify([db.tables.subscriptions, db.tables.membership_periods]), before, 'Q 기간·구독 그대로');
+  assert.deepEqual([db.tables.subscriptions[0].status, db.tables.subscriptions[0].renews_at], ['active', at(27)]);
+  assert.equal(db.tables.payment_orders[0].last_error, 'admin_refund', '표가 아는 주문 — 경보 없음');
+  assert.equal(audits(db)[0].skipReason, 'no_elapsed_window');
+});
+
+// 후처리 실패는 last_error 에 환불 사유 뒤로 이어 붙인다(덮지 않는다). 원장 실패를 '표에 없음'으로 겹쳐 적지 않는다.
+test('markPaymentOrderRefunded 실행 — 원장·잠금 실패는 last_error 에 이어 붙여 흔적 · 원장 실패면 구독 무변경 · 감사 실패면 지우지 않음', async () => {
   const ledgerFailed = hookDb({ failOn: ['membership_periods'] }).db;
   const renewsAt = ledgerFailed.tables.subscriptions[0].renews_at;
   await markPaymentOrderRefunded(input, ledgerFailed.client);
   assert.equal(ledgerFailed.tables.payment_orders[0].last_error, 'admin_refund | membership_shorten_failed: boom | membership_lock_failed: boom');
   assert.equal(ledgerFailed.tables.payment_orders[0].status, 'refunded', '후처리 실패가 전이를 되돌리지 않는다');
-  assert.equal(ledgerFailed.tables.subscriptions[0].renews_at, renewsAt, '원장 실패에 폴백 일수 차감을 겹치지 않는다');
+  assert.equal(ledgerFailed.tables.subscriptions[0].renews_at, renewsAt, '원장 실패면 구독도 그대로');
   assert.deepEqual(ids(ledgerFailed.tables.credit_transactions), ['d_m']);
 
   const auditFailed = hookDb({ failOn: ['credit_transactions:insert'] }).db;
@@ -718,13 +774,14 @@ test('markPaymentOrderRefunded 실행 — 원장·잠금 실패는 last_error �
 });
 
 // 지급·웹훅은 DB·PG 를 직접 불러 행동 테스트가 안 된다 — 호출 위치를 소스로 고정한다.
-test('지급은 주문 id 로 원장 행을 만들고 실제로 더했을 때만 일수 기록 · 웹훅은 부분취소·전 회수 구분', () => {
+test('지급은 주문 id 로 원장 행을 만든다(#820 일수 기록 없음) · 웹훅은 부분취소·전 회수 구분', () => {
   const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
   const fulfillment = read('payments/fulfillment.ts');
   assert.ok(
-    /days: MEMBERSHIP_PERIOD_DAYS,\s*orderId: claimed\.orderId,\s*\}\)\s*: null;[\s\S]{0,300}?if \(membership\?\.granted\) \{\s*await recordMembershipDaysGranted\(claimed\.orderId, MEMBERSHIP_PERIOD_DAYS\);/.test(fulfillment),
-    '지급 재시도(granted false)는 일수를 다시 쌓지 않는다'
+    /activateMembershipSubscription\(claimed\.userId, \{\s*plan: pkg\.subscriptionPlan,\s*days: MEMBERSHIP_PERIOD_DAYS,\s*orderId: claimed\.orderId,\s*\}\)/.test(fulfillment),
+    '재시도 판정·환불이 이 주문 행을 찾는다'
   );
+  assert.ok(!/membershipDaysGranted/.test(fulfillment + read('payments/order-ledger.ts')), '정본은 표 하나');
   const webhook = read('../app/api/payments/webhook/nicepay/route.ts');
   assert.ok(/partial: \/partial\/i\.test\(status\),/.test(webhook), '부분취소는 구독 유지(관리자 부분환불과 같은 결과)');
   assert.ok(/packageCredits: creditsToRevokeOnCancel\(pkg\),/.test(webhook));

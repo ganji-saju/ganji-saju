@@ -12,6 +12,7 @@
 - order_id text null (source='payment' 이면 not null — check) · start_at timestamptz not null · end_at timestamptz not null check (end_at > start_at)
 - voided_at timestamptz null · void_reason text null · created_at timestamptz not null default now()
 - index (user_id, end_at) · unique (order_id) where source='payment' and voided_at is null (같은 결제 이중 기록 방지 — 지급 재시도는 **새 행을 만들지 말고** 기존 행을 쓴다)
+- 배제 제약 `membership_periods_live_no_overlap`: exclude using gist (user_id with =, tstzrange(start_at, end_at) with &&) where (voided_at is null) — btree_gist(schema extensions).
 - RLS enable + 정책 없음(service 전용) + `revoke all on table ... from anon, authenticated`(083·085 교훈). 머리말에 적용 전/후 확인 쿼리.
 - 백필: 지금 active·cancelled 이고 renews_at > now() 인 구독마다 source='legacy' 1행 [now(), renews_at). (잠금 대상 아님, 사슬 끝 맞추기용)
 
@@ -20,7 +21,7 @@
 
 ## 연산 (전부 src/lib/subscription.ts 쪽, service 주입 가능)
 1. **지급(activate)**: base = max(now, 살아 있는 기간 max(end_at) ?? subscriptions.renews_at) → [base, base+days) 행 추가(source payment/admin_grant), subscriptions upsert(renews_at=end, active).
-   지급 재시도(같은 order_id 살아 있는 행이 있으면) → 행·구독 **변경 없음**(+60 버그 제거). #820 의 metadata.membershipDaysGranted 는 호환용으로 계속 쓰되 정본은 표.
+   지급 재시도(같은 order_id 살아 있는 행이 있으면) → 행·구독 **변경 없음**(+60 버그 제거). (최종: base·재시도·#820 기록은 아래 "구현하며 정한 것")
 2. **전액환불(주문 P, 시각 t)**: P 행 void(reason refund). 잠금 창 = [P.start, min(P.end, t)) (t < P.start 면 없음).
    뒤 기간 당기기: 이동량 = t < P.start ? (P.end−P.start) : t < P.end ? (P.end−t) : 0. start_at ≥ P.end 인 살아 있는 행을 이동량만큼 앞당김.
    renews_at = 살아 있는 max(end_at); 살아 있는 기간이 없거나 max(end_at) ≤ t 면 expired + renews_at=t.
@@ -30,23 +31,39 @@
    A단계 규칙은 유지: via:'membership' 열람 행 · 스냅샷 날 단위 판정(그날 전·카드·쿠폰·주제 단품 근거 있으면 유지) · 근거 조회 범위+페이지네이션(정렬 필수).
    **감사 먼저(write-ahead)**: 지울 식별자를 계산해 감사행을 먼저 insert → 스냅샷 삭제 → 열람 행 삭제. 부분 실패해도 식별자가 남고, 재실행은 표(void 된 P 창)로 같은 계산을 한다.
    잠금 실패는 주문 last_error + 운영 메일(alertOps 선례가 있으면 재사용) 로 드러낸다.
-6. **환불 훅**: markPaymentOrderRefunded 전이 분기 — 표에 P 행이 있으면 2·5 를 실행(없으면 #820 의 일수 차감으로 폴백, 잠금은 skip 감사). partial 은 지금처럼 구독 유지.
+6. **환불 훅**: markPaymentOrderRefunded 전이 분기 — 표에 P 행이 있으면 2·5 를 실행. partial 은 지금처럼 구독 유지. (최종: 폴백 삭제 — 아래)
 
 ## 테스트(가짜 DB, 행동 우선)
 연속 A·B 에서 A 환불(B 당겨짐·A 창만 잠금) · B 먼저 환불 · 해제→재구매→옛 주문 환불(과다 없음) · 환불→재구매→환불(과소 없음) · 관리자 부여 사이 끼기 ·
 지급 재시도 멱등 · 미래 기간 환불(잠금 없음, 당김) · 감사 먼저 + 부분 실패 재실행 · 스냅샷 날 규칙 회귀 · 정렬 없는 페이지 금지.
 
-## 구현하며 정한 것 (2026-09-14, feat/membership-period-ledger)
+## 구현하며 정한 것 — 최종 (2026-09-14, feat/membership-period-ledger · 리뷰 반영)
 - **함수**: `activateMembershipSubscription(userId, {plan, days, orderId?, now?, service?}) → {subscription, granted}` · `refundMembershipPeriod(userId, orderId)` (연산 2, 반환 = 표가 이 주문을 아는가) ·
-  `expireMembershipNow` (연산 3) · `lockMembershipContentForRefund(userId, orderId, …)` (연산 5, 창을 표에서 읽는다) · `shortenMembershipForRefund` (#820 폴백).
-- **지급 재시도 판정은 이 주문의 행이 하나라도 있으면**(무효 포함) — 설계의 "살아 있는 행"보다 좁혀서, 환불·관리자 해제로 무효된 주문이 재시도로 되살아나지 않게.
-  앞 시도가 행만 쓰고 구독 갱신 전에 끊겼으면(구독 끝 < 살아 있는 끝) 구독만 살아 있는 끝으로 맞춘다(새 행·연장 없음). `granted` 일 때만 `membershipDaysGranted` 기록.
+  `expireMembershipNow` (연산 3) · `lockMembershipContentForRefund(userId, orderId, …)` (연산 5, 창을 표에서 읽는다).
+- **#820 폴백 삭제 — 정본은 표 하나**: `shortenMembershipForRefund`·`refundedMembershipRenewal`·`membershipDaysToRemove`·`recordMembershipDaysGranted` 와
+  `metadata.membershipDaysGranted` 기록을 없앴다(유료 멤버십 결제 0건이라 읽을 옛 주문도 없다). 폴백이 사슬을 '새 끝'에서 잘라 086 이후 결제 행을
+  무효로 만들던 버그(O·Q 둘 다 환불했는데 멤버십 유지)가 같이 사라진다.
+- **표에 없는 주문의 환불**: `refundMembershipPeriod` 가 false → 아무것도 안 바꾼다. 지급된 주문(`fulfilledAt`)이면 last_error 에 `membership_period_missing`
+  (구독 renews_at 수동 차감 — 086 적용~배포 사이 옛 코드 지급 등) + 운영 메일. 지급 안 된 주문은 아무것도 안 함. 잠금은 skip 감사(`no_refunded_period`).
+  원장 연산이 실패(throw)하면 `membership_shorten_failed` 만 — '표에 없음'으로 겹쳐 적지 않는다.
+- **지급 base = max(지금, 살아 있는 사슬 끝)** + **상향 자가치유**: 구독 renews_at 이 그보다 뒤면 틈 [max(지금, 사슬 끝), renews_at) 을 source 'legacy' 행으로
+  먼저 메우고 이어 붙인다(표가 추적 못 한 시간 — 옛 코드 지급·수동 SQL 연장, 잠금 대상 아님). base 만 올리면 새 결제 환불 때 구독이 사슬 끝으로 내려가 그 시간이 사라진다.
+  **하향(renews_at < 사슬 끝 — 옛 코드 해제·환불)은 코드로 흡수하지 않는다** — 찢긴 지급(행만 쓰고 구독 갱신 실패)과 구별이 안 돼 유료 행을 지울 수 있다 → 배포 절차 + 드리프트 쿼리.
+- **지급 재시도 판정은 이 주문의 행이 하나라도 있으면**(무효 포함) — 환불·관리자 해제로 무효된 주문이 재시도로 되살아나지 않게.
+  앞 시도가 행만 쓰고 구독 갱신 전에 끊겼으면(구독 끝 < 살아 있는 끝) 구독만 살아 있는 끝으로 맞춘다(새 행·연장 없음 — 이 수리 경로는 유지).
+- **겹침 배제 제약(DB)**: 살아 있는 기간 겹침을 DB 가 거부(23P01) — 결제 지급·관리자 부여 동시 실행 경합도 한쪽이 실패한다. 앱의 update 순서가 이를 지킨다:
+  환불은 P 무효 → 당기기(start_at 오름차순) → 구독, 해제는 진행 중 끝 당기기·미래 무효, 지급·치유는 사슬 끝 뒤에만 insert. 가짜 DB 도 같은 제약을 흉내 내 모든 시나리오가 불변식을 검증한다.
 - **잠금 창 = 이 주문의 무효 행 전부의 [start_at, min(end_at, voided_at))** — void_reason 무관. 관리자 해제로 무효된 미래 기간은 빈 창(skip). 재실행도 같은 행에서 같은 창.
 - **환불 시각 t = 원장 전이 시각(now)** — PG 취소 시각(`refunded_at`)이 아니다(기존 차감·잠금과 같은 기준).
-- **폴백(표에 없는 086 이전 주문)**: `membershipDaysGranted` 일수 차감 + **표도 그 새 끝에서 자른다**(백필된 legacy 행이 옛 끝을 기억하면 다음 결제 base 로 뺀 기간이 되살아난다).
-  잠금은 창을 몰라 skip(`no_refunded_period`). **원장 연산이 실패하면 폴백 차감을 겹치지 않는다**(두 번 빼기 방지 — last_error·운영 메일로 수동 보정).
-- **skip 사유**: `no_refunded_period`(표에 이 주문 무효 행 없음 — 옛 주문·원장 실패) · `no_elapsed_window`(시작 전 환불·해제로 무효된 미래 기간).
+- **페이지**: 잠금 ①(창 안 via:'membership' 열람 행)과 근거 조회가 같은 페이지 루프(`readAllPages` — created_at·id 오름차순 + range)를 쓴다. 가짜 DB 는 id 로 끝나지 않는
+  정렬의 range 를 throw, range 없는 select 는 1000행에서 자른다.
+- **근거 — 레거시 전 주제 구매 포함**: 주제 단품 보유 = 이용권 행(범위 무관) 또는 앱 게이트 `getTasteProductEntitlement` 의 2순위 `getLegacyTasteProductEntitlement`
+  (export, client 주입) 그대로. subscription → product-entitlements 정적 import 는 순환(product-scope → credits/detail-report-access → subscription)이라 동적 import.
+- **skip 사유**: `no_refunded_period`(표에 이 주문 무효 행 없음 — 옛 코드 지급·원장 실패) · `no_elapsed_window`(시작 전 환불·해제로 무효된 미래 기간).
   A단계의 `window_not_current`·`subscription_unknown`·`no_membership_periods`·`claimedByOrderId` 는 삭제.
-- **감사 먼저**: 감사 insert 가 실패하면 던진다(아무것도 안 지운다). 감사 metadata 에 `orderId` 추가. 순서 = 감사 → 스냅샷 삭제 → 열람 행 삭제(①에서 읽은 id 만).
+- **감사 먼저**: 감사 insert 가 실패하면 던진다(아무것도 안 지운다). 감사 metadata 에 `orderId`. 순서 = 감사 → 스냅샷 삭제 → 열람 행 삭제(①에서 읽은 id 만).
 - **운영 메일**: 후처리 실패가 있으면 `sendOpsAlertEmail`(프로덕션 배포만, 실패 무시) — last_error 이어 붙임은 그대로.
+- **배포 절차(086 머리말)**: ① 적용 전 확인 → ② 적용(+적용 후 확인·드리프트 0) → ③ 곧바로 PR 머지·배포 → ④ Vercel 배포 완료 직후 드리프트 쿼리 재실행, 0 이 아니면 멈추고 보고.
+  ②~④ 사이 관리자 멤버십 부여/해제·멤버십 환불 금지. 드리프트 = `chain_vs_renews`(살아 있는 사슬 끝이 미래인데 renews_at 과 다름) + `entitled_without_end`
+  (권한 남은 구독인데 renews_at 에서 끝나는 살아 있는 행 없음). 적용 직후 확인만으로는 ②~④ 사이 옛 코드가 만든 어긋남을 못 본다.
 - 주문 `metadata.membershipPeriods` 는 더 쓰지도 읽지도 않는다(A단계 브랜치 미머지라 프로덕션 주문엔 없다).

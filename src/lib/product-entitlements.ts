@@ -136,12 +136,14 @@ export async function getProductEntitlement(
   return getProductTableEntitlement(userId, productId, scopeKey);
 }
 
-async function getLegacyTasteProductEntitlement(
+/** 레거시 전 구매(credit_transactions taste_product) 이용권 — 게이트(getTasteProductEntitlement)의 2순위. 멤버십 환불 잠금의 근거도 같은 판정을 쓴다. */
+export async function getLegacyTasteProductEntitlement(
   userId: string,
   productId: TasteProductId,
-  scopeKey: string | null
+  scopeKey: string | null,
+  client?: SupabaseClient
 ) {
-  const service = await createServiceClient();
+  const service = client ?? (await createServiceClient());
   const { data, error } = await service
     .from('credit_transactions')
     .select('id, user_id, metadata, amount, created_at')
