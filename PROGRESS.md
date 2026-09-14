@@ -8,7 +8,8 @@
   유료 멤버십 결제 0건(2026-09-13 실측) — 지금이 가장 싸다.
 - **방식**: 표 `membership_periods`(결제·관리자 부여·legacy 행, 살아 있는 기간은 겹치지 않는 사슬 — **DB 배제 제약**, `renews_at` = 살아 있는 max(end_at)).
   - 지급: base = max(지금, 사슬 끝)에 [base, base+30일) 행 + 구독 upsert. **같은 주문 행이 있으면 새 행·연장 없음**(+60 버그 제거), 앞 시도가 구독 갱신 전에 끊겼으면 구독만 맞춤.
-    **상향 자가치유**: 구독 renews_at 이 사슬 끝보다 뒤면(옛 코드 지급·수동 연장) 그 틈을 legacy 행으로 먼저 메운다. 하향(구독이 앞)은 흡수 안 함 — 드리프트 쿼리로.
+    **상향 자가치유**: 구독 renews_at 이 사슬 끝보다 뒤면(옛 코드 지급) 그 틈을 legacy 행으로 먼저 메운다 — **무효 행이 있는 사용자는 안 함**(찢긴 환불·해제의
+    남은 구독 끝을 굳혀 환불·해제 기간을 되살리던 회귀, 적대적 리뷰). 하향(구독이 앞)은 흡수 안 함 — 드리프트 쿼리로.
   - 전액환불(`refundMembershipPeriod`): P 무효(refund) → P 뒤 기간을 P 가 비운 시간만큼 당김(오름차순) → 구독 = 살아 있는 끝(없거나 지났으면 즉시 만료).
   - 관리자 해제(#821 유지): 진행 중 기간은 지금에서 끝, 미래 기간 무효(admin_revoke), 구독 expired + renews_at 지금.
   - 잠금: 창 = 표의 P 무효 행 [start, min(end, voided_at)) — **claimant·window_not_current·metadata.membershipPeriods 휴리스틱 삭제**.
@@ -19,10 +20,17 @@
 - 🔴 **migration `086_membership_periods.sql` 수동 적용 + 배포 절차**(머리말): ① 적용 전 확인 → ② SQL Editor 적용·드리프트 0 → ③ 곧바로 PR 머지·배포 →
   ④ 배포 완료 직후 드리프트 쿼리 재실행(0 아니면 멈추고 보고). **②~④ 사이 관리자 멤버십 부여/해제·멤버십 환불 금지**. btree_gist(extensions) + 배제 제약 ·
   RLS on·정책 없음 + `revoke all … from public, anon, authenticated` · legacy 백필.
+  적대적 리뷰 반영: ②뒤 이 PR E2E 재실행(픽스처가 표를 쓴다 — ② 전엔 빨갛다) · ③ main 머지 + **staging 밀기** · ④ 는 프로덕션·staging 배포와 main push E2E 뒤 ·
+  옛 코드 런타임(프리뷰·로컬 dev) 멤버십 변경 금지 · 드리프트 정리 SQL · 백필 전 µs renews_at → ms 절단 + **ms 정밀도 CHECK**(µs 백필 사용자는 지급·부여가 매번 23P01) ·
+  제약을 create table 밖 drop if exists → add(옛 086 재적용에도 붙음) · 권한 확인 쿼리 `lower(grantee)`(PUBLIC 대문자).
 - 검증: 유닛 1,688 + node:test 191 + vitest 302, tsc 0 · 로컬 PG 17 로 086 실제 적용(2회 멱등, search_path=public): 백필 legacy 2 = 권한 남은 구독 2 · 드리프트 0/0 ·
   P1 흉내 1/1 · P2 흉내 1/0 · 겹침 insert·무효 되살리기·무효 전 당기기 거부(23P01), 맞닿음·무효·다른 사용자·무효 먼저 당기기 허용 · anon 권한 0행·RLS on ·
   뮤테이션 16/16 red(상향 치유·경보·레거시 근거·① 페이지·id 정렬·무효 전 당기기·가짜 DB 겹침/정렬/절단 가드 등).
-- 남음: **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
+- 적대적 리뷰(2차) 검증: 유닛 1,690 + node:test 191 + vitest 302, tsc 0 · 로컬 PG 17(비슈퍼유저 적용): 새 DB 2회 멱등·드리프트 0/0·µs 구독 ms 절단·겹침 23P01·now() insert CHECK 거부·
+  PUBLIC 부여를 lower() 쿼리가 잡음 · 옛 086 위 재적용에 제약 5개 · 실제 앱 함수로 µs 였던 사용자 지급·재시도·부여·환불 통과, 해제 경계 무효, e2e 픽스처 seed 2회·cleanup 드리프트 0,
+  정리 SQL 두 방향 0 · 뮤테이션 9/9 red(무효 행 가드·재시도 판정·해제 경계 0 길이·가짜 DB CHECK).
+- E2E 픽스처(`seedSubscription`·`cleanupSubscription`)가 구독과 같이 원장도 쓴다(살아 있는 행 무효 → admin_grant 행 / cleanup 무효) — 공유 DB 불변식 유지.
+- 남음: ⚠️ 드리프트 쿼리 주기 실행(헬스·크론) 여부는 사용자 결정 · ⚠️ staging·프리뷰가 같은 Supabase 인지 검증필요 · **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
   구독 끝 어긋남은 가능 — RPC 로 옮길 때) · 하향 드리프트(옛 코드 해제·환불)는 배포 절차·드리프트 쿼리로만 막는다.
 
 ## 2026-09-14 — 🔜 세션 인계: 멤버십 결제별 기간 원장(진행 중) + 남은 결정

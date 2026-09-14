@@ -161,12 +161,11 @@ async function livePeriods(client: SupabaseClient, userId: string): Promise<Peri
   return (data ?? []) as PeriodRow[];
 }
 
-async function orderPeriods(client: SupabaseClient, userId: string, orderId: string): Promise<PeriodRow[]> {
-  const { data, error } = await client
-    .from('membership_periods')
-    .select(PERIOD_COLUMNS)
-    .eq('user_id', userId)
-    .eq('order_id', orderId);
+/** 그 사용자의 기간 행(무효 포함). orderId 를 주면 그 주문 행만. */
+async function userPeriods(client: SupabaseClient, userId: string, orderId?: string): Promise<PeriodRow[]> {
+  let query = client.from('membership_periods').select(PERIOD_COLUMNS).eq('user_id', userId);
+  if (orderId) query = query.eq('order_id', orderId);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return (data ?? []) as PeriodRow[];
 }
@@ -215,7 +214,7 @@ export async function refundMembershipPeriod(
   const client = options.service ?? (await createServiceClient());
   const now = options.now ?? new Date();
   const t = now.getTime();
-  const rows = await orderPeriods(client, userId, orderId);
+  const rows = await userPeriods(client, userId, orderId);
   const period = rows.find((row) => row.voided_at == null);
   if (!period) return rows.length > 0;
 
@@ -310,7 +309,7 @@ export async function lockMembershipContentForRefund(
   };
 
   // 표에 무효된 이 주문 기간이 없다 — 086 이전 지급(창을 모른다)·환불 연산 실패.
-  const voided = (await orderPeriods(client, userId, orderId)).filter((row) => row.voided_at != null);
+  const voided = (await userPeriods(client, userId, orderId)).filter((row) => row.voided_at != null);
   if (voided.length === 0) return skip('no_refunded_period');
   const ranges: LockRange[] = voided
     .map((row) => ({ start: ms(row.start_at), end: Math.min(ms(row.end_at), ms(row.voided_at!)) }))
@@ -446,7 +445,9 @@ async function loadOtherTodayDetailEvidence(client: SupabaseClient, userId: stri
 
 /** 관리자 멤버십 해제 — 혜택을 **지금** 끊는다(#821). cancelled 는 renews_at 까지 권한이 남고(isEntitledStatus) 사용자가 재개할 수 있어 해제가 안 됐다.
  *  표(설계 연산 3): 진행 중 기간은 지금에서 끝, 미래 기간은 무효(admin_revoke) — 해제 뒤 재구매는 지금부터 새로 붙고,
- *  옛 주문 환불은 자기 창(해제 시각까지)만 잠근다. 구독 expired + renews_at 지금(남기면 재구매 때 activate 의 base 로 되살아난다). */
+ *  옛 주문 환불은 자기 창(해제 시각까지)만 잠근다. 구독 expired + renews_at 지금(남기면 재구매 때 activate 의 base 로 되살아난다).
+ *  오류로 끝나면(관리자 화면에 500) 다시 해제한다 — 재실행이 구독을 맞춘다. 진행 중 기간만 자르고 끊긴 채 부여·결제가 먼저 오면
+ *  무효 행이 없어 activate 자가치유가 남은 구독 끝을 legacy 로 되살린다. */
 export async function expireMembershipNow(userId: string, options: { now?: Date; service?: SupabaseClient } = {}) {
   const client = options.service ?? (await createServiceClient());
   const now = options.now ?? new Date();
@@ -458,7 +459,8 @@ export async function expireMembershipNow(userId: string, options: { now?: Date;
  * 멤버십 지급(설계 연산 1) — 결제(orderId)면 source 'payment', 없으면 관리자 부여('admin_grant').
  * 기간 [base, base+days) 를 사슬 끝에 붙이고 구독을 그 끝으로. base = max(지금, 살아 있는 끝).
  * 상향 자가치유: 구독 renews_at 이 max(지금, 살아 있는 끝)보다 뒤면 그 틈을 legacy 행으로 먼저 메운다(→ base = renews_at) — 표가 추적 못 한 시간
- *   (086 적용~배포 사이 옛 코드 지급·수동 SQL 연장). base 만 올리면 이 결제 환불 때 구독이 사슬 끝으로 내려가 그 시간이 사라진다.
+ *   (086 적용~배포 사이 옛 코드 지급). base 만 올리면 이 결제 환불 때 구독이 사슬 끝으로 내려가 그 시간이 사라진다.
+ *   단 그 사용자에게 무효 행이 있으면 치유하지 않고 표를 믿는다(찢긴 환불·해제 — 이 지급이 구독을 표 끝으로 되돌린다).
  *   하향(renews_at < 살아 있는 끝)은 흡수하지 않는다 — 찢긴 지급(행만 쓰고 구독 갱신 실패)과 구별이 안 돼 유료 행을 지울 수 있다(086 드리프트 쿼리로 막는다).
  * 같은 결제의 기간 행이 이미 있으면(지급 재시도) 새 행·연장 없음 → granted false(+60 버그 제거). 단 앞 시도가 행만 쓰고
  * 구독 갱신 전에 끊겼으면(구독 끝 < 살아 있는 끝) 구독만 살아 있는 끝으로 맞춘다.
@@ -480,8 +482,9 @@ export async function activateMembershipSubscription(
   const existing = await readSubscription(userId, client);
   const now = options.now ?? new Date();
   const days = options.days ?? MEMBERSHIP_PERIOD_DAYS;
-  let end = lastEnd(await livePeriods(client, userId));
-  const retried = options.orderId ? (await orderPeriods(client, userId, options.orderId)).length > 0 : false;
+  const rows = await userPeriods(client, userId);
+  let end = lastEnd(rows.filter((row) => row.voided_at == null));
+  const retried = !!options.orderId && rows.some((row) => row.order_id === options.orderId);
 
   if (retried) {
     if (end === null || (!!existing?.renews_at && ms(existing.renews_at) >= end)) {
@@ -496,7 +499,9 @@ export async function activateMembershipSubscription(
       if (error) throw new Error(error.message);
     };
     const tail = Math.max(now.getTime(), end ?? 0);
-    const renews = existing?.renews_at ? ms(existing.renews_at) : 0;
+    // 무효 행이 있으면 치유하지 않는다 — 찢긴 환불·해제(표는 고쳤고 구독 갱신만 실패)의 남은 구독 끝을 legacy 로 굳혀 그 기간을 되살린다.
+    //   무효 행은 새 코드의 환불·해제만 만들고 옛 코드 지급 틈은 그 전에 생긴다(②~④ 사이 환불·해제 금지) — 정당한 치유는 잃지 않는다.
+    const renews = existing?.renews_at && !rows.some((row) => row.voided_at != null) ? ms(existing.renews_at) : 0;
     if (renews > tail) await insert('legacy', tail, renews);
     const base = Math.max(tail, renews);
     end = ms(addDays(new Date(base), days));

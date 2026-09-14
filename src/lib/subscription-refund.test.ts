@@ -20,12 +20,14 @@ const DAY = 86_400_000;
 //   SQL 처럼 `NULL = x` 는 거짓 · 필터 인자는 calls 에 기록 · **유일 키(id)로 끝나지 않는 정렬의 range 는 throw**(같은 created_at 이
 //   페이지 경계에 걸리면 행을 건너뛰거나 겹친다) · range 없는 select 는 1000행에서 자른다(PostgREST max-rows).
 //   membership_periods 는 배제 제약(membership_periods_live_no_overlap)을 흉내 — 같은 사용자의 살아 있는 [start, end) 가 겹치는 insert·update 는
-//   23P01 로 거부(update 는 되돌린다) → 모든 시나리오가 "겹치지 않는 사슬" 불변식을 자동으로 검증한다.
+//   23P01 로 거부(update 는 되돌린다) → 모든 시나리오가 "겹치지 않는 사슬" 불변식을 자동으로 검증한다. CHECK(end_at > start_at)도 23514 로 흉내.
 //   failOn 은 'table'(모든 연산) 또는 'table:delete'·'table:insert' 처럼 연산 하나만.
 // ─────────────────────────────────────────────────────────────
 type Row = Record<string, unknown>;
 const MAX_ROWS = 1000;
 const EXCLUDED = { code: '23P01', message: 'conflicting key value violates exclusion constraint "membership_periods_live_no_overlap"' };
+const CHECK_VIOLATION = { code: '23514', message: 'new row violates check constraint "membership_periods_end_after_start"' };
+const empty = (r: Row) => Date.parse(String(r.end_at)) <= Date.parse(String(r.start_at));
 const liveClash = (a: Row, b: Row) =>
   a !== b &&
   a.user_id === b.user_id &&
@@ -66,9 +68,11 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
         if (mode === 'update') {
           const before = hits.map((r) => ({ ...r }));
           hits.forEach((r) => Object.assign(r, patch));
-          if (table === 'membership_periods' && hits.some((a) => rows.some((b) => liveClash(a, b)))) {
+          const violation =
+            table !== 'membership_periods' ? null : hits.some(empty) ? CHECK_VIOLATION : hits.some((a) => rows.some((b) => liveClash(a, b))) ? EXCLUDED : null;
+          if (violation) {
             hits.forEach((r, i) => Object.assign(r, before[i]));
-            return { data: null, error: EXCLUDED };
+            return { data: null, error: violation };
           }
         }
         return { data: hits, error: null };
@@ -111,6 +115,7 @@ function fakeDb(tables: Record<string, Row[]>, failOn: string | string[] = []) {
           const defaults = table === 'membership_periods' ? { voided_at: null, void_reason: null } : {};
           const next = list.map((r) => ({ id: `${table}_${++seq}`, ...defaults, ...r }));
           const existing = (tables[table] ??= []);
+          if (table === 'membership_periods' && next.some(empty)) return Promise.resolve({ error: CHECK_VIOLATION });
           if (table === 'membership_periods' && next.some((a) => [...existing, ...next].some((b) => liveClash(a, b)))) {
             return Promise.resolve({ error: EXCLUDED });
           }
@@ -144,7 +149,7 @@ test('가짜 DB 는 range 없는 select 를 1000행에서 자른다(PostgREST ma
   assert.equal(data.length, 1000);
 });
 
-test('가짜 DB 는 살아 있는 기간 겹침을 거부한다(배제 제약 흉내, 23P01) — 맞닿음·다른 사용자·무효 행은 허용 · 거부된 update 는 되돌린다', async () => {
+test('가짜 DB 는 살아 있는 기간 겹침(배제 제약, 23P01)·0 길이 행(CHECK, 23514)을 거부한다 — 맞닿음·다른 사용자·무효 행은 허용 · 거부된 update 는 되돌린다', async () => {
   const period = (id: string, start: string, end: string) => ({ id, user_id: 'u1', source: 'admin_grant', order_id: null, start_at: start, end_at: end, voided_at: null, void_reason: null });
   const db = fakeDb({ membership_periods: [period('a', '2026-07-01T00:00:00.000Z', '2026-07-31T00:00:00.000Z')] });
   const table = () => db.client.from('membership_periods');
@@ -162,6 +167,10 @@ test('가짜 DB 는 살아 있는 기간 겹침을 거부한다(배제 제약 �
   assert.equal((await table().update({ voided_at: null }).eq('id', voided.id as string)).error?.code, '23P01', '무효 행을 되살려 겹치게');
   assert.equal(voided.voided_at, '2026-07-05T00:00:00.000Z', '거부된 update 는 되돌린다');
   assert.equal((await table().update({ start_at: '2026-07-20T00:00:00.000Z' }).eq('start_at', '2026-07-31T00:00:00.000Z')).error?.code, '23P01', '당겨서 겹치게');
+  // CHECK(end_at > start_at) — 0 길이 행은 실 DB 에서 23514.
+  const zero = { user_id: 'u3', source: 'admin_grant', start_at: '2026-07-10T00:00:00.000Z', end_at: '2026-07-10T00:00:00.000Z' };
+  assert.equal((await table().insert(zero)).error?.code, '23514');
+  assert.equal((await table().update({ end_at: '2026-07-01T00:00:00.000Z' }).eq('id', 'a')).error?.code, '23514', '0 길이로 자르기');
 });
 
 // ── 시나리오 — 실제 연산(지급·부여·해제·환불+잠금)을 한 사용자 타임라인으로 돌린다 ──
@@ -197,14 +206,17 @@ const snap = (id: string, occurredOn: string, createdAt: string, extra: Row = {}
   ...extra,
 });
 
-function world(views: Row[] = [], snapshots: Row[] = []) {
-  const db = fakeDb({
-    subscriptions: [],
-    membership_periods: [],
-    credit_transactions: views,
-    today_fortune_result_snapshots: snapshots,
-    product_entitlements: [],
-  });
+function world(views: Row[] = [], snapshots: Row[] = [], failOn: string[] = []) {
+  const db = fakeDb(
+    {
+      subscriptions: [],
+      membership_periods: [],
+      credit_transactions: views,
+      today_fortune_result_snapshots: snapshots,
+      product_entitlements: [],
+    },
+    failOn
+  );
   const opts = (at: string) => ({ now: new Date(at), service: db.client });
   return {
     db,
@@ -364,6 +376,39 @@ test('관리자 해제(#821) — 진행 중 기간은 지금에서 끝, 미래 �
   const route = fs.readFileSync(path.resolve(__dirname, '../app/api/admin/membership/grant/route.ts'), 'utf8');
   assert.ok(/\} else \{\s*await expireMembershipNow\(userId\);/.test(route));
   assert.ok(!/updateSubscriptionStatus\(userId, 'cancelled'\)/.test(route), 'cancelled 로는 혜택이 안 끊긴다');
+});
+
+// 적대적 리뷰: 해제 시각이 뒤 기간 시작과 같으면 그 기간은 무효 — 0 길이로 자르지 않는다(실 DB 는 CHECK 23514 로 해제 실패).
+test('관리자 해제 시각 = 기간 경계 — 끝난 앞 기간은 그대로, 막 시작할 뒤 기간은 무효(0 길이 행 없음)', async () => {
+  const w = world();
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-02'));
+  await w.revoke(T('07-31'));
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-31')]]);
+  assert.equal(w.db.tables.membership_periods.find((r) => r.order_id === 'ord_b')?.void_reason, 'admin_revoke');
+  assert.deepEqual(w.sub(), { status: 'expired', renewsAt: T('07-31') });
+});
+
+// 적대적 리뷰: 환불·해제가 표는 고치고 구독 갱신만 실패(찢김)하면 구독 끝이 표보다 뒤에 남는다. 다음 지급이 그 틈을 legacy 로 메우면
+//   환불·해제된 기간이 되살아나고 드리프트 쿼리로도 안 보인다 → 무효 행이 있는 사용자는 치유하지 않고 표 끝에 이어 붙인다.
+test('찢긴 환불·해제(구독 갱신만 실패) 뒤 지급 — 자가치유하지 않아 환불·해제된 기간이 되살아나지 않고 구독도 표 끝으로 돌아온다', async () => {
+  const w = world([], [], ['subscriptions:update']);
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-02'));
+  await assert.rejects(refundMembershipPeriod('u1', 'ord_a', { now: new Date(T('07-10')), service: w.db.client }), /boom/);
+  assert.deepEqual(w.chain(), [['ord_b', T('07-10'), T('08-09')]]);
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('08-30') }, '구독만 환불 전 끝에 남았다');
+  await w.buy('ord_c', T('07-11'));
+  assert.deepEqual(w.chain(), [['ord_b', T('07-10'), T('08-09')], ['ord_c', T('08-09'), T('09-08')]], '환불된 21일을 legacy 로 되살리지 않는다');
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('09-08') });
+
+  const r = world([], [], ['subscriptions:update']);
+  await r.buy('ord_a', T('07-01'));
+  await r.grant(10, T('07-02'));
+  await assert.rejects(r.revoke(T('07-10')), /boom/); // a 는 07-10 에서 끝, 부여 [07-31, 08-10) 무효, 구독만 08-10 에 남음
+  await r.grant(5, T('07-11'));
+  assert.deepEqual(r.chain(), [['ord_a', T('07-01'), T('07-10')], ['admin_grant', T('07-11'), T('07-16')]], '해제된 기간을 되살리지 않는다');
+  assert.deepEqual(r.sub(), { status: 'active', renewsAt: T('07-16') });
 });
 
 // 리뷰 BUG1(P1): 086 적용~배포 사이 옛 코드 결제 O 가 구독만 +30일 — base 를 표 끝으로 잡으면 새 결제 Q 가 O 의 30일을 덮어 유료 기간이 사라진다.

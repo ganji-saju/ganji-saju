@@ -29,10 +29,29 @@ export async function resolveTestUserId(email: string): Promise<string> {
 }
 
 // ---------- subscriptions ----------
+// 멤버십 기간 원장(membership_periods, migration 086): 구독 끝 = 살아 있는 기간의 끝(불변식 — 드리프트 쿼리가 본다).
+//   구독만 쓰면 공유 DB 에 어긋남이 남아 086 배포 확인이 거짓 경보를 내고, 다음 지급이 해제된 기간을 되살린다 → 표도 같이 쓴다.
+//   (src/lib/subscription.ts 의 관리자 부여·해제와 같은 모양 — e2e 는 src import 를 피하려 사본.)
+
+/** 그 사용자의 살아 있는 기간을 무효로 — 앞 실행이 cleanup 없이 끊겼어도(cancel-in-progress) seed 가 겹침(23P01) 없이 다시 쓴다. */
+async function voidLivePeriods(userId: string, now: string): Promise<void> {
+  const { error } = await getSupabaseAdmin()
+    .from('membership_periods')
+    .update({ voided_at: now, void_reason: 'e2e_reset' })
+    .eq('user_id', userId)
+    .is('voided_at', null);
+  if (error) throw new Error(`membership_periods 정리 실패: ${error.message}`);
+}
 
 export async function seedSubscription(userId: string, plan: SubscriptionPlan): Promise<void> {
   const admin = getSupabaseAdmin();
-  const renewsAt = new Date(Date.now() + THIRTY_DAYS_MS).toISOString();
+  const now = new Date().toISOString();
+  const renewsAt = new Date(Date.parse(now) + THIRTY_DAYS_MS).toISOString();
+  await voidLivePeriods(userId, now);
+  const { error: periodError } = await admin
+    .from('membership_periods')
+    .insert({ user_id: userId, source: 'admin_grant', start_at: now, end_at: renewsAt });
+  if (periodError) throw new Error(`membership_periods seed 실패: ${periodError.message}`);
   const { error } = await admin
     .from('subscriptions')
     .upsert(
@@ -49,6 +68,7 @@ export async function seedSubscription(userId: string, plan: SubscriptionPlan): 
 
 export async function cleanupSubscription(userId: string): Promise<void> {
   const admin = getSupabaseAdmin();
+  await voidLivePeriods(userId, new Date().toISOString());
   // status='expired' 로 mark — DELETE 보다 안전 (다른 환경 영향 최소화).
   const { error } = await admin
     .from('subscriptions')

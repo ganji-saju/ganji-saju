@@ -574,7 +574,9 @@ export async function markPaymentOrderRefunded(input: {
         return true; // 실패는 이미 기록했다 — '표에 없음'으로 겹쳐 적지 않는다
       });
       if (!inLedger && order.fulfilledAt) {
-        failures.push('membership_period_missing: 표에 이 결제 기간 없음 — 구독 renews_at 수동 차감 필요');
+        failures.push(
+          'membership_period_missing: 표에 이 결제 기간 없음 — 구독 renews_at 과 그 몫을 덮은 legacy 행(백필·자가치유)을 같이 줄이고 뒤 행은 당긴 뒤 086 드리프트 쿼리 0 확인'
+        );
       }
       // ② 그 결제 기간(표의 무효 행 창)에 멤버십으로 연 달력·상세풀이 잠금. 감사 먼저라 부분 실패해도 식별자가 남는다.
       await lockMembershipContentForRefund(
