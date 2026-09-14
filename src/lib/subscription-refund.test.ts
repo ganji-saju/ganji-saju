@@ -963,8 +963,11 @@ test('applyPartialRefund — 멤버십만 · 주문은 결제 상태 그대로 �
 
   const full = hookDb().db;
   assert.equal(await applyPartialRefund({ ...args, amount: 49000 }, full.client), 'full');
-  assert.equal(full.tables.payment_orders[0].status, 'refunded', '남는 길이 0 → 전액 경로');
+  assert.equal(full.tables.payment_orders[0].status, 'fulfilled', 'PG 잔액을 모르면(남았으면) 주문 표기·GA 없음 — 원장만 전액');
   assert.equal(full.tables.membership_periods.find((r) => r.id === 'p_m')?.void_reason, 'refund');
+  const paidOff = hookDb().db;
+  assert.equal(await applyPartialRefund({ ...args, amount: 49000, payment: { status: 'cancelled', balanceAmt: 0 } }, paidOff.client), 'full');
+  assert.equal(paidOff.tables.payment_orders[0].status, 'refunded', 'PG 잔액 0 → 전액 전이');
 
   const other = hookDb().db;
   other.tables.payment_orders[0].package_id = 'taste_dialogue_entry';
@@ -979,4 +982,46 @@ test('applyPartialRefund — 멤버십만 · 주문은 결제 상태 그대로 �
   const missing = hookDb({ ledger: false }).db;
   assert.equal(await applyPartialRefund(args, missing.client), 'missing');
   assert.match(String(missing.tables.payment_orders[0].last_error), /^admin_partial \| membership_period_missing: /);
+});
+
+// 리뷰 반영(2026-09-14) — ① 일부 환불액이 지표에 안 잡혔다(주문은 fulfilled 그대로 → refunded_won 0) → 주문 metadata.partialRefunds 에 취소 거래 단위 기록.
+//   ② 관리자 해제로 짧아진 P 의 50% 환불이 'full' 로 주문 refunded(49,000)·GA 전액 환불까지 냈다(PG 는 24,500) → 원장만 전액, 표기는 PG 잔액 0 일 때만.
+//   ③ 해제로 무효된 P 의 일부 환불이 membership_period_missing 오경보 → 'voided'(전액 경로 M1 과 대칭).
+test('applyPartialRefund — 일부 환불액을 취소 거래 단위로 주문 metadata 에 1회 기록(PG 취소 시각) · 비멤버십도 기록 · 환불된 주문은 기록 안 함', async () => {
+  const { db } = hookDb();
+  const payment = { status: 'partialCancelled', balanceAmt: 24500, cancels: [{ tid: 'c1', amount: 24500, cancelledAt: '2026-09-10T10:00:00.000+0900' }] };
+  const args = { orderId: 'ord_m', cancelTid: 'c1', amount: 24500, reason: 'r', source: 'admin-refund' as const, payment };
+  assert.equal(await applyPartialRefund(args, db.client), 'applied');
+  assert.equal(await applyPartialRefund({ ...args, source: 'webhook' }, db.client), 'duplicate');
+  assert.deepEqual((db.tables.payment_orders[0].metadata as Row).partialRefunds, [{ cancelTid: 'c1', amount: 24500, at: '2026-09-10T01:00:00.000Z' }]);
+
+  const other = hookDb().db;
+  other.tables.payment_orders[0].package_id = 'taste_dialogue_entry';
+  assert.equal(await applyPartialRefund({ ...args, cancelTid: 'c9', payment: undefined }, other.client), 'skipped');
+  const [rec] = (other.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds;
+  assert.equal(rec.amount, 24500);
+  assert.ok(Math.abs(Date.parse(String(rec.at)) - Date.now()) < 5000, 'PG 시각을 못 읽으면 지금');
+
+  const refunded = hookDb().db;
+  refunded.tables.payment_orders[0].status = 'refunded';
+  assert.equal(await applyPartialRefund(args, refunded.client), 'skipped');
+  assert.deepEqual(refunded.tables.payment_orders[0].metadata, {}, '전액 전이가 그 돈을 이미 셌다');
+});
+
+test('applyPartialRefund — 관리자 해제로 짧아진 P 의 50% 환불: 원장만 전액(무효·잠금) · 주문 fulfilled · 기록은 24,500 · 재적용은 voided(경보 없음)', async () => {
+  const { db, at } = hookDb();
+  db.tables.payment_orders.push({ order_id: 'ord_b', user_id: 'u1', package_id: 'membership_premium', status: 'fulfilled', amount: 49000, payment_key: 'pk_b', metadata: {}, fulfilled_at: at(-10) });
+  await expireMembershipNow('u1', { now: new Date(at(-6)), service: db.client }); // P=[at(-10), at(-6)) · B 무효(admin_revoke)
+  const args = { orderId: 'ord_m', cancelTid: 'c1', amount: 24500, reason: 'r', source: 'webhook' as const, payment: { status: 'partialCancelled', balanceAmt: 24500 } };
+  assert.equal(await applyPartialRefund(args, db.client), 'full', '15일을 줄이면 남는 길이 ≤ 0');
+  assert.equal(db.tables.payment_orders[0].status, 'fulfilled', 'PG 잔액 24,500 — 주문 refunded·GA 전액 환불 없음');
+  assert.equal(db.tables.membership_periods.find((r) => r.id === 'p_m')?.void_reason, 'refund');
+  assert.deepEqual(audits(db).map((m) => m.kind), ['membership_content_locked']);
+  assert.deepEqual((db.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds.map((p) => p.amount), [24500]);
+  assert.equal(db.tables.payment_orders[0].last_error ?? null, null);
+
+  assert.equal(await applyPartialRefund({ ...args, source: 'admin-refund' }, db.client), 'voided', '관리자 경로 + 통보 겹침 — 다시 줄이지 않는다');
+  assert.equal((db.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds.length, 1);
+  assert.equal(await applyPartialRefund({ ...args, orderId: 'ord_b', cancelTid: 'c2' }, db.client), 'voided', '해제로 무효된 B');
+  assert.equal(db.tables.payment_orders[1].last_error ?? null, null, 'membership_period_missing 오경보 없음');
 });

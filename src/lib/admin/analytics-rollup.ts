@@ -4,6 +4,7 @@
 //   전자는 주입 raw 로 단위 테스트, 후자는 service 클라이언트로 조회+upsert.
 //   설계: docs/superpowers/specs/2026-07-07-admin-analytics-daily-design.md
 import { isRealRevenueOrder } from '@/lib/payments/payment-origin';
+import { partialRefundsOf } from '@/lib/payments/cancellation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -235,6 +236,22 @@ export function computeDailyMetrics(input: ComputeDailyMetricsInput): MetricsDai
   return input.dateKeys.map((dk) => rows.get(dk)!);
 }
 
+/**
+ * 2026-09-14 — 환불 사건 펼치기. 일부 환불(주문 metadata.partialRefunds, 주문은 결제 상태 그대로)은 그 취소 시각에 그 금액으로,
+ *   전액 전이(status refunded)는 **나머지**(주문 금액 − 앞서 기록된 일부 환불)로 센다 → 합 = PG 가 실제로 돌려준 돈(일부 뒤 전액 이중계상 없음).
+ *   refunded: refunded_at 이 창에 든 환불 주문 · withPartials: 일부 환불 기록이 있는 주문(상태 무관 — 일부 시각은 호출부 창 필터).
+ */
+export function expandRefundRows<T extends { amount: number | null; refunded_at: string | null; metadata?: unknown }>(
+  refunded: readonly T[],
+  withPartials: readonly T[]
+): T[] {
+  const partialSum = (row: T) => partialRefundsOf(row.metadata).reduce((sum, p) => sum + Number(p.amount), 0);
+  return [
+    ...refunded.map((row) => ({ ...row, amount: Math.max(0, num(row.amount) - partialSum(row)) })),
+    ...withPartials.flatMap((row) => partialRefundsOf(row.metadata).map((p) => ({ ...row, amount: Number(p.amount), refunded_at: p.at }))),
+  ];
+}
+
 // ---- I/O 오케스트레이션 ----
 
 const COMPLETED_ORDER_STATUSES = ['confirmed', 'fulfilling', 'fulfilled'];
@@ -351,7 +368,17 @@ export async function runDailyMetricsRollup(
       .range(from, to)
   );
 
-  const realRefundRows = refundRows.filter(isRealRevenueOrder);
+  // 일부 환불 — 주문은 결제 상태 그대로라 위 fetch 에 없다. 기록이 있는 주문(드물다)을 읽어 취소 시각으로 창 필터(computeDailyMetrics).
+  const partialRefundOrders = await fetchAllPages<RefundRow>('partial-refunds', (from, to) =>
+    service
+      .from('payment_orders')
+      .select('amount, refunded_at, metadata')
+      .not('metadata->partialRefunds', 'is', null)
+      .order('order_id', { ascending: true })
+      .range(from, to)
+  );
+
+  const realRefundRows = expandRefundRows(refundRows, partialRefundOrders).filter(isRealRevenueOrder);
 
   const rows = computeDailyMetrics({
     dateKeys,

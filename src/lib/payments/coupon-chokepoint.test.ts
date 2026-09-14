@@ -263,8 +263,8 @@ test('이용권·전 지급 금액은 승인된 주문의 실결제액(claimed.a
 //   승인 관문(§5-3)이 할인 주문을 "쿠폰 없는 주문"으로 보고 검사를 건너뛴다. 전 스위트가 초록이었다.
 test("주문 원장 조회는 select('*') — 승인 관문이 받는 주문에 쿠폰 스냅샷 컬럼이 빠지지 않는다", () => {
   const src = FILES.find((f) => f.rel === 'src/lib/payments/order-ledger.ts')!.text;
-  // processing_status 는 payment_webhook_events(통보 재처리 판정, 2026-09-14) — 주문 조회가 아니다.
-  assert.deepEqual([...new Set(src.match(/\.select\([^)]*\)/g))].sort(), [".select('*')", ".select('metadata')", ".select('processing_status')"]);
+  // processing_status·event_hash 는 payment_webhook_events(통보 재처리 판정·거부 메일 억제, 2026-09-14) — 주문 조회가 아니다.
+  assert.deepEqual([...new Set(src.match(/\.select\([^)]*\)/g))].sort(), [".select('*')", ".select('event_hash')", ".select('metadata')", ".select('processing_status, error')"]);
 });
 
 // 할인이 금액이 되는 곳은 createPaymentOrder 한 곳이다(50% 상한·1원 하한). 만든 뒤 금액·할인 스냅샷을 고치면 그 밖에서 금액이 정해진다

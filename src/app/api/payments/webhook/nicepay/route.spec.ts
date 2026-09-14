@@ -21,7 +21,10 @@ const world = vi.hoisted(() => ({
   lookupPatch: {} as Record<string, unknown>,
   lookupError: null as null | (Error & { resultCode?: string }),
   partials: [] as Array<Record<string, unknown>>,
+  partialOutcome: 'applied' as string,
   refundPayments: [] as unknown[],
+  /** 같은 tid·사유로 1시간 안에 거부한 적 있다(운영 메일 억제). */
+  recentRejection: false,
 }));
 
 vi.mock('@/lib/supabase/server', () => {
@@ -91,8 +94,9 @@ vi.mock('@/lib/payments/order-ledger', async (importOriginal) => {
     }),
     applyPartialRefund: vi.fn(async (input: Record<string, unknown>) => {
       world.partials.push(input);
-      return 'applied';
+      return world.partialOutcome;
     }),
+    hasRecentWebhookRejection: vi.fn(async () => world.recentRejection),
     // 전이 분기(멤버십 원장·GA 훅)는 neq('status','refunded') 로 1회 — transitions 로 센다.
     markPaymentOrderRefunded: vi.fn(async (input: { payment?: unknown }) => {
       world.refundPayments.push(input.payment);
@@ -203,7 +207,9 @@ beforeEach(() => {
   world.lookupPatch = {};
   world.lookupError = null;
   world.partials.length = 0;
+  world.partialOutcome = 'applied';
   world.refundPayments.length = 0;
+  world.recentRejection = false;
   vi.clearAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
 });
@@ -368,15 +374,53 @@ describe('나이스 취소 통보 위조 가드 — tid 로 주문 · 재조회 
     expect(world.grants.has('tid_1')).toBe(true);
     expect(world.partials).toHaveLength(0);
   }
-  async function expectRejected(payload: Record<string, unknown>, reason: string) {
+  /** mails — tid 로 우리 주문을 찾은 뒤의 불일치만 운영 메일(진짜 취소를 잘못 거부해도 사람이 바로 안다). 그 전 단계는 무인증으로 만들 수 있어 0. */
+  async function expectRejected(payload: Record<string, unknown>, reason: string, mails = 1) {
     await expectOk(await deliver(payload)); // 재전송해도 같은 판정 — 'OK'
     expect(eventOf(payload)).toEqual({ processing_status: 'ignored', error: `forgery_guard:${reason}` });
-    expect(sendOpsAlertEmail).toHaveBeenCalledTimes(1); // 진짜 취소를 잘못 거부해도 사람이 바로 안다
+    expect(sendOpsAlertEmail).toHaveBeenCalledTimes(mails);
     expectUntouched();
   }
 
-  it('tid 불일치 — orderId 의 주문은 있는데 결제키가 다르면 거부', async () => {
-    await expectRejected({ ...CANCEL, tid: 'tid_forged' }, 'tid_mismatch');
+  it('tid 불일치 — orderId 의 주문은 있는데 결제키가 다르면 거부 · 메일 없음(무인증 요청으로 만들 수 있다)', async () => {
+    await expectRejected({ ...CANCEL, tid: 'tid_forged' }, 'tid_mismatch', 0);
+  });
+
+  it('무인증 스팸 — 모르는 tid + 틀린 서명 25건은 주문 없음으로 끝나고 운영 메일 0통', async () => {
+    for (let n = 0; n < 25; n += 1) await expectOk(await deliver({ status: 'cancelled', tid: 'x', signature: 'bad', n }));
+    expect(sendOpsAlertEmail).not.toHaveBeenCalled();
+    expect(eventOf({ status: 'cancelled', tid: 'x', signature: 'bad', n: 0 })?.error).toMatch(/^order_not_found/);
+  });
+
+  it('운영 메일은 tid·사유당 1시간 1통 — 최근 같은 거부가 있으면 억제(거부·기록은 그대로)', async () => {
+    world.lookupPatch = { status: 'paid' };
+    world.recentRejection = true;
+    await expectRejected(CANCEL, 'lookup_status:paid', 0);
+  });
+
+  it('거부된 통보는 재수신 때 다시 검증 — 원인을 고친 뒤 콘솔 재전송이 복구 경로(ignored 흡수 안 함)', async () => {
+    world.lookupPatch = { orderId: 'ord_other' };
+    await expectRejected(CANCEL, 'lookup_order_mismatch');
+    world.lookupPatch = {};
+    await expectOk(await deliver());
+    expect(eventOf()).toEqual({ processing_status: 'processed', error: null });
+    expect(world.order!.status).toBe('refunded');
+    expect(creditRevokes()).toHaveLength(1);
+  });
+
+  it('결제키가 없는 주문(승인 응답 유실 뒤 망취소)은 orderId 로 찾아 재조회 대조로 처리 · 재조회가 그 주문과 다르면 거부', async () => {
+    world.order = { ...PAID_ORDER, status: 'payment_failed', paymentKey: null, confirmedAt: null, fulfilledAt: null };
+    await expectOk(await deliver());
+    expect(eventOf()?.processing_status).toBe('processed');
+    expect(world.order!.status).toBe('canceled');
+    expect(sendOpsAlertEmail).not.toHaveBeenCalled();
+
+    world.order = { ...PAID_ORDER, status: 'payment_failed', paymentKey: null, confirmedAt: null, fulfilledAt: null };
+    world.lookupPatch = { amount: 9900 };
+    const other = { ...CANCEL, ediDate: 'k' };
+    await expectOk(await deliver(other));
+    expect(eventOf(other)).toEqual({ processing_status: 'ignored', error: 'forgery_guard:lookup_order_mismatch' });
+    expect(world.order!.status).toBe('payment_failed');
   });
 
   it('통보 orderId 가 tid 의 주문과 다르면 거부 · 우리가 만든 취소 요청 번호(cxl…_원주문)는 같은 주문', async () => {
@@ -403,16 +447,30 @@ describe('나이스 취소 통보 위조 가드 — tid 로 주문 · 재조회 
     await expectRejected({ ...CANCEL, ediDate: 'y' }, 'lookup_order_mismatch');
   });
 
-  it('서명이 오면 대조 — 틀리면 거부, 맞으면 처리(ediDate 는 수신 문자열 그대로)', async () => {
+  // ⚠️ 서명식·키 선택이 운영 통보로 미검증 — 틀리면 진짜 취소가 전부 거부된다. 대조는 하되 흔적만, 판정은 재조회 대조.
+  it('서명이 틀려도 거부하지 않는다(흔적만) — 재조회 대조가 맞으면 처리 · 맞는 서명은 흔적 없음', async () => {
     const ediDate = '2026-09-14T10:00:00.000+0900';
-    await expectRejected({ ...CANCEL, ediDate, signature: 'deadbeef' }, 'signature_mismatch');
+    const bad = { ...CANCEL, ediDate, signature: 'deadbeef' };
+    await expectOk(await deliver(bad));
+    expect(eventOf(bad)).toEqual({ processing_status: 'processed', error: expect.stringContaining('signature_mismatch') });
+    expect(world.order!.status).toBe('refunded');
+    expect(sendOpsAlertEmail).not.toHaveBeenCalled();
+
+    world.order = { ...PAID_ORDER };
     const signed = { ...CANCEL, ediDate, signature: nicepaySha256Hex(`tid_1${3300}${ediDate}spec_secret`) };
     await expectOk(await deliver(signed));
-    expect(eventOf(signed)?.processing_status).toBe('processed');
-    expect(world.order!.status).toBe('refunded');
+    expect(eventOf(signed)).toEqual({ processing_status: 'processed', error: null });
   });
 
-  it('재조회 일시 오류(결과 코드 없음)는 failed + non-OK → 재전송 때 처리 · PG 가 코드로 거절하면 거부', async () => {
+  it('틀린 서명 + 재조회 불일치 — 거부 사유에 서명 흔적도 같이', async () => {
+    world.lookupPatch = { status: 'paid' };
+    const bad = { ...CANCEL, ediDate: 'q', signature: 'deadbeef' };
+    await expectOk(await deliver(bad));
+    expect(eventOf(bad)).toEqual({ processing_status: 'ignored', error: expect.stringMatching(/^forgery_guard:lookup_status:paid \| signature_mismatch/) });
+    expectUntouched();
+  });
+
+  it('재조회 오류는 결과 코드가 있어도(5xx 9999·401 U104·키 설정 오류) failed + non-OK → 재전송 때 처리(영구 거부하지 않는다)', async () => {
     world.lookupError = new Error('fetch failed');
     await expectRetry(await deliver());
     expect(eventOf()?.processing_status).toBe('failed');
@@ -429,8 +487,18 @@ describe('나이스 취소 통보 위조 가드 — tid 로 주문 · 재조회 
     world.transitions = 0;
     world.creditRows.length = 0;
     vi.clearAllMocks();
-    world.lookupError = Object.assign(new Error('거래 없음'), { resultCode: 'A118' });
-    await expectRejected({ ...CANCEL, ediDate: 'z' }, 'lookup_rejected:A118');
+    const coded = { ...CANCEL, ediDate: 'z' };
+    for (const code of ['9999', 'U104']) {
+      world.lookupError = Object.assign(new Error('PG 오류'), { resultCode: code });
+      await expectRetry(await deliver(coded));
+      expect(eventOf(coded)?.processing_status).toBe('failed');
+      expectUntouched();
+    }
+    world.lookupError = null;
+    await expectOk(await deliver(coded));
+    expect(eventOf(coded)?.processing_status).toBe('processed');
+    expect(world.order!.status).toBe('refunded');
+    expect(sendOpsAlertEmail).not.toHaveBeenCalled();
   });
 
   it('정상 전액 취소 — 재조회 결제 객체로 환불 기록(귀속 시각의 정본) · 전·이용권 회수', async () => {
@@ -468,6 +536,18 @@ describe('나이스 취소 통보 위조 가드 — tid 로 주문 · 재조회 
     await expectOk(await deliver(PARTIAL));
     expect(world.partials).toEqual([expect.objectContaining({ cancelTid: 'ctid_p1', amount: 1000 })]);
     expect(world.transitions).toBe(0); // 전액은 잔여 취소 통보(cancelled)가 따로 처리한다
+  });
+
+  it('일부 취소 원장 일시 오류(failed)는 failed + non-OK → 재전송 때 다시 적용(조각 표식으로 멱등)', async () => {
+    world.lookupPatch = { status: 'partialCancelled', balanceAmt: 2300, cancels: [{ tid: 'ctid_p1', amount: 1000 }] };
+    world.partialOutcome = 'failed';
+    await expectRetry(await deliver(PARTIAL));
+    expect(eventOf(PARTIAL)).toEqual({ processing_status: 'failed', error: 'partial:failed' });
+    world.partialOutcome = 'duplicate';
+    await expectOk(await deliver(PARTIAL));
+    expect(eventOf(PARTIAL)).toEqual({ processing_status: 'processed', error: 'partial:duplicate' });
+    expect(world.partials).toHaveLength(2);
+    expect(world.transitions).toBe(0);
   });
 
   it('일부 취소의 거래가 재조회 cancels[] 에 없으면 거부(금액을 통보 본문에서 믿지 않는다)', async () => {

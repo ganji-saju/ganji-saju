@@ -92,3 +92,12 @@ export function isFullRefund(input: {
   if (input.amount === null || input.originalAmount === null) return false;
   return input.amount >= input.originalAmount;
 }
+
+/** 주문 metadata.partialRefunds — 일부 환불 기록(취소 거래 단위, order-ledger applyPartialRefund 가 쓴다). 환불 지표가 읽는다(analytics-rollup expandRefundRows). */
+export type PartialRefundRecord = { cancelTid: string; amount: number; at: string };
+export function partialRefundsOf(metadata: unknown): PartialRefundRecord[] {
+  const list = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>).partialRefunds : null;
+  return (Array.isArray(list) ? list : []).filter(
+    (p): p is PartialRefundRecord => !!p && typeof p.cancelTid === 'string' && Number(p.amount) > 0 && typeof p.at === 'string'
+  );
+}

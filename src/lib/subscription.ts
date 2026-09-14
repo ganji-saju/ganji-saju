@@ -253,14 +253,15 @@ export const partialRefundMarker = (cancelTid: string) => `partial_refund:${canc
  *   (관리자 부분취소 경로와 나중에 오는 partialCancelled 통보가 겹쳐도 1회 — 마이그레이션 없음).
  * 순서: 조각 insert(무효라 배제 제약 밖) → P 끝 줄이기 → 당기기(오름차순) → 구독. 조각을 먼저 쓰므로 그 뒤에서 끊기면 재시도는
  *   'duplicate' 로 멈추고 덜 줄어든 채(사용자 쪽 이득) 남는다 — throw 는 호출부가 last_error·운영 메일로 드러낸다.
- * 반환: 'applied' · 'duplicate'(이 취소 거래를 이미 적용) · 'missing'(살아 있는 P 없음) · 'full'(남는 길이 ≤ 0 — 아무것도 안 바꿨다, 호출부가 전액 환불로).
+ * 반환: 'applied' · 'duplicate'(이 취소 거래를 이미 적용) · 'voided'(표가 아는 주문인데 기간이 이미 무효 — 관리자 해제·전액 환불, 경보 없음, 전액 경로 M1 과 대칭)
+ *   · 'missing'(표에 이 주문 행이 없음) · 'full'(남는 길이 ≤ 0 — 아무것도 안 바꿨다, 호출부가 전액 환불로).
  * ponytail: 같은 취소 거래를 동시에(ms 단위로 겹쳐) 적용하면 둘 다 조각을 못 보고 두 번 당길 수 있다 — 원자 RPC 로 옮길 때 같이(위 원장 머리말과 같은 한계).
  */
 export async function partialRefundMembershipPeriod(
   userId: string,
   orderId: string,
   options: { cancelTid: string; refundAmount: number; orderAmount: number; now?: Date; service?: SupabaseClient }
-): Promise<'applied' | 'duplicate' | 'missing' | 'full'> {
+): Promise<'applied' | 'duplicate' | 'voided' | 'missing' | 'full'> {
   if (!options.cancelTid || !(options.refundAmount > 0) || !(options.orderAmount > 0)) {
     throw new Error('일부 환불 입력이 올바르지 않습니다(취소 거래·금액)');
   }
@@ -271,7 +272,7 @@ export async function partialRefundMembershipPeriod(
   const rows = await userPeriods(client, userId, orderId);
   if (rows.some((row) => row.void_reason === marker)) return 'duplicate';
   const period = rows.find((row) => row.voided_at == null);
-  if (!period) return 'missing';
+  if (!period) return rows.length > 0 ? 'voided' : 'missing';
 
   const start = ms(period.start_at);
   const end = ms(period.end_at);

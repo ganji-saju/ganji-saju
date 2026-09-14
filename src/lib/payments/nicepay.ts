@@ -141,6 +141,15 @@ export function pickNicepayCancel(payment: Record<string, unknown>, cancelTid?: 
   return hit && typeof hit.tid === 'string' && amount > 0 ? { tid: hit.tid, amount } : null;
 }
 
+/** PG 잔액이 0 인가(전부 취소) — 나이스 status 'cancelled'·balanceAmt 0 · 토스(정규화 포함) balanceAmount 0. 모르면 false(전액으로 단정하지 않는다). */
+export function isPgFullyCancelled(payment: Record<string, unknown> | null | undefined): boolean {
+  return !!payment && (payment.status === 'cancelled' || payment.balanceAmt === 0 || payment.balanceAmount === 0);
+}
+
+// 2026-09-14 — PG 호출 상한. 매달린 fetch 는 함수 시간 초과로 응답을 잃는다(취소는 PG 가 처리했는데 우리는 실패로 본다) —
+//   끊어서 실패로 드러내고, 일부 환불 재승인은 먼저 재조회로 앞선 취소를 확인한다(refund-service executeRefund).
+const NICEPAY_TIMEOUT_MS = 15_000;
+
 // ⚠️ ediDate 포맷은 공식 확정 필요. 일단 ISO 8601.
 function buildEdiDate(now: Date = new Date()): string {
   return now.toISOString();
@@ -245,6 +254,7 @@ export async function getNicepayPayment(tid: string): Promise<NicepayPaymentObje
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
     method: 'GET',
     headers: { Authorization: getNicepayAuthorizationHeader() },
+    signal: AbortSignal.timeout(NICEPAY_TIMEOUT_MS),
   });
 
   return parseNicepayResponse(response, '결제 조회 실패');
@@ -321,6 +331,7 @@ export async function cancelNicepayPayment(
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}/cancel`, {
     method: 'POST',
     headers,
+    signal: AbortSignal.timeout(NICEPAY_TIMEOUT_MS),
     body: JSON.stringify({
       reason: options.reason,
       ediDate,

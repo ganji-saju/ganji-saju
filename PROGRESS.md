@@ -1,5 +1,16 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 위조 가드·일부 환불 리뷰 반영(중 7 · 저 3)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund` 후속 커밋(PR·머지 전, #826 먼저). 아래 섹션의 "⚠️ 지표 안 잡힘"은 이 커밋으로 해소.
+- **일부 환불 재승인 이중 환불**: failed 요청의 일부 환불 재승인은 취소 전에 PG 재조회(`executeRefund`·`findPartialCancelSince`). 요청 생성 뒤 같은 금액 취소가 있으면 새 취소 없이 완료(그 거래 tid 로 원장), 확인 못 하면 막는다. 나이스 조회·취소 fetch 에 15초 상한.
+- **지표**: 일부 환불액을 주문 `metadata.partialRefunds[{cancelTid, amount, at}]` 에 취소 거래 단위로 1회 기록(비멤버십 포함, 이미 refunded 면 안 함). `expandRefundRows` 가 일부는 그 시각·금액, 뒤이은 전액은 나머지로 센다(롤업·환불 내역 둘 다). 마이그레이션 없음 — metrics_daily 는 다음 롤업/백필에서 반영.
+- **'full' 과대 표기**: 남는 길이 ≤ 0 이면 원장만 전액(`refundMembershipLedger` — markPaymentOrderRefunded 에서 뽑음). 주문 refunded·GA 는 PG 잔액 0(`isPgFullyCancelled`)일 때만.
+- **통보**: 일부 원장 일시 오류는 failed + non-OK(재전송) · 재조회 오류는 결과 코드가 있어도 전부 failed + non-OK(영구 거부 없음) · 서명 불일치는 거부 안 하고 흔적만(⚠️ 검증필요 — 운영 통보로 식 대조는 사용자 승인 필요) · 운영 메일은 tid 로 주문을 찾은 뒤 불일치만, tid·사유당 1시간 1통 · 거부된 통보는 재수신 때 재검증(콘솔 재전송 = 복구, 메일 문구에 "관리자 화면 환불 금지") · 결제키 없는 주문은 orderId 로 찾아 재조회 대조.
+- **저**: 관리자 화면에 원장 failed/missing 사유 표시 · 해제로 무효된 P 는 'voided'(오경보 없음).
+- 반려: 없음. 부분 — duplicate/voided 는 정상이라 화면 오류로 안 올림, 발신 IP 필터는 IP 목록 미확인이라 생략.
+- 검증: 새 테스트(webhook spec 9 · admin spec 3 · 원장 2 · 지표 1 · 재승인 1)가 수정 전 코드에서 전부 red. 뮤테이션 7종 각각 red. npm test 0 fail · test:spec 354 · tsc 0.
+
 ## 2026-09-14 — 나이스 취소 통보 위조 가드 + 멤버십 일부 환불(설계 연산 4)
 
 브랜치 `feat/nicepay-forgery-guard-partial-refund`(기반 `fix/nicepay-webhook-redelivery` = PR #826, 미머지). 사용자 결정 (가)·(나). PR·머지 전 — **#826 먼저 머지**.

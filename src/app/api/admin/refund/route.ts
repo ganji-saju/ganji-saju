@@ -10,6 +10,7 @@ import { cancelPayment, getPayment } from '@/lib/payments/toss';
 import {
   cancelNicepayPayment,
   getNicepayPayment,
+  isPgFullyCancelled,
   normalizeNicepayPaymentForRefund,
   pickNicepayCancel,
 } from '@/lib/payments/nicepay';
@@ -454,7 +455,7 @@ export async function POST(req: NextRequest) {
       const { data } = await service
         .from('refund_requests')
         .select(
-          'id, status, refund_kind, payment_key, idempotency_key, user_id, product_id, scope_key, amount, original_amount, credit_amount, credit_transaction_id, reason'
+          'id, status, refund_kind, payment_key, idempotency_key, user_id, product_id, scope_key, amount, original_amount, credit_amount, credit_transaction_id, reason, created_at'
         )
         .eq('id', id)
         .maybeSingle();
@@ -594,12 +595,12 @@ export async function POST(req: NextRequest) {
         const payment = (raw.payment && typeof raw.payment === 'object' ? raw.payment : raw) as Record<string, unknown>;
         const cancel = pickNicepayCancel(payment);
         if (order && getPackage(order.packageId)?.kind === 'subscription') {
-          if (payment.status === 'cancelled') {
+          if (isPgFullyCancelled(payment)) {
             await markPaymentOrderRefunded({ orderId: order.orderId, reason: '관리자 환불 승인(잔여 전부 취소)', source: 'admin-refund', payment });
           } else if (!cancel) {
             followUpError = 'PG 응답에 취소 거래가 없어 멤버십 기간을 줄이지 못했습니다 — 수동 확인(나중에 오는 나이스 일부 취소 통보가 반영할 수 있음)';
           } else {
-            await applyPartialRefund({
+            const outcome = await applyPartialRefund({
               orderId: order.orderId,
               cancelTid: cancel.tid,
               amount: cancel.amount,
@@ -607,6 +608,10 @@ export async function POST(req: NextRequest) {
               source: 'admin-refund',
               payment,
             });
+            // 실패·표에 없음은 화면으로(last_error·운영 메일은 프로덕션에서만 남는다). 중복(통보가 먼저 반영)·무효된 기간은 정상.
+            if (outcome === 'failed' || outcome === 'missing') {
+              followUpError = `환불은 완료 · 멤버십 기간 줄이기 ${outcome === 'failed' ? '실패' : '대상 없음(표에 이 결제 기간 없음)'} — 주문 last_error 확인 후 수동 반영`;
+            }
           }
         }
       }

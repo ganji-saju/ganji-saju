@@ -62,7 +62,7 @@ vi.mock('@/lib/product-entitlements', () => ({ revokeEntitlementsOfPayment: vi.f
 vi.mock('@/lib/credits/refunds', () => ({ revokeCreditPurchaseLots: vi.fn() }));
 vi.mock('@/lib/admin/credit-lots', () => ({ loadPurchaseCreditLots: vi.fn() }));
 
-import { cancelNicepayPayment } from '@/lib/payments/nicepay';
+import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
 import { applyPartialRefund, markPaymentOrderRefunded } from '@/lib/payments/order-ledger';
 import { POST } from './route';
 
@@ -171,6 +171,32 @@ describe('관리자 일부 환불 승인·실행', () => {
     expect(body.status).toBe('completed');
     expect(body.error).toMatch(/취소 거래가 없어/);
     expect(applyPartialRefund).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['failed', /기간 줄이기 실패/],
+    ['missing', /대상 없음/],
+  ])('원장 결과 %s 는 화면 사유로(완료는 그대로)', async (outcome, message) => {
+    vi.mocked(cancelNicepayPayment).mockResolvedValue({ resultCode: '0000', status: 'partialCancelled', balanceAmt: 24500, cancels: [{ tid: 'ctid_1', amount: 24500 }] });
+    vi.mocked(applyPartialRefund).mockResolvedValueOnce(outcome as 'failed');
+    const body = await (await approve()).json();
+    expect(body.status).toBe('completed');
+    expect(body.error).toMatch(message);
+  });
+
+  it('재승인(failed) — PG 가 첫 승인의 부분취소를 이미 처리했으면 새 취소 없이 완료하고 그 거래로 기간을 줄인다(이중 환불 방지)', async () => {
+    Object.assign(db.request!, { status: 'failed', created_at: '2026-09-14T01:00:00.000Z' });
+    vi.mocked(getNicepayPayment).mockResolvedValue({
+      resultCode: '0000',
+      status: 'partialCancelled',
+      balanceAmt: 24500,
+      cancels: [{ tid: 'ctid_lost', amount: 24500, cancelledAt: '2026-09-14T10:05:00.000+0900' }],
+    });
+    const body = await (await approve()).json();
+    expect(body).toMatchObject({ ok: true, status: 'completed', error: null });
+    expect(cancelNicepayPayment).not.toHaveBeenCalled();
+    expect(applyPartialRefund).toHaveBeenCalledWith(expect.objectContaining({ cancelTid: 'ctid_lost', amount: 24500 }));
+    expect(markPaymentOrderRefunded).not.toHaveBeenCalled();
   });
 
   it('샌드박스 부분취소 거절(U128)은 failed + 사유(코드 포함)가 화면으로 · 원장 무변경', async () => {

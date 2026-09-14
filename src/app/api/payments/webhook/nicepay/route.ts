@@ -21,6 +21,7 @@ import {
   applyPartialRefund,
   getPaymentOrderByOrderId,
   getPaymentOrderByPaymentKey,
+  hasRecentWebhookRejection,
   hashWebhookPayload,
   markPaymentOrderFailed,
   markPaymentOrderRefunded,
@@ -111,19 +112,23 @@ export async function POST(req: NextRequest) {
     }
 
     // 3) 위조 가드(2026-09-14 사용자 결정) — 통보 본문은 누구나 보낼 수 있고 서명은 status·orderId·cancels 를 덮지 않는다.
-    //    주문은 tid(= 결제키)로 찾고, 나이스에 직접 되물어(재조회) 진짜 취소일 때만 처리한다. 불일치는 ignored + 사유 + 운영 메일 —
-    //    진짜 취소를 잘못 거부해도 사람이 바로 알게. 재조회 일시 오류는 던진다 → failed + non-OK(재전송으로 복구).
-    const reject = async (reason: string, suspect: PaymentOrder | null = null) => {
-      await markPaymentWebhookEvent({ eventHash, status: 'ignored', error: `forgery_guard:${reason}` });
+    //    주문은 tid(= 결제키)로 찾고, 나이스에 직접 되물어(재조회) 진짜 취소일 때만 처리한다. 불일치는 ignored + 사유 —
+    //    tid 로 우리 주문을 찾은 뒤의 불일치만 운영 메일(tid·사유당 1시간 1통): 무인증 요청이 메일을 무제한 보내게 두지 않는다.
+    //    거부된 통보는 재수신 때 다시 검증한다(recordPaymentWebhookEvent — 원인을 고친 뒤 콘솔 재전송이 복구 경로).
+    //    재조회 오류는 전부 던진다 → failed + non-OK(재전송). tid 는 우리 주문의 결제키라 조회 실패는 거래 없음이 아니라 PG·키 문제다.
+    const reject = async (reason: string, suspect: PaymentOrder | null = null, alert = true) => {
+      const error = `forgery_guard:${reason}`;
       console.error('[nicepay-webhook] 취소 통보 검증 불일치 — 처리 안 함', { reason, tid, orderId, status });
-      if (process.env.VERCEL_ENV === 'production') {
+      const mail = alert && suspect && process.env.VERCEL_ENV === 'production' && !(await hasRecentWebhookRejection(tid, error));
+      await markPaymentWebhookEvent({ eventHash, status: 'ignored', error: withSig(error) });
+      if (mail && suspect) {
         await sendOpsAlertEmail({
           subject: '[나이스 통보] 취소 통보 검증 불일치 — 처리 안 함',
           lines: [
             `사유 ${reason} · status ${status}`,
-            `통보 tid ${tid || '(없음)'} · 통보 orderId ${orderId || '(없음)'}`,
-            suspect ? `주문 ${suspect.orderId} · 사용자 ${suspect.userId} · 결제키 ${suspect.paymentKey ?? '(없음)'}` : '주문 없음',
-            '진짜 취소라면 나이스 콘솔에서 그 거래를 확인하고 관리자 화면에서 환불 상태를 맞추세요(원문은 payment_webhook_events).',
+            `통보 tid ${tid} · 통보 orderId ${orderId || '(없음)'}`,
+            `주문 ${suspect.orderId} · 사용자 ${suspect.userId} · 결제키 ${suspect.paymentKey ?? '(없음)'}`,
+            '⚠️ 관리자 화면 환불 금지 — PG 취소를 새로 보내 이중 환불이 된다. 나이스 콘솔에서 그 거래를 확인하고, 진짜 취소면 원인을 고친 뒤 콘솔에서 이 통보를 재전송(다시 검증·처리됨). 원문은 payment_webhook_events.',
           ],
           url: '/admin/users',
         }).catch(() => undefined);
@@ -135,38 +140,40 @@ export async function POST(req: NextRequest) {
       await markPaymentWebhookEvent({ eventHash, status: 'failed', error: 'tid_missing' });
       return ok();
     }
-    // ③ 서명 — 오면 대조(없으면 선택 필드라 통과, 재조회가 진위를 본다).
+    // ③ 서명 — 오면 대조하되 거부하지 않는다. ⚠️ 검증필요: 식(tid+amount+ediDate+SecretKey)·키 선택이 운영 통보로 확인되지 않았고,
+    //   틀리면 진짜 취소가 전부 거부된다. 위조 차단은 아래 재조회 대조가 전부 한다(서명은 status·orderId·cancels 를 덮지 않는다) → 흔적만.
+    let sigNote: string | null = null;
     if (typeof payload.signature === 'string' && payload.signature) {
-      const signed = verifyNicepayWebhookSignature({ tid: payload.tid, amount: payload.amount, ediDate: payload.ediDate, signature: payload.signature });
-      if (!signed) return reject('signature_mismatch');
+      if (!verifyNicepayWebhookSignature({ tid: payload.tid, amount: payload.amount, ediDate: payload.ediDate, signature: payload.signature })) {
+        sigNote = 'signature_mismatch(미검증 식 — 거부 안 함)';
+        console.error('[nicepay-webhook] 통보 서명 불일치 — 재조회 대조로 판정', { tid, orderId, status });
+      }
     }
-    // ① tid 우선 — orderId 는 보조. tid 로 못 찾았는데 orderId 의 주문이 있으면 그 주문의 결제키와 어긋난 통보다.
-    const order = await getPaymentOrderByPaymentKey(tid);
+    const withSig = (note: string | null) => [note, sigNote].filter(Boolean).join(' | ') || null;
+    // ① tid 우선 — orderId 는 보조. tid 로 못 찾았는데 orderId 의 주문이 다른 결제키를 가졌으면 어긋난 통보다(메일 없음 — 무인증으로 만들 수 있다).
+    //   그 주문에 결제키가 없으면(승인 응답 유실·결제키 저장 실패 뒤 콘솔 망취소) 그 주문으로 재조회 대조한다.
+    let order = await getPaymentOrderByPaymentKey(tid);
     if (!order) {
       const byOrderId = orderId ? await getPaymentOrderByOrderId(orderId) : null;
-      if (byOrderId) return reject('tid_mismatch', byOrderId);
-      await markPaymentWebhookEvent({ eventHash, status: 'ignored', error: 'order_not_found' });
-      return ok();
+      if (byOrderId?.paymentKey) return reject('tid_mismatch', byOrderId, false);
+      if (!byOrderId) {
+        await markPaymentWebhookEvent({ eventHash, status: 'ignored', error: withSig('order_not_found') });
+        return ok();
+      }
+      order = byOrderId;
     }
     // API 취소 통보의 orderId 는 원주문일 가능성이 높지만 미실측 — 우리가 만든 취소 요청 번호(cxl…_원주문)도 같은 주문으로 본다.
     if (orderId && orderId !== order.orderId && !isCancelOrderIdOf(orderId, order.orderId)) return reject('order_id_mismatch', order);
 
     // ② 재조회 — status 가 통보와 맞는 취소 상태 · orderId·amount 가 주문과 일치할 때만. 일부 통보 뒤 잔여 취소가 이미 됐으면 재조회는 cancelled.
-    let payment: NicepayPaymentObject;
-    try {
-      payment = await getNicepayPayment(tid); // = order.paymentKey (tid 로 찾은 주문)
-    } catch (lookupError) {
-      const code = (lookupError as { resultCode?: unknown }).resultCode;
-      // PG 가 결과 코드로 거절했다(거래 없음 등) = 재전송해도 같다. 코드 없는 실패(네트워크·5xx)는 일시 오류 → 재전송.
-      if (typeof code === 'string') return reject(`lookup_rejected:${code}`, order);
-      throw lookupError;
-    }
+    const payment: NicepayPaymentObject = await getNicepayPayment(tid);
     const lookedUp = String(payment.status ?? '');
     const statusMatches = status === 'cancelled' ? lookedUp === 'cancelled' : CANCEL_STATUSES.has(lookedUp);
     if (!statusMatches) return reject(`lookup_status:${lookedUp || 'none'}`, order);
     if (payment.orderId !== order.orderId || Number(payment.amount) !== order.amount) return reject('lookup_order_mismatch', order);
 
     // 4) 일부 취소 — 전액 처리 금지(주문 refunded 표기·전/이용권 회수·GA 전액 환불 없음). 금액·거래는 재조회의 cancels[] 가 정본.
+    //    원장 일시 오류('failed')는 failed + non-OK(재전송) — 조각 표식이 먼저라 재처리는 멱등('duplicate').
     if (status === 'partialCancelled') {
       const cancel = pickNicepayCancel(payment, pickNicepayCancel(payload)?.tid);
       if (!cancel) return reject('cancel_not_in_lookup', order);
@@ -178,7 +185,11 @@ export async function POST(req: NextRequest) {
         source: 'webhook',
         payment: payment as TossPaymentObject,
       });
-      await markPaymentWebhookEvent({ eventHash, status: 'processed', error: `partial:${outcome}` });
+      if (outcome === 'failed') {
+        await markPaymentWebhookEvent({ eventHash, status: 'failed', error: withSig('partial:failed') });
+        return retryLater();
+      }
+      await markPaymentWebhookEvent({ eventHash, status: 'processed', error: withSig(`partial:${outcome}`) });
       return ok();
     }
 
@@ -249,7 +260,7 @@ export async function POST(req: NextRequest) {
         ? 'reprocessed_after_transition — 멤버십 후처리 확인'
         : null;
     await markPaymentWebhookEvent(
-      revokeFailure ? { eventHash, status: 'failed', error: `revoke_failed: ${revokeFailure}` } : { eventHash, status: 'processed', error: note }
+      revokeFailure ? { eventHash, status: 'failed', error: withSig(`revoke_failed: ${revokeFailure}`) } : { eventHash, status: 'processed', error: withSig(note) }
     );
     return revokeFailure ? retryLater() : ok();
   } catch (err) {
