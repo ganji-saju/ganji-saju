@@ -36,6 +36,13 @@ test('결제 전 주문(prepared/in_progress/payment_failed/canceled/expired)은
   }
 });
 
+// 2026-09-14 — 통보 재처리는 첫 시도가 바꿔 놓은 상태(canceled 등)를 본다. 상태로만 판정하면 첫 시도에서 실패한 이용권 회수를 건너뛴다.
+test('결제키가 있으면 상태와 무관하게 이용권을 회수한다(지급 없으면 0행) — 전은 여전히 지급 상태에서만', () => {
+  for (const orderStatus of ['prepared', 'in_progress', 'payment_failed', 'canceled', 'expired', 'refunded'] as const) {
+    assert.deepEqual(buildCancellationRevokePlan({ orderStatus, packageCredits: 15, paymentKey: 'tid_1' }), { revokeCredits: 0, revokeGrants: true }, orderStatus);
+  }
+});
+
 // 2026-07-13 — 취소 통보 시 종료 상태 판정.
 //   결제까지 간 주문을 취소하면 = 환불이다 → 'refunded'(매출 이력 보존).
 //   결제 전에 창을 닫은 주문은 = 단순 취소 → 'canceled'.

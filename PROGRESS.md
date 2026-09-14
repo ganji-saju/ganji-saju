@@ -1,5 +1,30 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 나이스 통보 재전송 수정 리뷰 반영(전 회수 주문 단위 잠금 · 전이 뒤 재처리 흔적 · 이용권 감사 순서)
+
+브랜치 `fix/nicepay-webhook-redelivery` 후속 커밋(PR·머지 전). 적대적 리뷰 3건(중 1 · 저 2) 모두 반영.
+- 🟠 **전 회수 중복 차단 키의 orderId 가 테스트로 안 잠겨 있었다**. `deduct.ts` 에서 orderId 를 빼도 route.spec 8/8 이 통과했다. 그런데 `unlock_credit_feature_once` 는 `metadata @>` 로 매칭하므로(040), orderId 가 빠지면 같은 사용자의 두 번째 주문부터 reused 가 되어 전이 영구히 미회수된다.
+  → route.spec 에 '같은 사용자 두 주문 취소면 주문마다 1행 + 첫 주문 재처리는 다시 안 뺌' 케이스를 추가했다.
+- 저 1: 첫 시도가 원장 전이를 커밋한 뒤 죽거나 응답을 잃으면, 재처리는 `neq('status','refunded')` 때문에 멤버십 훅에 못 들어간다. 그래서 흔적 없이 processed 로 끝났다.
+  → 미완(unfinished) 재처리 + 계획 시점 주문이 이미 refunded + 구독 상품이면 processed 로 두되 error 에 `reprocessed_after_transition — 멤버십 후처리 확인` 을 남긴다. 훅이 전이 때 1회만 도는 성질은 그대로다.
+- 저 2: `revokeEntitlementsOfPayment` 는 감사를 두 삭제가 모두 끝난 뒤에 몰아 썼다. 그래서 레거시 삭제가 던지면, 재처리 때 이용권 행이 이미 0행이라 그 감사가 영구히 빠졌다.
+  → 단계마다 삭제 직후 감사를 쓴다. 대신 부분 실패 뒤 재처리에서는 같은 권한의 감사가 2행 남을 수 있다. 감사 행을 세는 곳이 없어서(`account.ts`·`payment-history.ts` 는 제외) 허용한다.
+- 검증: route.spec 10건, revoke.test 에 레거시 실패 시 이용권 감사 잔존 단언. 뮤테이션 3종(orderId 삭제 · 흔적 삭제 · 감사 순서 원복)이 각각 새 단언을 red 로 만든다. npm test 1691 · test:spec 324 · tsc 0.
+
+## 2026-09-14 — 나이스 취소 통보 재전송 흡수 버그(미완 통보 재처리 + 재처리 멱등)
+
+브랜치 `fix/nicepay-webhook-redelivery`(PR·머지 전). `docs/nicepay-v2-cancel-facts.md` 코드 갭 3번.
+- **버그**: 멱등 기록(`recordPaymentWebhookEvent`)이 처리보다 먼저이고 23505 면 상태와 무관하게 'duplicate' → 'OK'. 주문 조회가 try 밖이라 DB 오류 = 500 →
+  나이스 자동 재전송 10회가 전부 흡수돼 **영구 미처리**. try 안 실패는 failed + 'OK' 라 재전송도 없었다(수동만).
+- **수정**: ① 중복 판정은 processed/ignored 만 — received(처리 중 죽음)·failed 는 'unfinished' 로 다시 처리(토스 웹훅은 `!== 'inserted'` 로 기존 동작 유지).
+  ② 기록·조회 포함 전 단계를 try 안에. ③ **처리 실패는 failed + non-OK**(나이스가 1분×10 재전송 → 재처리 = 자동 복구). 같은 본문으로 안 바뀌는 판정(비취소·주문 없음·orderId 없음)은 'OK'.
+  ④ 재처리 멱등: 전 회수를 **원장 전이 전으로** 옮기고 `revokeCredits` 를 `unlock_credit_feature_once`(사용자·feature·{kind:'payment_cancel_revoke', orderId} 중복 차단, 기존 RPC)로 —
+  전이 뒤에 두면 전 회수 일시 오류 뒤 재처리가 refunded 를 보고 영구 누락, 전이 실패 뒤 재처리는 deduct_credits 로 이중 차감이었다. RPC 오류는 던진다(잔액 부족만 success=false).
+  이용권은 `buildCancellationRevokePlan` 이 **결제키가 있으면 상태 무관** 회수(첫 시도가 canceled 로 바꾼 뒤 재처리가 건너뛰던 것). 멤버십 원장·GA 훅은 전이 분기 1회 그대로.
+- 검증: `route.spec.ts` 8건(조회 throw → failed·non-OK → 재수신 processed · received 재처리 · processed/ignored 중복 무동작 · 이용권 실패 재처리 전 1회 · 전이 실패 재처리 전 1회 ·
+  전 RPC 오류 재처리 회수 · canceled 재처리 결제키 회수). 수정 전 코드로 6 red(중복 무동작 2건은 원래 초록). 뮤테이션 7종(중복 흡수 복귀·전부 재처리·deduct_credits·전 회수 전이 뒤·결제키 규칙 삭제·실패 'OK' 2곳) 모두 red.
+- ⚠️ 남은 것: 배포 전부터 received/failed 로 남은 운영 통보는 **새 재전송이 와야** 처리된다(콘솔 수동 재전송). 토스 웹훅도 같은 흡수 패턴(범위 밖). 위조 가드·부분취소·관리자 환불×통보 순서(갭 1·2·4)는 그대로.
+
 ## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
 
 브랜치 `fix/today-fortune-replay-account`(PR·머지 전).

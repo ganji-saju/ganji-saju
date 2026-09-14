@@ -659,11 +659,19 @@ export async function recordPaymentWebhookEvent(input: {
     raw_payload: input.payload,
   });
 
-  if (error && error.code !== '23505') {
-    throw new Error(error.message);
-  }
+  if (!error) return 'inserted';
+  if (error.code !== '23505') throw new Error(error.message);
 
-  return error?.code === '23505' ? 'duplicate' : 'inserted';
+  // 2026-09-14 — 같은 통보가 이미 있다. 끝까지 처리된(processed/ignored) 것만 중복이다.
+  //   received(처리 중 죽음)·failed(처리 실패)를 중복으로 흡수하면 재전송이 와도 영구 미처리로 남는다 → 'unfinished'(다시 처리).
+  const { data, error: readError } = await service
+    .from('payment_webhook_events')
+    .select('processing_status')
+    .eq('event_hash', input.eventHash)
+    .maybeSingle();
+  if (readError) throw new Error(readError.message);
+  const status = (data as { processing_status?: unknown } | null)?.processing_status;
+  return status === 'processed' || status === 'ignored' ? 'duplicate' : 'unfinished';
 }
 
 export async function markPaymentWebhookEvent(input: {

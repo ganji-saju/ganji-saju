@@ -172,31 +172,29 @@ export async function deductCreditsAmount(
   return deductCreditsWithCost(userId, feature, cost);
 }
 
-// 2026-06-26 — 결제 취소/환불 시 충전 재화 회수. deduct_credits RPC 로 차감(잔액 범위).
-//   addCredits(음수)는 양수 lot 적립 RPC 라 차감되지 않아 회수에 쓸 수 없다.
-//   p_feature 는 거래 이력 라벨(예: 'nicepay-cancel'). 잔액 부족 시 success=false(음수 잔액 미생성).
+// 2026-06-26 — 결제 취소/환불 시 충전 재화 회수(잔액 범위). addCredits(음수)는 양수 lot 적립 RPC 라 회수에 쓸 수 없다.
+//   p_feature 는 거래 이력 라벨(예: 'nicepay-cancel'). 잔액 부족 시 success=false(음수 잔액 미생성, 행 없음).
+// 2026-09-14 — **주문당 1회**. deduct_credits 는 멱등이 아니라 통보 재처리(재전송·동시 수신)가 전을 두 번 뺐다 →
+//   unlock_credit_feature_once 의 (사용자, feature, metadata) 중복 차단(사용자 행 FOR UPDATE 안에서 확인)으로 바꿨다. 이미 뺐으면 reused.
+//   RPC 오류는 던진다 — 호출부가 failed 로 남기고 재전송에 맡긴다(오류를 잔액 부족으로 뭉개면 재시도가 안 된다).
 export async function revokeCredits(
   userId: string,
   amount: number,
-  reason: string
-): Promise<{ success: boolean; remaining: number; error?: string }> {
+  reason: string,
+  orderId: string
+): Promise<IdempotentCreditUnlockResult> {
   const supabase = await createServiceClient();
 
-  const { data, error } = await supabase.rpc('deduct_credits', {
+  const { data, error } = await supabase.rpc('unlock_credit_feature_once', {
     p_user_id: userId,
-    p_cost: amount,
     p_feature: reason,
+    p_cost: amount,
+    p_access_metadata: { kind: 'payment_cancel_revoke', orderId },
   });
+  if (error) throw new Error(error.message);
 
-  if (error || !data?.success) {
-    return {
-      success: false,
-      remaining: data?.remaining ?? 0,
-      error: error?.message ?? '전 회수 실패(잔액 부족)',
-    };
-  }
-
-  return { success: true, remaining: data.remaining };
+  const result = parseIdempotentCreditUnlockResult(data);
+  return result.success ? result : { ...result, error: result.error ?? '전 회수 실패(잔액 부족)' };
 }
 
 export async function addCredits(

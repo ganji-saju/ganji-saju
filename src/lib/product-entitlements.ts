@@ -666,6 +666,32 @@ export async function revokeEntitlementsOfPayment(
     .select('product_id, scope_key, order_id, amount');
   if (error) throw new Error(error.message);
 
+  type Revoked = { productId: unknown; scopeKey: unknown; orderId: unknown; amount: unknown };
+  // 감사 — 회수한 권한마다. 실패해도 회수 자체는 유효.
+  //   2026-09-14 — 단계마다 삭제 직후에 쓴다. 레거시 삭제가 던지면 재처리 때 이용권 행은 이미 0행이라, 뒤에 몰아 쓰면 그 감사가 영구히 빠진다.
+  const revokedAt = new Date().toISOString();
+  const audit = async (items: Revoked[]) => {
+    if (items.length === 0) return;
+    const { error: auditError } = await client.from('credit_transactions').insert(
+      items.map((item) => ({
+        user_id: userId,
+        amount: 0,
+        type: 'purchase',
+        feature: 'entitlement_revoke',
+        metadata: { kind: 'entitlement_revoked', ...item, reason: options.reason, actor: options.actor ?? null, paymentKey, revokedAt },
+      }))
+    );
+    if (auditError) console.warn('entitlement revoke audit write failed', auditError);
+  };
+
+  const deleted: Revoked[] = ((rows ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    productId: r.product_id,
+    scopeKey: r.scope_key,
+    orderId: r.order_id,
+    amount: r.amount,
+  }));
+  await audit(deleted);
+
   const { data: legacyRows, error: legacyError } = await client
     .from('credit_transactions')
     .delete()
@@ -676,13 +702,6 @@ export async function revokeEntitlementsOfPayment(
     .select('metadata');
   if (legacyError) throw new Error(legacyError.message);
 
-  type Revoked = { productId: unknown; scopeKey: unknown; orderId: unknown; amount: unknown };
-  const deleted: Revoked[] = ((rows ?? []) as Array<Record<string, unknown>>).map((r) => ({
-    productId: r.product_id,
-    scopeKey: r.scope_key,
-    orderId: r.order_id,
-    amount: r.amount,
-  }));
   // 레거시 metadata 를 이용권 행과 같은 모양으로(전역 null → 'global', 평생리포트 kind·readingKey → 'lifetime-report'·'lifetime:…').
   const legacy: Revoked[] = ((legacyRows ?? []) as Array<{ metadata: Record<string, unknown> | null }>).map(({ metadata }) => {
     const m = metadata ?? {};
@@ -697,23 +716,11 @@ export async function revokeEntitlementsOfPayment(
     };
   });
 
-  // 감사 — 회수한 권한마다: 이용권 행 + 이용권 행이 없던 권한(흡수된 구성품·레거시 전용)의 레거시 행. 실패해도 회수 자체는 유효.
+  // 레거시 감사는 이용권 행이 없던 권한(흡수된 구성품·레거시 전용)만 — 같은 권한은 위에서 한 번 남겼다.
   const keyOf = (item: Revoked) => `${item.productId}|${item.scopeKey}`;
   const deletedKeys = new Set(deleted.map(keyOf));
-  const audited = [...deleted, ...legacy.filter((item) => !deletedKeys.has(keyOf(item)))];
-  if (audited.length > 0) {
-    const revokedAt = new Date().toISOString();
-    const { error: auditError } = await client.from('credit_transactions').insert(
-      audited.map((item) => ({
-        user_id: userId,
-        amount: 0,
-        type: 'purchase',
-        feature: 'entitlement_revoke',
-        metadata: { kind: 'entitlement_revoked', ...item, reason: options.reason, actor: options.actor ?? null, paymentKey, revokedAt },
-      }))
-    );
-    if (auditError) console.warn('entitlement revoke audit write failed', auditError);
-  }
+  const legacyOnly = legacy.filter((item) => !deletedKeys.has(keyOf(item)));
+  await audit(legacyOnly);
 
-  return { revoked: audited.length > 0, productTableDeleted: deleted.length, legacyDeleted: legacy.length };
+  return { revoked: deleted.length > 0 || legacy.length > 0, productTableDeleted: deleted.length, legacyDeleted: legacy.length };
 }
