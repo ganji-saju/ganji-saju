@@ -35,3 +35,18 @@
 ## 테스트(가짜 DB, 행동 우선)
 연속 A·B 에서 A 환불(B 당겨짐·A 창만 잠금) · B 먼저 환불 · 해제→재구매→옛 주문 환불(과다 없음) · 환불→재구매→환불(과소 없음) · 관리자 부여 사이 끼기 ·
 지급 재시도 멱등 · 미래 기간 환불(잠금 없음, 당김) · 감사 먼저 + 부분 실패 재실행 · 스냅샷 날 규칙 회귀 · 정렬 없는 페이지 금지.
+
+## 구현하며 정한 것 (2026-09-14, feat/membership-period-ledger)
+- **함수**: `activateMembershipSubscription(userId, {plan, days, orderId?, now?, service?}) → {subscription, granted}` · `refundMembershipPeriod(userId, orderId)` (연산 2, 반환 = 표가 이 주문을 아는가) ·
+  `expireMembershipNow` (연산 3) · `lockMembershipContentForRefund(userId, orderId, …)` (연산 5, 창을 표에서 읽는다) · `shortenMembershipForRefund` (#820 폴백).
+- **지급 재시도 판정은 이 주문의 행이 하나라도 있으면**(무효 포함) — 설계의 "살아 있는 행"보다 좁혀서, 환불·관리자 해제로 무효된 주문이 재시도로 되살아나지 않게.
+  앞 시도가 행만 쓰고 구독 갱신 전에 끊겼으면(구독 끝 < 살아 있는 끝) 구독만 살아 있는 끝으로 맞춘다(새 행·연장 없음). `granted` 일 때만 `membershipDaysGranted` 기록.
+- **잠금 창 = 이 주문의 무효 행 전부의 [start_at, min(end_at, voided_at))** — void_reason 무관. 관리자 해제로 무효된 미래 기간은 빈 창(skip). 재실행도 같은 행에서 같은 창.
+- **환불 시각 t = 원장 전이 시각(now)** — PG 취소 시각(`refunded_at`)이 아니다(기존 차감·잠금과 같은 기준).
+- **폴백(표에 없는 086 이전 주문)**: `membershipDaysGranted` 일수 차감 + **표도 그 새 끝에서 자른다**(백필된 legacy 행이 옛 끝을 기억하면 다음 결제 base 로 뺀 기간이 되살아난다).
+  잠금은 창을 몰라 skip(`no_refunded_period`). **원장 연산이 실패하면 폴백 차감을 겹치지 않는다**(두 번 빼기 방지 — last_error·운영 메일로 수동 보정).
+- **skip 사유**: `no_refunded_period`(표에 이 주문 무효 행 없음 — 옛 주문·원장 실패) · `no_elapsed_window`(시작 전 환불·해제로 무효된 미래 기간).
+  A단계의 `window_not_current`·`subscription_unknown`·`no_membership_periods`·`claimedByOrderId` 는 삭제.
+- **감사 먼저**: 감사 insert 가 실패하면 던진다(아무것도 안 지운다). 감사 metadata 에 `orderId` 추가. 순서 = 감사 → 스냅샷 삭제 → 열람 행 삭제(①에서 읽은 id 만).
+- **운영 메일**: 후처리 실패가 있으면 `sendOpsAlertEmail`(프로덕션 배포만, 실패 무시) — last_error 이어 붙임은 그대로.
+- 주문 `metadata.membershipPeriods` 는 더 쓰지도 읽지도 않는다(A단계 브랜치 미머지라 프로덕션 주문엔 없다).

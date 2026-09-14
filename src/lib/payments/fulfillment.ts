@@ -13,7 +13,6 @@ import {
   getPaymentOrderByOrderId,
   markPaymentOrderFailed,
   markPaymentOrderFulfilled,
-  membershipPeriodEndingAt,
   recordMembershipDaysGranted,
   type PaymentOrder,
   type PaymentOrderSource,
@@ -191,21 +190,18 @@ export async function fulfillPaymentOrder(input: {
         (updatedCredits?.balance ?? 0) + (updatedCredits?.subscription_balance ?? 0);
     }
 
-    const subscription = isSubscriptionPackage(pkg)
+    // 2026-09-14 — 기간은 membership_periods 에 이 주문 행으로 기록된다(환불이 그 행으로 당기기·잠금). 지급 재시도는 새 행·연장 없음.
+    const membership = isSubscriptionPackage(pkg)
       ? await activateMembershipSubscription(claimed.userId, {
           plan: pkg.subscriptionPlan,
           days: MEMBERSHIP_PERIOD_DAYS,
+          orderId: claimed.orderId,
         })
       : null;
-    // 2026-09-13 — 구독에 실제로 더한 일수를 주문에 기록한다. 환불은 이 기록만 뺀다(미지급 0 · 재시도 누적).
-    //   기간은 [renewsAt − 30일, renewsAt) — 앞 기간에 이어 붙으면 그 끝부터다(전액환불이 이 기간의 멤버십 열람만 지운다).
-    if (subscription) {
-      await recordMembershipDaysGranted(
-        claimed.orderId,
-        MEMBERSHIP_PERIOD_DAYS,
-        undefined,
-        membershipPeriodEndingAt(subscription.renewsAt, MEMBERSHIP_PERIOD_DAYS)
-      );
+    const subscription = membership?.subscription ?? null;
+    // 호환용 일수 기록(086 이전 주문 환불 폴백과 같은 모양) — 이번에 실제로 더했을 때만.
+    if (membership?.granted) {
+      await recordMembershipDaysGranted(claimed.orderId, MEMBERSHIP_PERIOD_DAYS);
     }
 
     const entitlement =
