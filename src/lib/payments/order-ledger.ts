@@ -4,7 +4,8 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
-import { shortenMembershipForRefund } from '@/lib/subscription';
+import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
+import { lockMembershipContentForRefund, refundMembershipPeriod } from '@/lib/subscription';
 import type { PolicyKind } from '@/shared/policies/types';
 
 export type PaymentOrderStatus =
@@ -274,9 +275,9 @@ export async function updatePaymentOrderPolicyVersions(orderId: string, policyVe
   return mapPaymentOrder(data as PaymentOrderRow);
 }
 
-export async function getPaymentOrderByOrderId(orderId: string) {
-  const service = await createServiceClient();
-  const { data, error } = await service
+export async function getPaymentOrderByOrderId(orderId: string, service?: SupabaseClient) {
+  const client = service ?? (await createServiceClient());
+  const { data, error } = await client
     .from('payment_orders')
     .select('*')
     .eq('order_id', orderId)
@@ -515,33 +516,6 @@ export function resolvePgCancelledAt(
  *   결제 시점 amount 는 그대로 두고 status='refunded' + refunded_at 만 기록 →
  *   집계에서 총매출(결제분)과 환불액을 분리해 낼 수 있다.
  */
-/**
- * 환불 때 구독에서 뺄 일수(순수, 2026-09-13) — 지급이 주문에 남긴 기록 그대로. 기록이 없으면(승인만 되고 지급 전 실패 등) 0.
- * 부분취소는 구독 유지 — 관리자 부분환불(원장 무변경)과 같은 결과가 되게.
- */
-export function membershipDaysToRemove(
-  order: { packageId: string; metadata: Record<string, unknown> },
-  partial: boolean
-): number {
-  if (partial || getPackage(order.packageId)?.kind !== 'subscription') return 0;
-  const days = order.metadata.membershipDaysGranted;
-  return typeof days === 'number' && days > 0 ? days : 0;
-}
-
-/** 멤버십 지급이 구독에 더한 일수를 주문에 누적 기록한다 — 환불은 이 값만 뺀다(지급 재시도로 두 번 돌면 60). */
-export async function recordMembershipDaysGranted(orderId: string, days: number, service?: SupabaseClient) {
-  const client = service ?? (await createServiceClient());
-  const { data, error } = await client.from('payment_orders').select('metadata').eq('order_id', orderId).maybeSingle();
-  if (error) throw new Error(error.message);
-  const metadata = readObject((data as { metadata?: unknown } | null)?.metadata);
-  const prev = typeof metadata.membershipDaysGranted === 'number' ? metadata.membershipDaysGranted : 0;
-  const { error: updateError } = await client
-    .from('payment_orders')
-    .update({ metadata: { ...metadata, membershipDaysGranted: prev + days } })
-    .eq('order_id', orderId);
-  if (updateError) throw new Error(updateError.message);
-}
-
 export async function markPaymentOrderRefunded(input: {
   orderId: string;
   reason: string;
@@ -549,8 +523,8 @@ export async function markPaymentOrderRefunded(input: {
   payment?: TossPaymentObject | null;
   /** 부분취소 — 원장은 refunded 로 표기하되 멤버십 구독은 유지한다. */
   partial?: boolean;
-}) {
-  const service = await createServiceClient();
+}, service?: SupabaseClient) {
+  const client = service ?? (await createServiceClient());
   const now = new Date();
   // 2026-08-26 — 귀속일은 **PG 가 실제로 취소한 시각**. 못 읽으면 지금(감지 시각)으로 폴백.
   //   항상 now() 를 쓰면 뒤늦게 감지된 과거 취소가 오늘 환불로 잡혀 그날 순매출이 마이너스가 된다.
@@ -567,7 +541,7 @@ export async function markPaymentOrderRefunded(input: {
   // 멱등: 이미 refunded 인 주문은 다시 스탬프하지 않는다(neq 로 제외). 재호출(관리자 재승인·
   //   통보 재수신)마다 refunded_at 을 now 로 덮으면 환불 귀속일이 미래로 드리프트해 마감된
   //   과거 지표가 사후에 바뀐다. 최초 1회만 stamp 하고, 이미 refunded 면 기존 행을 반환한다.
-  const { data, error } = await service
+  const { data, error } = await client
     .from('payment_orders')
     .update(patch)
     .eq('order_id', input.orderId)
@@ -584,22 +558,52 @@ export async function markPaymentOrderRefunded(input: {
     //   차감된다. 여기(원장 함수)에 두면 admin·웹훅·정산 세 경로가 한 번에 커버된다.
     //   ⚠️ 방금 refunded 로 바뀐 경우에만 — 멱등 재호출은 위 neq 가드로 여기 안 온다.
     await dispatchGaRefund(order.orderId, order.amount).catch(() => undefined);
-    // 2026-09-13 — 멤버십 환불은 이 결제가 구독에 **실제로 더한 일수**(지급 기록)만 뺀다. 여기(방금 refunded 로 바뀐 분기)라
-    //   관리자 환불·나이스 통보·정산이 겹쳐도 정확히 1회다. 실패는 삼키지 않고 주문에 흔적을 남긴다 — 전이는 이미 끝나
-    //   재호출이 차감을 다시 하지 않으므로 수동 보정 대상으로 드러내야 한다.
-    const membershipDays = membershipDaysToRemove(order, input.partial === true);
-    if (membershipDays > 0) {
-      await shortenMembershipForRefund(order.userId, { days: membershipDays }).catch(async (err) => {
-        const message = `membership_shorten_failed: ${err instanceof Error ? err.message : String(err)}`;
-        console.error('[refund] 구독 차감 실패', { orderId: order.orderId, message });
-        await service.from('payment_orders').update({ last_error: message }).eq('order_id', order.orderId);
+    // 멤버십 전액환불 — 여기(방금 refunded 로 바뀐 분기)라 관리자 환불·나이스 통보·정산이 겹쳐도 정확히 1회다. 부분취소는 구독 유지(B단계).
+    //   실패는 삼키지 않고 주문 last_error(이어 붙임)·운영 메일로 드러낸다 — 전이는 이미 끝나 재호출이 다시 하지 않는다(수동 보정 대상).
+    if (input.partial !== true && getPackage(order.packageId)?.kind === 'subscription') {
+      const failures: string[] = [];
+      const note = (label: string) => (err: unknown) => {
+        const message = `${label}: ${err instanceof Error ? err.message : String(err)}`;
+        console.error('[refund] 멤버십 환불 후처리 실패', { orderId: order.orderId, message });
+        failures.push(message);
+      };
+      // ① 기간 원장(membership_periods): 이 결제 기간 무효 + 뒤 기간 당기기 + 구독 끝 맞추기. 정본은 표 하나(#820 일수 차감 폴백 삭제).
+      //    지급된 주문인데 표에 없으면(086 적용~배포 사이 옛 코드 지급 등) 구독을 추정으로 깎지 않고 드러낸다 — 수동 차감. ②는 skip 감사.
+      const inLedger = await refundMembershipPeriod(order.userId, order.orderId, { service: client }).catch((err) => {
+        note('membership_shorten_failed')(err);
+        return true; // 실패는 이미 기록했다 — '표에 없음'으로 겹쳐 적지 않는다
       });
+      if (!inLedger && order.fulfilledAt) {
+        failures.push(
+          'membership_period_missing: 표에 이 결제 기간 없음 — 구독 renews_at 과 그 몫을 덮은 legacy 행(백필·자가치유)을 같이 줄이고 뒤 행은 당긴 뒤 086 드리프트 쿼리 0 확인'
+        );
+      }
+      // ② 그 결제 기간(표의 무효 행 창)에 멤버십으로 연 달력·상세풀이 잠금. 감사 먼저라 부분 실패해도 식별자가 남는다.
+      await lockMembershipContentForRefund(
+        order.userId,
+        order.orderId,
+        { reason: input.reason, actor: input.source, paymentKey: order.paymentKey },
+        client
+      ).catch(note('membership_lock_failed'));
+      if (failures.length > 0) {
+        await client
+          .from('payment_orders')
+          .update({ last_error: [input.reason, ...failures].join(' | ') })
+          .eq('order_id', order.orderId);
+        if (process.env.VERCEL_ENV === 'production') {
+          await sendOpsAlertEmail({
+            subject: '[환불] 멤버십 환불 후처리 실패 — 수동 확인',
+            lines: [`주문 ${order.orderId} · 사용자 ${order.userId}`, ...failures, '주문 last_error 와 credit_transactions(entitlement_revoke) 감사행을 확인하세요.'],
+            url: '/admin/users',
+          }).catch(() => undefined);
+        }
+      }
     }
     return order;
   }
 
   // 갱신된 행이 없음 = 이미 refunded(멱등 재호출). 기존 행을 그대로 반환.
-  const existing = await getPaymentOrderByOrderId(input.orderId);
+  const existing = await getPaymentOrderByOrderId(input.orderId, client);
   if (!existing) {
     throw new Error('환불 상태를 저장하지 못했습니다.');
   }

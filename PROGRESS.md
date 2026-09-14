@@ -1,5 +1,121 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 나이스 V2 취소 통보 스키마 확정(인계 1번) — 샌드박스 결제 없이
+
+정본 `docs/nicepay-v2-cancel-facts.md`. 공식 매뉴얼(nicepayments/nicepay-manual) 조사 + 교차검증 워크플로와 **운영 DB 읽기 전용 집계**(사용자 승인 — 키 이름·건수만)로 확정했다.
+- **계획 변경 이유**: staging 은 sandbox 로 실측됐다(`nicepay-health`: mode sandbox·`S2_`·U120). 그런데 통보 URL 은 운영 하나이고(staging 은 따로 설정할 수 없음 — 사용자 확인),
+  **샌드박스 가맹점(`UT0033304m…`)은 통보를 0건 보냈다**(staging 주문 14·API 환불 12에 이벤트 0). 부분취소도 샌드박스에선 U128 로 막힌다 → QA 테스트 결제는 관찰할 게 없어 하지 않았다.
+- **확정**: status `cancelled`(L 2개) · `partialCancelled` · 본문 = JSON 결제 객체(조회·취소 응답과 같은 모양) · 잔액 `balanceAmt` · 개별 취소 `cancels[].amount`(원소 키 운영 실측 일치) · 이번 건 `cancelledTid` ·
+  서명 `sha256(tid+amount+ediDate+SecretKey)` — **status 는 서명 범위 밖** · 명세상 API 취소에도 통보 · 자동 재전송 1분×10.
+- ⚠️ 미실측: **API 취소 통보의 orderId**(원주문 vs `cxl…`). 운영 환불 5건은 전부 콘솔 취소가 먼저였다(통보가 요청보다 먼저 옴, "이미 취소됨" 우회 완료) → 다음 운영 관리자 환불 뒤 이벤트 한 줄로 확인.
+- 코드 갭 7개(문서 우선순위): 🔴 위조 통보(tid==paymentKey + 재조회 status/금액 + 서명) · 🔴 부분취소 통보 = 전액 처리(B단계와 함께, **tid 우선 조회를 먼저 배포 금지**) ·
+  🟠 멱등 기록이 처리보다 먼저라 조회 예외(try 밖) → 500 → 재전송 10회가 "duplicate" 로 흡수돼 영구 미처리(코드로 확인) · 🟠 관리자 환불 × 통보 순서 · 🟠 normalize 가 cancels 미매핑 ·
+  🟠 취소 재시도 새 orderId + 타임아웃 없음 · 🟡 정리.
+
+## 2026-09-14 — 멤버십 결제별 기간 원장(membership_periods) — 환불 잠금 창을 표에서
+
+아래 섹션(A단계, `fix/membership-refund-content-lock`) 위에 쌓음. 브랜치 `feat/membership-period-ledger`(PR·머지 전). 설계 정본 `docs/membership-period-ledger-design.md`("구현하며 정한 것 — 최종").
+- **왜**: 구독은 사용자당 1행에 결제·관리자 부여가 끝에 누적돼 결제별 실제 기간이 없었다 → 환불 잠금(되돌릴 수 없는 삭제)을 추정 창으로 했고,
+  연속 결제·부여·해제·재구매 조합마다 과다(남의 기간 삭제)·과소(못 잠금)가 새로 터졌다(리뷰 3회). A단계는 안전 휴리스틱(skip → 수동)으로 막았을 뿐.
+  유료 멤버십 결제 0건(2026-09-13 실측) — 지금이 가장 싸다.
+- **방식**: 표 `membership_periods`(결제·관리자 부여·legacy 행, 살아 있는 기간은 겹치지 않는 사슬 — **DB 배제 제약**, `renews_at` = 살아 있는 max(end_at)).
+  - 지급: base = max(지금, 사슬 끝)에 [base, base+30일) 행 + 구독 upsert. **같은 주문 행이 있으면 새 행·연장 없음**(+60 버그 제거), 앞 시도가 구독 갱신 전에 끊겼으면 구독만 맞춤.
+    **상향 자가치유**: 구독 renews_at 이 사슬 끝보다 뒤면(옛 코드 지급) 그 틈을 legacy 행으로 먼저 메운다 — **무효 행이 있는 사용자는 안 함**(찢긴 환불·해제의
+    남은 구독 끝을 굳혀 환불·해제 기간을 되살리던 회귀, 적대적 리뷰). 하향(구독이 앞)은 흡수 안 함 — 드리프트 쿼리로.
+  - 전액환불(`refundMembershipPeriod`): P 무효(refund) → P 뒤 기간을 P 가 비운 시간만큼 당김(오름차순) → 구독 = 살아 있는 끝(없거나 지났으면 즉시 만료).
+  - 관리자 해제(#821 유지): 진행 중 기간은 지금에서 끝, 미래 기간 무효(admin_revoke), 구독 expired + renews_at 지금.
+  - 잠금: 창 = 표의 P 무효 행 [start, min(end, voided_at)) — **claimant·window_not_current·metadata.membershipPeriods 휴리스틱 삭제**.
+    A단계 규칙(via:'membership' 행 · 스냅샷 날 단위) 유지 · ①(열람 행)과 근거 조회가 같은 정렬 페이지 루프 · 근거에 **레거시 전 주제 구매**(앱 게이트와 같은 판정) 포함.
+    **감사 먼저**(식별자 insert → 스냅샷 → 열람 행, 감사 실패면 안 지움).
+  - 훅: **#820 일수 차감 폴백 삭제**(정본은 표 하나 — 폴백이 사슬을 잘라 뒤 결제 행을 무효로 만들던 버그 포함). 표에 없는 **지급된** 주문 환불 = 표·구독 무변경 +
+    last_error `membership_period_missing`(수동 차감) + 운영 메일, 잠금 skip(`no_refunded_period`). 후처리 실패는 last_error 이어 붙임 + 운영 메일(프로덕션만). 부분취소는 구독 유지.
+- 🔴 **migration `086_membership_periods.sql` 수동 적용 + 배포 절차**(머리말): ① 적용 전 확인 → ② SQL Editor 적용·드리프트 0 → ③ 곧바로 PR 머지·배포 →
+  ④ 배포 완료 직후 드리프트 쿼리 재실행(0 아니면 멈추고 보고). **②~④ 사이 관리자 멤버십 부여/해제·멤버십 환불 금지**. btree_gist(extensions) + 배제 제약 ·
+  RLS on·정책 없음 + `revoke all … from public, anon, authenticated` · legacy 백필.
+  적대적 리뷰 반영: ②뒤 이 PR E2E 재실행(픽스처가 표를 쓴다 — ② 전엔 빨갛다) · ③ main 머지 + **staging 밀기** · ④ 는 프로덕션·staging 배포와 main push E2E 뒤 ·
+  옛 코드 런타임(프리뷰·로컬 dev) 멤버십 변경 금지 · 드리프트 정리 SQL · 백필 전 µs renews_at → ms 절단 + **ms 정밀도 CHECK**(µs 백필 사용자는 지급·부여가 매번 23P01) ·
+  제약을 create table 밖 drop if exists → add(옛 086 재적용에도 붙음) · 권한 확인 쿼리 `lower(grantee)`(PUBLIC 대문자).
+- 검증: 유닛 1,688 + node:test 191 + vitest 302, tsc 0 · 로컬 PG 17 로 086 실제 적용(2회 멱등, search_path=public): 백필 legacy 2 = 권한 남은 구독 2 · 드리프트 0/0 ·
+  P1 흉내 1/1 · P2 흉내 1/0 · 겹침 insert·무효 되살리기·무효 전 당기기 거부(23P01), 맞닿음·무효·다른 사용자·무효 먼저 당기기 허용 · anon 권한 0행·RLS on ·
+  뮤테이션 16/16 red(상향 치유·경보·레거시 근거·① 페이지·id 정렬·무효 전 당기기·가짜 DB 겹침/정렬/절단 가드 등).
+- 적대적 리뷰(2차) 검증: 유닛 1,690 + node:test 191 + vitest 302, tsc 0 · 로컬 PG 17(비슈퍼유저 적용): 새 DB 2회 멱등·드리프트 0/0·µs 구독 ms 절단·겹침 23P01·now() insert CHECK 거부·
+  PUBLIC 부여를 lower() 쿼리가 잡음 · 옛 086 위 재적용에 제약 5개 · 실제 앱 함수로 µs 였던 사용자 지급·재시도·부여·환불 통과, 해제 경계 무효, e2e 픽스처 seed 2회·cleanup 드리프트 0,
+  정리 SQL 두 방향 0 · 뮤테이션 9/9 red(무효 행 가드·재시도 판정·해제 경계 0 길이·가짜 DB CHECK).
+- E2E 픽스처(`seedSubscription`·`cleanupSubscription`)가 구독과 같이 원장도 쓴다(살아 있는 행 무효 → admin_grant 행 / cleanup 무효) — 공유 DB 불변식 유지.
+- 남음: ⚠️ 드리프트 쿼리 주기 실행(헬스·크론) 여부는 사용자 결정 · staging·프리뷰도 같은 Supabase(`src/proxy.ts` 주석·인프라 메모) → 옛 코드 런타임 멤버십 변경 금지가 필요한 이유 ·
+  **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** — 입력: 같은 주문을 부분환불한 뒤 전액환불하면 `neq('status','refunded')` 가드에
+  걸려 원장·잠금이 다시 안 돈다(적대적 리뷰 실측, 기존 동작 — 나이스 부분취소 → 잔액취소 흐름이면 멤버십 유지) · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
+  구독 끝 어긋남은 가능 — RPC 로 옮길 때) · 하향 드리프트(옛 코드 해제·환불)는 배포 절차·드리프트 쿼리로만 막는다.
+- 머지 전 리뷰(PR #824): pr-reviewer·security-review 새 취약점 0. 🔴 단 기존 위조 통보(나이스 웹훅 서명 없음)의 **파급이 커진다** — 위조 취소 통보가 이제
+  멤버십으로 연 달력·상세까지 되돌릴 수 없게 지운다(피해자 orderId `ord_+UUID` 가 필요). 유료 멤버십 결제 0건이라 지금 노출은 없다 → **3번(위조 가드)은 멤버십 판매 재개 전에.**
+
+## 2026-09-14 — 🔜 세션 인계: 멤버십 결제별 기간 원장(진행 중) + 남은 결정
+
+### 이번 세션에서 끝난 것 (전부 main=staging=`5300a3c7`)
+- #818 PR7 쿠폰 가드(뮤테이션 1/31 → 44/44) · #819 환불·PG 취소 회수를 결제키 기준으로 · **결제키 권한 1회성 정리 실행**(이용권 6+레거시 10 → 0, 감사 14)
+- #820 멤버십 환불 시 지급 기록 일수만 구독에서 차감 · #821 관리자 멤버십 해제 = 즉시 만료 · 대화상담 3회 취소 시 전 3개 회수
+
+### 진행 중: 멤버십 환불 시 "멤버십으로 연 달력·상세" 잠금
+- **사용자 결정**: 전액환불 → 그 결제 기간에 멤버십으로 연 달력·상세 열람 금지 · 부분환불 → 환불 비율만큼 기간 차감 + 차감된 뒤쪽 날짜만 잠금(B단계).
+- 추정 기간으로 되돌릴 수 없는 삭제를 하다가 리뷰 3회 연속 과다/과소 잠금(연속 결제·관리자 부여·해제·재구매 조합) →
+  **사용자 결정: 결제별 기간 원장 `membership_periods`(migration 086)**. 설계 정본 = `docs/membership-period-ledger-design.md`(이 PR 에 포함).
+- 브랜치
+  - `fix/membership-refund-content-lock`(`a63747af`) — A단계: via:'membership' 표식 · 스냅샷 날 단위 판정(그날 전·카드·쿠폰·주제 단품 근거 있으면 유지) ·
+    근거 조회 범위+페이지네이션 · topic 매핑 lib 이동 · 부분 실패 순서. **PR 만들지 않음** — 원장 브랜치의 기반. 남은 리뷰 지적(원장으로 해결 예정):
+    창 휴리스틱(claimant·window_not_current)의 과다/과소, 부분 실패 시 감사 유실(→ 원장 설계의 "감사 먼저"), 정렬 없는 페이지 테스트 공백.
+  - `feat/membership-period-ledger` — 세션 종료 시점에 구현 워크플로가 **실행 중이었다**(원격에 없으면 미완 → 설계대로 다시 구현).
+- 머지 전 필수: **migration 086 을 사용자가 SQL Editor 로 적용**(파일 머리말 확인 쿼리 먼저). 유료 멤버십 결제 0건(2026-09-13 실측)이라 지금 바꾸는 비용이 가장 낮다.
+
+### 남은 결정·작업 (우선순위 순)
+1. **나이스 취소 응답 확인(샌드박스) — 계획만 제시, 사용자 승인 대기.** 실사용자·실결제 금지.
+   운영자 전용 QA 계정 신규(예: `ganjisaju12+nicepay-qa@gmail.com`) · staging + 나이스 샌드박스(먼저 staging `/api/admin/payments/nicepay-health` 로 **sandbox 확인, live 면 중단**) ·
+   오늘 자세히 3,300원 쿠폰 없이 · 나이스 샌드박스 콘솔 취소 + staging 관리자 환불(API 취소) ·
+   확인할 것: 통보 `status` 철자 · 재조회 응답 상태·잔액 필드명 · API 취소 때도 통보가 오는지. 사용자 사전 확인: 샌드박스 가맹점 통보 URL 이 staging 인지.
+2. B단계(부분환불 비율 차감·뒤쪽 잠금 + 관리자 멤버십 부분환불 입력칸) — 1번 확인 뒤(부분취소 금액 필드가 미확인 스캐폴드).
+3. 🔴 나이스 취소 웹훅 위조 가드(기존 Medium — 서명 검증 없음, 재조회 결과를 진위 판정에 안 씀) — 1번으로 응답 스키마 확인 뒤 `order.paymentKey` 재조회로.
+4. 토스 경로(웹훅·정산 크론) 회수 부재는 **패스**(토스 결제 미승인 — 사용자 결정).
+
+## 2026-09-14 — 멤버십 전액환불 = 그 결제 기간에 멤버십으로 연 달력·상세풀이 잠금
+
+앞 섹션(#821) 위에 쌓음. 마이그레이션 없음. 사용자 결정(3번): 전액환불이면 그 기간에 **멤버십 혜택으로 연** 달력(월)·상세풀이(일) 열람 금지.
+- **왜**: 멤버십 열람 행(0원 `credit_transactions`)은 영구 재열람(달력)이고, 상세는 스냅샷(`/today-fortune/snapshots/[id]`, 권한 검사 없음)으로 남아 환불 뒤에도 열렸다.
+- **방식**: 멤버십 경로 기록 2곳에 `via:'membership'`(카카오 쿠폰 0원 행과 구분, 판정·RPC dedup 은 contains 라 무영향) · 멤버십으로 만든 스냅샷 `access_source='membership'`(기록용) ·
+  지급이 기간 `[renewsAt−30일, renewsAt)` 을 주문 `metadata.membershipPeriods` 에 누적 · `lockMembershipContentForRefund` 가 창 `[start, min(end, 지금))` 의
+  표식 행을 **삭제**(무효 표시는 RPC 가 reused 로 다시 연다).
+  훅은 `markPaymentOrderRefunded` 전이 분기, 구독 차감 뒤, 전액환불만(1회).
+- **리뷰 반영(같은 브랜치 2번째 커밋)**:
+  - 스냅샷은 표식이 아니라 **날** 로 판정 — 표식은 그날 첫 멤버십 POST 스냅샷에만 붙어 GET(`coin-session`)·주제 전환(`reused`)·다른 사주(`coin-daily`) 스냅샷이 남던 과소 잠금.
+    지운 멤버십 상세 행의 KST 날짜 중 **그날 다른 근거가 없는 날**의 스냅샷(`occurred_on` = 그날, 창 안 `created_at`)을 지운다.
+    근거 = 표식 없는 상세 행(전 charged·카카오 쿠폰·레거시) · 그날 `today-detail` 카드 이용권(`hasTodayDetailEntitlementForDay` 와 같은 KST 기준) · 주제 단품(재물·일, 전역) 보유 시 그 주제.
+    → 카드로 산 날 스냅샷을 멤버십 환불이 지우던 과다 잠금도 같이 해결.
+  - `last_error`: 구독 차감·잠금 실패를 **이어 붙임**(`환불사유 | membership_shorten_failed: … | membership_lock_failed: …`, 전엔 뒤가 앞을 덮음).
+  - 감사 `membership_content_locked` 에 지운 항목 식별자(`access[]`: feature·kind·readingKey·yearMonth·dayKey / `snapshots[]`: id·scopeKey). 이름 등 원문·세션 id 는 안 넣음.
+  - 기간 기록 없는 옛 주문·아직 시작 안 한 창 → 감사 `membership_content_lock_skipped`(`skipReason: no_membership_periods | no_elapsed_window`). 조용히 건너뛰지 않음.
+  - `markPaymentOrderRefunded(input, service?)`·`getPaymentOrderByOrderId(id, service?)` 주입 → 가짜 DB 로 **실행** 테스트(전액=잠금 · partial=미호출 · 멱등 재호출=미호출 · 이중 실패 흔적).
+    GA refund 는 `VERCEL_ENV=production` 아니면 DB·네트워크 전에 반환(테스트 가드 assert).
+- 검증: 유닛 1,681 + node:test 191, tsc 0 · 뮤테이션 18/18 red(KST +9h·근거 via 필터·카드 근거·근거일 제외·occurred_on·창 시작·user 필터 2곳·주제 단품·상세 행만·skip 감사·감사 식별자 2종·last_error 덮어쓰기·잠금 미호출·partial 무시·멱등 가드·잠금 via 필터).
+- **재리뷰 반영(같은 브랜치 3번째 커밋)**:
+  - 🛡️ **안전 조건(사용자 대리 결정 — 안전 기본값)**: 지급 때 기록한 창은 이후 타임라인 변화(앞 결제 환불 차감·관리자 해제·재구매)로 실제 사용 시간과 어긋나
+    **다른 결제의 열람을 지웠다**(PROBE2 해제→재구매→환불, PROBE3 연속 A·B→A 환불→C 재구매→B 환불). 이제 자동 잠금은
+    ① 환불하는 주문의 **마지막 기록 기간 end = 환불 직전 구독 `renews_at`(±1초)** 이고 ② **다른 주문이 같은 끝을 기록하지 않았을 때**만 한다
+    (②는 PROBE3 변형 — A 환불로 당겨진 끝에 C 가 이어 붙으면 C 의 끝이 B 와 정확히 같아 ①만으론 통과해 C 의 열람을 지웠다).
+    환불 직전 `renews_at` 은 `shortenMembershipForRefund` 가 이미 읽는 값을 `previousRenewsAt` 으로 반환해 넘긴다(차감 → 잠금 순서 유지).
+  - 조건 불충족 = **삭제 0 + 감사행** `membership_content_lock_skipped`: `skipReason` = `window_not_current`(`orderEnd`·`subscriptionRenewsAt`, 같은 끝을 가진 주문이면 `claimedByOrderId`)
+    · 구독 행 없음/무기한도 `window_not_current`(`subscriptionRenewsAt: null`) · 구독 차감 실패로 끝을 모르면 `subscription_unknown`(+ `last_error` 에 차감 실패) · 기존 `no_membership_periods`·`no_elapsed_window`.
+    skip 은 실패가 아니라 `last_error` 엔 안 남는다.
+  - **수동 처리 경로**: `credit_transactions` 에서 `feature='entitlement_revoke'` · `metadata->>kind='membership_content_lock_skipped'` 행을 찾아(`paymentKey`·`windows`·`orderEnd`·`subscriptionRenewsAt`)
+    그 사용자의 실제 타임라인(주문들 `metadata.membershipPeriods`·환불·관리자 해제 이력)을 보고 지울 창을 정해 수동 삭제. 자동 재시도 경로는 없다(원장 전이 1회).
+  - **부분 실패 멱등**: 순서를 ① 창 안 멤버십 열람 행 **읽기**(잠글 날·근거 계산) → ② 스냅샷 삭제 → ③ ①에서 읽은 **id 만** 열람 행 삭제(100개씩) → ④ 감사로 바꿈.
+    ②·③ 어디서 실패해도 열람 행이 남아 재실행이 같은 끝 상태를 만든다(전엔 ①에서 지운 뒤 실패하면 재실행 {0,0}·스냅샷 영구 잔존).
+  - 근거 조회(표식 없는 상세 행)를 **잠글 날 범위(첫~마지막 KST 날)** 로 좁히고 `created_at,id` 정렬 + `range` 1000행 페이지네이션(전엔 사용자 이력 전체 1회 = 1000행 절단 위험).
+  - 주제→단품 매핑 `TOPIC_PRODUCT_BY_CONCERN` 을 `src/lib/today-fortune/topic-products.ts` 로 옮김(lib→app 의존 제거). `route-helpers` 는 재수출(기존 import 경로 유지, 사본 없음).
+  - 테스트: 부분 실패 후 재실행 2종 · 창 끝 이후 스냅샷 유지(`.lt(created_at, 창 끝)` 제거가 초록이던 공백) · 근거 날짜 범위·페이지 2장 · PROBE2(원장 실행)·PROBE3 두 변형 · 정상(가장 최근·이어진 기간, 재시도 누적) · skip 사유 6종.
+  - 검증: 유닛 1,687 + node:test 191, tsc 0 · 뮤테이션 11/11 red(스냅샷 창 끝·옛 삭제 순서·±1초·같은 끝 다른 주문·구독 모름 skip·페이지네이션·근거 날짜 좁히기·자기 주문 제외·다른 주문 user 필터·원장의 직전 renews_at 전달·shorten 직전 값 반환).
+- 남음/한계: **B단계(부분환불)** · 이 변경 이전의 멤버십 열람 행엔 표식이 없어 잠기지 않음(유료 멤버십 결제 0건이라 실영향 없음) ·
+  연속 결제 타임라인 이동(앞 결제 환불·관리자 해제 뒤 환불)은 이제 지우지 않고 **skip → 수동 처리**(과다 삭제 대신 과소 잠금을 택함) ·
+  ⚠️ 관리자 부여(`/admin/membership/grant`)는 주문을 안 남겨, 앞 결제 환불로 당겨진 끝에 관리자 부여가 정확히 같은 끝을 만들면 ②가 못 잡는다(재현 조건이 좁음) ·
+  근거 판정은 레거시 `taste_product` 주제 구매(credit_transactions)는 안 봄 · 날 단위라 같은 날 **다른 사주**를 카드로 산 경우 그날 멤버십으로 연 스냅샷도 유지(사용자 의도: 근거 하나라도 있으면 유지).
+
 ## 2026-09-14 — 관리자 멤버십 해제 = 즉시 종료 · 대화상담 취소 시 전 3개 회수
 
 앞 섹션 #820 머지·staging 동기화 완료(`5c55230e`). 마이그레이션 없음. 사용자 요청 2·4번.
