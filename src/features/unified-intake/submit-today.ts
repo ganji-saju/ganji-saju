@@ -63,6 +63,34 @@ function buildResultStorageKey(sourceSessionId: string, dateKey: string) {
   return `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:${dateKey}`;
 }
 
+/**
+ * 2026-09-14 — 하루 1회에 막힌 입력(가족 등)의 '오늘 자세히' 체크아웃 href.
+ *   무료 결과를 만들지 않고 그 입력의 reading id 만 받아 결제 화면으로 보낸다(checkout-reading).
+ *   결제 후 착지는 /today-fortune/detail?sourceSessionId=<reading> — unlock GET 이 reading 만으로 연다.
+ */
+export async function prepareTodayDetailCheckout(
+  profile: UnifiedBirthProfile,
+  opts: { concernId?: string; from: string }
+): Promise<string> {
+  const concernId = normalizeConcernId(opts.concernId ?? 'general');
+  const response = await fetch('/api/today-fortune/checkout-reading', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...applyProfileToTodayPayload(INITIAL_TODAY_PAYLOAD, profile), concernId }),
+  });
+  const data = (await response.json().catch(() => null)) as { readingId?: string; error?: string } | null;
+  if (!response.ok || !data?.readingId) {
+    throw new Error(data?.error ?? '결제 화면을 여는 중 오류가 있었어요. 잠시 뒤 다시 눌러 주세요.');
+  }
+  const params = new URLSearchParams({
+    product: 'today-detail',
+    slug: data.readingId,
+    scope: concernId,
+    from: opts.from,
+  });
+  return `/membership/checkout?${params.toString()}`;
+}
+
 export async function submitTodayFromProfile(
   profile: UnifiedBirthProfile,
   opts?: { concernId?: string; from?: string }

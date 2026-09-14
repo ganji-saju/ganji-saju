@@ -1,5 +1,23 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
+
+브랜치 `fix/today-fortune-other-saju-checkout`(PR·머지 전).
+- **왜**: 무료 1회를 쓴 뒤 가족 등 다른 사람 사주를 넣으면 429 안내만 뜨고 막다른 길이었다(/today-fortune · /start). 잠금 ON 때만 붙던
+  `/saju/new?product=today-detail` 링크는 입력을 다시 받고 사주 결과(/saju/{id})를 거쳐야 결제 카드가 나오는 우회였고, `submitSajuFromProfile` 이
+  수동 입력(=가족)을 **본인 프로필로 자동저장**하는 부작용도 탄다.
+- **방식**: 새 `POST /api/today-fortune/checkout-reading` — 오늘운세와 같은 파싱(`parseTodayPayload` export 재사용)·reading 규칙(로그인=`findReadingByInput` 재사용,
+  아니면 `createReading`, DB 없으면 toSlug 폴백)으로 **reading id 만** 돌려준다. 무료 결과 생성·무료 1회 판정/소비 없음.
+  클라 `prepareTodayDetailCheckout`(submit-today.ts) → `/membership/checkout?product=today-detail&slug=<reading>&scope=<고민>&from=today-fortune-limit|start-limit`.
+  버튼 `TodayDetailCheckoutButton`(가격 = `usePriceLabel('saju_entry')` 리졸버) 을 `free_daily_limit` **코드**일 때만 두 화면에 붙임 — 잠금 ON/OFF 같은 코드라 두 모드 동일. 잠금 전용 링크는 삭제.
+- **끝까지**: 비로그인 → 체크아웃 결제 버튼이 기존 `/login?next=…&returned=1` 로 같은 slug 복귀(reading 은 소유자 없음 — unlock 은 null 소유자 허용) · 이미 오늘 산 사람은
+  체크아웃 `checkTodayDetailAccess` 가 '이미 구매한 풀이 → 구매한 풀이 열기' · 결제 후 `buildTasteProductHref`(from 이 saju* 아님) → `/today-fortune/detail?paid=today-detail&sourceSessionId=<reading>`
+  → unlock **GET** 이 reading 만으로 연다(스냅샷 scope 가 readingKey 라 그 사람 것). 착지·unlock 은 무료 결과 세션이 필요 없어 무수정.
+- 검증: `checkout-reading/route.spec.ts` 4건(계정 재사용 · 익명 생성 · 무료 결과/1회 판정·소비 0 · 400) + `today-fortune-experience.test.tsx`(jsdom) 3건(코드일 때 카탈로그 가격 버튼 →
+  체크아웃 href · 실패 시 이동 없음 · 다른 오류엔 버튼 없음). 수정 전 red(라우트 없음·버튼 없음), 뮤테이션(재사용 삭제·코드 판정 삭제) red. tsc 0, npm test·test:spec 전부 green.
+- 남은 것: 같은 날 **아무 사주로든** 오늘 자세히를 산 계정은 다른 사람 것도 열린다(`hasTodayDetailEntitlementForDay` same-day 규칙, 기존 정책 — 무수정).
+  /start 화면 분기 테스트는 없음(같은 컴포넌트·같은 코드 판정).
+
 ## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
 
 브랜치 `fix/today-fortune-replay-account`(PR·머지 전).
