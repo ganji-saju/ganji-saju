@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { todayDetailRowsOpenSaju } from './product-entitlements';
+import { detailReportRowsOpenSaju } from './credits/detail-report-access';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -73,6 +74,18 @@ test('레거시: 사주로 특정 안 되는 오늘 이용권(scope 없음·옛 
   );
 });
 
+test('현재 사주 미해석(readingKey null)이면 넓히지 않는다 — 정확일치(slug)만', () => {
+  // 호출부가 키를 못 풀어도(resolveReading null 등) 오늘 산 가족 사주가 열리면 안 된다(리뷰 2026-09-14).
+  assert.equal(
+    todayDetailRowsOpenSaju([row(`today:${BOUGHT}`)], DAY, { readingKey: null, slug: 'rid-9' }),
+    false
+  );
+  assert.equal(
+    todayDetailRowsOpenSaju([row(`today:${BOUGHT}`)], DAY, { readingKey: null, slug: BOUGHT }),
+    true
+  );
+});
+
 test('여러 건 중 하나라도 이 사주 것이면 열림 · 이용권 없음은 닫힘', () => {
   const current = { readingKey: BOUGHT, slug: null };
   assert.equal(
@@ -80,6 +93,27 @@ test('여러 건 중 하나라도 이 사주 것이면 열림 · 이용권 없�
     true
   );
   assert.equal(todayDetailRowsOpenSaju([], DAY, current), false);
+});
+
+// 열기(unlock) 4단계 — 전에는 그날 detail_report 행 아무거나(무료 후속질문 포함)면 'coin-daily' 로 가족 사주까지 열렸다.
+const meta = (kind: string, readingKey?: string) => ({ metadata: { kind, readingKey, dayKey: DAY } });
+
+test('열기 4단계: 이 사주의 오늘 열람 행(전·멤버십·카카오 쿠폰)만 연다 · 출생지 경로만 다른 같은 사주 열림', () => {
+  const rows = [meta('today_fortune_premium_access', BOUGHT)];
+  assert.equal(detailReportRowsOpenSaju(rows, BOUGHT), true);
+  assert.equal(detailReportRowsOpenSaju(rows, SAME_VIA_PRESET), true);
+  assert.equal(detailReportRowsOpenSaju(rows, FAMILY), false);
+  assert.equal(detailReportRowsOpenSaju([meta('detail_report_access', BOUGHT)], SAME_VIA_PRESET), true);
+});
+
+test('열기 4단계: 무료 후속질문(today_result_followup)·readingKey 없는 행은 아무 사주도 열지 않는다', () => {
+  assert.equal(
+    detailReportRowsOpenSaju([{ metadata: { kind: 'today_result_followup', sourceSessionId: 'rid-1' } }], FAMILY),
+    false
+  );
+  assert.equal(detailReportRowsOpenSaju([meta('today_result_followup', FAMILY)], FAMILY), false);
+  assert.equal(detailReportRowsOpenSaju([meta('today_fortune_premium_access')], FAMILY), false);
+  assert.equal(detailReportRowsOpenSaju([{ metadata: null }], FAMILY), false);
 });
 
 // 🔴 가드 — 결제 화면·결제 준비·열기(GET/POST)가 같은 판정 함수를 쓴다.
@@ -105,4 +139,8 @@ test('세 호출부가 hasTodayDetailEntitlementForSaju 하나로 판정한다',
     !read('lib/product-entitlements.ts').includes('hasTodayDetailEntitlementForDay'),
     '옛 판정 함수가 남아 있으면 새 호출부가 다시 쓸 수 있다'
   );
+  // 열기의 '그날 아무 행' 폴백(hasTodayFortuneDailyAccess)이 되살아나면 결제 화면과 다시 어긋난다.
+  for (const file of ['lib/credits/detail-report-access.ts', 'app/api/today-fortune/unlock/route.ts', 'app/api/today-fortune/unlock/route-helpers.ts']) {
+    assert.ok(!read(file).includes('hasTodayFortuneDailyAccess'), `${file} 에 사주 무관 일일 폴백이 남음`);
+  }
 });

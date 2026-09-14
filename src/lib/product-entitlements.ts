@@ -18,6 +18,7 @@ import {
   readingKeyMatchesCurrentSaju,
   sajuIdentityFromReadingKey,
 } from '@/lib/saju/reading-identity';
+import { getKoreaAccessDay } from '@/lib/credits/detail-report-access';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export {
@@ -97,10 +98,32 @@ function matchesProductScope(metadata: Record<string, unknown>, scopeKey: string
   return metadata.scopeKey === scopeKey || metadata.scopeKey === undefined || metadata.scopeKey === null;
 }
 
+function buildEntitlementMetadata(
+  productId: PaidProductId,
+  normalizedScopeKey: string,
+  options: { orderId?: string | null; paymentKey?: string | null; amount?: number | null; packageId?: string | null }
+) {
+  return {
+    kind: productId === 'lifetime-report' ? 'lifetime_report' : 'taste_product',
+    productId,
+    scopeKey: normalizedScopeKey,
+    orderId: options.orderId ?? null,
+    paymentKey: options.paymentKey ?? null,
+    amount: options.amount ?? null,
+    packageId: options.packageId ?? null,
+  };
+}
+
+/** created_at 이 오늘(KST)보다 앞선 날인가 — 오늘 자세히 당일권의 재지급 판정. */
+function isEarlierKstDay(createdAt: string, now = new Date()) {
+  return getKoreaAccessDay(new Date(createdAt)) < getKoreaAccessDay(now);
+}
+
 async function getProductTableEntitlement(
   userId: string,
   productId: PaidProductId,
-  scopeKey: string | null
+  scopeKey: string | null,
+  exactScope = false
 ) {
   const service = await createServiceClient();
   const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
@@ -113,8 +136,8 @@ async function getProductTableEntitlement(
     .limit(1);
 
   query =
-    normalizedScopeKey === 'global'
-      ? query.eq('scope_key', 'global')
+    normalizedScopeKey === 'global' || exactScope
+      ? query.eq('scope_key', normalizedScopeKey)
       : query.in('scope_key', [normalizedScopeKey, 'global']);
 
   const { data, error } = await query;
@@ -318,10 +341,12 @@ export function todayDetailRowsOpenSaju(
     const stored = row.scope_key?.startsWith(TODAY_DETAIL_SCOPE_PREFIX)
       ? row.scope_key.slice(TODAY_DETAIL_SCOPE_PREFIX.length).trim()
       : '';
-    // 레거시 — 어느 쪽이든 사주로 특정되지 않으면(scope 없음·'global'·옛 readingId 키, 현재 사주
-    //   미해석) 누구 것인지 모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상
-    //   today:<readingKey> 라 이런 행은 해석 실패 때만 생긴다 — 산 사람을 잠그는 쪽보다 넓게 둔다.
-    if (!sajuIdentityFromReadingKey(stored) || !currentIdentity) return true;
+    // 레거시 — **저장된 쪽**이 사주로 특정되지 않으면(scope 없음·'global'·옛 readingId 키) 누구 것인지
+    //   모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상 today:<readingKey> 라 이런 행은 해석 실패
+    //   때만 생긴다 — 산 사람을 잠그는 쪽보다 넓게 둔다.
+    //   현재 사주가 미해석(readingKey null)이면 넓히지 않는다 — 정확일치(slug·readingKey)만. 호출부가 키를 빠뜨려도
+    //   옛 '그날 아무 사주' 로 조용히 돌아가지 않게(리뷰 2026-09-14).
+    if (!sajuIdentityFromReadingKey(stored)) return true;
     return readingKeyMatchesCurrentSaju(stored, [current.readingKey, current.slug], currentIdentity);
   });
 }
@@ -458,10 +483,38 @@ export async function grantProductEntitlement(
 ) {
   const scopeKey = options.scopeKey ?? null;
   const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
-  const existing = await getProductTableEntitlement(userId, productId, scopeKey);
-  if (existing) return existing;
+  const isDayPass = productId === 'today-detail';
+  const existing = await getProductTableEntitlement(userId, productId, scopeKey, isDayPass);
+  if (existing && !(isDayPass && isEarlierKstDay(existing.createdAt))) return existing;
 
   const service = await createServiceClient();
+  if (existing) {
+    // 2026-09-14 — 오늘 자세히는 당일권(판정은 created_at 이 오늘인지). 같은 사주를 다음 날 다시 사면
+    //   UNIQUE(user, product, scope_key) 라 새 행을 못 넣고 어제 행이 그대로 돌아와, 결제는 됐는데 안 열렸다.
+    //   지난 날 행을 이 결제로 갱신한다(created_at=지금·결제키). 어제 결제 환불(결제키 회수)은 이 행을 안 지운다 — 오늘 몫이다.
+    //   조회는 정확 scope 만(isDayPass) — 옛 'global' 행을 갱신하면 레거시 규칙으로 그날 모든 사주가 열린다.
+    const nowIso = new Date().toISOString();
+    const { data, error } = await service
+      .from('product_entitlements')
+      .update({
+        created_at: nowIso,
+        updated_at: nowIso,
+        order_id: options.orderId ?? null,
+        payment_key: options.paymentKey ?? null,
+        package_id: options.packageId ?? null,
+        amount: options.amount ?? null,
+        metadata: buildEntitlementMetadata(productId, normalizedScopeKey, options),
+      })
+      .eq('id', existing.id)
+      .eq('user_id', userId)
+      .select('id, user_id, product_id, scope_key, order_id, payment_key, package_id, amount, created_at')
+      .single();
+    if (error || !data) {
+      throw new Error(error?.message ?? '상품 이용권을 갱신하지 못했습니다.');
+    }
+    return mapProductTableEntitlement(data as ProductEntitlementRow);
+  }
+
   const { data, error } = await service
     .from('product_entitlements')
     .insert({
@@ -472,21 +525,13 @@ export async function grantProductEntitlement(
       payment_key: options.paymentKey ?? null,
       package_id: options.packageId ?? null,
       amount: options.amount ?? null,
-      metadata: {
-        kind: productId === 'lifetime-report' ? 'lifetime_report' : 'taste_product',
-        productId,
-        scopeKey: normalizedScopeKey,
-        orderId: options.orderId ?? null,
-        paymentKey: options.paymentKey ?? null,
-        amount: options.amount ?? null,
-        packageId: options.packageId ?? null,
-      },
+      metadata: buildEntitlementMetadata(productId, normalizedScopeKey, options),
     })
     .select('id, user_id, product_id, scope_key, order_id, payment_key, package_id, amount, created_at')
     .single();
 
   if (error?.code === '23505') {
-    const duplicate = await getProductTableEntitlement(userId, productId, scopeKey);
+    const duplicate = await getProductTableEntitlement(userId, productId, scopeKey, isDayPass);
     if (duplicate) return duplicate;
   }
 

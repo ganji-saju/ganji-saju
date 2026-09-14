@@ -7,7 +7,7 @@ import { resolveMoonlightCounselor } from '@/lib/counselors';
 import {
   getKoreaAccessDay,
   hasDetailReportAccess,
-  hasTodayFortuneDailyAccess,
+  hasTodayFortuneAccessForSaju,
   hasTodayFortunePremiumAccess,
   hasTodayFortunePremiumAccessByReading,
   unlockTodayFortunePremium,
@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>
         hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
       hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
-      hasTodayFortuneDailyAccess,
+      hasTodayFortuneAccessForSaju,
     },
   );
 
@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>
         hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
       hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
-      hasTodayFortuneDailyAccess,
+      hasTodayFortuneAccessForSaju,
     },
   );
 

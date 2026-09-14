@@ -15,7 +15,7 @@ const allFalseDeps = {
   hasTodayFortunePremiumAccess: async () => false,
   hasDetailReportAccess: async () => false,
   hasTodayFortunePremiumAccessByReading: async () => false,
-  hasTodayFortuneDailyAccess: async () => false,
+  hasTodayFortuneAccessForSaju: async () => false,
 };
 
 test('returns "taste-product" when entitlement row exists (550원 결제 경로)', async () => {
@@ -68,16 +68,21 @@ test('returns "coin-reading" when only today_fortune_premium_access row by readi
   assert.equal(result, 'coin-reading');
 });
 
-test('returns "coin-daily" when only daily row exists — 사용자 명시 요구: "같은 날 두 번 결제 차단"', async () => {
+test('4단계는 이 사주(readingKey)·오늘로 묻는다 — "같은 날 두 번 결제 차단"은 같은 사주만(2026-09-14)', async () => {
+  const calls: Array<[string, string]> = [];
   const result = await resolveTodayFortuneUnlockAccess(
     'user-1',
     baseScope,
     {
       ...allFalseDeps,
-      hasTodayFortuneDailyAccess: async (_u, k) => k === '2026-05-17',
+      hasTodayFortuneAccessForSaju: async (_u: string, rk: string, day: string) => {
+        calls.push([rk, day]);
+        return rk === 'reading-key-abc' && day === '2026-05-17';
+      },
     },
   );
-  assert.equal(result, 'coin-daily');
+  assert.equal(result, 'coin-reading');
+  assert.deepEqual(calls, [['reading-key-abc', '2026-05-17']]);
 });
 
 test('returns null when no access row exists at all (첫 진입 — deduct 필요)', async () => {
@@ -104,7 +109,7 @@ test('short-circuits — entitlement 매치 시 coin/daily 조회 skip', async (
         coinCalls += 1;
         return true;
       },
-      hasTodayFortuneDailyAccess: async () => {
+      hasTodayFortuneAccessForSaju: async () => {
         coinCalls += 1;
         return true;
       },
@@ -130,7 +135,7 @@ test('short-circuits — coin-session 매치 시 coin-reading / coin-daily 조�
         downstreamCalls += 1;
         return true;
       },
-      hasTodayFortuneDailyAccess: async () => {
+      hasTodayFortuneAccessForSaju: async () => {
         downstreamCalls += 1;
         return true;
       },
@@ -153,7 +158,7 @@ test('short-circuits — coin-reading (today_fortune_premium_access by readingKe
         downstreamCalls += 1;
         return true;
       },
-      hasTodayFortuneDailyAccess: async () => {
+      hasTodayFortuneAccessForSaju: async () => {
         downstreamCalls += 1;
         return true;
       },

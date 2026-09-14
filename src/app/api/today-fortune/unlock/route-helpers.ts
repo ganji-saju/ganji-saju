@@ -40,8 +40,8 @@ export interface TodayFortuneUnlockDeps {
     userId: string,
     readingKey: string,
   ) => Promise<boolean>;
-  // 2026-05-17 PR #199 — broadest fallback (사용자 명시 요구: "같은 날 두 번 결제 차단").
-  hasTodayFortuneDailyAccess: (userId: string, dateKey: string) => Promise<boolean>;
+  // 2026-05-17 PR #199 — "같은 날 두 번 결제 차단". 2026-09-14 부터 **이 사주**(#699 정체성) 열람 행만 — 그날 아무 행이나 X.
+  hasTodayFortuneAccessForSaju: (userId: string, readingKey: string, dateKey: string) => Promise<boolean>;
 }
 
 export type TodayFortuneAccessSource =
@@ -49,7 +49,6 @@ export type TodayFortuneAccessSource =
   | 'topic-product'
   | 'coin-session'
   | 'coin-reading'
-  | 'coin-daily'
   | null;
 
 // 주제 → 단품 매핑은 lib 이 정본(멤버십 환불 잠금도 읽는다). 기존 import 경로는 재수출로 유지.
@@ -87,11 +86,11 @@ export async function resolveTodayFortuneUnlockAccess(
     return 'coin-reading';
   }
 
-  // 4) coin unlock by KST 일자 (broadest fallback — 사용자 명시 요구).
-  //    sourceSessionId / readingKey 가 어떤 이유로 매치 못 잡아도 같은 user 가
-  //    같은 날 detail_report 1전 결제를 했다면 reused — 같은 날 두 번 차감 차단.
-  if (await deps.hasTodayFortuneDailyAccess(userId, scope.todayKey)) {
-    return 'coin-daily';
+  // 4) 같은 사주(#699 정체성)의 오늘 열람 행 — readingKey 가 이름 해시·출생지 경로로 흔들려도 같은 날 두 번 차감 차단.
+  //    🔴 2026-09-14 전에는 그날 아무 detail_report 행(무료 후속질문 포함)이면 'coin-daily' 로 가족 사주까지 열었다.
+  //    결제 화면·prepare 가 사주 단위(hasTodayDetailEntitlementForSaju)라 열기도 사주 단위여야 한다.
+  if (await deps.hasTodayFortuneAccessForSaju(userId, scope.readingKey, scope.todayKey)) {
+    return 'coin-reading';
   }
 
   return null;

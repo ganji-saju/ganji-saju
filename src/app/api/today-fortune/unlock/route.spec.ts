@@ -21,7 +21,7 @@ vi.mock('@/lib/profile', () => ({
 vi.mock('@/lib/credits/detail-report-access', () => ({
   getKoreaAccessDay: vi.fn(() => '2026-09-14'),
   hasDetailReportAccess: vi.fn(async () => false),
-  hasTodayFortuneDailyAccess: vi.fn(async () => false),
+  hasTodayFortuneAccessForSaju: vi.fn(async () => false),
   hasTodayFortunePremiumAccess: vi.fn(async () => false),
   hasTodayFortunePremiumAccessByReading: vi.fn(async () => false),
   unlockTodayFortunePremium: vi.fn(),
@@ -44,6 +44,8 @@ vi.mock('@/lib/today-fortune/result-snapshots', () => ({
 }));
 
 import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
+import { hasTodayDetailEntitlementForSaju } from '@/lib/product-entitlements';
+import { toSlug } from '@/lib/saju/pillars';
 import { GET, POST } from './route';
 
 const snapshotArg = () => vi.mocked(upsertTodayFortuneResultSnapshot).mock.calls[0][0];
@@ -67,5 +69,33 @@ describe('/api/today-fortune/unlock — 폼 이름(name)을 스냅샷 이름 해
       })
     );
     expect(snapshotArg().nameHint).toBe('아버지');
+  });
+});
+
+// 2026-09-14 — 오늘 자세히는 산 사주만. 열기가 **이 사주(readingKey·slug)** 로 판정 함수를 부르는지 인자까지 고정한다
+//   ({readingKey:null} 로 바꾸면 미해석 폴백으로 조용히 넓어지는 뮤테이션을 잡는다 — 리뷰 지적).
+describe('/api/today-fortune/unlock — 이용권 판정은 이 사주로', () => {
+  beforeEach(() => vi.clearAllMocks());
+  const readingKey = toSlug({ year: 1962, month: 3, day: 2, unknownTime: true, gender: 'male' } as never);
+
+  it('GET', async () => {
+    await GET(new NextRequest('http://localhost/api/today-fortune/unlock?sourceSessionId=reading-dad'));
+    expect(hasTodayDetailEntitlementForSaju).toHaveBeenCalledWith('user-1', '2026-09-14', {
+      readingKey,
+      slug: 'reading-dad',
+    });
+  });
+
+  it('POST', async () => {
+    await POST(
+      new NextRequest('http://localhost/api/today-fortune/unlock', {
+        method: 'POST',
+        body: JSON.stringify({ sourceSessionId: 'reading-dad' }),
+      })
+    );
+    expect(hasTodayDetailEntitlementForSaju).toHaveBeenCalledWith('user-1', '2026-09-14', {
+      readingKey,
+      slug: 'reading-dad',
+    });
   });
 });
