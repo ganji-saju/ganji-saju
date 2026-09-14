@@ -1,5 +1,19 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
+
+브랜치 `fix/today-fortune-replay-account`(PR·머지 전).
+- **왜**: 차단은 계정 기준(`isFreeDailyUsed` → membership_benefit_usage)인데 재열람 면제는 기기 전용이었다(host-only 쿠키 `gj_free_today_sig` + 탭 sessionStorage).
+  새 탭·다른 브라우저·앱 전환·staging↔운영 전환 뒤엔 자기 결과도 429 → '다시 열어보기' ② 재POST 도 같은 429 → 3,300원 오늘 자세히 CTA(결과 화면에만 있음)까지 사라졌다.
+- **방식**(`src/app/api/today-fortune/route.ts`): 게이트 판정을 순수 함수 `isTodayReplay` 로 export. 쿠키 서명 일치 **또는** 로그인 계정의 오늘(`occurredOn === dailyPeriodKey()`)
+  실행기록(`listTodayFortuneRunsForUser` 재사용, 쿠키가 안 맞을 때만 조회) 중 `sajuIdentityKey`(4기둥+성별, #699 정본)가 이번 입력과 같은 게 있으면 replayGranted(추가 소비·서명 갱신 없음).
+  다른 사람(가족) 입력은 정체성이 달라 그대로 429. 클라이언트 무변경 — ② 는 거부된 같은 프로필을 재POST 하므로 서버 통과로 결과 화면·결제 CTA 가 복원된다.
+- 부수: 익명 서명 안정화 — `unknown = unknownBirthTime || !hour`(시각 '모름' 기본값 hour '' + false 가 저장 정규화 뒤 true 로 바뀌어 서명이 갈리던 것).
+- 검증: `replay.spec.ts` 5건(① 같은 정체성 오늘 run → 통과 ② 가족 → 차단 ③ 어제 run → 차단 · 익명 쿠키 폴백 ④ hour '' 에서 false/true 같은 서명) ·
+  뮤테이션(쿠키 전용 게이트·원래 서명)에서 ①④ red 확인 · 유닛 1,690 + node:test 191 + vitest 307, tsc 0.
+- 남은 것: **가족(다른 사람) 입력 429 화면엔 결제 경로가 없다** — 제품 결정으로 남김. 멤버 면제로 오늘 run 을 만든 뒤 같은 날 멤버십이 끝난 사용자는 그 사람 재열람이 통과된다(같은 결과 재계산, 무해 판단).
+- 참고: 아래 원장 섹션의 '086 수동 적용 필요'는 **2026-09-14 적용·#824 머지·드리프트 0 완료**.
+
 ## 2026-09-14 — 나이스 V2 취소 통보 스키마 확정(인계 1번) — 샌드박스 결제 없이
 
 정본 `docs/nicepay-v2-cancel-facts.md`. 공식 매뉴얼(nicepayments/nicepay-manual) 조사 + 교차검증 워크플로와 **운영 DB 읽기 전용 집계**(사용자 승인 — 키 이름·건수만)로 확정했다.

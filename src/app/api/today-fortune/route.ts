@@ -8,7 +8,7 @@ import {
   isReadingId,
   resolveReading,
 } from '@/lib/saju/readings';
-import { recordTodayFortuneRun } from '@/lib/today-fortune/run-log';
+import { listTodayFortuneRunsForUser, recordTodayFortuneRun } from '@/lib/today-fortune/run-log';
 import { toSlug } from '@/lib/saju/pillars';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
 import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-fortune';
@@ -18,7 +18,7 @@ import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-nam
 import { generateTodayFortuneNarrative } from '@/server/ai/today-fortune/service';
 import { sajuIdentityKey } from '@/lib/saju/reading-identity';
 import { buildTodayCaseSummaries } from '@/server/today-fortune/today-case-summaries';
-import type { UserSituation } from '@/lib/saju/types';
+import type { BirthInput, UserSituation } from '@/lib/saju/types';
 import {
   consumeFreeDaily,
   freeDailyLimitMessage,
@@ -32,12 +32,15 @@ import { dailyPeriodKey } from '@/lib/credits/member-benefits';
 //   (엔진이 결정론이라 같은 날 같은 입력 = 같은 결과). 다른 사람 입력은 서명이 달라 여전히 차단.
 const FREE_TODAY_REPLAY_COOKIE = 'gj_free_today_sig';
 
-function freeTodayReplaySignature(payload: TodayFortuneBirthPayload): string {
+export function freeTodayReplaySignature(payload: TodayFortuneBirthPayload): string {
+  // 시각 select 기본값 '모름'은 hour '' + unknownBirthTime false 로 오는데, 저장 정규화가
+  //   unknownBirthTime 을 true 로 바꿔 다음 제출 서명이 달라졌다 — 둘을 같은 '시간 모름'으로 본다.
+  const unknown = payload.unknownBirthTime || !payload.hour;
   const core = JSON.stringify([
     payload.year, payload.month, payload.day,
-    payload.unknownBirthTime ? '' : payload.hour,
-    payload.unknownBirthTime ? '' : payload.minute,
-    payload.unknownBirthTime ? 1 : 0,
+    unknown ? '' : payload.hour,
+    unknown ? '' : payload.minute,
+    unknown ? 1 : 0,
     payload.gender ?? '',
     payload.calendarType ?? 'solar',
     payload.timeRule ?? 'standard',
@@ -45,6 +48,27 @@ function freeTodayReplaySignature(payload: TodayFortuneBirthPayload): string {
   let h = 5381;
   for (let i = 0; i < core.length; i += 1) h = ((h * 33) ^ core.charCodeAt(i)) >>> 0;
   return h.toString(16);
+}
+
+/**
+ * 오늘 이미 무료 1회를 쓴 요청이 '같은 날 같은 사람 재열람'인가(소비 없이 통과).
+ *   ① 기기 쿠키 서명 일치(익명 폴백 — 같은 탭/브라우저) 또는
+ *   ② 로그인 계정의 오늘 실행기록 중 사주 정체성(4기둥+성별, #699 정본)이 이번 입력과 같은 것.
+ *   ②가 없으면 새 탭·다른 브라우저·호스트 전환만으로 자기 결과를 다시 못 봤다(쿠키는 기기 전용).
+ *   다른 사람(가족) 입력은 정체성이 달라 여전히 차단된다.
+ */
+export function isTodayReplay(args: {
+  cookieValue: string | undefined;
+  replaySignature: string;
+  identity: string | null;
+  todayKey: string;
+  runs: ReadonlyArray<{ occurredOn: string; input: BirthInput }>;
+}): boolean {
+  if (args.cookieValue === args.replaySignature) return true;
+  if (!args.identity) return false;
+  return args.runs.some(
+    (run) => run.occurredOn === args.todayKey && sajuIdentityKey(run.input) === args.identity
+  );
 }
 
 /**
@@ -147,11 +171,25 @@ export async function POST(req: NextRequest) {
   //   실패했을 때 사용자가 결과도 못 받고 오늘 기회만 잃는다.
   //   (검사~소비 사이 동시 요청이 둘 다 통과할 수 있으나, 무료 티어 제한이라 감수.)
   const memberExempt = await isFreeDailyExempt(user?.id ?? null);
-  const replaySignature = `${dailyPeriodKey()}:${freeTodayReplaySignature(payload)}`;
+  const todayKey = dailyPeriodKey();
+  const replaySignature = `${todayKey}:${freeTodayReplaySignature(payload)}`;
   let replayGranted = false;
   if (!memberExempt && (await isFreeDailyUsed('today', user?.id ?? null))) {
-    // 같은 날 같은 입력의 재요청이면 소비 없이 통과(다시 열어보기).
-    if (req.cookies.get(FREE_TODAY_REPLAY_COOKIE)?.value === replaySignature) {
+    // 같은 날 같은 사람의 재요청이면 소비 없이 통과(다시 열어보기). 계정 조회는 쿠키가 안 맞을 때만.
+    const cookieValue = req.cookies.get(FREE_TODAY_REPLAY_COOKIE)?.value;
+    const runs =
+      user?.id && cookieValue !== replaySignature
+        ? await listTodayFortuneRunsForUser(user.id)
+        : [];
+    if (
+      isTodayReplay({
+        cookieValue,
+        replaySignature,
+        identity: sajuIdentityKey(parsed.input),
+        todayKey,
+        runs,
+      })
+    ) {
       replayGranted = true;
     } else {
       return NextResponse.json(
