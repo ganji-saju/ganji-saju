@@ -1,5 +1,17 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 나이스 V2 취소 통보 스키마 확정(인계 1번) — 샌드박스 결제 없이
+
+정본 `docs/nicepay-v2-cancel-facts.md`. 공식 매뉴얼(nicepayments/nicepay-manual) 조사 + 교차검증 워크플로와 **운영 DB 읽기 전용 집계**(사용자 승인 — 키 이름·건수만)로 확정했다.
+- **계획 변경 이유**: staging 은 sandbox 로 실측됐다(`nicepay-health`: mode sandbox·`S2_`·U120). 그런데 통보 URL 은 운영 하나이고(staging 은 따로 설정할 수 없음 — 사용자 확인),
+  **샌드박스 가맹점(`UT0033304m…`)은 통보를 0건 보냈다**(staging 주문 14·API 환불 12에 이벤트 0). 부분취소도 샌드박스에선 U128 로 막힌다 → QA 테스트 결제는 관찰할 게 없어 하지 않았다.
+- **확정**: status `cancelled`(L 2개) · `partialCancelled` · 본문 = JSON 결제 객체(조회·취소 응답과 같은 모양) · 잔액 `balanceAmt` · 개별 취소 `cancels[].amount`(원소 키 운영 실측 일치) · 이번 건 `cancelledTid` ·
+  서명 `sha256(tid+amount+ediDate+SecretKey)` — **status 는 서명 범위 밖** · 명세상 API 취소에도 통보 · 자동 재전송 1분×10.
+- ⚠️ 미실측: **API 취소 통보의 orderId**(원주문 vs `cxl…`). 운영 환불 5건은 전부 콘솔 취소가 먼저였다(통보가 요청보다 먼저 옴, "이미 취소됨" 우회 완료) → 다음 운영 관리자 환불 뒤 이벤트 한 줄로 확인.
+- 코드 갭 7개(문서 우선순위): 🔴 위조 통보(tid==paymentKey + 재조회 status/금액 + 서명) · 🔴 부분취소 통보 = 전액 처리(B단계와 함께, **tid 우선 조회를 먼저 배포 금지**) ·
+  🟠 멱등 기록이 처리보다 먼저라 조회 예외(try 밖) → 500 → 재전송 10회가 "duplicate" 로 흡수돼 영구 미처리(코드로 확인) · 🟠 관리자 환불 × 통보 순서 · 🟠 normalize 가 cancels 미매핑 ·
+  🟠 취소 재시도 새 orderId + 타임아웃 없음 · 🟡 정리.
+
 ## 2026-09-14 — 멤버십 결제별 기간 원장(membership_periods) — 환불 잠금 창을 표에서
 
 아래 섹션(A단계, `fix/membership-refund-content-lock`) 위에 쌓음. 브랜치 `feat/membership-period-ledger`(PR·머지 전). 설계 정본 `docs/membership-period-ledger-design.md`("구현하며 정한 것 — 최종").
@@ -30,7 +42,9 @@
   PUBLIC 부여를 lower() 쿼리가 잡음 · 옛 086 위 재적용에 제약 5개 · 실제 앱 함수로 µs 였던 사용자 지급·재시도·부여·환불 통과, 해제 경계 무효, e2e 픽스처 seed 2회·cleanup 드리프트 0,
   정리 SQL 두 방향 0 · 뮤테이션 9/9 red(무효 행 가드·재시도 판정·해제 경계 0 길이·가짜 DB CHECK).
 - E2E 픽스처(`seedSubscription`·`cleanupSubscription`)가 구독과 같이 원장도 쓴다(살아 있는 행 무효 → admin_grant 행 / cleanup 무효) — 공유 DB 불변식 유지.
-- 남음: ⚠️ 드리프트 쿼리 주기 실행(헬스·크론) 여부는 사용자 결정 · ⚠️ staging·프리뷰가 같은 Supabase 인지 검증필요 · **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
+- 남음: ⚠️ 드리프트 쿼리 주기 실행(헬스·크론) 여부는 사용자 결정 · staging·프리뷰도 같은 Supabase(`src/proxy.ts` 주석·인프라 메모) → 옛 코드 런타임 멤버십 변경 금지가 필요한 이유 ·
+  **B단계(부분환불 — P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금·뒤 기간 당김, 표 구조는 지원)** — 입력: 같은 주문을 부분환불한 뒤 전액환불하면 `neq('status','refunded')` 가드에
+  걸려 원장·잠금이 다시 안 돈다(적대적 리뷰 실측, 기존 동작 — 나이스 부분취소 → 잔액취소 흐름이면 멤버십 유지) · 여러 문장 비원자(동시 변경은 겹침이면 23P01 로 실패하지만
   구독 끝 어긋남은 가능 — RPC 로 옮길 때) · 하향 드리프트(옛 코드 해제·환불)는 배포 절차·드리프트 쿼리로만 막는다.
 
 ## 2026-09-14 — 🔜 세션 인계: 멤버십 결제별 기간 원장(진행 중) + 남은 결정

@@ -93,7 +93,7 @@ create unique index if not exists membership_periods_live_payment_uidx
 alter table public.membership_periods enable row level security;
 revoke all on table public.membership_periods from public, anon, authenticated;
 
--- 백필 전: µs 가 섞인 renews_at(수동 SQL·옛 finalize RPC 의 now()+interval)을 ms 로 자른다(1ms 미만 앞당김) — 행 경계와 구독 끝이 같은 값이 되게.
+-- 백필 전: µs 가 섞인 renews_at(수동 SQL 의 now()+interval 등 — 앱은 JS Date 라 ms)을 ms 로 자른다(1ms 미만 앞당김) — 행 경계와 구독 끝이 같은 값이 되게.
 update public.subscriptions
    set renews_at = date_trunc('milliseconds', renews_at)
  where status in ('active', 'cancelled')
