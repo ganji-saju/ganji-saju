@@ -49,6 +49,7 @@ B단계(부분환불)·웹훅 위조 가드는 이 문서를 전제로 한다.
 3. 🟠 **멱등 기록이 처리보다 먼저**라서 조회 예외(`getPaymentOrderByOrderId` 가 try 밖)가 500 → 자동 재전송 10회가 전부 "duplicate → OK" 로 흡수 → 영구 미처리. 조회를 try 안으로 옮기고, duplicate 여도 기존 행이 failed 면 재처리한다.
    ✅ 2026-09-14 `fix/nicepay-webhook-redelivery`: received/failed 재수신은 재처리 · 처리 실패는 failed + **non-OK**(재전송 = 자동 복구) · 전은 전이 전에 주문당 1회(`unlock_credit_feature_once`) · 이용권은 결제키가 있으면 상태 무관.
    → 1번의 "조회 실패면 OK"는 이 수정 전 전제(non-OK = 흡수될 재전송뿐)였다. 가드 작업 때 재검토.
+   → 미완 재처리인데 주문이 이미 refunded 인 구독 상품은 이벤트 error 에 `reprocessed_after_transition` 이 남는다(멤버십 후처리는 전이 때 1회라 이번엔 안 돌았다) — `membership_periods` 에서 그 주문 행이 무효인지 수동 확인.
 4. 🟠 관리자 환불 × 통보 도착 순서: 전 충전 이중 차감 가능, 대화상담 전 3개가 통보 순서에 따라 미회수. 도착 순서는 미실측이다.
 5. 🟠 `normalizeNicepayPaymentForRefund` 가 `cancels[].amount` 를 토스 모양(`cancelAmount`)으로 안 바꿔 전 충전 백스톱 판정이 false 가 된다. 기존 테스트 픽스처는 명세 밖 값(`canceled`)이다.
 6. 🟠 취소 재시도마다 새 orderId + 명세 밖 Idempotency-Key + fetch 타임아웃 없음 → 부분취소 재시도가 이중 환불될 수 있다. 재시도 전 GET 으로 대조하고 `AbortSignal.timeout(30_000)` 을 건다.

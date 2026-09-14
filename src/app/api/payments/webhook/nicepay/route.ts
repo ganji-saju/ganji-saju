@@ -193,8 +193,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 미완 재처리인데 주문이 이미 refunded 였다 = 멤버십 후처리(전이 분기 1회)는 이번에 돌지 않았다. 첫 시도가 전이를 커밋한 뒤
+    //   훅 도중 죽었거나 응답을 잃었을 수 있어 processed 로 덮되 흔적을 남긴다(membership_periods 무효 여부 수동 확인).
+    const note =
+      insertState === 'unfinished' && order.status === 'refunded' && pkg?.kind === 'subscription'
+        ? 'reprocessed_after_transition — 멤버십 후처리 확인'
+        : null;
     await markPaymentWebhookEvent(
-      revokeFailure ? { eventHash, status: 'failed', error: `revoke_failed: ${revokeFailure}` } : { eventHash, status: 'processed' }
+      revokeFailure ? { eventHash, status: 'failed', error: `revoke_failed: ${revokeFailure}` } : { eventHash, status: 'processed', error: note }
     );
     return revokeFailure ? retryLater() : ok();
   } catch (err) {

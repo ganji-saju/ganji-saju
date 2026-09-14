@@ -1,5 +1,16 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-14 — 나이스 통보 재전송 수정 리뷰 반영(전 회수 주문 단위 잠금 · 전이 뒤 재처리 흔적 · 이용권 감사 순서)
+
+브랜치 `fix/nicepay-webhook-redelivery` 후속 커밋(PR·머지 전). 적대적 리뷰 3건(중 1 · 저 2) 모두 반영.
+- 🟠 **전 회수 중복 차단 키의 orderId 가 테스트로 안 잠겨 있었다**. `deduct.ts` 에서 orderId 를 빼도 route.spec 8/8 이 통과했다. 그런데 `unlock_credit_feature_once` 는 `metadata @>` 로 매칭하므로(040), orderId 가 빠지면 같은 사용자의 두 번째 주문부터 reused 가 되어 전이 영구히 미회수된다.
+  → route.spec 에 '같은 사용자 두 주문 취소면 주문마다 1행 + 첫 주문 재처리는 다시 안 뺌' 케이스를 추가했다.
+- 저 1: 첫 시도가 원장 전이를 커밋한 뒤 죽거나 응답을 잃으면, 재처리는 `neq('status','refunded')` 때문에 멤버십 훅에 못 들어간다. 그래서 흔적 없이 processed 로 끝났다.
+  → 미완(unfinished) 재처리 + 계획 시점 주문이 이미 refunded + 구독 상품이면 processed 로 두되 error 에 `reprocessed_after_transition — 멤버십 후처리 확인` 을 남긴다. 훅이 전이 때 1회만 도는 성질은 그대로다.
+- 저 2: `revokeEntitlementsOfPayment` 는 감사를 두 삭제가 모두 끝난 뒤에 몰아 썼다. 그래서 레거시 삭제가 던지면, 재처리 때 이용권 행이 이미 0행이라 그 감사가 영구히 빠졌다.
+  → 단계마다 삭제 직후 감사를 쓴다. 대신 부분 실패 뒤 재처리에서는 같은 권한의 감사가 2행 남을 수 있다. 감사 행을 세는 곳이 없어서(`account.ts`·`payment-history.ts` 는 제외) 허용한다.
+- 검증: route.spec 10건, revoke.test 에 레거시 실패 시 이용권 감사 잔존 단언. 뮤테이션 3종(orderId 삭제 · 흔적 삭제 · 감사 순서 원복)이 각각 새 단언을 red 로 만든다. npm test 1691 · test:spec 324 · tsc 0.
+
 ## 2026-09-14 — 나이스 취소 통보 재전송 흡수 버그(미완 통보 재처리 + 재처리 멱등)
 
 브랜치 `fix/nicepay-webhook-redelivery`(PR·머지 전). `docs/nicepay-v2-cancel-facts.md` 코드 갭 3번.

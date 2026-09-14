@@ -137,6 +137,11 @@ test('결제키 회수 — 삭제 오류는 던지고(요청은 revoke_pending �
 
   const ctFails = fakeService(seed(), 'credit_transactions');
   await assert.rejects(revokeEntitlementsOfPayment('u1', 'pk', { reason: 'r' }, ctFails.client), /boom/);
+  // 2026-09-14 — 레거시 삭제가 던져도 이미 지운 이용권 행의 감사는 남아 있어야 한다(재처리 땐 그 행이 0행이라 다시 못 쓴다).
+  assert.deepEqual(
+    ctFails.inserted.map((r) => [r.feature, (r.metadata as Row).productId, (r.metadata as Row).scopeKey]),
+    [['entitlement_revoke', 'today-detail', 'today:rk']]
+  );
 
   const auditFails = fakeService(seed(), 'insert');
   assert.equal((await revokeEntitlementsOfPayment('u1', 'pk', { reason: 'r' }, auditFails.client)).revoked, true);

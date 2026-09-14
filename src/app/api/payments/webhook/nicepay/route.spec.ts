@@ -14,7 +14,7 @@ const world = vi.hoisted(() => ({
   creditRows: [] as CreditRow[],
   grants: new Set<string>(),
   transitions: 0,
-  fail: { lookup: 0, refund: 0, grants: 0, credits: 0 },
+  fail: { lookup: 0, refund: 0, refundAfterCommit: 0, grants: 0, credits: 0 },
 }));
 
 vi.mock('@/lib/supabase/server', () => {
@@ -88,6 +88,11 @@ vi.mock('@/lib/payments/order-ledger', async (importOriginal) => {
         world.order!.status = 'refunded';
         world.transitions += 1;
       }
+      // 전이는 커밋됐는데 응답을 잃었거나 훅 도중 죽은 경우
+      if (world.fail.refundAfterCommit > 0) {
+        world.fail.refundAfterCommit -= 1;
+        throw new Error('response_lost_after_commit');
+      }
       return { ...world.order! };
     }),
     markPaymentOrderFailed: vi.fn(async (input: { status: string }) => {
@@ -158,7 +163,7 @@ beforeEach(() => {
   world.creditRows.length = 0;
   world.grants = new Set(['tid_1']);
   world.transitions = 0;
-  world.fail = { lookup: 0, refund: 0, grants: 0, credits: 0 };
+  world.fail = { lookup: 0, refund: 0, refundAfterCommit: 0, grants: 0, credits: 0 };
   vi.clearAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
 });
@@ -225,10 +230,41 @@ describe('나이스 취소 통보 재전송', () => {
     expect(world.grants.has('tid_1')).toBe(true);
 
     await expectOk(await deliver());
-    expect(eventOf()?.processing_status).toBe('processed');
+    expect(eventOf()).toEqual({ processing_status: 'processed', error: null }); // 구독 상품이 아니라 후처리 흔적 없음
     expect(world.grants.has('tid_1')).toBe(false);
     expect(creditRevokes()).toHaveLength(1);
     expect(world.transitions).toBe(1); // 멤버십 원장·GA 훅은 전이 1회
+  });
+
+  it('전 회수 중복 차단은 주문 단위 — 같은 사용자의 두 주문 취소면 주문마다 1회씩, 첫 주문 재처리는 다시 빼지 않는다', async () => {
+    // 첫 주문: 전 회수 뒤 원장 전이 실패 → fulfilled 로 남아 재처리 때 전 회수를 다시 부른다.
+    world.fail.refund = 1;
+    await expectRetry(await deliver());
+    const ord1 = world.order!;
+
+    const CANCEL_2 = { ...CANCEL, tid: 'tid_2', orderId: 'ord_2' };
+    world.order = { ...PAID_ORDER, orderId: 'ord_2', paymentKey: 'tid_2' };
+    world.grants.add('tid_2');
+    await expectOk(await deliver(CANCEL_2));
+    expect(creditRevokes().map((r) => r.metadata.orderId)).toEqual(['ord_1', 'ord_2']);
+
+    world.order = ord1;
+    await expectOk(await deliver());
+    expect(eventOf()?.processing_status).toBe('processed');
+    expect(creditRevokes().map((r) => r.metadata.orderId)).toEqual(['ord_1', 'ord_2']);
+  });
+
+  it('첫 시도가 전이를 커밋한 뒤 죽었으면(응답 유실·타임아웃) 재처리는 processed 로 끝내되 멤버십 후처리 확인 흔적을 남긴다', async () => {
+    world.order = { ...PAID_ORDER, packageId: 'membership_premium' };
+    world.fail.refundAfterCommit = 1;
+    await expectRetry(await deliver());
+    expect(world.order!.status).toBe('refunded');
+    expect(eventOf()?.processing_status).toBe('failed');
+
+    await expectOk(await deliver());
+    expect(eventOf()).toEqual({ processing_status: 'processed', error: expect.stringContaining('reprocessed_after_transition') });
+    expect(world.transitions).toBe(1); // 훅은 전이 때 1회 그대로 — 재처리가 다시 돌리지 않는다
+    expect(world.grants.has('tid_1')).toBe(false);
   });
 
   it('부분 실패 후 재처리 — 전 회수 뒤 원장 전이가 실패해도 재처리가 전을 다시 빼지 않는다', async () => {
