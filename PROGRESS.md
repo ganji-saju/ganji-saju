@@ -1,5 +1,52 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-15 — 세션: 인계 머지 3건 완료(#829·#828·#827 → staging) + 머지 전 리뷰 반영 + CodeQL 3건 오탐 처리
+
+아래 '세션 인계' 의 머지 대기 3건을 끝냈다. main = staging = `2467140a`(수동 마이그레이션 없음).
+- **머지**: #829 `fc1da3ed` · #828 `cc59d612`(main 병합 + 리뷰 하 1건) · #827 `2467140a`(main 병합 + 리뷰 차단 1건 + 수정 리뷰 하 1건). 각 반영 내역은 아래 두 섹션.
+- **머지 전 리뷰**(pr-reviewer 워크플로 — PR별 리뷰 3 + 차단급 반박 검증 2): #829 비차단 · #828 하 1 · #827 **차단 1(카드 결제 가족 이름이 계정 주인 이름으로 굳음 — 앞 커밋 수정이 주 경로에서 무효)**.
+- ⚠️ **실수: #829 를 CodeQL 요약 체크 fail 로 머지했다.** `gh run list` 의 CodeQL 워크플로 success(=Analyze 작업)만 보고, `pr checks` 의 `CodeQL` 줄(새 high 2건
+  `js/user-controlled-bypass` — 나이스 웹훅 route.ts:139 `if (!tid)` · :146 서명 있을 때만 대조)을 안 봤다(mergeStateStatus UNSTABLE). 사후: 독립 에이전트가 main 코드로 공격 스펙 12건
+  (남의 orderId·결제키 없는 주문·서명 유무·가짜 cancels tid·경로 조작 등) → 상태 변화 0 → **#65·#66 오탐 dismiss**(근거 코멘트). 서명은 설계상 흔적용이고 위조 차단은 재조회 대조가 전담.
+  ⚠️ 서명 불일치를 '거부'로 바꿀 땐 "서명 없음 통과" 조건도 같이 없앨 것(#66 이 가리키는 것). 교훈은 메모리 `feedback_codeql-summary-check-before-merge`.
+  (#829 는 원래 CodeQL 이 한 번도 안 돌았다 — 기준을 main 으로 옮기기 전에 푸시해 `branches:[main]` 필터에 걸림. 닫기→다시 열기로 트리거.)
+- **CodeQL #64**(#827, unlock-marker 폼 이름 localStorage) 오탐 dismiss — 걸린 건 키가 아니라 값, 오염은 birth-profile JSON 왕복 과대근사(인계 메모의 "키 해시" 로는 안 지워졌다).
+- 🆕 **#831 열어 둠(머지 대기 — 사용자 판단)**: 관리자 환불 동시 승인 시 PG 일부 취소 이중 전송 경합 → 승인 선점(`setStatus from`). #829 리뷰 발견(창 수십 ms, 원래 전 환불에도 있던 경합).
+
+### 후속 · 결정 대기(리뷰에서 나온 것)
+- **#829 결정**: 재조회 불일치(주문을 찾은 뒤의 `lookup_status:*`·`cancel_not_in_lookup`·`lookup_order_mismatch`)를 지금처럼 'OK'(재전송 끊고 사람이 콘솔 재전송) vs non-OK(나이스 1분×10 재전송으로 자동 복구).
+  위조엔 어느 쪽이든 재전송이 없어 방어 비용 0, 진짜 취소 직후 PG 조회 지연이면 non-OK 쪽이 저절로 복구된다.
+- #829 하: 일부 환불된 멤버십 주문은 status fulfilled 그대로라 결제내역(/my/billing)·관리자 LTV 가 전액(`sumCreditRefundedWon` 은 전 환불 감사만 셈 · `metadata.partialRefunds` 미사용).
+  테스트 빈칸: revoke_pending 재승인 멤버십 일부 환불 · partialRefunds 필터 쿼리(목이 `.not` 무시) · 비멤버 partialCancelled 라우트 수준.
+- 웹훅(하 3): 운영 메일 억제가 조회·기록 비원자(동시 N통) · 결제키 없는 주문 경로 억제 키 = 공격자 tid · `order_id_mismatch` 메일에 임의 orderId 문자열.
+  범위 밖(중 · ⚠️ 검증필요): 검증 **전에** 원문 payload 를 payment_webhook_events 에 넣어 무인증 요청이 행을 무제한 생성(저장 공간), 속도 제한 없음.
+- #828 결정: 드리프트 판정을 JS 재구현(µs 파서·페이지 읽기)으로 둘지 086 쿼리 RPC 로 옮길지. 크론 인증 `safeEqual·isCronAuthorized` 5번째 복사본.
+- #827 결정: 같은 사주 다음 날 재구매가 어제 이용권 행을 덮어씀(결제키 회수 대칭·관리자 이용권 기준 환불 화면) vs scope 에 KST 날짜. 테스트 빈칸: 재구매 뒤 어제/오늘 결제키 회수.
+- 머지 뒤 확인(인계 이월): staging QA 계정으로 가족 사주 3,300원(**막힌 화면에서**) → 가족 이름으로 열림 · 같은 날 다른 가족 재결제 요구 · super_admin `GET /api/admin/audits/membership-drift` → 0/0.
+- 정리: `.claude/worktrees/` 에 옛 워크플로 워크트리 30여 개(브랜치 물림 — #827 브랜치도 여기 걸려 있었다).
+
+## 2026-09-15 — 🔜 세션 인계: PR 머지 이어서(#826 완료 · #829 → #828 → #827 남음)
+
+### 2026-09-14 세션에서 끝난 것
+- #824 멤버십 결제별 기간 원장(086 적용 — legacy 4행·드리프트 0) · #825 오늘운세 무료 1회 재열람 계정 기준 · 나이스 취소 통보 확인(인계 1번, `docs/nicepay-v2-cancel-facts.md`)
+- **#826 머지(`39e7021e`) + staging 반영** — 웹훅 재전송 흡수 버그(재처리·전 회수 멱등). 운영에 미처리로 남은 나이스 통보 0건(과거 피해 없음).
+
+### 머지 대기 — 이 순서로 (사용자 "머지" 지시 받음: main squash + 끝나면 staging 밀기)
+1. **#829** 가짜 취소 알림 막기(재조회 검증) + 멤버십 일부 환불(연산 4)·관리자 금액 입력·지표 — 기준을 main 으로 옮겼다(`72e2e179`, main 병합 커밋 · 원래 #829 와 트리 동일 확인). **CI 재실행 결과 확인 후 머지.**
+2. **#828** 멤버십 드리프트 매일 확인(KST 10시·운영 메일) — 체크 통과. 앞 PR 머지 뒤 PROGRESS 충돌이면 main 을 브랜치에 병합 커밋으로 넣고 머지.
+3. **#827** 가족 사주 결제 버튼 + 오늘 자세히 산 사주만 + 다음 날 재구매 버그 — ❌ **CodeQL `js/clear-text-storage-of-sensitive-data`**:
+   `src/lib/today-fortune/unlock-marker.ts:45` 가 가족 이름 전달용 localStorage 키에 slug(출생 좌표 포함)를 평문으로 저장. → 키를 해시(또는 reading uuid)로 바꾸고 좌표를 저장하지 않게 수정 → CI → 머지.
+4. 마지막에 `git log origin/main..origin/staging` 이 비었는지 보고 `git push origin origin/main:staging`.
+- ⚠️ 강제 푸시는 가드가 막는다 — 기준 변경·충돌은 **main 병합 커밋**으로 해결(리베이스 금지). 각 PR 이 PROGRESS 맨 위에 섹션을 넣어 충돌이 나면 섹션을 모두 살린다.
+
+### 머지 뒤 확인
+- staging QA 계정(`ganjisaju12+nicepay-qa@gmail.com`, 샌드박스 결제키 `UT0033304m…`)으로 가족 사주 3,300원 결제 → 그 가족 상세가 가족 이름으로 열림 · 같은 날 다른 가족은 재결제 요구.
+- super_admin 으로 `GET /api/admin/audits/membership-drift` 1회 호출 → 0/0.
+
+### 후속(결정·확인 대기)
+- 나이스 서명식 운영 확인(되면 #829 의 서명 불일치를 '기록만' → '거부') · 부분취소 뒤 재조회 amount 운영 확인 · API 취소 통보 orderId(다음 운영 관리자 환불 뒤 이벤트 1줄).
+- 토스 웹훅에도 같은 재전송 흡수 패턴(토스 미사용이라 보류) · 원격 옛 브랜치 `feat/membership-period-ledger` 정리 가능.
+
 ## 2026-09-15 — 카드로 산 가족 사주도 가족 이름으로(머지 전 리뷰 차단 1건) + CodeQL #64 판정
 
 브랜치 `fix/today-fortune-other-saju-checkout`(#827) — main(#829·#828) 병합 + 수정 1커밋.
