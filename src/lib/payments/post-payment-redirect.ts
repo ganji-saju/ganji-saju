@@ -32,6 +32,9 @@ export function buildTasteProductHref(
     }
     const params = new URLSearchParams({ paid: product, concern: scope || 'general' });
     if (slug) params.set('sourceSessionId', slug);
+    // 2026-09-14 — 하루 1회에 막힌 화면(today-fortune-limit·start-limit)에서 산 경우엔 무료 결과가 없다.
+    //   표식을 실어 상세의 '돌아가기'가 빈 무료 결과 화면 대신 입력 화면으로 가게 한다.
+    if (entrySource?.endsWith('-limit')) params.set('from', 'limit');
     return `/today-fortune/detail?${params.toString()}`;
   }
   // 2026-08-25 — 990원 당일권(간단운세): 결제 직전 보던 **결과 화면으로 복귀**.

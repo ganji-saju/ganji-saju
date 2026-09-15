@@ -13,7 +13,7 @@ import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-pane
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
-import { consumePendingUnlock } from '@/lib/today-fortune/unlock-marker';
+import { consumePendingUnlock, readTodayDetailName } from '@/lib/today-fortune/unlock-marker';
 import type {
   ConcernId,
   TodayFortuneFreeResult,
@@ -72,6 +72,9 @@ export function TodayFortuneDetailClient({
   // 2026-05-18 — /saju/[slug]/today-detail 진입 시에는 사주 페이지로 돌아가도록 override.
   // 미지정 시 today-fortune 무료 결과 경로로 기본 동작.
   backHref: backHrefOverride,
+  // 2026-09-15 — 하루 1회 차단 화면에서 온 착지(from=limit)만 저장된 폼 이름을 unlock 에 넘긴다.
+  //   무료 결과에서 온 열람은 그 실행의 이름(run)이 정본 — 같은 reading 으로 예전에 막힌 경로에서 남긴 이름이 이기면 안 된다.
+  fromLimit = false,
   // 2026-08-26 — 사주 결과 페이지 인라인용. true 면 이 컴포넌트는 **절대 페이지 이동을
   //   일으키지 않는다**(하이재킹 금지): 401/미보유는 인라인 안내 카드로만 처리.
   //   배경: today-detail 은 당일 상품이라 다음날 접근이 사라지는데, 기존 redirect 가
@@ -85,6 +88,7 @@ export function TodayFortuneDetailClient({
   concern?: string;
   paidProduct?: string;
   backHref?: string;
+  fromLimit?: boolean;
   embedded?: boolean;
   initialFreeResult?: TodayFortuneFreeResult | null;
   initialResult?: TodayFortunePremiumResult | null;
@@ -125,6 +129,8 @@ export function TodayFortuneDetailClient({
       //   marker 있음 (무료 페이지의 handleUnlock 이 방금 set) → POST (deduct trigger 의도)
       //   marker 없음 (새로고침 / 직접 URL) → GET (read-only). entitlement false 면 무료 페이지 redirect.
       const isFirstTimeUnlock = consumePendingUnlock(activeSourceSessionId);
+      // 2026-09-14 — 하루 1회 결제 경로에서 남긴 폼 이름(없으면 빈 값 — 서버가 기존 순서로 해석). 그 경로 착지일 때만.
+      const name = fromLimit ? readTodayDetailName(activeSourceSessionId) : '';
 
       try {
         const response = isFirstTimeUnlock
@@ -135,6 +141,7 @@ export function TodayFortuneDetailClient({
                 sourceSessionId: activeSourceSessionId,
                 concernId,
                 counselorId,
+                name,
               }),
             })
           : await fetch(
@@ -142,6 +149,7 @@ export function TodayFortuneDetailClient({
                 sourceSessionId: activeSourceSessionId,
                 concernId,
                 counselorId: counselorId ?? '',
+                name,
               }).toString()}`,
               { cache: 'no-store' },
             );
@@ -208,7 +216,7 @@ export function TodayFortuneDetailClient({
     return () => {
       cancelled = true;
     };
-  }, [concernId, counselorId, embedded, hasInitialResult, paidProduct, sourceSessionId]);
+  }, [concernId, counselorId, embedded, fromLimit, hasInitialResult, paidProduct, sourceSessionId]);
 
   // 2026-05-16 — 로드 완료 + DOM 안정화 후 프리미엄 패널 위치로 스크롤.
   // unlock 직후 사용자가 "방금 산 컨텐츠" 를 바로 볼 수 있도록 보장.

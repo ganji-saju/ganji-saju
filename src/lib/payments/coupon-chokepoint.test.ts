@@ -75,7 +75,8 @@ test('prepare 가 요청 본문에서 읽는 키는 허용 목록뿐 — 금액�
   });
   assert.deepEqual(
     [...keys].sort(),
-    ['acceptedKinds', 'analyticsConsent', 'couponCode', 'expectedAmount', 'from', 'packageId', 'paymentMethod', 'plan', 'product', 'scope', 'slug'],
+    // subjectName(2026-09-15) — today-detail 주문 metadata 의 표시 이름(20자)뿐, 금액·할인에 안 쓰인다.
+    ['acceptedKinds', 'analyticsConsent', 'couponCode', 'expectedAmount', 'from', 'packageId', 'paymentMethod', 'plan', 'product', 'scope', 'slug', 'subjectName'],
     '새 키를 읽으려면 금액·할인에 쓰이지 않는지 확인하고 이 목록을 고쳐라'
   );
   assert.equal(rest.match(/\bpayload\b/g)?.length, 2, 'payload 는 선언과 null 검사에만 — 구조분해·전개·전달 금지');
@@ -246,7 +247,8 @@ test('체크아웃 입력칸은 checkoutCouponInputMode 로 정한다(미리보�
 // ─────────────────────────────────────────────────────────────
 test('관리자 환불 요청 스냅샷은 주문·이용권의 실결제액이고, 환불액 = 원결제액', () => {
   const src = FILES.find((f) => f.rel === 'src/app/api/admin/refund/route.ts')!.text;
-  assert.ok(/amount: order\.amount,\s*original_amount: order\.amount,/.test(src), '주문 단위(번들·고아 주문·멤버십)');
+  // 2026-09-14 — 주문 단위는 멤버십 일부 환불액을 받는다(비우면 order.amount). 원결제액 자리는 여전히 실청구액.
+  assert.ok(/const amount = requested \?\? order\.amount;/.test(src) && /amount,\s*original_amount: order\.amount,/.test(src), '주문 단위(번들·고아 주문·멤버십)');
   assert.ok(/amount: e\.amount,\s*original_amount: e\.amount,/.test(src), '이용권 단위');
 });
 
@@ -262,8 +264,8 @@ test('이용권·전 지급 금액은 승인된 주문의 실결제액(claimed.a
 //   승인 관문(§5-3)이 할인 주문을 "쿠폰 없는 주문"으로 보고 검사를 건너뛴다. 전 스위트가 초록이었다.
 test("주문 원장 조회는 select('*') — 승인 관문이 받는 주문에 쿠폰 스냅샷 컬럼이 빠지지 않는다", () => {
   const src = FILES.find((f) => f.rel === 'src/lib/payments/order-ledger.ts')!.text;
-  // processing_status 는 payment_webhook_events(통보 재처리 판정, 2026-09-14) — 주문 조회가 아니다.
-  assert.deepEqual([...new Set(src.match(/\.select\([^)]*\)/g))].sort(), [".select('*')", ".select('metadata')", ".select('processing_status')"]);
+  // processing_status·event_hash 는 payment_webhook_events(통보 재처리 판정·거부 메일 억제, 2026-09-14) — 주문 조회가 아니다.
+  assert.deepEqual([...new Set(src.match(/\.select\([^)]*\)/g))].sort(), [".select('*')", ".select('event_hash')", ".select('metadata')", ".select('processing_status, error')"]);
 });
 
 // 할인이 금액이 되는 곳은 createPaymentOrder 한 곳이다(50% 상한·1원 하한). 만든 뒤 금액·할인 스냅샷을 고치면 그 밖에서 금액이 정해진다

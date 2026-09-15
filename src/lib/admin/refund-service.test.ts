@@ -307,3 +307,61 @@ test('executeRefund: 진짜 회수 실패는 여전히 revoke_pending 으로 남
   const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
   assert.notEqual(result.status, 'completed');
 });
+
+// 2026-09-14 리뷰 — 일부 환불 재승인 이중 환불. 첫 승인에서 PG 는 부분취소를 처리했는데 응답을 잃으면(네트워크·비JSON 5xx·타임아웃) 요청은
+//   failed 로 남는다. 재승인은 새 취소 번호로 cancelAmt 를 다시 보내고 잔액이 남아 PG 가 받는다(49,000 중 24,500 두 번). 전액은 '기취소' 가 막는다.
+test('executeRefund: 일부 환불 재승인은 먼저 PG 재조회 — 이 요청 뒤 같은 금액 취소가 있으면 새 취소 없이 완료 · 확인 못 하면 막는다 · 없으면 보낸다', async () => {
+  const run = async (
+    lookup: { ok: true; payment: Record<string, unknown> } | { ok: false; error?: string },
+    createdAt: string | null = '2026-09-14T01:00:00.000Z'
+  ) => {
+    const tossArgs: unknown[] = [];
+    const deps: RefundExecutionDeps = {
+      async loadRequest() {
+        return {
+          id: 'req1', status: 'failed', refund_kind: 'product', payment_key: 'tid_m', idempotency_key: 'idem', user_id: 'u1',
+          product_id: 'membership_premium', scope_key: null, amount: 24500, original_amount: 49000, credit_amount: null,
+          credit_transaction_id: null, reason: '고객 요청', created_at: createdAt,
+        };
+      },
+      async setStatus() {},
+      async tossCancel(paymentKey, options) {
+        tossArgs.push({ paymentKey, ...options });
+        return { ok: true, response: { status: 'partialCancelled' } };
+      },
+      async loadTossPayment() {
+        return lookup;
+      },
+      async revoke() {
+        return { revoked: false, nothingToRevoke: true };
+      },
+    };
+    return { result: await executeRefund({ requestId: 'req1', approvedBy: 's1' }, deps), tossArgs };
+  };
+  const cancels = [
+    { tid: 'ctid_old', amount: 24500, cancelledAt: '2026-09-14T00:30:00.000+0900' }, // 요청(01:00Z = 10:00 KST) 전 — 다른 환불
+    { tid: 'ctid_lost', amount: 24500, cancelledAt: '2026-09-14T10:05:00.000+0900' },
+  ];
+  const lost = { ok: true as const, payment: { status: 'CANCELED', balanceAmt: 24500, cancels } };
+
+  const done = await run(lost);
+  assert.equal(done.result.status, 'completed');
+  assert.equal(done.tossArgs.length, 0, '다시 보내면 24,500 이 한 번 더 나간다');
+  assert.equal((done.result.response as { payment: Record<string, unknown> }).payment.cancelledTid, 'ctid_lost', '원장 연산이 그 거래로');
+
+  const unknown = await run({ ok: false, error: 'fetch failed' });
+  assert.equal(unknown.result.status, 'failed');
+  assert.match(String(unknown.result.error), /이중 환불 방지/);
+  assert.equal(unknown.tossArgs.length, 0);
+  assert.equal((await run(lost, null)).tossArgs.length, 0, '생성 시각을 모르면 막는다');
+
+  const before = await run({ ok: true, payment: { status: 'partialCancelled', balanceAmt: 24500, cancels: [cancels[0]] } });
+  assert.equal(before.tossArgs.length, 1, '요청 전의 같은 금액 취소는 이 요청 것이 아니다');
+  const fresh = await run({ ok: true, payment: { status: 'paid', balanceAmt: 49000, cancels: [] } });
+  assert.equal(fresh.result.status, 'completed');
+  assert.deepEqual(
+    fresh.tossArgs,
+    [{ paymentKey: 'tid_m', cancelReason: '고객 요청', idempotencyKey: 'idem', cancelAmount: 24500 }],
+    '첫 승인이 PG 에서 거절(U128 등)됐으면 다시 보낸다'
+  );
+});

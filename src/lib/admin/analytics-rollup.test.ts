@@ -7,6 +7,7 @@ import {
   kstMidnightIso,
   paymentAttributionIso,
   computeDailyMetrics,
+  expandRefundRows,
   REVENUE_ORDER_STATUSES,
 } from './analytics-rollup';
 
@@ -165,4 +166,33 @@ test('computeDailyMetrics: 빈 날짜는 0으로 채워짐', () => {
     assert.equal(r.paid_orders, 0);
     assert.deepEqual(r.inflow_referrers, []);
   }
+});
+
+// 2026-09-14 — 일부 환불은 주문이 fulfilled 그대로라 refunded 주문만 세던 집계에서 0원이었다(49,000 멤버십 24,500 환불 → 환불 0 · 순매출 49,000).
+//   일부는 그 취소 시각에 그 금액, 뒤이은 전액 전이는 나머지만 — 합이 PG 가 돌려준 돈이어야 한다(일부 뒤 전액 이중계상 없음).
+test('expandRefundRows: 일부 환불은 취소 시각에 그 금액 · 뒤이은 전액은 나머지만 → refunded_won 합 = PG 환불 합', () => {
+  const partials = { partialRefunds: [{ cancelTid: 'c1', amount: 24500, at: '2026-07-06T01:00:00Z' }] };
+  const stillPaid = { amount: 49000, refunded_at: null, metadata: partials };
+  const laterRefunded = { amount: 49000, refunded_at: '2026-07-07T01:00:00Z', metadata: partials };
+  const plain = { amount: 3300, refunded_at: '2026-07-07T02:00:00Z', metadata: {} };
+
+  const onlyPartial = computeDailyMetrics({
+    dateKeys: ['2026-07-06', '2026-07-07'],
+    sourceRows: [],
+    paymentRows: [],
+    refundRows: expandRefundRows([], [stillPaid]),
+    signupIsos: [],
+    funnelRows: [],
+  });
+  assert.deepEqual(onlyPartial.map((r) => r.refunded_won), [24500, 0], '주문이 fulfilled 여도 일부 환불은 환불액');
+
+  const rows = expandRefundRows([laterRefunded, plain], [laterRefunded]);
+  assert.deepEqual(rows.map((r) => [r.amount, r.refunded_at]), [
+    [24500, '2026-07-07T01:00:00Z'],
+    [3300, '2026-07-07T02:00:00Z'],
+    [24500, '2026-07-06T01:00:00Z'],
+  ]);
+  const daily = computeDailyMetrics({ dateKeys: ['2026-07-06', '2026-07-07'], sourceRows: [], paymentRows: [], refundRows: rows, signupIsos: [], funnelRows: [] });
+  assert.deepEqual(daily.map((r) => r.refunded_won), [24500, 27800]);
+  assert.equal(daily.reduce((sum, r) => sum + r.refunded_won, 0), 49000 + 3300, '일부 + 나머지 = 원금');
 });

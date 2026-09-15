@@ -7,6 +7,7 @@ import {
   type Feature,
 } from './deduct';
 import { getMemberTier } from '@/lib/subscription';
+import { readingKeyMatchesCurrentSaju, sajuIdentityFromReadingKey } from '@/lib/saju/reading-identity';
 
 export const DETAIL_REPORT_ACCESS_KIND = 'detail_report_access';
 export const DETAIL_REPORT_DAILY_ACCESS_KIND = 'detail_report_daily_access';
@@ -213,39 +214,60 @@ export async function hasTodayFortunePremiumAccessByReading(
   );
 }
 
-// 2026-05-17 사용자 명시 요구 — "같은 날 두 번 결제 차단".
-// PR #196 의 sourceSessionId / readingKey 기반 fallback 이 어떤 이유로 매치 못
-// 잡는 케이스 (RPC race / metadata 미스매치 / 새 reading 등) 대비 broadest
-// fallback. 같은 user + feature='detail_report' + type='use' + 같은 KST 일자
-// row 가 1개라도 있으면 reused — 차감 skip.
-//
-// Korea timezone day = [today 00:00 KST, today+1 00:00 KST) — Korea 는 no DST 라
-// 24h fixed. timestamptz 컬럼 vs ISO UTC 비교.
-export async function hasTodayFortuneDailyAccess(
+// 2026-05-17 사용자 명시 요구 — "같은 날 두 번 결제 차단". readingKey 가 이름 해시·출생지 입력 경로로 흔들려
+//   정확일치(hasTodayFortunePremiumAccessByReading 등)가 못 잡아도 같은 사주면 그날 다시 차감하지 않는다.
+// 🔴 2026-09-14 — 전에는 그날 detail_report use 행 **아무거나**(무료 후속질문 today_result_followup 포함) 1개면
+//   열어서, 0원 후속질문 1회나 A 사주 열람으로 가족 B 사주가 무료로 열렸다(결제 화면·prepare 는 3,300원을 받는데).
+//   이제 오늘 자세히를 여는 열람 행(kind 3종) 중 readingKey 가 #699 사주 정체성으로 **이 사주**인 것만 인정한다.
+const SAJU_DETAIL_ACCESS_KINDS: ReadonlySet<unknown> = new Set([
+  TODAY_FORTUNE_PREMIUM_ACCESS_KIND,
+  DETAIL_REPORT_ACCESS_KIND,
+  DETAIL_REPORT_DAILY_ACCESS_KIND,
+]);
+
+export function detailReportRowsOpenSaju(
+  rows: Array<{ metadata: Record<string, unknown> | null }>,
+  readingKey: string
+): boolean {
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
+  return rows.some(({ metadata }) => {
+    const stored = metadata?.readingKey;
+    return (
+      SAJU_DETAIL_ACCESS_KINDS.has(metadata?.kind) &&
+      typeof stored === 'string' &&
+      readingKeyMatchesCurrentSaju(stored, [readingKey], currentIdentity)
+    );
+  });
+}
+
+export async function hasTodayFortuneAccessForSaju(
   userId: string,
-  dateKey: string = getKoreaAccessDay()
+  readingKey: string,
+  dateKey: string
 ) {
   const range = kstDayRangeIso(dateKey);
   if (!range) {
-    throw new Error(`Invalid dateKey for hasTodayFortuneDailyAccess: ${dateKey}`);
+    throw new Error(`Invalid dateKey for hasTodayFortuneAccessForSaju: ${dateKey}`);
   }
 
   const service = await createServiceClient();
   const { data, error } = await service
     .from('credit_transactions')
-    .select('id')
+    .select('metadata')
     .eq('user_id', userId)
     .eq('type', 'use')
     .eq('feature', 'detail_report')
     .gte('created_at', range.startIso)
-    .lt('created_at', range.endIso)
-    .limit(1);
+    .lt('created_at', range.endIso);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return Boolean(data && data.length > 0);
+  return detailReportRowsOpenSaju(
+    (data ?? []) as Array<{ metadata: Record<string, unknown> | null }>,
+    readingKey
+  );
 }
 
 export async function recordDetailReportAccess(

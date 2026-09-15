@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { buildTasteProductHref } from './post-payment-redirect';
 import {
   buildLifetimeReportScopeKey,
   buildMonthlyCalendarScopeKey,
@@ -89,6 +92,22 @@ test('buildPurchasedProductHref: today-detail from=saju 는 사주 경로 유지
     buildPurchasedProductHref('today-detail', 'sess-1', { from: 'saju', scope: 'love_play' }),
     '/saju/sess-1/today-detail'
   );
+});
+
+// 2026-09-14 — 하루 1회 차단 화면에서 온 결제(무료 결과 없음)는 표식을 실어 상세 '돌아가기'가 입력 화면으로 간다.
+test('today-detail: 하루 1회 차단 진입(-limit)은 착지에 from=limit — 결제 후·이미 구매·멤버 열기 공통', () => {
+  assert.equal(
+    buildPurchasedProductHref('today-detail', 'r-1', { from: 'today-fortune-limit', scope: 'general' }),
+    '/today-fortune/detail?paid=today-detail&sourceSessionId=r-1&concern=general&from=limit'
+  );
+  assert.equal(
+    buildTasteProductHref('today-detail', 'r-1', 'general', 'start-limit'),
+    '/today-fortune/detail?paid=today-detail&concern=general&sourceSessionId=r-1&from=limit'
+  );
+  assert.ok(!buildTasteProductHref('today-detail', 'r-1', 'general', 'today-fortune')!.includes('from='));
+  // 착지 화면이 표식을 받아 돌아가기를 바꾼다(빈 무료 결과 화면 막다른 길 방지).
+  const page = fs.readFileSync(path.join(process.cwd(), 'src/app/today-fortune/detail/page.tsx'), 'utf8');
+  assert.ok(/backHref=\{from === 'limit' \? '\/today-fortune' : undefined\}/.test(page));
 });
 
 // 🔴 2026-08-28 — 택일 3,300원 당일권 신설. scope 를 틀리면 돈이 틀린다:

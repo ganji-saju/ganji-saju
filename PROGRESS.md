@@ -1,5 +1,30 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-15 — 세션: 인계 머지 3건 완료(#829·#828·#827 → staging) + 머지 전 리뷰 반영 + CodeQL 3건 오탐 처리
+
+아래 '세션 인계' 의 머지 대기 3건을 끝냈다. main = staging = `2467140a`(수동 마이그레이션 없음).
+- **머지**: #829 `fc1da3ed` · #828 `cc59d612`(main 병합 + 리뷰 하 1건) · #827 `2467140a`(main 병합 + 리뷰 차단 1건 + 수정 리뷰 하 1건). 각 반영 내역은 아래 두 섹션.
+- **머지 전 리뷰**(pr-reviewer 워크플로 — PR별 리뷰 3 + 차단급 반박 검증 2): #829 비차단 · #828 하 1 · #827 **차단 1(카드 결제 가족 이름이 계정 주인 이름으로 굳음 — 앞 커밋 수정이 주 경로에서 무효)**.
+- ⚠️ **실수: #829 를 CodeQL 요약 체크 fail 로 머지했다.** `gh run list` 의 CodeQL 워크플로 success(=Analyze 작업)만 보고, `pr checks` 의 `CodeQL` 줄(새 high 2건
+  `js/user-controlled-bypass` — 나이스 웹훅 route.ts:139 `if (!tid)` · :146 서명 있을 때만 대조)을 안 봤다(mergeStateStatus UNSTABLE). 사후: 독립 에이전트가 main 코드로 공격 스펙 12건
+  (남의 orderId·결제키 없는 주문·서명 유무·가짜 cancels tid·경로 조작 등) → 상태 변화 0 → **#65·#66 오탐 dismiss**(근거 코멘트). 서명은 설계상 흔적용이고 위조 차단은 재조회 대조가 전담.
+  ⚠️ 서명 불일치를 '거부'로 바꿀 땐 "서명 없음 통과" 조건도 같이 없앨 것(#66 이 가리키는 것). 교훈은 메모리 `feedback_codeql-summary-check-before-merge`.
+  (#829 는 원래 CodeQL 이 한 번도 안 돌았다 — 기준을 main 으로 옮기기 전에 푸시해 `branches:[main]` 필터에 걸림. 닫기→다시 열기로 트리거.)
+- **CodeQL #64**(#827, unlock-marker 폼 이름 localStorage) 오탐 dismiss — 걸린 건 키가 아니라 값, 오염은 birth-profile JSON 왕복 과대근사(인계 메모의 "키 해시" 로는 안 지워졌다).
+- 🆕 **#831 열어 둠(머지 대기 — 사용자 판단)**: 관리자 환불 동시 승인 시 PG 일부 취소 이중 전송 경합 → 승인 선점(`setStatus from`). #829 리뷰 발견(창 수십 ms, 원래 전 환불에도 있던 경합).
+
+### 후속 · 결정 대기(리뷰에서 나온 것)
+- **#829 결정**: 재조회 불일치(주문을 찾은 뒤의 `lookup_status:*`·`cancel_not_in_lookup`·`lookup_order_mismatch`)를 지금처럼 'OK'(재전송 끊고 사람이 콘솔 재전송) vs non-OK(나이스 1분×10 재전송으로 자동 복구).
+  위조엔 어느 쪽이든 재전송이 없어 방어 비용 0, 진짜 취소 직후 PG 조회 지연이면 non-OK 쪽이 저절로 복구된다.
+- #829 하: 일부 환불된 멤버십 주문은 status fulfilled 그대로라 결제내역(/my/billing)·관리자 LTV 가 전액(`sumCreditRefundedWon` 은 전 환불 감사만 셈 · `metadata.partialRefunds` 미사용).
+  테스트 빈칸: revoke_pending 재승인 멤버십 일부 환불 · partialRefunds 필터 쿼리(목이 `.not` 무시) · 비멤버 partialCancelled 라우트 수준.
+- 웹훅(하 3): 운영 메일 억제가 조회·기록 비원자(동시 N통) · 결제키 없는 주문 경로 억제 키 = 공격자 tid · `order_id_mismatch` 메일에 임의 orderId 문자열.
+  범위 밖(중 · ⚠️ 검증필요): 검증 **전에** 원문 payload 를 payment_webhook_events 에 넣어 무인증 요청이 행을 무제한 생성(저장 공간), 속도 제한 없음.
+- #828 결정: 드리프트 판정을 JS 재구현(µs 파서·페이지 읽기)으로 둘지 086 쿼리 RPC 로 옮길지. 크론 인증 `safeEqual·isCronAuthorized` 5번째 복사본.
+- #827 결정: 같은 사주 다음 날 재구매가 어제 이용권 행을 덮어씀(결제키 회수 대칭·관리자 이용권 기준 환불 화면) vs scope 에 KST 날짜. 테스트 빈칸: 재구매 뒤 어제/오늘 결제키 회수.
+- 머지 뒤 확인(인계 이월): staging QA 계정으로 가족 사주 3,300원(**막힌 화면에서**) → 가족 이름으로 열림 · 같은 날 다른 가족 재결제 요구 · super_admin `GET /api/admin/audits/membership-drift` → 0/0.
+- 정리: `.claude/worktrees/` 에 옛 워크플로 워크트리 30여 개(브랜치 물림 — #827 브랜치도 여기 걸려 있었다).
+
 ## 2026-09-15 — 🔜 세션 인계: PR 머지 이어서(#826 완료 · #829 → #828 → #827 남음)
 
 ### 2026-09-14 세션에서 끝난 것
@@ -21,6 +46,131 @@
 ### 후속(결정·확인 대기)
 - 나이스 서명식 운영 확인(되면 #829 의 서명 불일치를 '기록만' → '거부') · 부분취소 뒤 재조회 amount 운영 확인 · API 취소 통보 orderId(다음 운영 관리자 환불 뒤 이벤트 1줄).
 - 토스 웹훅에도 같은 재전송 흡수 패턴(토스 미사용이라 보류) · 원격 옛 브랜치 `feat/membership-period-ledger` 정리 가능.
+
+## 2026-09-15 — 카드로 산 가족 사주도 가족 이름으로(머지 전 리뷰 차단 1건) + CodeQL #64 판정
+
+브랜치 `fix/today-fortune-other-saju-checkout`(#827) — main(#829·#828) 병합 + 수정 1커밋.
+- 🔴 **정정: 아래 "[중] 가족 상세가 계정 주인 이름" 수정은 카드 결제(주 경로)에서 효과가 없었다.** 지급(`fulfillPaymentOrder` → `snapshotTodayDetailFulfillment`)이 착지보다 먼저
+  이름 없이 스냅샷을 만들고, 착지 unlock GET 은 같은 scope 스냅샷을 그대로 돌려줘 넘긴 `name` 이 한 번도 쓰이지 않았다(route.spec 은 스냅샷 조회를 null 로 고정해 못 잡음).
+  nameHint 가 먹던 건 지급이 없는 멤버 열기(POST)뿐. → 결제 화면(`toss-membership-checkout`)이 localStorage 폼 이름을 prepare 에 `subjectName` 으로 보내고,
+  prepare 가 **막힌 경로(from=*-limit)의 today-detail 주문에만** `metadata.subjectName`(20자) 저장, 지급 스냅샷이 `nameHint` 로 넘긴다. 마이그레이션 없음(metadata jsonb).
+- 수정 리뷰(비차단) 반영: 처음엔 모든 today-detail 결제에 실어, 같은 reading 으로 예전에 막힌 경로에서 남긴 이름("아빠")이 무료 결과에서 온 정상 결제의
+  run 이름("아버지")을 이겼다(nameHint 가 run 보다 앞). → 서버가 `-limit` 진입만 싣고, 상세 클라도 착지 `from=limit`(`fromLimit` prop)일 때만 이름을 보낸다(멤버 열기 포함).
+  `resolveNamedReadingInput` 주석 순서를 코드와 맞춤(③ nameHint → run), unlock-marker 주석의 "URL 안 씀" 을 사실대로(unlock GET 쿼리엔 폴백으로 실림).
+- 검증: `payments/fulfillment-today-detail-name.spec.ts`(주문 이름 → nameHint · 없으면 null) · **`payments/prepare/route.spec.ts` 5건**(-limit 만 · 무료 결과 결제 제외 · 20자·공백 ·
+  비 today-detail 제외 · 퍼널 로그에 이름 없음) · 상세 클라 +1(막힌 경로 아니면 이름 미전송) · nameHint vs run 순서 고정 +1. 뮤테이션 6종(nameHint:null · -limit 조건 ·
+  today-detail 조건 · 20자 · 퍼널 로그로 이동 · 상세 fromLimit 조건) 전부 red. prepare 본문 키 허용 목록에 `subjectName`(금액 무관). tsc 0 · npm test 1718 · test:spec 414 green.
+- **CodeQL #64(`js/clear-text-storage-of-sensitive-data`, unlock-marker.ts:45)** — 걸린 건 키가 아니라 **값(폼 이름)**. SARIF 경로상 오염은 `birth-profile-store.ts:139`
+  (프로필 전체 JSON 저장) → `:117`(다시 읽어 JSON.parse) 에서 객체 전체로 번진 과대근사로, 저장값은 이름뿐이다(메인·리뷰어 독립 판정 일치). 키가 DB 폴백 때 toSlug 인 것도
+  같은 브라우저에 birth-profile 이 이미 평문 저장하는 정보라 새 노출이 아니다. URL 로 옮기면 가족 이름이 기록·로그로 퍼져 더 나쁘다 → **코드 유지 + 오탐 처리(dismiss)**.
+- ⏳ 결정 대기(리뷰 THE CONVERSATION): 같은 사주 다음 날 재구매가 **어제 이용권 행을 이 결제로 덮어쓴다**(created_at·결제키). 어제 주문은 이용권 행 없는 결제가 되어
+  결제키 회수 대칭(#819)·관리자 이용권 기준 환불 화면에서 어제 구매가 안 보인다. 대안은 scope 에 KST 날짜(`today:<readingKey>:<YYYY-MM-DD>`) — 판정 함수 scope 파싱·레거시 공존 손봐야 함.
+- 남은 테스트 빈칸(리뷰): 재구매 갱신 뒤 어제/오늘 결제키 회수 단언 · prepare 가 `hasTodayDetailEntitlementForSaju` 에 넘기는 인자 단언. 키 누적(reading 마다 1개, 지우지 않음)은 표시 이름 하나라 유지.
+
+## 2026-09-14 — 다른 사람 사주 결제 경로 적대적 리뷰 반영(가족 이름 · 멤버 중복결제 · 돌아가기 · 테스트)
+
+브랜치 `fix/today-fortune-other-saju-checkout` 두 번째 커밋(PR·머지 전).
+- **[중] 가족 상세가 계정 주인 이름으로 불림**: 이 경로는 run 기록이 없어(만들면 #825 재열람이 가족 무료 결과를 내줌) 스냅샷 이름 해석이
+  ①원본 이름 없음 ②미등록 가족 ③run 없음 → ④계정 표시명으로 떨어졌다. 버튼(`prepareTodayDetailCheckout`)이 reading 별 폼 이름을
+  localStorage(`rememberTodayDetailName`, unlock-marker.ts)에 남기고, 상세가 unlock GET/POST 에 `name` 으로 넘겨 `resolveNamedReadingInput` 의
+  ③(nameHint, 20자 · 등록 가족 이름보다 뒤)로 쓴다. input.name 엔 넣지 않는다(toSlug 해시 → scope 흔들림). 한계: 결제를 다른 브라우저에서 열면 기존 폴백.
+- **[하] 로그아웃 멤버가 로그인 후 3,300원 재결제**: 결제 화면 today-detail 분기에서 프리미엄 멤버(`computeMemberFreeEligible`)면 결제창 대신
+  '멤버십으로 바로 열기'(`MemberTodayDetailOpenButton` — 열기 표식 후 상세 → POST unlock 이 멤버십 혜택으로 기록). 퍼널 blocked=active_membership.
+- **[하] 착지 '돌아가기' 막다른 길**: `-limit` 진입이면 착지 URL 에 `from=limit`(buildTasteProductHref · buildPurchasedProductHref) → 상세 backHref=/today-fortune.
+- **[하] 테스트 빈칸**: `/start` 분기 jsdom 3건(딥링크·선택화면·다른 오류) · checkout-reading 로그인 신규 reading 소유자 + `recordTodayFortuneRun` 0회 ·
+  unlock route.spec(GET/POST name → nameHint) · 상세 클라 jsdom(GET/POST 에 name) · 이름 해석 단위 3건 · from=limit 단위 · 멤버 버튼 jsdom + 결제 화면 배선 가드.
+  뮤테이션 12종(각 수정 되돌리기) 전부 red 확인. tsc 0 · npm test 1694 · test:spec 331 green.
+- **반려(사용자 결정 필요)**: "그날 아무 사주로든 오늘 자세히 1회 사면 가족 것도 열림"(`hasTodayDetailEntitlementForDay` 가 scope_key 를 안 봄) — 2026-06-05
+  일일 만료 정책의 기존 규칙. 좁히려면 checkout·prepare·unlock 세 곳을 같은 scope 함수로 동시에 바꿔야 해(어긋나면 결제하고 못 여는 사고) 이 PR 범위 밖.
+- **[사용자 결정 2026-09-14] 오늘 자세히는 산 사주만 열린다**(세 번째 커밋): `hasTodayDetailEntitlementForDay` → `hasTodayDetailEntitlementForSaju`(판정 `todayDetailRowsOpenSaju`) — 오늘(KST) 이용권 중 scope `today:<readingKey>` 가 #699 정체성(`readingKeyMatchesCurrentSaju`)으로 이 사주인 것만. 결제 화면·prepare·unlock GET/POST 동일 함수(가드 테스트). 레거시(scope 없음·옛 readingId·현재 사주 미해석)는 누구 것인지 몰라 전처럼 그날 넓게 연다. 남은 틈: unlock 의 coin-daily(전·멤버·쿠폰 당일 기록) 폴백은 여전히 사주 무관.
+- **리뷰 반영(네 번째 커밋)**: [상] unlock 4단계 coin-daily(그날 detail_report 행 아무거나 — 0원 후속질문 포함)로 가족 사주가 무료로 열림 → `hasTodayFortuneAccessForSaju`(판정 `detailReportRowsOpenSaju`): 열람 kind 3종 중 readingKey 가 #699 정체성으로 이 사주인 행만, `today_result_followup` 제외. [중] 같은 사주를 다음 날 재구매하면 UNIQUE(user,product,scope) 로 어제 행이 돌아와 결제하고 못 엶(가짜 DB 재현) → `grantProductEntitlement` 가 today-detail 의 지난 날 행을 이 결제로 갱신(created_at·결제키, 정확 scope 만 — 'global' 은 안 건드림). 마이그레이션 없음. [하] 현재 사주 미해석이면 넓히지 않음(정확일치만) + route.spec 인자 단언. [하] 멤버십 환불 잠금 근거는 날 단위로 남기고 주석만 사실대로(사주 단위로 좁히면 더 지우는 쪽). 수정 전 red·뮤테이션 7종 red.
+
+## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
+
+브랜치 `fix/today-fortune-other-saju-checkout`(PR·머지 전).
+- **왜**: 무료 1회를 쓴 뒤 가족 등 다른 사람 사주를 넣으면 429 안내만 뜨고 막다른 길이었다(/today-fortune · /start). 잠금 ON 때만 붙던
+  `/saju/new?product=today-detail` 링크는 입력을 다시 받고 사주 결과(/saju/{id})를 거쳐야 결제 카드가 나오는 우회였고, `submitSajuFromProfile` 이
+  수동 입력(=가족)을 **본인 프로필로 자동저장**하는 부작용도 탄다.
+- **방식**: 새 `POST /api/today-fortune/checkout-reading` — 오늘운세와 같은 파싱(`parseTodayPayload` export 재사용)·reading 규칙(로그인=`findReadingByInput` 재사용,
+  아니면 `createReading`, DB 없으면 toSlug 폴백)으로 **reading id 만** 돌려준다. 무료 결과 생성·무료 1회 판정/소비 없음.
+  클라 `prepareTodayDetailCheckout`(submit-today.ts) → `/membership/checkout?product=today-detail&slug=<reading>&scope=<고민>&from=today-fortune-limit|start-limit`.
+  버튼 `TodayDetailCheckoutButton`(가격 = `usePriceLabel('saju_entry')` 리졸버) 을 `free_daily_limit` **코드**일 때만 두 화면에 붙임 — 잠금 ON/OFF 같은 코드라 두 모드 동일. 잠금 전용 링크는 삭제.
+- **끝까지**: 비로그인 → 체크아웃 결제 버튼이 기존 `/login?next=…&returned=1` 로 같은 slug 복귀(reading 은 소유자 없음 — unlock 은 null 소유자 허용) · 이미 오늘 산 사람은
+  체크아웃 `checkTodayDetailAccess` 가 '이미 구매한 풀이 → 구매한 풀이 열기' · 결제 후 `buildTasteProductHref`(from 이 saju* 아님) → `/today-fortune/detail?paid=today-detail&sourceSessionId=<reading>`
+  → unlock **GET** 이 reading 만으로 연다(스냅샷 scope 가 readingKey 라 그 사람 것). 착지·unlock 은 무료 결과 세션이 필요 없어 무수정.
+- 검증: `checkout-reading/route.spec.ts` 4건(계정 재사용 · 익명 생성 · 무료 결과/1회 판정·소비 0 · 400) + `today-fortune-experience.test.tsx`(jsdom) 3건(코드일 때 카탈로그 가격 버튼 →
+  체크아웃 href · 실패 시 이동 없음 · 다른 오류엔 버튼 없음). 수정 전 red(라우트 없음·버튼 없음), 뮤테이션(재사용 삭제·코드 판정 삭제) red. tsc 0, npm test·test:spec 전부 green.
+- 남은 것: 같은 날 **아무 사주로든** 오늘 자세히를 산 계정은 다른 사람 것도 열린다(`hasTodayDetailEntitlementForDay` same-day 규칙, 기존 정책 — 무수정).
+  /start 화면 분기 테스트는 없음(같은 컴포넌트·같은 코드 판정).
+
+## 2026-09-15 — 드리프트 메일: 구독 행 없음은 '무효 금지'로 따로 안내(머지 전 리뷰 반영)
+
+브랜치 `feat/membership-drift-daily-check`(#828) — main(#829) 병합 커밋 + 리뷰 1건(하).
+- 구독 행이 아예 없는 사용자도 `renews_at null` 과 똑같이 메일에 `R=null` 로 나갔다. 086 정리 SQL 은 "R null → 살아 있는 행 전부 무효" 라 그대로 따르면
+  **결제된 기간이 무효**되고, 그 주문의 지급 재시도는 `end===null` → '구독 정보가 없습니다' 로 영구히 막힌다(무효 전이면 재시도가 구독을 E 로 만들어 치유 — `activateMembershipSubscription` retried 분기).
+  → `DriftUser.subscriptionMissing` 추가, 메일 줄을 "구독 행 없음 · ⚠️ 무효 처리 금지 · 그 주문 지급 재시도" 로 분기, 정리 SQL 안내에 "구독 행 없음은 제외".
+- 검증: 스펙 +1(구독 행 없음 줄엔 R=null 없음 · renews_at null 구독 행은 기존대로 R=null). 뮤테이션(`subscriptionMissing:false`) 2건 red. tsc 0 · npm test · test:spec 383 green.
+
+## 2026-09-14 — 멤버십 기간 원장 드리프트 매일 자동 확인 + 운영 메일
+
+브랜치 `feat/membership-drift-daily-check`(PR·머지 전). 사용자 결정: 086 드리프트를 매일 확인하고 1명이라도 어긋나면 운영 메일.
+- **라우트** `src/app/api/admin/audits/membership-drift/route.ts` — 인증은 payment-idempotency 감사와 같다(Bearer CRON_SECRET timing-safe 비교, 아니면 세션 super_admin).
+  vercel.json 크론 `0 1 * * *`(KST 10:00). 응답 `{ ok, chainVsRenews, entitledWithoutEnd, users:[{userId, checks, renewsAt(R), chainEnd(E)}], alerted }` — R·E 는 086 정리 SQL 입력값.
+- **판정** `src/lib/membership-drift.ts` `findMembershipDrift`(순수) = 086 머리말 쿼리 두 개(ms 비교). DB 읽기는 service + `readAllPages`(subscription.ts 에서 export,
+  정렬 키 인자 추가 — periods `id` · subscriptions `user_id`(PK, id 없음)). 읽기 범위: 기간은 살아 있고 end_at > now 인 행만, 구독은 전부(사용자당 1행).
+- **메일** 프로덕션(VERCEL_ENV=production)에서만 `sendOpsAlertEmail` — 두 건수 · uuid 최대 20명(+외 N명) · `/admin/users/<id>` 링크 · 086 머리말 정리 SQL 안내. 이메일·이름 없음.
+  메일 실패는 삼키지 않는다: console.error + 응답 `alertError` + **500**(Vercel 크론 실패로 보이게). 조회 실패도 500.
+- 검증: `membership-drift.spec.ts` 14건(0 · P1 · P2 2모양 · 구독 없음 · 행 없음 · 권한 없는 구독 무시 · 무효·과거 무시 · 여러 사용자 · ms 표기차 · 페이지네이션 · 메일 본문) +
+  `route.spec.ts` 10건(크론/틀린 시크릿/시크릿 미설정/admin 403/super_admin · 메일 0/프로덕션/비프로덕션/실패 500/조회 실패). 판정 뮤테이션 7종 모두 red.
+- 리뷰 반영: ① 첫 구현은 구독도 `renews_at > now` 로 걸러 읽어 **P2(구독 끝 < 사슬 끝) 중 구독이 만료된 사용자의 R 이 메일·응답에 null** 로 나갔다 —
+  086 정리 SQL 은 "R 이 null 이면 모든 살아 있는 행 무효" 라 그대로 따르면 과거 결제 행까지 무효(환불 잠금 창이 쓰는 원장 이력 훼손). 구독은 필터 없이 전부 읽는다
+  (스펙: is·gt 를 실제 적용하는 가짜 client 로 R 원값 단언). ② µs 비교 — `Date.parse` 가 소수 4~6째 자리를 버려 µs 가 남은 renews_at(수동 SQL `now()+interval`)을
+  "일치" 로 봤다(086 쿼리는 어긋남). µs 정수로 비교. ③ 지급·해제·환불이 기간 행과 구독을 따로 써서 그 틈에 읽히면 거짓 양성 → 어긋남이 있으면 5초 뒤 다시 읽어
+  **두 번 다 어긋난 사용자만** 메일·응답, 메일 첫 줄에 "정리 전 수동 호출로 재확인". 스펙 +5건(뮤테이션 3종 각각 red 확인).
+- 설계 문서 `docs/membership-period-ledger-design.md` 의 "주기 실행은 사용자 결정" 줄을 매일 자동 확인으로 교체.
+- ⚠️ 수신자 env `ADMIN_ALERT_EMAILS`(없으면 INTERNAL_VERIFICATION_EMAILS)·`RESEND_API_KEY` 가 프로덕션에 없으면 어긋남이 생긴 날 메일이 못 가고 500 만 남는다(어긋남 0 인 날은 메일 경로를 안 탄다) — 배포 후 env 존재를 `vercel env ls` 로 확인.
+
+## 2026-09-14 — 위조 가드·일부 환불 리뷰 반영(중 7 · 저 3)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund` 후속 커밋(PR·머지 전, #826 먼저). 아래 섹션의 "⚠️ 지표 안 잡힘"은 이 커밋으로 해소.
+- **일부 환불 재승인 이중 환불**: failed 요청의 일부 환불 재승인은 취소 전에 PG 재조회(`executeRefund`·`findPartialCancelSince`). 요청 생성 뒤 같은 금액 취소가 있으면 새 취소 없이 완료(그 거래 tid 로 원장), 확인 못 하면 막는다. 나이스 조회·취소 fetch 에 15초 상한.
+- **지표**: 일부 환불액을 주문 `metadata.partialRefunds[{cancelTid, amount, at}]` 에 취소 거래 단위로 1회 기록(비멤버십 포함, 이미 refunded 면 안 함). `expandRefundRows` 가 일부는 그 시각·금액, 뒤이은 전액은 나머지로 센다(롤업·환불 내역 둘 다). 마이그레이션 없음 — metrics_daily 는 다음 롤업/백필에서 반영.
+- **'full' 과대 표기**: 남는 길이 ≤ 0 이면 원장만 전액(`refundMembershipLedger` — markPaymentOrderRefunded 에서 뽑음). 주문 refunded·GA 는 PG 잔액 0(`isPgFullyCancelled`)일 때만.
+- **통보**: 일부 원장 일시 오류는 failed + non-OK(재전송) · 재조회 오류는 결과 코드가 있어도 전부 failed + non-OK(영구 거부 없음) · 서명 불일치는 거부 안 하고 흔적만(⚠️ 검증필요 — 운영 통보로 식 대조는 사용자 승인 필요) · 운영 메일은 tid 로 주문을 찾은 뒤 불일치만, tid·사유당 1시간 1통 · 거부된 통보는 재수신 때 재검증(콘솔 재전송 = 복구, 메일 문구에 "관리자 화면 환불 금지") · 결제키 없는 주문은 orderId 로 찾아 재조회 대조.
+- **저**: 관리자 화면에 원장 failed/missing 사유 표시 · 해제로 무효된 P 는 'voided'(오경보 없음).
+- 반려: 없음. 부분 — duplicate/voided 는 정상이라 화면 오류로 안 올림, 발신 IP 필터는 IP 목록 미확인이라 생략.
+- 검증: 새 테스트(webhook spec 9 · admin spec 3 · 원장 2 · 지표 1 · 재승인 1)가 수정 전 코드에서 전부 red. 뮤테이션 7종 각각 red. npm test 0 fail · test:spec 354 · tsc 0.
+
+## 2026-09-14 — 나이스 취소 통보 위조 가드 + 멤버십 일부 환불(설계 연산 4)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund`(기반 `fix/nicepay-webhook-redelivery` = PR #826, 미머지). 사용자 결정 (가)·(나). PR·머지 전 — **#826 먼저 머지**.
+tid 우선 조회와 부분취소 처리는 같은 PR 에 있다. tid 조회만 먼저 나가면 부분취소 통보가 전액 회수로 켜진다.
+- (가) **위조 가드**(`webhook/nicepay/route.ts`)
+  - 주문은 `payload.tid === order.paymentKey` 로 찾는다. orderId 는 보조다. 다른 주문을 가리키면 `tid_mismatch`/`order_id_mismatch` 로 거부한다. 우리가 만든 `cxl…_원주문` 번호는 같은 주문으로 본다.
+  - 서명(`sha256(tid+amount+ediDate+Secret)`)이 오면 대조한다.
+  - `getNicepayPayment(tid)` 재조회 결과로 판정한다. 전액 통보는 cancelled 여야 하고, 일부 통보는 cancelled·partialCancelled 둘 다 받는다. orderId·amount 도 주문과 맞아야 한다.
+  - 불일치는 `ignored` + `forgery_guard:<사유>` + 프로덕션 운영 메일로 남긴다.
+  - 재조회 일시 오류는 failed + non-OK(#826 규칙)로 처리한다. PG 가 결과 코드로 거절하면 불일치로 본다.
+  - status 는 명세 enum 두 개만 받는다(`canceled`·대문자 삭제).
+- (나) **일부 환불**
+  - `partialRefundMembershipPeriod`(subscription.ts): k=round(30일×환불액/주문금액) ms, newEnd=e−k, 잠금 창 [newEnd,min(e,t)), 당김 max(0,e−max(newEnd,t)).
+  - 잘린 조각은 이 주문의 **무효 행**(`partial_refund:<취소 tid>`)으로 남긴다. 그래서 잠금은 기존 `lockMembershipContentForRefund` 그대로 쓰고, 이 행이 같은 취소 거래를 두 번 적용하지 않는 기록이 된다. 마이그레이션은 없다.
+  - `applyPartialRefund`(order-ledger.ts)는 통보와 관리자 경로가 같이 쓴다. 주문은 결제 상태 그대로 둔다. 멤버십이 아니면 무동작이고, 남는 길이가 0이면 전액 전이로 넘긴다. 실패는 last_error·운영 메일로 남긴다.
+  - `markPaymentOrderRefunded` 의 `partial` 플래그는 삭제했다.
+  - partialCancelled 통보는 재조회 cancels[] 에서 이번 거래와 금액을 찾는다(cancelledTid → 마지막 원소 순).
+- **관리자**
+  - 멤버십 주문 단위(bundle-order) 항목에 일부 환불 금액 입력칸을 뒀다. 요청 API 가 0<금액≤주문금액 정수를 검증하고, 멤버십만 받는다.
+  - 승인 → cancelAmt 부분취소 → 응답 cancels[] 의 새 tid 로 `applyPartialRefund` 를 부른다. 잔액이 0 이면 전액 경로다.
+  - PG 거절 사유에 결과 코드(샌드박스 U128)를 붙여 화면에 보인다.
+- ⚠️ **지표**: 매출·환불 집계(`analytics-rollup`·`refund-breakdown`)는 status='refunded' 주문의 전체 금액만 센다. 그래서 일부 환불만 있는 주문의 환불액은 지표에 **안 잡힌다**(예전엔 통보가 전액을 잡았다).
+  - 고치려면 두 집계기 + 뒤따르는 전액 환불과의 이중 계상 규칙까지 손대야 한다. 이번엔 손대지 않았다(마이그레이션은 불필요).
+  - 운영 부분환불이 생기면 금액을 수동으로 보정한다.
+- ⚠️ 관리자 화면에서 같은 주문의 두 번째 환불(부분 뒤 부분/잔여)은 기존 중복 방지(completed 요청 존재 → 409) 때문에 막힌다. 콘솔 취소 + 통보로는 처리된다.
+- 검증
+  - subscription-refund.test 에 일부 환불 7건을 추가했다: 진행 중·미래·끝난 기간·두 번·중복·전액 전환·부분 뒤 전액·ms·B 당김.
+  - route.spec(webhook) 20건: 위조 7종 + 일부 3건. admin refund route.spec 11건.
+  - 수정 전 red: webhook spec 10/20, admin spec 11/11. 뮤테이션 7종(당김식·중복 검사·full 판정·재조회 status·orderId 대조·결과코드 분기·partial 분기)이 각각 red.
+  - npm test 0 fail · test:spec 345 · tsc 0.
 
 ## 2026-09-14 — 나이스 통보 재전송 수정 리뷰 반영(전 회수 주문 단위 잠금 · 전이 뒤 재처리 흔적 · 이용권 감사 순서)
 

@@ -14,6 +14,7 @@ import { parseIntakeIntent, type IntakeIntent } from '@/features/unified-intake/
 import { submitSajuFromProfile } from '@/features/unified-intake/submit-saju';
 import { submitTodayFromProfile } from '@/features/unified-intake/submit-today';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { TodayDetailCheckoutButton } from '@/components/today-fortune/today-detail-checkout-button';
 
 export default function StartClient() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function StartClient() {
   const [resolved, setResolved] = useState<UnifiedBirthProfile | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // 오늘운세 하루 1회에 막힌 입력 — 그 사주의 오늘 자세히 결제 경로를 붙인다(코드로 판정).
+  const [limitedProfile, setLimitedProfile] = useState<UnifiedBirthProfile | null>(null);
 
   // 선택된 상품으로 제출 → 결과 href push. 성공 시 busy 를 되돌리지 않아
   // 페이지 전환 완료까지 재제출을 막는다(saju-intake-page.tsx didNavigate 가드와 동일 패턴).
@@ -30,6 +33,7 @@ export default function StartClient() {
     if (busy) return;
     setBusy(true);
     setError('');
+    setLimitedProfile(null);
     try {
       const href =
         intent === 'saju'
@@ -38,6 +42,7 @@ export default function StartClient() {
       router.push(href);
     } catch (err) {
       setError(err instanceof Error ? err.message : '결과를 준비하지 못했습니다. 다시 시도해 주세요.');
+      if ((err as { code?: string } | null)?.code === 'free_daily_limit') setLimitedProfile(profile);
       setBusy(false);
     }
   }
@@ -72,6 +77,9 @@ export default function StartClient() {
                 {error}
               </p>
             ) : null}
+            {limitedProfile ? (
+              <TodayDetailCheckoutButton profile={limitedProfile} from="start-limit" />
+            ) : null}
           </div>
         ) : (
           <div className="grid gap-5">
@@ -98,6 +106,9 @@ export default function StartClient() {
               <p role="alert" className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">
                 {error}
               </p>
+            ) : null}
+            {limitedProfile ? (
+              <TodayDetailCheckoutButton profile={limitedProfile} from="start-limit" />
             ) : null}
           </div>
         )}

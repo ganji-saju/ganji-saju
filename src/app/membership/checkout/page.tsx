@@ -51,6 +51,8 @@ import {
 } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GtmViewItem } from '@/components/analytics/gtm-view-item';
+import { computeMemberFreeEligible } from '@/lib/credits/member-benefits';
+import { MemberTodayDetailOpenButton } from '@/components/today-fortune/today-detail-checkout-button';
 
 interface Props {
   searchParams: Promise<{
@@ -317,6 +319,9 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   구성 5종 중 오늘 자세히·올해 핵심은 멤버십 혜택과 겹친다(깊은풀이·상세 무제한).
   //   결제는 막지 않되(종합점수는 멤버십 미포함) 겹침을 결제 전에 명시한다 — 중복결제 CS 방지.
   let bundleMembershipOverlap = false;
+  // 2026-09-14 — 오늘 자세히는 프리미엄 멤버십에 포함. 로그아웃 상태로 하루 1회에 막혀 결제 버튼 → 로그인으로
+  //   들어온 멤버가 3,300원을 또 내지 않게, 결제 대신 멤버십으로 여는 링크를 준다(POST unlock 이 혜택으로 기록).
+  let memberIncludedHref: string | null = null;
 
   // 2026-09-03 — 퍼널 기록용으로 바깥에 보관(아래 after() 에서 쓴다).
   let viewerId: string | null = null;
@@ -351,6 +356,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             from,
             scope,
           });
+        } else if (
+          selectedProduct === 'today-detail' &&
+          slug &&
+          (await computeMemberFreeEligible(user.id, selectedProduct, await getMemberTier(user.id)))
+        ) {
+          memberIncludedHref = buildPurchasedProductHref(selectedProduct, slug, { from, scope });
         }
       } else if (paymentPackage.kind === 'lifetime_report' && paymentScope?.readingKey) {
         const entitlement = await getLifetimeReportEntitlement(
@@ -426,7 +437,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     ? ('needs_result' as const)
     : alreadyPurchasedHref
       ? ('already_purchased' as const)
-      : activeMembershipPlan
+      : activeMembershipPlan || memberIncludedHref
         ? ('active_membership' as const)
         : null;
   // 쿠폰 입력칸 — 결제 버튼이 있는 화면, 쿠폰이 붙는 상품(설계 §7)에서만. 쿠폰 없음 = 입력 · 미리보기 중(결제 전) = 다른 코드로
@@ -696,6 +707,16 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   >
                     결제 상태 확인
                   </Link>
+                </div>
+              ) : memberIncludedHref && slug ? (
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-jade)]">
+                    멤버십에 포함된 풀이예요
+                  </strong>
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    따로 결제하지 않고 바로 열 수 있어요.
+                  </p>
+                  <MemberTodayDetailOpenButton slug={slug} href={memberIncludedHref} />
                 </div>
               ) : activeMembershipPlan ? (
                 // 2026-05-16 — 활성 멤버십 상태에서 같은 plan 결제 시도 차단.

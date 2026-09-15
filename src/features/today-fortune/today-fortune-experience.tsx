@@ -9,6 +9,7 @@ import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-ques
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
 import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-risk-cards';
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
+import { TodayDetailCheckoutButton } from '@/components/today-fortune/today-detail-checkout-button';
 import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippet';
 import { TodayConcernSelector } from '@/components/today-fortune/today-concern-selector';
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
@@ -19,7 +20,7 @@ import { submitTodayFromProfile } from '@/features/unified-intake/submit-today';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneFeedbackAccuracyLabel } from '@/lib/fortune-feedback';
-import { isPaywallLockdown, keepVisible } from '@/lib/paywall-lockdown';
+import { keepVisible } from '@/lib/paywall-lockdown';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   getPendingHitMemoSession,
@@ -278,11 +279,14 @@ export function TodayFortuneExperience({
                 오늘 본 운세 다시 열어보기
               </button>
             ) : null}
-            {/* 잠금 중엔 무료 결과가 아예 안 나온다 — 안내만 남기면 막다른 길이라 결제 경로를 붙인다. */}
-            {isPaywallLockdown() ? (
-              <Link href="/saju/new?product=today-detail" className="gangi-primary-button">
-                오늘 자세히 보기
-              </Link>
+            {/* 2026-09-14 — 막힌 그 입력(가족 등)의 오늘 자세히 결제 경로. 잠금 ON/OFF 모두 같은 코드로 온다.
+                (잠금 때 쓰던 /saju/new?product=today-detail 링크는 입력을 다시 받고 사주 결과를 거쳐 돌아가서 대체.) */}
+            {errorCode === 'free_daily_limit' && lastProfileRef.current ? (
+              <TodayDetailCheckoutButton
+                profile={lastProfileRef.current}
+                concernId={concernId}
+                from="today-fortune-limit"
+              />
             ) : null}
           </div>
         ) : null}

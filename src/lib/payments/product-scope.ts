@@ -382,7 +382,9 @@ export function buildPurchasedProductHref(
       //   (상세 페이지가 normalizeConcernId 로 정규화 → 빈/유효하지 않은 scope 는 general = 현행.)
       const concern = options.scope?.trim();
       const concernParam = concern ? `&concern=${encodeURIComponent(concern)}` : '';
-      return `/today-fortune/detail?paid=today-detail&sourceSessionId=${encodeURIComponent(normalizedSlug)}${concernParam}`;
+      // 2026-09-14 — 하루 1회 차단 화면에서 온 경우(무료 결과 없음) 표식 — buildTasteProductHref 와 같다.
+      const fromParam = options.from?.endsWith('-limit') ? '&from=limit' : '';
+      return `/today-fortune/detail?paid=today-detail&sourceSessionId=${encodeURIComponent(normalizedSlug)}${concernParam}${fromParam}`;
     }
     return '/today-fortune';
   }
