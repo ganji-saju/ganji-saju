@@ -480,7 +480,7 @@ export async function POST(req: NextRequest) {
       } as RefundRequestSnapshot;
     },
     async setStatus(id, status, patch) {
-      await service
+      let query = service
         .from('refund_requests')
         .update({
           status,
@@ -490,6 +490,10 @@ export async function POST(req: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id);
+      if (patch?.from) query = query.eq('status', patch.from);
+      const { data, error } = await query.select('id');
+      // 선점(from)은 행이 실제로 바뀌었을 때만 true — 오류도 false 로 PG 취소 전에 멈춘다. 그 밖의 전이는 예전처럼 결과를 보지 않는다.
+      return !patch?.from || (!error && (data?.length ?? 0) > 0);
     },
     // 2026-06-26 — PG 분기: order metadata.provider 로 nicepay/toss 취소 선택.
     //   나이스페이는 cancelNicepayPayment(idempotencyKey 로 멱등). 옵션 매핑(cancelReason→reason 등).
