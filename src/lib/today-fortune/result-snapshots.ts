@@ -98,7 +98,7 @@ export const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
 //   reading.input 을 쓰고(슬러그 안정), 이 named 사본은 메시지 빌더에만 넘긴다.
 /**
  * 이 사주를 누구로 호명할지 해석한다.
- *   우선순위: ①원본 input.name ②등록된 본인·가족(정체성 매칭) ③그 실행에 쓴 폼 이름(run 기록 · 없으면 nameHint)
+ *   우선순위: ①원본 input.name ②등록된 본인·가족(정체성 매칭) ③결제 경로 폼 이름(nameHint) → 그 실행에 쓴 폼 이름(run 기록)
  *   ④계정 표시명(프로필→소셜). ④까지 비면 호출부가 '달빛이' 폴백.
  *   ③이 있어야 "무료는 철수 · 결제 후 상세는 계정 주인 이름"으로 갈리지 않는다.
  *   2026-09-14 — 하루 1회에 막힌 사주의 결제 경로(checkout-reading)는 run 이 없다(만들면 무료 재열람 누출).

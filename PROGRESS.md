@@ -6,9 +6,13 @@
 - 🔴 **정정: 아래 "[중] 가족 상세가 계정 주인 이름" 수정은 카드 결제(주 경로)에서 효과가 없었다.** 지급(`fulfillPaymentOrder` → `snapshotTodayDetailFulfillment`)이 착지보다 먼저
   이름 없이 스냅샷을 만들고, 착지 unlock GET 은 같은 scope 스냅샷을 그대로 돌려줘 넘긴 `name` 이 한 번도 쓰이지 않았다(route.spec 은 스냅샷 조회를 null 로 고정해 못 잡음).
   nameHint 가 먹던 건 지급이 없는 멤버 열기(POST)뿐. → 결제 화면(`toss-membership-checkout`)이 localStorage 폼 이름을 prepare 에 `subjectName` 으로 보내고,
-  prepare 가 **today-detail 주문에만** `metadata.subjectName`(20자) 저장, 지급 스냅샷이 `nameHint` 로 넘긴다. 마이그레이션 없음(metadata jsonb).
-- 검증: `payments/fulfillment-today-detail-name.spec.ts`(주문 이름 → nameHint · 없으면 null) — 뮤테이션(nameHint:null) red. 결제 화면·prepare 배선 가드 +1,
-  prepare 본문 키 허용 목록에 `subjectName`(금액 무관). tsc 0 · npm test 1705 · test:spec 339 green.
+  prepare 가 **막힌 경로(from=*-limit)의 today-detail 주문에만** `metadata.subjectName`(20자) 저장, 지급 스냅샷이 `nameHint` 로 넘긴다. 마이그레이션 없음(metadata jsonb).
+- 수정 리뷰(비차단) 반영: 처음엔 모든 today-detail 결제에 실어, 같은 reading 으로 예전에 막힌 경로에서 남긴 이름("아빠")이 무료 결과에서 온 정상 결제의
+  run 이름("아버지")을 이겼다(nameHint 가 run 보다 앞). → 서버가 `-limit` 진입만 싣고, 상세 클라도 착지 `from=limit`(`fromLimit` prop)일 때만 이름을 보낸다(멤버 열기 포함).
+  `resolveNamedReadingInput` 주석 순서를 코드와 맞춤(③ nameHint → run), unlock-marker 주석의 "URL 안 씀" 을 사실대로(unlock GET 쿼리엔 폴백으로 실림).
+- 검증: `payments/fulfillment-today-detail-name.spec.ts`(주문 이름 → nameHint · 없으면 null) · **`payments/prepare/route.spec.ts` 5건**(-limit 만 · 무료 결과 결제 제외 · 20자·공백 ·
+  비 today-detail 제외 · 퍼널 로그에 이름 없음) · 상세 클라 +1(막힌 경로 아니면 이름 미전송) · nameHint vs run 순서 고정 +1. 뮤테이션 6종(nameHint:null · -limit 조건 ·
+  today-detail 조건 · 20자 · 퍼널 로그로 이동 · 상세 fromLimit 조건) 전부 red. prepare 본문 키 허용 목록에 `subjectName`(금액 무관). tsc 0 · npm test 1718 · test:spec 414 green.
 - **CodeQL #64(`js/clear-text-storage-of-sensitive-data`, unlock-marker.ts:45)** — 걸린 건 키가 아니라 **값(폼 이름)**. SARIF 경로상 오염은 `birth-profile-store.ts:139`
   (프로필 전체 JSON 저장) → `:117`(다시 읽어 JSON.parse) 에서 객체 전체로 번진 과대근사로, 저장값은 이름뿐이다(메인·리뷰어 독립 판정 일치). 키가 DB 폴백 때 toSlug 인 것도
   같은 브라우저에 birth-profile 이 이미 평문 저장하는 정보라 새 노출이 아니다. URL 로 옮기면 가족 이름이 기록·로그로 퍼져 더 나쁘다 → **코드 유지 + 오탐 처리(dismiss)**.

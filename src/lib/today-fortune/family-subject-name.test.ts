@@ -154,12 +154,22 @@ test('배선 가드 — 스냅샷 빌더가 nameHint 를 이름 해석에 넘긴
 
 // 2026-09-15 — 카드 결제는 지급이 착지보다 먼저 스냅샷을 만든다(착지 unlock GET 의 name 은 안 쓰인다).
 //   폼 이름은 결제 화면 → prepare(today-detail 주문 metadata.subjectName) → 지급 스냅샷 nameHint 로 가야 한다
-//   (지급 쪽 행동은 payments/fulfillment-today-detail-name.spec.ts).
-test('배선 가드 — 결제 화면이 폼 이름을 prepare 로 보내고 prepare 가 today-detail 주문에만 싣는다', () => {
-  const read = (p: string) => fs.readFileSync(path.join(process.cwd(), 'src', p), 'utf8');
-  const client = read('components/membership/toss-membership-checkout.tsx');
-  assert.ok(/subjectName: product === 'today-detail' && slug \? readTodayDetailName\(slug\) : undefined/.test(client));
-  const prepare = read('app/api/payments/prepare/route.ts');
-  assert.ok(/tasteProductId === 'today-detail'\s*\?\s*readString\(payload, 'subjectName'\)\.slice\(0, 20\) \|\| null\s*:\s*null/.test(prepare));
-  assert.ok(/\.\.\.\(subjectName \? \{ subjectName \} : \{\}\)/.test(prepare));
+//   (prepare 규칙은 app/api/payments/prepare/route.spec.ts, 지급은 payments/fulfillment-today-detail-name.spec.ts).
+test('배선 가드 — 결제 화면이 폼 이름을 prepare 요청 본문으로 보낸다', () => {
+  const client = fs.readFileSync(path.join(process.cwd(), 'src/components/membership/toss-membership-checkout.tsx'), 'utf8');
+  const start = client.indexOf("fetch('/api/payments/prepare'");
+  const body = client.slice(start, client.indexOf('});', start));
+  assert.ok(start >= 0 && /subjectName: product === 'today-detail' && slug \? readTodayDetailName\(slug\) : undefined/.test(body));
+});
+
+// 순서 고정 — nameHint 는 막힌 경로 결제(prepare 가 from=*-limit 만 싣는다)와 멤버 열기에서만 온다. 그땐 방금 입력한 이름이 run 보다 앞선다.
+test('nameHint 와 run 이름이 둘 다 있으면 nameHint 가 이긴다(③ 안의 순서)', async () => {
+  const named = await resolveNamedReadingInput(
+    MOTHER,
+    'user-1',
+    deps({ loadRunDisplayName: async () => '어머님' }),
+    'reading-mom',
+    '엄마'
+  );
+  assert.equal(named.name, '엄마');
 });

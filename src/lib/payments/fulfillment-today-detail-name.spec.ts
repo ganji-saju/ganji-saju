@@ -1,7 +1,7 @@
 // 2026-09-15 — 🔴 카드로 산 가족(미등록) 사주의 '오늘 자세히'가 계정 주인 이름으로 굳던 버그.
 //   지급(fulfillment)이 착지보다 먼저 스냅샷을 만들고, 착지 unlock GET 은 그 스냅샷을 그대로 돌려줘
 //   거기서 넘기는 폼 이름(name)이 한 번도 쓰이지 않았다. 폼 이름은 prepare 가 주문 metadata.subjectName 에 싣고
-//   지급 스냅샷이 nameHint 로 넘겨야 한다.
+//   (막힌 경로만 — prepare/route.spec.ts) 지급 스냅샷이 nameHint 로 넘겨야 한다.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTasteProductPackage } from '@/lib/payments/catalog';
 import type { PaymentOrder } from '@/lib/payments/order-ledger';
@@ -81,7 +81,7 @@ describe('today-detail 지급 스냅샷 — 주문에 실린 폼 이름', () => 
     expect(snapshot).toMatchObject({ sourceSessionId: 'reading-dad', nameHint: '아버지' });
   });
 
-  it('이름이 없는 주문(무료 결과에서 온 기존 결제)은 nameHint 없음 — 기존 순서(등록 가족 → run → 계정 표시명)', async () => {
+  it('이름이 없는 주문(무료 결과에서 온 결제 — prepare 는 막힌 경로만 싣는다)은 nameHint 없음 — 등록 가족 → run → 계정 표시명', async () => {
     const snapshot = await fulfill({ checkoutPath: '/membership/checkout' });
     expect(snapshot).toMatchObject({ sourceSessionId: 'reading-dad', nameHint: null });
   });

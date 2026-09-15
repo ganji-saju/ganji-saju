@@ -28,6 +28,7 @@ export default async function TodayFortuneDetailPage({
         paidProduct={paid}
         // 2026-09-14 — 하루 1회 차단 화면에서 산 경우 무료 결과가 없어 '돌아가기'를 입력 화면으로.
         backHref={from === 'limit' ? '/today-fortune' : undefined}
+        fromLimit={from === 'limit'}
       />
     </AppShell>
   );

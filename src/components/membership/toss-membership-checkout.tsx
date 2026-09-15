@@ -194,6 +194,7 @@ export default function TossMembershipCheckout({
           // 화면에 보여 준 최종 금액. 서버는 **대조에만** 쓴다(다르면 결제를 멈추고 새로고침 안내).
           expectedAmount: amount,
           // 2026-09-15 — 다른 사람 사주 결제 경로의 폼 이름(버튼이 reading 별로 남김) → 주문 → 지급 스냅샷 호명.
+          //   주문에 실을지는 서버가 정한다(막힌 경로 from=*-limit 의 today-detail 만 — prepare).
           subjectName: product === 'today-detail' && slug ? readTodayDetailName(slug) : undefined,
         }),
       });
