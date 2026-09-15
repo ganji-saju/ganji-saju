@@ -19,6 +19,73 @@
 - 설계 문서 `docs/membership-period-ledger-design.md` 의 "주기 실행은 사용자 결정" 줄을 매일 자동 확인으로 교체.
 - ⚠️ 수신자 env `ADMIN_ALERT_EMAILS`(없으면 INTERNAL_VERIFICATION_EMAILS)·`RESEND_API_KEY` 가 프로덕션에 없으면 어긋남이 생긴 날 메일이 못 가고 500 만 남는다(어긋남 0 인 날은 메일 경로를 안 탄다) — 배포 후 env 존재를 `vercel env ls` 로 확인.
 
+## 2026-09-14 — 위조 가드·일부 환불 리뷰 반영(중 7 · 저 3)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund` 후속 커밋(PR·머지 전, #826 먼저). 아래 섹션의 "⚠️ 지표 안 잡힘"은 이 커밋으로 해소.
+- **일부 환불 재승인 이중 환불**: failed 요청의 일부 환불 재승인은 취소 전에 PG 재조회(`executeRefund`·`findPartialCancelSince`). 요청 생성 뒤 같은 금액 취소가 있으면 새 취소 없이 완료(그 거래 tid 로 원장), 확인 못 하면 막는다. 나이스 조회·취소 fetch 에 15초 상한.
+- **지표**: 일부 환불액을 주문 `metadata.partialRefunds[{cancelTid, amount, at}]` 에 취소 거래 단위로 1회 기록(비멤버십 포함, 이미 refunded 면 안 함). `expandRefundRows` 가 일부는 그 시각·금액, 뒤이은 전액은 나머지로 센다(롤업·환불 내역 둘 다). 마이그레이션 없음 — metrics_daily 는 다음 롤업/백필에서 반영.
+- **'full' 과대 표기**: 남는 길이 ≤ 0 이면 원장만 전액(`refundMembershipLedger` — markPaymentOrderRefunded 에서 뽑음). 주문 refunded·GA 는 PG 잔액 0(`isPgFullyCancelled`)일 때만.
+- **통보**: 일부 원장 일시 오류는 failed + non-OK(재전송) · 재조회 오류는 결과 코드가 있어도 전부 failed + non-OK(영구 거부 없음) · 서명 불일치는 거부 안 하고 흔적만(⚠️ 검증필요 — 운영 통보로 식 대조는 사용자 승인 필요) · 운영 메일은 tid 로 주문을 찾은 뒤 불일치만, tid·사유당 1시간 1통 · 거부된 통보는 재수신 때 재검증(콘솔 재전송 = 복구, 메일 문구에 "관리자 화면 환불 금지") · 결제키 없는 주문은 orderId 로 찾아 재조회 대조.
+- **저**: 관리자 화면에 원장 failed/missing 사유 표시 · 해제로 무효된 P 는 'voided'(오경보 없음).
+- 반려: 없음. 부분 — duplicate/voided 는 정상이라 화면 오류로 안 올림, 발신 IP 필터는 IP 목록 미확인이라 생략.
+- 검증: 새 테스트(webhook spec 9 · admin spec 3 · 원장 2 · 지표 1 · 재승인 1)가 수정 전 코드에서 전부 red. 뮤테이션 7종 각각 red. npm test 0 fail · test:spec 354 · tsc 0.
+
+## 2026-09-14 — 나이스 취소 통보 위조 가드 + 멤버십 일부 환불(설계 연산 4)
+
+브랜치 `feat/nicepay-forgery-guard-partial-refund`(기반 `fix/nicepay-webhook-redelivery` = PR #826, 미머지). 사용자 결정 (가)·(나). PR·머지 전 — **#826 먼저 머지**.
+tid 우선 조회와 부분취소 처리는 같은 PR 에 있다. tid 조회만 먼저 나가면 부분취소 통보가 전액 회수로 켜진다.
+- (가) **위조 가드**(`webhook/nicepay/route.ts`)
+  - 주문은 `payload.tid === order.paymentKey` 로 찾는다. orderId 는 보조다. 다른 주문을 가리키면 `tid_mismatch`/`order_id_mismatch` 로 거부한다. 우리가 만든 `cxl…_원주문` 번호는 같은 주문으로 본다.
+  - 서명(`sha256(tid+amount+ediDate+Secret)`)이 오면 대조한다.
+  - `getNicepayPayment(tid)` 재조회 결과로 판정한다. 전액 통보는 cancelled 여야 하고, 일부 통보는 cancelled·partialCancelled 둘 다 받는다. orderId·amount 도 주문과 맞아야 한다.
+  - 불일치는 `ignored` + `forgery_guard:<사유>` + 프로덕션 운영 메일로 남긴다.
+  - 재조회 일시 오류는 failed + non-OK(#826 규칙)로 처리한다. PG 가 결과 코드로 거절하면 불일치로 본다.
+  - status 는 명세 enum 두 개만 받는다(`canceled`·대문자 삭제).
+- (나) **일부 환불**
+  - `partialRefundMembershipPeriod`(subscription.ts): k=round(30일×환불액/주문금액) ms, newEnd=e−k, 잠금 창 [newEnd,min(e,t)), 당김 max(0,e−max(newEnd,t)).
+  - 잘린 조각은 이 주문의 **무효 행**(`partial_refund:<취소 tid>`)으로 남긴다. 그래서 잠금은 기존 `lockMembershipContentForRefund` 그대로 쓰고, 이 행이 같은 취소 거래를 두 번 적용하지 않는 기록이 된다. 마이그레이션은 없다.
+  - `applyPartialRefund`(order-ledger.ts)는 통보와 관리자 경로가 같이 쓴다. 주문은 결제 상태 그대로 둔다. 멤버십이 아니면 무동작이고, 남는 길이가 0이면 전액 전이로 넘긴다. 실패는 last_error·운영 메일로 남긴다.
+  - `markPaymentOrderRefunded` 의 `partial` 플래그는 삭제했다.
+  - partialCancelled 통보는 재조회 cancels[] 에서 이번 거래와 금액을 찾는다(cancelledTid → 마지막 원소 순).
+- **관리자**
+  - 멤버십 주문 단위(bundle-order) 항목에 일부 환불 금액 입력칸을 뒀다. 요청 API 가 0<금액≤주문금액 정수를 검증하고, 멤버십만 받는다.
+  - 승인 → cancelAmt 부분취소 → 응답 cancels[] 의 새 tid 로 `applyPartialRefund` 를 부른다. 잔액이 0 이면 전액 경로다.
+  - PG 거절 사유에 결과 코드(샌드박스 U128)를 붙여 화면에 보인다.
+- ⚠️ **지표**: 매출·환불 집계(`analytics-rollup`·`refund-breakdown`)는 status='refunded' 주문의 전체 금액만 센다. 그래서 일부 환불만 있는 주문의 환불액은 지표에 **안 잡힌다**(예전엔 통보가 전액을 잡았다).
+  - 고치려면 두 집계기 + 뒤따르는 전액 환불과의 이중 계상 규칙까지 손대야 한다. 이번엔 손대지 않았다(마이그레이션은 불필요).
+  - 운영 부분환불이 생기면 금액을 수동으로 보정한다.
+- ⚠️ 관리자 화면에서 같은 주문의 두 번째 환불(부분 뒤 부분/잔여)은 기존 중복 방지(completed 요청 존재 → 409) 때문에 막힌다. 콘솔 취소 + 통보로는 처리된다.
+- 검증
+  - subscription-refund.test 에 일부 환불 7건을 추가했다: 진행 중·미래·끝난 기간·두 번·중복·전액 전환·부분 뒤 전액·ms·B 당김.
+  - route.spec(webhook) 20건: 위조 7종 + 일부 3건. admin refund route.spec 11건.
+  - 수정 전 red: webhook spec 10/20, admin spec 11/11. 뮤테이션 7종(당김식·중복 검사·full 판정·재조회 status·orderId 대조·결과코드 분기·partial 분기)이 각각 red.
+  - npm test 0 fail · test:spec 345 · tsc 0.
+
+## 2026-09-14 — 나이스 통보 재전송 수정 리뷰 반영(전 회수 주문 단위 잠금 · 전이 뒤 재처리 흔적 · 이용권 감사 순서)
+
+브랜치 `fix/nicepay-webhook-redelivery` 후속 커밋(PR·머지 전). 적대적 리뷰 3건(중 1 · 저 2) 모두 반영.
+- 🟠 **전 회수 중복 차단 키의 orderId 가 테스트로 안 잠겨 있었다**. `deduct.ts` 에서 orderId 를 빼도 route.spec 8/8 이 통과했다. 그런데 `unlock_credit_feature_once` 는 `metadata @>` 로 매칭하므로(040), orderId 가 빠지면 같은 사용자의 두 번째 주문부터 reused 가 되어 전이 영구히 미회수된다.
+  → route.spec 에 '같은 사용자 두 주문 취소면 주문마다 1행 + 첫 주문 재처리는 다시 안 뺌' 케이스를 추가했다.
+- 저 1: 첫 시도가 원장 전이를 커밋한 뒤 죽거나 응답을 잃으면, 재처리는 `neq('status','refunded')` 때문에 멤버십 훅에 못 들어간다. 그래서 흔적 없이 processed 로 끝났다.
+  → 미완(unfinished) 재처리 + 계획 시점 주문이 이미 refunded + 구독 상품이면 processed 로 두되 error 에 `reprocessed_after_transition — 멤버십 후처리 확인` 을 남긴다. 훅이 전이 때 1회만 도는 성질은 그대로다.
+- 저 2: `revokeEntitlementsOfPayment` 는 감사를 두 삭제가 모두 끝난 뒤에 몰아 썼다. 그래서 레거시 삭제가 던지면, 재처리 때 이용권 행이 이미 0행이라 그 감사가 영구히 빠졌다.
+  → 단계마다 삭제 직후 감사를 쓴다. 대신 부분 실패 뒤 재처리에서는 같은 권한의 감사가 2행 남을 수 있다. 감사 행을 세는 곳이 없어서(`account.ts`·`payment-history.ts` 는 제외) 허용한다.
+- 검증: route.spec 10건, revoke.test 에 레거시 실패 시 이용권 감사 잔존 단언. 뮤테이션 3종(orderId 삭제 · 흔적 삭제 · 감사 순서 원복)이 각각 새 단언을 red 로 만든다. npm test 1691 · test:spec 324 · tsc 0.
+
+## 2026-09-14 — 나이스 취소 통보 재전송 흡수 버그(미완 통보 재처리 + 재처리 멱등)
+
+브랜치 `fix/nicepay-webhook-redelivery`(PR·머지 전). `docs/nicepay-v2-cancel-facts.md` 코드 갭 3번.
+- **버그**: 멱등 기록(`recordPaymentWebhookEvent`)이 처리보다 먼저이고 23505 면 상태와 무관하게 'duplicate' → 'OK'. 주문 조회가 try 밖이라 DB 오류 = 500 →
+  나이스 자동 재전송 10회가 전부 흡수돼 **영구 미처리**. try 안 실패는 failed + 'OK' 라 재전송도 없었다(수동만).
+- **수정**: ① 중복 판정은 processed/ignored 만 — received(처리 중 죽음)·failed 는 'unfinished' 로 다시 처리(토스 웹훅은 `!== 'inserted'` 로 기존 동작 유지).
+  ② 기록·조회 포함 전 단계를 try 안에. ③ **처리 실패는 failed + non-OK**(나이스가 1분×10 재전송 → 재처리 = 자동 복구). 같은 본문으로 안 바뀌는 판정(비취소·주문 없음·orderId 없음)은 'OK'.
+  ④ 재처리 멱등: 전 회수를 **원장 전이 전으로** 옮기고 `revokeCredits` 를 `unlock_credit_feature_once`(사용자·feature·{kind:'payment_cancel_revoke', orderId} 중복 차단, 기존 RPC)로 —
+  전이 뒤에 두면 전 회수 일시 오류 뒤 재처리가 refunded 를 보고 영구 누락, 전이 실패 뒤 재처리는 deduct_credits 로 이중 차감이었다. RPC 오류는 던진다(잔액 부족만 success=false).
+  이용권은 `buildCancellationRevokePlan` 이 **결제키가 있으면 상태 무관** 회수(첫 시도가 canceled 로 바꾼 뒤 재처리가 건너뛰던 것). 멤버십 원장·GA 훅은 전이 분기 1회 그대로.
+- 검증: `route.spec.ts` 8건(조회 throw → failed·non-OK → 재수신 processed · received 재처리 · processed/ignored 중복 무동작 · 이용권 실패 재처리 전 1회 · 전이 실패 재처리 전 1회 ·
+  전 RPC 오류 재처리 회수 · canceled 재처리 결제키 회수). 수정 전 코드로 6 red(중복 무동작 2건은 원래 초록). 뮤테이션 7종(중복 흡수 복귀·전부 재처리·deduct_credits·전 회수 전이 뒤·결제키 규칙 삭제·실패 'OK' 2곳) 모두 red.
+- ⚠️ 남은 것: 배포 전부터 received/failed 로 남은 운영 통보는 **새 재전송이 와야** 처리된다(콘솔 수동 재전송). 토스 웹훅도 같은 흡수 패턴(범위 밖). 위조 가드·부분취소·관리자 환불×통보 순서(갭 1·2·4)는 그대로.
+
 ## 2026-09-14 — 무료 오늘운세 '다시 열어보기'를 계정 기준으로(로그인 비멤버 자기 결과 429)
 
 브랜치 `fix/today-fortune-replay-account`(PR·머지 전).

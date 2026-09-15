@@ -129,6 +129,27 @@ function getTossCanceledAmount(payment: TossRefundPaymentSnapshot | null): numbe
   return null;
 }
 
+/**
+ * 일부 환불 재승인 전 — 요청 생성(sinceIso) 뒤에 생긴 같은 금액의 PG 취소 건. 첫 승인에서 PG 는 처리했는데 응답을 잃으면(네트워크·비JSON 5xx·
+ *   타임아웃) 요청은 failed 로 남고, 재승인은 새 취소 번호로 cancelAmt 를 다시 보낸다 — 잔액이 남아 PG 가 받아 **이중 환불**이 된다
+ *   (전액은 '기취소' 거절이 막지만 일부는 아니다). 나이스 cancels[{tid, amount, cancelledAt}] · 토스 cancels[{cancelAmount, canceledAt}].
+ */
+export function findPartialCancelSince(
+  payment: TossRefundPaymentSnapshot | null,
+  amount: number,
+  sinceIso: string
+): Record<string, unknown> | null {
+  const since = Date.parse(sinceIso);
+  const cancels = Array.isArray(payment?.cancels) ? payment.cancels : [];
+  for (const c of cancels) {
+    if (!c || typeof c !== 'object') continue;
+    const entry = c as Record<string, unknown>;
+    const at = Date.parse(String(entry.cancelledAt ?? entry.canceledAt ?? ''));
+    if (Number(entry.amount ?? entry.cancelAmount) === amount && at >= since) return entry;
+  }
+  return null;
+}
+
 export function isCanceledForRefundRequest(
   payment: TossRefundPaymentSnapshot | null,
   requestedAmount: number | null | undefined
@@ -155,6 +176,8 @@ export interface RefundRequestSnapshot {
   credit_amount: number | null;
   credit_transaction_id: string | null;
   reason: string;
+  /** 요청 생성 시각 — 일부 환불 재승인 때 "이 요청 뒤에 생긴 PG 취소"를 가른다. */
+  created_at?: string | null;
 }
 
 export interface RefundExecutionDeps {
@@ -193,6 +216,8 @@ export interface RefundExecutionDeps {
 export interface RefundExecutionResult {
   status: RefundStatus;
   error?: string;
+  /** 완료 시 PG 응답 — 일부 취소 뒤 멤버십 연산이 cancels[] 의 새 취소 거래를 읽는다. */
+  response?: unknown;
 }
 
 async function finishRefundWithRevoke(
@@ -241,7 +266,7 @@ async function finishRefundWithRevoke(
 
   const completed = nextRefundStatus('processing', 'revoke_ok') ?? 'completed';
   await deps.setStatus(req.id, completed, { tossResponse, errorMessage: null });
-  return { status: completed };
+  return { status: completed, response: tossResponse };
 }
 
 /**
@@ -287,6 +312,22 @@ export async function executeRefund(
   //   ⚠️ 위험 방향이 비대칭이다(과다환불 ≫ 환불실패). isFullRefund 는 원결제액을 모르면
   //      false 를 돌려주므로, 모를 땐 부분취소로 나간다. 실패는 되돌릴 수 있지만 더 나간 돈은 아니다.
   const fullRefund = isFullRefund({ amount: req.amount, originalAmount: req.original_amount });
+
+  // 2026-09-14 — 일부 환불 재승인(failed → 다시 승인)은 취소를 보내기 전에 PG 를 재조회한다. 이 요청 뒤에 같은 금액 취소가 있으면
+  //   첫 승인이 PG 에선 성공한 것 → 새 취소 없이 완료. 확인할 수 없으면(조회 실패·생성 시각 없음) 막는다 — 과다환불 ≫ 환불 지연.
+  if (req.status === 'failed' && req.amount && !fullRefund) {
+    const lookup = deps.loadTossPayment && req.created_at ? await deps.loadTossPayment(req.payment_key) : null;
+    if (!lookup?.ok) {
+      const error = `일부 환불 재승인 전 PG 조회로 앞선 취소 여부를 확인하지 못해 막았습니다(이중 환불 방지) — PG 콘솔에서 확인하세요${lookup?.error ? `: ${lookup.error}` : ''}`;
+      await deps.setStatus(req.id, 'failed', { errorMessage: error });
+      return { status: 'failed', error };
+    }
+    const prior = findPartialCancelSince(lookup.payment, req.amount, req.created_at!);
+    if (prior) {
+      const payment = typeof prior.tid === 'string' ? { ...lookup.payment, cancelledTid: prior.tid } : lookup.payment;
+      return finishRefundWithRevoke(req, params, deps, { alreadyCanceled: true, verifiedAt: new Date().toISOString(), payment }, true);
+    }
+  }
 
   const toss = await deps.tossCancel(req.payment_key, {
     cancelReason: req.reason,

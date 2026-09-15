@@ -7,8 +7,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { activateMembershipSubscription, expireMembershipNow, lockMembershipContentForRefund, refundMembershipPeriod } from './subscription';
-import { markPaymentOrderRefunded } from './payments/order-ledger';
+import {
+  activateMembershipSubscription,
+  expireMembershipNow,
+  lockMembershipContentForRefund,
+  partialRefundMembershipPeriod,
+  refundMembershipPeriod,
+} from './subscription';
+import { applyPartialRefund, markPaymentOrderRefunded } from './payments/order-ledger';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
@@ -734,7 +740,7 @@ function hookDb(options: { ledger?: boolean; fulfilled?: boolean; failOn?: strin
 }
 const input = { orderId: 'ord_m', reason: 'admin_refund', source: 'admin-refund' as const };
 
-test('markPaymentOrderRefunded 실행 — 전액이면 원장(무효·당기기·구독) + 잠금 · partial 이면 둘 다 안 함 · 멱등 재호출은 다시 하지 않음', async () => {
+test('markPaymentOrderRefunded 실행 — 전액이면 원장(무효·당기기·구독) + 잠금 · 멱등 재호출은 다시 하지 않음', async () => {
   assert.notEqual(process.env.VERCEL_ENV, 'production', 'GA refund·운영 메일이 네트워크를 타지 않는 전제');
   const { db } = hookDb();
   await markPaymentOrderRefunded(input, db.client);
@@ -757,13 +763,6 @@ test('markPaymentOrderRefunded 실행 — 전액이면 원장(무효·당기기�
   assert.deepEqual(ids(db.tables.credit_transactions), ['d_new']);
   assert.equal(audits(db).length, 1);
   assert.equal(db.tables.subscriptions[0].renews_at, renewsAt);
-
-  const partial = hookDb().db;
-  await markPaymentOrderRefunded({ ...input, partial: true }, partial.client);
-  assert.equal(partial.tables.payment_orders[0].status, 'refunded');
-  assert.deepEqual(ids(partial.tables.credit_transactions), ['d_m'], '부분환불은 잠그지 않는다(B단계)');
-  assert.equal(partial.inserted.length, 0);
-  assert.ok(partial.tables.membership_periods.every((r) => r.voided_at == null), '부분환불은 기간·구독 유지');
 });
 
 // #820 일수 차감 폴백은 삭제 — 표에 없는 주문의 구독을 추정으로 깎지 않고 드러낸다(086 적용~배포 사이 옛 코드 지급 등, 수동 차감).
@@ -819,7 +818,7 @@ test('markPaymentOrderRefunded 실행 — 원장·잠금 실패는 last_error �
 });
 
 // 지급·웹훅은 DB·PG 를 직접 불러 행동 테스트가 안 된다 — 호출 위치를 소스로 고정한다.
-test('지급은 주문 id 로 원장 행을 만든다(#820 일수 기록 없음) · 웹훅은 부분취소·전 회수 구분', () => {
+test('지급은 주문 id 로 원장 행을 만든다(#820 일수 기록 없음) · 웹훅은 일부 취소를 전액 경로로 보내지 않는다', () => {
   const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
   const fulfillment = read('payments/fulfillment.ts');
   assert.ok(
@@ -828,7 +827,7 @@ test('지급은 주문 id 로 원장 행을 만든다(#820 일수 기록 없음)
   );
   assert.ok(!/membershipDaysGranted/.test(fulfillment + read('payments/order-ledger.ts')), '정본은 표 하나');
   const webhook = read('../app/api/payments/webhook/nicepay/route.ts');
-  assert.ok(/partial: \/partial\/i\.test\(status\),/.test(webhook), '부분취소는 구독 유지(관리자 부분환불과 같은 결과)');
+  assert.ok(!/partial: \/partial/.test(webhook) && /await applyPartialRefund\(\{/.test(webhook),'일부 취소는 markPaymentOrderRefunded(전액 전이)로 가지 않는다 — applyPartialRefund');
   assert.ok(/packageCredits: creditsToRevokeOnCancel\(pkg\),/.test(webhook));
 });
 
@@ -845,4 +844,184 @@ test('멤버십 경로만 via 표식 — 레거시 전·쿠폰 0원 지급은 �
   assert.ok(/recordTodayFortunePremiumAccess\(user\.id, readingKey, sourceSessionId, todayKey\);/.test(coupon), '쿠폰 0원 지급은 표식 없음(환불 대상 아님)');
   const unlock = read('../app/api/today-fortune/unlock/route.ts');
   assert.ok(/accessSource: 'viaMembership' in access && access\.viaMembership \? 'membership' : responseAccess,/.test(unlock), '멤버십으로 만든 스냅샷 표식');
+});
+
+// ── 일부 환불(설계 연산 4, 2026-09-14 사용자 결정) — 환불 비율만큼 그 결제 기간을 뒤에서 줄이고, 줄어든 뒤쪽 날짜에 멤버십으로 연 것만 잠근다.
+//   k = round(30일 × 환불액/주문금액)(ms) · newEnd = e − k · 잠금 [newEnd, min(e,t)) · 뒤 기간 당김 max(0, e − max(newEnd,t)).
+//   잘린 조각은 이 주문의 무효 행(partial_refund:<취소 거래>)이라 같은 취소 거래는 한 번만 적용된다(관리자 경로 + 나중 통보).
+const AMOUNT = 49000;
+async function partial(w: ReturnType<typeof world>, orderId: string, at: string, amount: number, cancelTid: string) {
+  const outcome = await partialRefundMembershipPeriod('u1', orderId, { cancelTid, refundAmount: amount, orderAmount: AMOUNT, now: new Date(at), service: w.db.client });
+  const locked = outcome === 'applied' ? await lockMembershipContentForRefund('u1', orderId, { reason: 'r', now: new Date(at) }, w.db.client) : null;
+  return { outcome, locked };
+}
+const markers = (w: ReturnType<typeof world>) =>
+  w.db.tables.membership_periods.filter((r) => String(r.void_reason).startsWith('partial_refund:')).map((r) => [r.order_id, r.start_at, r.end_at, r.void_reason]);
+
+test('일부 환불 — 진행 중 기간: 줄어든 끝이 아직 미래면 잠금 없음 · 이미 지났으면 [newEnd, t) 만 잠그고 즉시 만료', async () => {
+  const w = world([mcal('early', T('07-10')), mcal('late', T('07-20'))]);
+  await w.buy('ord_a', T('07-01'));
+  assert.deepEqual(await partial(w, 'ord_a', T('07-11'), 24500, 'c1'), { outcome: 'applied', locked: { accessDeleted: 0, snapshotsDeleted: 0 } });
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-16')]], '반액 = 15일 줄임');
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('07-16') });
+  assert.deepEqual(markers(w), [['ord_a', T('07-16'), T('07-31'), 'partial_refund:c1']]);
+  assert.equal(audits(w.db)[0].skipReason, 'no_elapsed_window', '줄어든 뒤쪽은 아직 오지 않았다');
+  assert.deepEqual(w.views(), ['early', 'late']);
+
+  const late = world([mcal('early', T('07-10')), mcal('late', T('07-20'))]);
+  await late.buy('ord_a', T('07-01'));
+  assert.deepEqual(await partial(late, 'ord_a', T('07-25'), 24500, 'c1'), { outcome: 'applied', locked: { accessDeleted: 1, snapshotsDeleted: 0 } });
+  assert.deepEqual(late.views(), ['early'], '줄어든 뒤쪽 [07-16, 07-25) 에 연 것만');
+  assert.deepEqual(audits(late.db)[0].windows, [{ start: T('07-16'), end: T('07-25') }]);
+  assert.deepEqual(late.sub(), { status: 'expired', renewsAt: T('07-25') }, '줄어든 끝이 지났다 — 즉시 만료');
+});
+
+test('일부 환불 — 연속 결제 B 당김: 진행 중 A 일부 환불이면 B 가 max(newEnd, t) 로 · 미래 기간 B 일부 환불은 잠금 없이 뒤만 줄임', async () => {
+  const w = world([mcal('a_view', T('07-20'))]);
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-05'));
+  assert.deepEqual((await partial(w, 'ord_a', T('07-25'), 24500, 'c1')).locked, { accessDeleted: 1, snapshotsDeleted: 0 });
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-16')], ['ord_b', T('07-25'), T('08-24')]], 'B 는 07-31 − 07-25 = 6일 당겨져 지금에 붙는다');
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('08-24') });
+
+  const f = world([mcal('a_view', T('07-08'))]);
+  await f.buy('ord_a', T('07-01'));
+  await f.buy('ord_b', T('07-05'));
+  assert.deepEqual(await partial(f, 'ord_b', T('07-10'), 24500, 'c2'), { outcome: 'applied', locked: { accessDeleted: 0, snapshotsDeleted: 0 } });
+  assert.deepEqual(f.chain(), [['ord_a', T('07-01'), T('07-31')], ['ord_b', T('07-31'), T('08-15')]]);
+  assert.deepEqual(f.sub(), { status: 'active', renewsAt: T('08-15') });
+  assert.deepEqual(f.views(), ['a_view'], 'A 기간 열람은 그대로');
+});
+
+test('일부 환불 — 이미 끝난 기간: 뒤 기간은 당기지 않고(0) 줄어든 뒤쪽 창 [newEnd, e) 만 잠근다', async () => {
+  const w = world([mcal('a_early', T('07-10')), mcal('a_late', T('07-20')), mcal('b_view', T('08-05'))]);
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-05'));
+  assert.deepEqual((await partial(w, 'ord_a', T('08-10'), 24500, 'c1')).locked, { accessDeleted: 1, snapshotsDeleted: 0 });
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-16')], ['ord_b', T('07-31'), T('08-30')]]);
+  assert.deepEqual(w.views(), ['a_early', 'b_view'], 'B 기간 열람은 B 몫');
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('08-30') });
+});
+
+test('일부 환불 — 두 번(취소 거래마다) · 같은 취소 거래 재적용은 duplicate(관리자 경로 + 나중 통보) · 남는 길이 ≤ 0 이면 full(무변경)', async () => {
+  const w = world();
+  await w.buy('ord_a', T('07-01'));
+  assert.equal((await partial(w, 'ord_a', T('07-05'), 9800, 'c1')).outcome, 'applied'); // 6일
+  const snapshot = JSON.stringify(w.db.tables.membership_periods) + JSON.stringify(w.db.tables.subscriptions);
+  assert.equal((await partial(w, 'ord_a', T('07-06'), 9800, 'c1')).outcome, 'duplicate');
+  assert.equal(JSON.stringify(w.db.tables.membership_periods) + JSON.stringify(w.db.tables.subscriptions), snapshot, '같은 취소 거래는 1회');
+  assert.equal((await partial(w, 'ord_a', T('07-06'), 9800, 'c2')).outcome, 'applied');
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-19')]]);
+  assert.deepEqual(markers(w).map((m) => m[3]), ['partial_refund:c1', 'partial_refund:c2']);
+  // 남은 18일 = 29,400원 → full: 표·구독을 건드리지 않고 호출부가 전액 경로로.
+  const before = JSON.stringify(w.db.tables.membership_periods);
+  assert.equal((await partial(w, 'ord_a', T('07-07'), 29400, 'c3')).outcome, 'full');
+  assert.equal(JSON.stringify(w.db.tables.membership_periods), before);
+});
+
+test('일부 환불 뒤 전액(잔여 취소) — 기존 전액 경로가 줄어든 P 를 무효로 하고 남은 만큼만 뒤 기간을 당긴다 · 잠금 창은 [s, t)', async () => {
+  const w = world([mcal('a1', T('07-03')), mcal('a2', T('07-08'))]);
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-02'));
+  await partial(w, 'ord_a', T('07-05'), 24500, 'c1'); // A [07-01, 07-16), B [07-16, 08-15)
+  assert.deepEqual(w.chain(), [['ord_a', T('07-01'), T('07-16')], ['ord_b', T('07-16'), T('08-15')]]);
+  assert.deepEqual(await w.refund('ord_a', T('07-10')), { accessDeleted: 2, snapshotsDeleted: 0 });
+  assert.deepEqual(w.chain(), [['ord_b', T('07-10'), T('08-09')]], '남은 6일만 당긴다(이미 줄인 15일을 다시 빼지 않는다)');
+  assert.deepEqual(w.sub(), { status: 'active', renewsAt: T('08-09') });
+  assert.deepEqual(audits(w.db).at(-1)!.windows, [{ start: T('07-01'), end: T('07-10') }], '조각 창 [07-16, 07-05) 은 비어 빠진다');
+});
+
+test('일부 환불 — ms 정밀도: k 가 ms 단위여도 경계는 ISO ms 로 쓰고 B 는 맞닿게(겹침 23P01 없음) 당겨진다', async () => {
+  const w = world();
+  await w.buy('ord_a', T('07-01'));
+  await w.buy('ord_b', T('07-02'));
+  assert.equal((await partial(w, 'ord_a', T('07-05'), 1000, 'c1')).outcome, 'applied');
+  const k = Math.round((30 * DAY * 1000) / AMOUNT);
+  assert.notEqual(k % 1000, 0, '초 단위로 떨어지지 않는 k');
+  const [[, aStart, aEnd], [, bStart, bEnd]] = w.chain() as string[][];
+  assert.equal(Date.parse(aEnd) - Date.parse(aStart), 30 * DAY - k);
+  assert.equal(bStart, aEnd, '맞닿음');
+  assert.equal(Date.parse(bEnd) - Date.parse(bStart), 30 * DAY);
+  assert.match(aEnd, /\.\d{3}Z$/);
+  assert.equal(w.sub().renewsAt, bEnd);
+});
+
+test('applyPartialRefund — 멤버십만 · 주문은 결제 상태 그대로 · 같은 취소 거래 1회 · 남는 길이 없으면 전액 전이 · 비멤버십·환불된 주문은 skipped · 표에 없으면 경보', async () => {
+  const { db, at } = hookDb();
+  const args = { orderId: 'ord_m', cancelTid: 'c1', amount: 44100, reason: 'admin_partial', source: 'admin-refund' as const };
+  assert.equal(await applyPartialRefund(args, db.client), 'applied');
+  const byId = Object.fromEntries(db.tables.membership_periods.map((r) => [r.id, r]));
+  assert.equal(db.tables.payment_orders[0].status, 'fulfilled', 'refunded 표기 없음');
+  assert.equal(byId.p_m.end_at, at(-7), '90% = 27일 줄임');
+  assert.ok(Math.abs(Date.parse(String(byId.p_b.start_at)) - Date.now()) < 5000, 'B 는 지금으로 당겨진다');
+  assert.deepEqual(ids(db.tables.credit_transactions), [], '줄어든 뒤쪽 [at(-7), 지금) 에 연 상세 잠금');
+  assert.deepEqual(ids(db.tables.today_fortune_result_snapshots), []);
+  assert.equal(db.tables.payment_orders[0].last_error ?? null, null, '실패 없음 — last_error 안 씀');
+  const snapshot = JSON.stringify(db.tables.membership_periods);
+  assert.equal(await applyPartialRefund({ ...args, source: 'webhook' }, db.client), 'duplicate', '나중에 온 통보');
+  assert.equal(JSON.stringify(db.tables.membership_periods), snapshot);
+
+  const full = hookDb().db;
+  assert.equal(await applyPartialRefund({ ...args, amount: 49000 }, full.client), 'full');
+  assert.equal(full.tables.payment_orders[0].status, 'fulfilled', 'PG 잔액을 모르면(남았으면) 주문 표기·GA 없음 — 원장만 전액');
+  assert.equal(full.tables.membership_periods.find((r) => r.id === 'p_m')?.void_reason, 'refund');
+  const paidOff = hookDb().db;
+  assert.equal(await applyPartialRefund({ ...args, amount: 49000, payment: { status: 'cancelled', balanceAmt: 0 } }, paidOff.client), 'full');
+  assert.equal(paidOff.tables.payment_orders[0].status, 'refunded', 'PG 잔액 0 → 전액 전이');
+
+  const other = hookDb().db;
+  other.tables.payment_orders[0].package_id = 'taste_dialogue_entry';
+  assert.equal(await applyPartialRefund(args, other.client), 'skipped');
+  assert.ok(other.tables.membership_periods.every((r) => r.voided_at == null));
+  assert.deepEqual(ids(other.tables.credit_transactions), ['d_m'], '비멤버십은 이용권·열람 유지');
+
+  const refunded = hookDb().db;
+  refunded.tables.payment_orders[0].status = 'refunded';
+  assert.equal(await applyPartialRefund(args, refunded.client), 'skipped', '전액 뒤 늦게 온 일부 통보');
+
+  const missing = hookDb({ ledger: false }).db;
+  assert.equal(await applyPartialRefund(args, missing.client), 'missing');
+  assert.match(String(missing.tables.payment_orders[0].last_error), /^admin_partial \| membership_period_missing: /);
+});
+
+// 리뷰 반영(2026-09-14) — ① 일부 환불액이 지표에 안 잡혔다(주문은 fulfilled 그대로 → refunded_won 0) → 주문 metadata.partialRefunds 에 취소 거래 단위 기록.
+//   ② 관리자 해제로 짧아진 P 의 50% 환불이 'full' 로 주문 refunded(49,000)·GA 전액 환불까지 냈다(PG 는 24,500) → 원장만 전액, 표기는 PG 잔액 0 일 때만.
+//   ③ 해제로 무효된 P 의 일부 환불이 membership_period_missing 오경보 → 'voided'(전액 경로 M1 과 대칭).
+test('applyPartialRefund — 일부 환불액을 취소 거래 단위로 주문 metadata 에 1회 기록(PG 취소 시각) · 비멤버십도 기록 · 환불된 주문은 기록 안 함', async () => {
+  const { db } = hookDb();
+  const payment = { status: 'partialCancelled', balanceAmt: 24500, cancels: [{ tid: 'c1', amount: 24500, cancelledAt: '2026-09-10T10:00:00.000+0900' }] };
+  const args = { orderId: 'ord_m', cancelTid: 'c1', amount: 24500, reason: 'r', source: 'admin-refund' as const, payment };
+  assert.equal(await applyPartialRefund(args, db.client), 'applied');
+  assert.equal(await applyPartialRefund({ ...args, source: 'webhook' }, db.client), 'duplicate');
+  assert.deepEqual((db.tables.payment_orders[0].metadata as Row).partialRefunds, [{ cancelTid: 'c1', amount: 24500, at: '2026-09-10T01:00:00.000Z' }]);
+
+  const other = hookDb().db;
+  other.tables.payment_orders[0].package_id = 'taste_dialogue_entry';
+  assert.equal(await applyPartialRefund({ ...args, cancelTid: 'c9', payment: undefined }, other.client), 'skipped');
+  const [rec] = (other.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds;
+  assert.equal(rec.amount, 24500);
+  assert.ok(Math.abs(Date.parse(String(rec.at)) - Date.now()) < 5000, 'PG 시각을 못 읽으면 지금');
+
+  const refunded = hookDb().db;
+  refunded.tables.payment_orders[0].status = 'refunded';
+  assert.equal(await applyPartialRefund(args, refunded.client), 'skipped');
+  assert.deepEqual(refunded.tables.payment_orders[0].metadata, {}, '전액 전이가 그 돈을 이미 셌다');
+});
+
+test('applyPartialRefund — 관리자 해제로 짧아진 P 의 50% 환불: 원장만 전액(무효·잠금) · 주문 fulfilled · 기록은 24,500 · 재적용은 voided(경보 없음)', async () => {
+  const { db, at } = hookDb();
+  db.tables.payment_orders.push({ order_id: 'ord_b', user_id: 'u1', package_id: 'membership_premium', status: 'fulfilled', amount: 49000, payment_key: 'pk_b', metadata: {}, fulfilled_at: at(-10) });
+  await expireMembershipNow('u1', { now: new Date(at(-6)), service: db.client }); // P=[at(-10), at(-6)) · B 무효(admin_revoke)
+  const args = { orderId: 'ord_m', cancelTid: 'c1', amount: 24500, reason: 'r', source: 'webhook' as const, payment: { status: 'partialCancelled', balanceAmt: 24500 } };
+  assert.equal(await applyPartialRefund(args, db.client), 'full', '15일을 줄이면 남는 길이 ≤ 0');
+  assert.equal(db.tables.payment_orders[0].status, 'fulfilled', 'PG 잔액 24,500 — 주문 refunded·GA 전액 환불 없음');
+  assert.equal(db.tables.membership_periods.find((r) => r.id === 'p_m')?.void_reason, 'refund');
+  assert.deepEqual(audits(db).map((m) => m.kind), ['membership_content_locked']);
+  assert.deepEqual((db.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds.map((p) => p.amount), [24500]);
+  assert.equal(db.tables.payment_orders[0].last_error ?? null, null);
+
+  assert.equal(await applyPartialRefund({ ...args, source: 'admin-refund' }, db.client), 'voided', '관리자 경로 + 통보 겹침 — 다시 줄이지 않는다');
+  assert.equal((db.tables.payment_orders[0].metadata as { partialRefunds: Row[] }).partialRefunds.length, 1);
+  assert.equal(await applyPartialRefund({ ...args, orderId: 'ord_b', cancelTid: 'c2' }, db.client), 'voided', '해제로 무효된 B');
+  assert.equal(db.tables.payment_orders[1].last_error ?? null, null, 'membership_period_missing 오경보 없음');
 });

@@ -40,13 +40,31 @@ B단계(부분환불)·웹훅 위조 가드는 이 문서를 전제로 한다.
 - 부분취소 통보의 `amount` 가 원결제 금액으로 유지되는지(서명식 입력) · `cancelledTid` 동반 여부. 샌드박스로는 확인할 수 없어 운영 소액 실거래나 명세 모양 픽스처로만 다룬다.
 
 ## 코드 갭(다음 작업 입력 — 우선순위 순)
-1. 🔴 **위조 통보**(`webhook/nicepay/route.ts`): 서명 검증이 없고, 재조회 결과를 판정에 쓰지 않는다. 막는 조건은 세 가지다.
+1. ✅ 2026-09-14 `feat/nicepay-forgery-guard-partial-refund`(2와 같은 PR) — 주문은 tid(=결제키)로 찾고(orderId 는 보조: 다른 주문을 가리키면 거부, 우리 `cxl…_원주문` 은 같은 주문),
+   서명이 오면 대조, `getNicepayPayment(tid)` 재조회가 통보와 맞는 취소 상태(전액 통보는 cancelled 만, 일부 통보는 둘 다)·orderId·amount 일치일 때만 처리.
+   불일치 = `ignored` + `forgery_guard:<사유>`. 리뷰 반영(같은 날):
+   - 운영 메일은 tid 로 우리 주문을 찾은 뒤의 불일치(order_id·lookup_*·cancel_not_in_lookup)만, tid·사유당 1시간 1통. `tid_mismatch`·주문 없음은 로그만(무인증으로 만들 수 있다).
+   - 재조회 오류는 결과 코드가 있어도(5xx 9999·401 U104·키 설정 오류) 전부 failed + non-OK(3번 규칙). tid 가 우리 주문의 결제키라 조회 실패는 거래 없음이 아니다.
+   - ⚠️ 검증필요: 서명식·키 선택이 운영 통보로 대조되지 않았다 → 불일치는 **거부하지 않고** 이벤트 error 에 `signature_mismatch` 흔적만(판정은 재조회 대조).
+     저장된 운영 cancelled 통보 1건으로 오프라인 대조(사용자 승인 필요) 뒤 거부로 올릴지 정한다.
+   - 거부된 통보(ignored + forgery_guard:)는 재수신 때 다시 검증한다 — 원인을 고친 뒤 콘솔 재전송이 복구 경로(관리자 화면 환불은 PG 취소를 새로 보내 이중 환불).
+   - 결제키가 없는 주문(승인 응답 유실·결제키 저장 실패 뒤 망취소)은 orderId 로 찾아 같은 재조회 대조로 처리. 결제키가 다른 주문일 때만 tid_mismatch.
+   - 샌드박스 tid 통보가 운영(라이브 키)으로 오면 재조회가 실패해 재전송 10회 뒤 failed 로 남는다(무해).
+   ⚠️ 가정: 재조회 `amount` = 원결제 금액(부분취소 뒤에도). 틀리면 운영 부분취소 통보가 `lookup_order_mismatch` 로 거부 + 운영 메일로 드러난다.
+   (원래 기록) 🔴 **위조 통보**(`webhook/nicepay/route.ts`): 서명 검증이 없고, 재조회 결과를 판정에 쓰지 않는다. 막는 조건은 세 가지다.
    ① `order.paymentKey === payload.tid`(또는 tid 로 주문 조회) ② 재조회 status ∈ {cancelled, partialCancelled} + 재조회 orderId·amount 가 주문과 일치 ③ signature 가 오면 대조(ediDate 는 수신값 그대로).
    조회에 실패하면 `OK` 로 응답하고 failed 로 기록한다(non-OK 는 재전송 10회만 부른다).
    ⚠️ 운영은 샌드박스 비밀키가 없어 staging 샌드박스 주문을 검증하지 못한다. "검증 실패 = 무시"로 두면 staging 테스트 취소가 전부 무시된다.
-2. 🔴 **부분취소 통보 = 전액 처리**: `partialCancelled` 도 주문을 refunded 로 표기하고, 전·이용권을 전부 회수하고, GA refund 를 전액으로 보낸다. 관리자 부분환불도 API 취소라 명세상 통보가 온다.
+2. ✅ 2026-09-14 같은 PR — `partialCancelled` 는 전액 경로로 가지 않는다(주문 결제 상태 유지·전/이용권 회수 없음·GA 전액 환불 없음). 이번 건 = 통보의 `cancelledTid`(없으면 cancels 마지막)를
+   **재조회 cancels[] 에서** 찾은 원소(금액도 재조회 값) → `applyPartialRefund`: 멤버십이면 설계 연산 4(취소 거래 tid 단위 1회), 아니면 무동작. 관리자 부분환불(주문 단위 금액 입력)도 같은 함수.
+   ✅ 지표(리뷰 반영): 일부 환불액은 주문 `metadata.partialRefunds` 에 취소 거래 단위로 기록하고, 집계는 일부 + 전액 전이의 나머지로 센다(설계 문서 연산 4).
+   원장 일시 오류는 failed + non-OK(재전송 — 조각 표식으로 멱등). 관리자 일부 환불 재승인(failed)은 취소 전에 재조회 — 요청 뒤 같은 금액 취소가 있으면 새 취소 없이 완료(이중 환불 방지), 확인 못 하면 막는다.
+   (원래 기록) 🔴 **부분취소 통보 = 전액 처리**: `partialCancelled` 도 주문을 refunded 로 표기하고, 전·이용권을 전부 회수하고, GA refund 를 전액으로 보낸다. 관리자 부분환불도 API 취소라 명세상 통보가 온다.
    → B단계와 함께 고친다. 부분이면 원장 상태를 유지하고, 금액은 `cancels[cancelledTid].amount` 로 본다. **tid 우선 조회(1번)는 이것보다 먼저 배포하지 말 것** — 과회수가 켜진다.
 3. 🟠 **멱등 기록이 처리보다 먼저**라서 조회 예외(`getPaymentOrderByOrderId` 가 try 밖)가 500 → 자동 재전송 10회가 전부 "duplicate → OK" 로 흡수 → 영구 미처리. 조회를 try 안으로 옮기고, duplicate 여도 기존 행이 failed 면 재처리한다.
+   ✅ 2026-09-14 `fix/nicepay-webhook-redelivery`: received/failed 재수신은 재처리 · 처리 실패는 failed + **non-OK**(재전송 = 자동 복구) · 전은 전이 전에 주문당 1회(`unlock_credit_feature_once`) · 이용권은 결제키가 있으면 상태 무관.
+   → 1번의 "조회 실패면 OK"는 이 수정 전 전제(non-OK = 흡수될 재전송뿐)였다. 가드 작업 때 재검토.
+   → 미완 재처리인데 주문이 이미 refunded 인 구독 상품은 이벤트 error 에 `reprocessed_after_transition` 이 남는다(멤버십 후처리는 전이 때 1회라 이번엔 안 돌았다) — `membership_periods` 에서 그 주문 행이 무효인지 수동 확인.
 4. 🟠 관리자 환불 × 통보 도착 순서: 전 충전 이중 차감 가능, 대화상담 전 3개가 통보 순서에 따라 미회수. 도착 순서는 미실측이다.
 5. 🟠 `normalizeNicepayPaymentForRefund` 가 `cancels[].amount` 를 토스 모양(`cancelAmount`)으로 안 바꿔 전 충전 백스톱 판정이 false 가 된다. 기존 테스트 픽스처는 명세 밖 값(`canceled`)이다.
 6. 🟠 취소 재시도마다 새 orderId + 명세 밖 Idempotency-Key + fetch 타임아웃 없음 → 부분취소 재시도가 이중 환불될 수 있다. 재시도 전 GET 으로 대조하고 `AbortSignal.timeout(30_000)` 을 건다.

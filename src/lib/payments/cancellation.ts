@@ -13,6 +13,8 @@ export interface CancellationRevokeInput {
   orderStatus: PaymentOrderStatus;
   /** 패키지가 지급하는 전(코인) 수량. 단품은 0. */
   packageCredits: number;
+  /** 주문의 결제키. 있으면 상태와 무관하게 그 결제의 이용권을 거둔다(지급 없으면 0행). */
+  paymentKey?: string | null;
 }
 
 export interface CancellationRevokePlan {
@@ -39,7 +41,9 @@ export function buildCancellationRevokePlan(
   const granted = GRANTED_STATUSES.includes(input.orderStatus);
   return {
     revokeCredits: granted && input.packageCredits > 0 ? input.packageCredits : 0,
-    revokeGrants: GRANT_POSSIBLE_STATUSES.includes(input.orderStatus),
+    // 2026-09-14 — 결제키가 있으면 상태를 보지 않는다. 통보 재처리 때 상태는 첫 시도가 바꿔 놓은 값(canceled 등)이라
+    //   상태로만 판정하면 첫 시도에서 실패한 이용권 회수를 재처리가 건너뛴다. 결제키 없는 지급 가능 상태는 회수가 던져 드러난다.
+    revokeGrants: Boolean(input.paymentKey) || GRANT_POSSIBLE_STATUSES.includes(input.orderStatus),
   };
 }
 
@@ -87,4 +91,13 @@ export function isFullRefund(input: {
 }): boolean {
   if (input.amount === null || input.originalAmount === null) return false;
   return input.amount >= input.originalAmount;
+}
+
+/** 주문 metadata.partialRefunds — 일부 환불 기록(취소 거래 단위, order-ledger applyPartialRefund 가 쓴다). 환불 지표가 읽는다(analytics-rollup expandRefundRows). */
+export type PartialRefundRecord = { cancelTid: string; amount: number; at: string };
+export function partialRefundsOf(metadata: unknown): PartialRefundRecord[] {
+  const list = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>).partialRefunds : null;
+  return (Array.isArray(list) ? list : []).filter(
+    (p): p is PartialRefundRecord => !!p && typeof p.cancelTid === 'string' && Number(p.amount) > 0 && typeof p.at === 'string'
+  );
 }
