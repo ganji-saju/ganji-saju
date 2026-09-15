@@ -28,7 +28,24 @@
    뒤 기간 당기기: 이동량 = t < P.start ? (P.end−P.start) : t < P.end ? (P.end−t) : 0. start_at ≥ P.end 인 살아 있는 행을 이동량만큼 앞당김.
    renews_at = 살아 있는 max(end_at); 살아 있는 기간이 없거나 max(end_at) ≤ t 면 expired + renews_at=t.
 3. **관리자 해제(expireMembershipNow, t)**: end_at > t 인 살아 있는 행 중 진행 중인 행은 end_at=t, 미래 행은 void(reason admin_revoke). 구독 expired + renews_at=t.
-4. **부분환불(B단계 — 이번 범위 밖)**: P 를 k일 줄이고 [newEnd, min(oldEnd,t)) 잠금, 뒤 기간 k 만큼 당김. 표 구조가 이를 지원해야 한다.
+4. **부분환불(2026-09-14 구현 — `partialRefundMembershipPeriod` · `applyPartialRefund`)**: 결정 = 환불 비율만큼 기간을 줄이고, 줄어든 뒤쪽 날짜에 멤버십으로 연 달력·상세만 잠근다.
+   P=[s,e), 환불 시각 t, k = round(30일 × 부분환불액 / 주문금액)(ms — 금액은 나이스 `cancels[].amount`, 주문금액은 실청구액), newEnd = e − k.
+   남는 길이 ≤ 0(newEnd ≤ s — 관리자 해제로 짧아진 P·앞선 일부 환불)이면 조각 없이 **원장만 전액**(연산 2 + 연산 5 잠금, `refundMembershipLedger`).
+   주문 refunded 표기·GA 환불은 PG 잔액이 실제로 0 일 때만(`isPgFullyCancelled` → markPaymentOrderRefunded) — 리뷰(2026-09-14): 짧아진 P 의 50% 환불이
+   주문 refunded(49,000)·GA 49,000 으로 잡혔다(PG 는 24,500). 같은 취소 거래 재적용은 P 가 무효라 'voided'(경보 없음).
+   잠금 창 = [newEnd, min(e,t)) (비면 잠금 없음 — skip 감사 `no_elapsed_window`), 뒤 기간 당김 = max(0, e − max(newEnd,t)).
+   **잘린 조각 [newEnd, e) 을 이 주문의 무효 행으로 남긴다**(source payment, voided_at t, void_reason `partial_refund:<취소 거래 tid>`) —
+   ① 잠금은 연산 5 그대로(창 = 무효 행의 [start_at, min(end_at, voided_at))) ② 같은 PG 취소 거래의 재적용 방지 기록(마이그레이션 없음) →
+   관리자 부분취소 경로와 나중에 오는 partialCancelled 통보가 겹쳐도 1회. 순서 = 조각 insert(무효라 배제 제약 밖) → P end 줄이기 → 당기기(오름차순) → 구독.
+   조각을 먼저 쓰므로 그 뒤에서 끊기면 재시도는 'duplicate' 로 멈추고 덜 줄어든 채(사용자 쪽 이득) 남는다 — 실패는 last_error + 운영 메일.
+   주문은 결제 상태 그대로(refunded 표기·이용권 회수·GA 전액 환불 없음). 멤버십이 아닌 주문의 일부 취소는 기록만(이용권 유지).
+   반환 'voided' = 표가 아는 주문인데 살아 있는 P 가 없다(관리자 해제·전액 환불로 무효) — 경보 없음(전액 경로 M1 과 대칭). 'missing' 은 표에 이 주문 행이 없을 때만.
+   **환불 지표**: 금액은 주문 `metadata.partialRefunds[{cancelTid, amount, at}]`(취소 거래 단위 1회, at = 그 취소의 PG 시각)에 남는다.
+   집계(`analytics-rollup`·`refund-breakdown`의 `expandRefundRows`)는 일부를 그 시각에 그 금액으로, 뒤이은 전액 전이를 **나머지**(주문 금액 − 기록된 일부)로 센다
+   → 합 = PG 가 돌려준 돈(일부 뒤 전액 이중계상 없음). 마이그레이션 없음. 이미 refunded 인 주문의 늦은 일부 통보는 기록하지 않는다(전액 전이가 그 돈을 이미 셌다).
+   부분 뒤 전액(잔여 취소): 기존 전액 경로가 줄어든 P 를 무효로 하고 남은 만큼만 당긴다(이미 줄인 k 를 다시 빼지 않는다).
+   무효 조각이 생기므로 그 사용자는 activate 상향 자가치유 대상에서 빠진다(찢긴 환불과 같은 취급 — 아래).
+   ⚠️ 한계: 같은 취소 거래를 ms 단위로 동시에 적용하면 둘 다 조각을 못 보고 두 번 당길 수 있다(원자 RPC 로 옮길 때 같이).
 5. **잠금(전액환불)**: 창은 표의 P 원래 창(void 전 값) 그대로 — 사슬이라 다른 결제 창과 겹치지 않으므로 claimant·window_not_current 휴리스틱을 **삭제**한다.
    A단계 규칙은 유지: via:'membership' 열람 행 · 스냅샷 날 단위 판정(그날 전·카드·쿠폰·주제 단품 근거 있으면 유지) · 근거 조회 범위+페이지네이션(정렬 필수).
    **감사 먼저(write-ahead)**: 지울 식별자를 계산해 감사행을 먼저 insert → 스냅샷 삭제 → 열람 행 삭제. 부분 실패해도 식별자가 남고, 재실행은 표(void 된 P 창)로 같은 계산을 한다.

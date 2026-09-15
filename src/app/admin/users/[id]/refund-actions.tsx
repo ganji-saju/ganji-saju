@@ -10,6 +10,8 @@ interface EligibleItem {
   id: string;
   productName: string;
   amountWon: number;
+  /** 멤버십 주문 — 일부 환불 금액 입력칸(비우면 전액). */
+  membership?: boolean;
   hasPaymentKey: boolean;
 }
 interface CreditEligibleItem {
@@ -101,6 +103,7 @@ export function RefundActions({
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [partialAmounts, setPartialAmounts] = useState<Record<string, string>>({});
 
   async function post(body: Record<string, unknown>, key: string) {
     setBusy(key);
@@ -115,7 +118,7 @@ export function RefundActions({
       if (!data.ok) {
         setMsg(`실패: ${data.error ?? data.status ?? '오류'}`);
       } else {
-        setMsg(`완료: ${data.status}`);
+        setMsg(`완료: ${data.status}${data.error ? ` · ${data.error}` : ''}`);
         router.refresh();
       }
     } catch {
@@ -126,13 +129,21 @@ export function RefundActions({
   }
 
   function requestRefund(item: EligibleItem) {
-    const reason = window.prompt(`"${item.productName}" 환불 사유`, '고객 요청');
+    // 멤버십 일부 환불 — 비우면 전액. 0 < 금액 ≤ 주문금액(서버도 같은 검증).
+    const typed = item.membership ? (partialAmounts[item.id] ?? '').trim() : '';
+    const amount = typed === '' ? null : Number(typed);
+    if (amount !== null && !(Number.isInteger(amount) && amount > 0 && amount <= item.amountWon)) {
+      setMsg(`실패: 환불 금액은 1 ~ ${item.amountWon.toLocaleString()}원 사이 정수로 입력하세요(비우면 전액).`);
+      return;
+    }
+    const mode = amount !== null && amount < item.amountWon ? `일부 환불 ${amount.toLocaleString()}원` : '환불';
+    const reason = window.prompt(`"${item.productName}" ${mode} 사유`, '고객 요청');
     if (!reason || !reason.trim()) return;
     // 번들 결제는 주문 단위로 요청한다(구성품 entitlement 는 amount=null — user-detail 참조).
     const idField =
       item.kind === 'bundle-order' ? { bundleOrderId: item.id } : { entitlementId: item.id };
     void post(
-      { action: 'request', kind: 'product', ...idField, reason: reason.trim() },
+      { action: 'request', kind: 'product', ...idField, reason: reason.trim(), ...(amount !== null ? { amount } : {}) },
       `req-${item.id}`
     );
   }
@@ -156,7 +167,9 @@ export function RefundActions({
     const target =
       r.refundKind === 'credit_purchase'
         ? `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원 · ${r.creditAmount ?? 0}전 회수`
-        : `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원`;
+        : r.amount != null && r.originalAmount != null && r.amount < r.originalAmount
+          ? `${r.productId} · 일부 환불 ${r.amount.toLocaleString()} / ${r.originalAmount.toLocaleString()}원 · 멤버십 기간을 비율만큼 줄임`
+          : `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원`;
     if (
       !window.confirm(
         `실제 환불을 실행합니다 — ${PG_LABEL[r.provider]} 결제취소 + 권한/전 회수.\n${target}\n계속할까요?`
@@ -181,6 +194,20 @@ export function RefundActions({
               <span className="text-[13px] text-[var(--app-copy-soft)]">
                 {item.productName} · {item.amountWon.toLocaleString()}원
               </span>
+              {item.membership && item.kind === 'bundle-order' && (
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={item.amountWon}
+                  step={1}
+                  placeholder="일부 환불액(비우면 전액)"
+                  aria-label={`${item.productName} 일부 환불 금액(원)`}
+                  value={partialAmounts[item.id] ?? ''}
+                  onChange={(e) => setPartialAmounts((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                  className="w-[9.5rem] min-w-0 rounded-[8px] border border-[var(--app-line)] px-2 py-1 text-[13px] text-[var(--app-ink)]"
+                />
+              )}
               <button
                 type="button"
                 disabled={!item.hasPaymentKey || busy !== null}

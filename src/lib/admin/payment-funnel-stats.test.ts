@@ -30,6 +30,7 @@ function fakeFunnelService(rows: unknown[], refundRows: unknown[] = []): Supabas
   orders.gte = () => orders;
   orders.lt = () => orders;
   orders.order = () => orders;
+  orders.not = () => orders; // 일부 환불 기록 주문(metadata->partialRefunds) — 여기 행엔 기록이 없어 펼칠 게 없다
   orders.limit = () => Promise.resolve({ data: refundRows, error: null });
   orders.in = () => Promise.resolve({ data: [], error: null });
 
