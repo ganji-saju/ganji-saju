@@ -1,5 +1,32 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-15 — 드리프트 메일: 구독 행 없음은 '무효 금지'로 따로 안내(머지 전 리뷰 반영)
+
+브랜치 `feat/membership-drift-daily-check`(#828) — main(#829) 병합 커밋 + 리뷰 1건(하).
+- 구독 행이 아예 없는 사용자도 `renews_at null` 과 똑같이 메일에 `R=null` 로 나갔다. 086 정리 SQL 은 "R null → 살아 있는 행 전부 무효" 라 그대로 따르면
+  **결제된 기간이 무효**되고, 그 주문의 지급 재시도는 `end===null` → '구독 정보가 없습니다' 로 영구히 막힌다(무효 전이면 재시도가 구독을 E 로 만들어 치유 — `activateMembershipSubscription` retried 분기).
+  → `DriftUser.subscriptionMissing` 추가, 메일 줄을 "구독 행 없음 · ⚠️ 무효 처리 금지 · 그 주문 지급 재시도" 로 분기, 정리 SQL 안내에 "구독 행 없음은 제외".
+- 검증: 스펙 +1(구독 행 없음 줄엔 R=null 없음 · renews_at null 구독 행은 기존대로 R=null). 뮤테이션(`subscriptionMissing:false`) 2건 red. tsc 0 · npm test · test:spec 383 green.
+
+## 2026-09-14 — 멤버십 기간 원장 드리프트 매일 자동 확인 + 운영 메일
+
+브랜치 `feat/membership-drift-daily-check`(PR·머지 전). 사용자 결정: 086 드리프트를 매일 확인하고 1명이라도 어긋나면 운영 메일.
+- **라우트** `src/app/api/admin/audits/membership-drift/route.ts` — 인증은 payment-idempotency 감사와 같다(Bearer CRON_SECRET timing-safe 비교, 아니면 세션 super_admin).
+  vercel.json 크론 `0 1 * * *`(KST 10:00). 응답 `{ ok, chainVsRenews, entitledWithoutEnd, users:[{userId, checks, renewsAt(R), chainEnd(E)}], alerted }` — R·E 는 086 정리 SQL 입력값.
+- **판정** `src/lib/membership-drift.ts` `findMembershipDrift`(순수) = 086 머리말 쿼리 두 개(ms 비교). DB 읽기는 service + `readAllPages`(subscription.ts 에서 export,
+  정렬 키 인자 추가 — periods `id` · subscriptions `user_id`(PK, id 없음)). 읽기 범위: 기간은 살아 있고 end_at > now 인 행만, 구독은 전부(사용자당 1행).
+- **메일** 프로덕션(VERCEL_ENV=production)에서만 `sendOpsAlertEmail` — 두 건수 · uuid 최대 20명(+외 N명) · `/admin/users/<id>` 링크 · 086 머리말 정리 SQL 안내. 이메일·이름 없음.
+  메일 실패는 삼키지 않는다: console.error + 응답 `alertError` + **500**(Vercel 크론 실패로 보이게). 조회 실패도 500.
+- 검증: `membership-drift.spec.ts` 14건(0 · P1 · P2 2모양 · 구독 없음 · 행 없음 · 권한 없는 구독 무시 · 무효·과거 무시 · 여러 사용자 · ms 표기차 · 페이지네이션 · 메일 본문) +
+  `route.spec.ts` 10건(크론/틀린 시크릿/시크릿 미설정/admin 403/super_admin · 메일 0/프로덕션/비프로덕션/실패 500/조회 실패). 판정 뮤테이션 7종 모두 red.
+- 리뷰 반영: ① 첫 구현은 구독도 `renews_at > now` 로 걸러 읽어 **P2(구독 끝 < 사슬 끝) 중 구독이 만료된 사용자의 R 이 메일·응답에 null** 로 나갔다 —
+  086 정리 SQL 은 "R 이 null 이면 모든 살아 있는 행 무효" 라 그대로 따르면 과거 결제 행까지 무효(환불 잠금 창이 쓰는 원장 이력 훼손). 구독은 필터 없이 전부 읽는다
+  (스펙: is·gt 를 실제 적용하는 가짜 client 로 R 원값 단언). ② µs 비교 — `Date.parse` 가 소수 4~6째 자리를 버려 µs 가 남은 renews_at(수동 SQL `now()+interval`)을
+  "일치" 로 봤다(086 쿼리는 어긋남). µs 정수로 비교. ③ 지급·해제·환불이 기간 행과 구독을 따로 써서 그 틈에 읽히면 거짓 양성 → 어긋남이 있으면 5초 뒤 다시 읽어
+  **두 번 다 어긋난 사용자만** 메일·응답, 메일 첫 줄에 "정리 전 수동 호출로 재확인". 스펙 +5건(뮤테이션 3종 각각 red 확인).
+- 설계 문서 `docs/membership-period-ledger-design.md` 의 "주기 실행은 사용자 결정" 줄을 매일 자동 확인으로 교체.
+- ⚠️ 수신자 env `ADMIN_ALERT_EMAILS`(없으면 INTERNAL_VERIFICATION_EMAILS)·`RESEND_API_KEY` 가 프로덕션에 없으면 어긋남이 생긴 날 메일이 못 가고 500 만 남는다(어긋남 0 인 날은 메일 경로를 안 탄다) — 배포 후 env 존재를 `vercel env ls` 로 확인.
+
 ## 2026-09-14 — 위조 가드·일부 환불 리뷰 반영(중 7 · 저 3)
 
 브랜치 `feat/nicepay-forgery-guard-partial-refund` 후속 커밋(PR·머지 전, #826 먼저). 아래 섹션의 "⚠️ 지표 안 잡힘"은 이 커밋으로 해소.

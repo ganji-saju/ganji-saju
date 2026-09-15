@@ -307,14 +307,16 @@ type PageQuery = PromiseLike<{ data: unknown; error: { message: string } | null 
   order(column: string, options: { ascending: boolean }): PageQuery;
   range(from: number, to: number): PageQuery;
 };
-/** 끝까지 페이지로 읽는다(PostgREST 1000행 절단 방지). created_at·id(유일 키)로 안정 정렬 — 없으면 페이지가 행을 건너뛰거나 겹친다. */
-async function readAllPages<T>(query: () => PageQuery): Promise<T[]> {
+/**
+ * 끝까지 페이지로 읽는다(PostgREST 1000행 절단 방지). 기본 created_at·id(유일 키)로 안정 정렬 — 없으면 페이지가 행을 건너뛰거나 겹친다.
+ * orderBy 를 바꿀 땐 마지막 열이 유일 키여야 한다(예: subscriptions 는 id 가 없고 user_id 가 PK).
+ */
+export async function readAllPages<T>(query: () => PageQuery, orderBy: string[] = ['created_at', 'id']): Promise<T[]> {
   const rows: T[] = [];
   for (let offset = 0; ; offset += PAGE) {
-    const { data, error } = await query()
-      .order('created_at', { ascending: true })
-      .order('id', { ascending: true })
-      .range(offset, offset + PAGE - 1);
+    let ordered = query();
+    for (const column of orderBy) ordered = ordered.order(column, { ascending: true });
+    const { data, error } = await ordered.range(offset, offset + PAGE - 1);
     if (error) throw new Error(error.message);
     const page = (data ?? []) as T[];
     rows.push(...page);
