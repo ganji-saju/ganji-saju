@@ -18,6 +18,9 @@ export interface DriftUser {
   renewsAt: string | null;
   /** 살아 있는 사슬 끝 E(없으면 null). 정리 SQL 의 E. */
   chainEnd: string | null;
+  /** 구독 행 자체가 없음(renewsAt null 과 다르다) — 첫 지급이 기간 행만 쓰고 구독 저장 전에 끊긴 모양. 정리 SQL 의 "R null → 전부 무효" 대상이 아니다:
+   *  무효하면 그 주문의 지급 재시도가 '구독 정보가 없습니다' 로 영구히 막히고, 두면 재시도가 구독을 E 로 만든다(activateMembershipSubscription). */
+  subscriptionMissing: boolean;
 }
 export interface MembershipDrift {
   chainVsRenews: string[];
@@ -78,6 +81,7 @@ export function findMembershipDrift(
       ],
       renewsAt: subByUser.get(userId)?.renews_at ?? null,
       chainEnd: end === undefined ? null : new Date(Math.floor(end / 1000)).toISOString(),
+      subscriptionMissing: !subByUser.has(userId),
     };
   });
   return { chainVsRenews, entitledWithoutEnd, users };
@@ -117,12 +121,13 @@ export function buildMembershipDriftAlert(drift: MembershipDrift, origin = 'http
     lines: [
       '정리 전에 /api/admin/audits/membership-drift 수동 호출(super_admin)로 한 번 더 확인하세요 — 지급·해제가 두 표를 따로 쓰는 틈에 읽혔으면 다시 0 입니다.',
       `chain_vs_renews ${drift.chainVsRenews.length}건 · entitled_without_end ${drift.entitledWithoutEnd.length}건 (살아 있는 기간의 끝 ≠ subscriptions.renews_at).`,
-      ...shown.map(
-        (user) =>
-          `${user.userId} [${user.checks.join(', ')}] 구독 끝 R=${user.renewsAt ?? 'null'} · 사슬 끝 E=${user.chainEnd ?? 'null'} — ${origin}/admin/users/${user.userId}`
+      ...shown.map((user) =>
+        user.subscriptionMissing
+          ? `${user.userId} [${user.checks.join(', ')}] 구독 행 없음 · 사슬 끝 E=${user.chainEnd ?? 'null'} — ⚠️ 무효 처리 금지: 첫 지급이 기간 행만 쓰고 구독 저장 전에 끊긴 모양이라 그 주문 지급을 다시 돌리면 구독이 E 로 생긴다(무효하면 재시도가 영구히 실패) — ${origin}/admin/users/${user.userId}`
+          : `${user.userId} [${user.checks.join(', ')}] 구독 끝 R=${user.renewsAt ?? 'null'} · 사슬 끝 E=${user.chainEnd ?? 'null'} — ${origin}/admin/users/${user.userId}`
       ),
       ...(rest > 0 ? [`외 ${rest}명 — 전체 목록은 /api/admin/audits/membership-drift 수동 호출(super_admin)로 확인.`] : []),
-      '정리 SQL: supabase/migrations/086_membership_periods.sql 머리말 "드리프트 정리"(R > E 는 legacy 행 추가 · R < E 는 무효 후 자르기). 정리 뒤 같은 머리말의 드리프트 쿼리가 0 인지 확인.',
+      '정리 SQL: supabase/migrations/086_membership_periods.sql 머리말 "드리프트 정리"(R > E 는 legacy 행 추가 · R < E 는 무효 후 자르기 — 구독 행 없음은 제외). 정리 뒤 같은 머리말의 드리프트 쿼리가 0 인지 확인.',
     ],
     url: '/admin/users',
   };

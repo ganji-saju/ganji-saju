@@ -19,7 +19,7 @@ const NO_DRIFT = { chainVsRenews: [], entitledWithoutEnd: [], users: [] };
 const DRIFT = {
   chainVsRenews: ['u1'],
   entitledWithoutEnd: [],
-  users: [{ userId: 'u1', checks: ['chain_vs_renews' as const], renewsAt: null, chainEnd: '2026-10-01T00:00:00.000Z' }],
+  users: [{ userId: 'u1', checks: ['chain_vs_renews' as const], renewsAt: null, chainEnd: '2026-10-01T00:00:00.000Z', subscriptionMissing: true }],
 };
 
 function req(authorization?: string) {

@@ -1,5 +1,13 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-15 — 드리프트 메일: 구독 행 없음은 '무효 금지'로 따로 안내(머지 전 리뷰 반영)
+
+브랜치 `feat/membership-drift-daily-check`(#828) — main(#829) 병합 커밋 + 리뷰 1건(하).
+- 구독 행이 아예 없는 사용자도 `renews_at null` 과 똑같이 메일에 `R=null` 로 나갔다. 086 정리 SQL 은 "R null → 살아 있는 행 전부 무효" 라 그대로 따르면
+  **결제된 기간이 무효**되고, 그 주문의 지급 재시도는 `end===null` → '구독 정보가 없습니다' 로 영구히 막힌다(무효 전이면 재시도가 구독을 E 로 만들어 치유 — `activateMembershipSubscription` retried 분기).
+  → `DriftUser.subscriptionMissing` 추가, 메일 줄을 "구독 행 없음 · ⚠️ 무효 처리 금지 · 그 주문 지급 재시도" 로 분기, 정리 SQL 안내에 "구독 행 없음은 제외".
+- 검증: 스펙 +1(구독 행 없음 줄엔 R=null 없음 · renews_at null 구독 행은 기존대로 R=null). 뮤테이션(`subscriptionMissing:false`) 2건 red. tsc 0 · npm test · test:spec 383 green.
+
 ## 2026-09-14 — 멤버십 기간 원장 드리프트 매일 자동 확인 + 운영 메일
 
 브랜치 `feat/membership-drift-daily-check`(PR·머지 전). 사용자 결정: 086 드리프트를 매일 확인하고 1명이라도 어긋나면 운영 메일.

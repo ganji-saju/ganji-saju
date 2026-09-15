@@ -42,7 +42,7 @@ describe('findMembershipDrift', () => {
     expect(drift.chainVsRenews).toEqual(['u1']);
     expect(drift.entitledWithoutEnd).toEqual(['u1']);
     expect(drift.users).toEqual([
-      { userId: 'u1', checks: ['chain_vs_renews', 'entitled_without_end'], renewsAt: D(30), chainEnd: D(20) },
+      { userId: 'u1', checks: ['chain_vs_renews', 'entitled_without_end'], renewsAt: D(30), chainEnd: D(20), subscriptionMissing: false },
     ]);
   });
 
@@ -60,7 +60,18 @@ describe('findMembershipDrift', () => {
 
   it('구독 행 없음 — 살아 있는 미래 사슬만 있으면 chain_vs_renews', () => {
     const drift = findMembershipDrift([live('u1', D(30))], [], NOW);
-    expect(drift.users).toEqual([{ userId: 'u1', checks: ['chain_vs_renews'], renewsAt: null, chainEnd: D(30) }]);
+    expect(drift.users).toEqual([{ userId: 'u1', checks: ['chain_vs_renews'], renewsAt: null, chainEnd: D(30), subscriptionMissing: true }]);
+  });
+
+  it('구독 행 없음은 메일에서 R=null(전부 무효)로 안내하지 않는다 — 무효하면 그 주문 지급 재시도가 영구히 막힌다', () => {
+    const line = buildMembershipDriftAlert(findMembershipDrift([live('u1', D(30))], [], NOW)).lines.find((l) => l.includes('/admin/users/u1'))!;
+    expect(line).toContain('구독 행 없음');
+    expect(line).toContain('무효 처리 금지');
+    expect(line).not.toContain('R=null');
+    // renews_at 만 null 인 구독 행은 기존대로 R=null(정리 SQL 입력)
+    const nullRenews = buildMembershipDriftAlert(findMembershipDrift([live('u2', D(30))], [sub('u2', null, 'expired')], NOW)).lines.find((l) => l.includes('/admin/users/u2'))!;
+    expect(nullRenews).toContain('R=null');
+    expect(nullRenews).not.toContain('구독 행 없음');
   });
 
   it('권한 남은 구독(active·cancelled)인데 기간 행 없음 — entitled_without_end', () => {
@@ -157,7 +168,7 @@ describe('runMembershipDriftAudit — DB 읽기', () => {
       subscriptions: [sub('u1', D(10), 'expired')],
     });
     const drift = await runMembershipDriftAudit({ client, now: NOW });
-    expect(drift.users).toEqual([{ userId: 'u1', checks: ['chain_vs_renews'], renewsAt: D(10), chainEnd: D(30) }]);
+    expect(drift.users).toEqual([{ userId: 'u1', checks: ['chain_vs_renews'], renewsAt: D(10), chainEnd: D(30), subscriptionMissing: false }]);
     expect(buildMembershipDriftAlert(drift).lines.join('\n')).toContain(`R=${D(10)}`);
   });
 });
