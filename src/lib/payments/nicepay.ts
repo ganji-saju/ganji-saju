@@ -109,6 +109,47 @@ export function buildCancelOrderId(originalOrderId: string): string {
   return `cxl${unique}_${originalOrderId}`.slice(0, 64);
 }
 
+/** buildCancelOrderId 가 만든 취소 요청 번호인가(`cxl` + 12hex + `_` + 원주문 번호, 64자에서 잘릴 수 있다).
+ *  API 취소 통보의 orderId 가 원주문인지 이 번호인지 운영 미실측이라(docs/nicepay-v2-cancel-facts.md ⚠️) 둘 다 같은 주문으로 본다. */
+export function isCancelOrderIdOf(value: string, originalOrderId: string): boolean {
+  const match = /^cxl[0-9a-f]{12}_(.+)$/.exec(value);
+  return !!match && originalOrderId.startsWith(match[1]);
+}
+
+/**
+ * 결제 통보 서명 대조 — signature = hex(sha256(tid + amount + ediDate + SecretKey)). 값은 **수신 본문 그대로**(ediDate 는 받은 문자열).
+ * ⚠️ status·orderId·cancels 는 서명 범위 밖이다 — 서명이 맞아도 상태는 재조회로 확인한다(webhook/nicepay 위조 가드).
+ */
+export function verifyNicepayWebhookSignature(input: { tid: unknown; amount: unknown; ediDate: unknown; signature: string }): boolean {
+  const expected = nicepaySha256Hex(`${input.tid ?? ''}${input.amount ?? ''}${input.ediDate ?? ''}${getSecretKey()}`);
+  const a = Buffer.from(expected, 'utf8');
+  const b = Buffer.from(input.signature.toLowerCase(), 'utf8');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * 결제 객체의 취소 1건 — cancelTid(없으면 객체의 cancelledTid)로 cancels[] 에서 찾고, 둘 다 없으면 마지막 원소(명세: cancelledTid 는 선택).
+ * 금액은 cancels[].amount(최상위 cancelAmt 는 없다). 못 찾거나 금액이 0 이하면 null.
+ */
+export function pickNicepayCancel(payment: Record<string, unknown>, cancelTid?: string | null): { tid: string; amount: number } | null {
+  const cancels = (Array.isArray(payment.cancels) ? payment.cancels : []).filter(
+    (c): c is Record<string, unknown> => !!c && typeof c === 'object'
+  );
+  const tid = cancelTid || (typeof payment.cancelledTid === 'string' ? payment.cancelledTid : null);
+  const hit = tid ? cancels.find((c) => c.tid === tid) : cancels[cancels.length - 1];
+  const amount = Number(hit?.amount);
+  return hit && typeof hit.tid === 'string' && amount > 0 ? { tid: hit.tid, amount } : null;
+}
+
+/** PG 잔액이 0 인가(전부 취소) — 나이스 status 'cancelled'·balanceAmt 0 · 토스(정규화 포함) balanceAmount 0. 모르면 false(전액으로 단정하지 않는다). */
+export function isPgFullyCancelled(payment: Record<string, unknown> | null | undefined): boolean {
+  return !!payment && (payment.status === 'cancelled' || payment.balanceAmt === 0 || payment.balanceAmount === 0);
+}
+
+// 2026-09-14 — PG 호출 상한. 매달린 fetch 는 함수 시간 초과로 응답을 잃는다(취소는 PG 가 처리했는데 우리는 실패로 본다) —
+//   끊어서 실패로 드러내고, 일부 환불 재승인은 먼저 재조회로 앞선 취소를 확인한다(refund-service executeRefund).
+const NICEPAY_TIMEOUT_MS = 15_000;
+
 // ⚠️ ediDate 포맷은 공식 확정 필요. 일단 ISO 8601.
 function buildEdiDate(now: Date = new Date()): string {
   return now.toISOString();
@@ -213,6 +254,7 @@ export async function getNicepayPayment(tid: string): Promise<NicepayPaymentObje
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
     method: 'GET',
     headers: { Authorization: getNicepayAuthorizationHeader() },
+    signal: AbortSignal.timeout(NICEPAY_TIMEOUT_MS),
   });
 
   return parseNicepayResponse(response, '결제 조회 실패');
@@ -289,6 +331,7 @@ export async function cancelNicepayPayment(
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}/cancel`, {
     method: 'POST',
     headers,
+    signal: AbortSignal.timeout(NICEPAY_TIMEOUT_MS),
     body: JSON.stringify({
       reason: options.reason,
       ediDate,

@@ -10,13 +10,17 @@ import { cancelPayment, getPayment } from '@/lib/payments/toss';
 import {
   cancelNicepayPayment,
   getNicepayPayment,
+  isPgFullyCancelled,
   normalizeNicepayPaymentForRefund,
+  pickNicepayCancel,
 } from '@/lib/payments/nicepay';
 import {
+  applyPartialRefund,
   getOrderProviderByPaymentKey,
   getPaymentOrderByPaymentKey,
   markPaymentOrderRefunded,
 } from '@/lib/payments/order-ledger';
+import { getPackage } from '@/lib/payments/catalog';
 import {
   isFullRefund,
   resolveCancellationTerminalStatus,
@@ -156,6 +160,8 @@ export async function POST(req: NextRequest) {
     creditTransactionId?: string;
     reason?: string;
     requestId?: string;
+    /** bundleOrderId 경로의 일부 환불 금액(원). 비우면 전액. 멤버십 주문만. */
+    amount?: number | string | null;
   } | null;
   const action = body?.action;
   if (action !== 'request' && action !== 'approve' && action !== 'reject') {
@@ -294,7 +300,23 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const v = validateRefundRequest({ amount: order.amount, paymentKey: order.payment_key, reason });
+      // 2026-09-14 — 멤버십 일부 환불(사용자 결정 (나)). 금액 < 주문금액이면 executeRefund 가 cancelAmt 부분취소로 보내고,
+      //   완료 뒤 멤버십 기간을 환불 비율만큼 줄인다(applyPartialRefund). 멤버십이 아닌 주문의 일부 환불은 받지 않는다 —
+      //   회수가 결제키 전부라 부분 금액만 돌려주고 이용권을 다 거두게 된다.
+      const rawAmount = body?.amount;
+      const requested = rawAmount == null || rawAmount === '' ? null : Number(rawAmount);
+      if (requested !== null && !(Number.isInteger(requested) && requested > 0 && requested <= (order.amount ?? 0))) {
+        return NextResponse.json(
+          { ok: false, error: `환불 금액은 0보다 크고 주문금액(${order.amount ?? 0}원) 이하인 정수여야 합니다.` },
+          { status: 400 }
+        );
+      }
+      const amount = requested ?? order.amount;
+      const partial = amount !== null && order.amount !== null && amount < order.amount;
+      if (partial && getPackage(order.package_id)?.kind !== 'subscription') {
+        return NextResponse.json({ ok: false, error: '일부 환불은 멤버십 주문만 됩니다.' }, { status: 400 });
+      }
+      const v = validateRefundRequest({ amount, paymentKey: order.payment_key, reason });
       if (!v.ok) {
         return NextResponse.json({ ok: false, error: v.errors.join(' / ') }, { status: 400 });
       }
@@ -317,7 +339,7 @@ export async function POST(req: NextRequest) {
           product_id: order.package_id,
           scope_key: order.slug,
           payment_key: order.payment_key,
-          amount: order.amount,
+          amount,
           original_amount: order.amount,
           credit_amount: null,
           reason,
@@ -325,6 +347,7 @@ export async function POST(req: NextRequest) {
           status: 'requested',
           refund_metadata: {
             bundle: true,
+            partial,
             bundleOrderRowId: order.id,
             orderId: order.order_id,
             packageId: order.package_id,
@@ -432,7 +455,7 @@ export async function POST(req: NextRequest) {
       const { data } = await service
         .from('refund_requests')
         .select(
-          'id, status, refund_kind, payment_key, idempotency_key, user_id, product_id, scope_key, amount, original_amount, credit_amount, credit_transaction_id, reason'
+          'id, status, refund_kind, payment_key, idempotency_key, user_id, product_id, scope_key, amount, original_amount, credit_amount, credit_transaction_id, reason, created_at'
         )
         .eq('id', id)
         .maybeSingle();
@@ -491,7 +514,10 @@ export async function POST(req: NextRequest) {
           });
           return { ok: true, response };
         } catch (err) {
-          return { ok: false, error: err instanceof Error ? err.message : '나이스페이 결제취소 실패' };
+          // 결과 코드도 남긴다(샌드박스 부분취소 거절 U128 등 — 화면의 '사유'로 보인다).
+          const code = (err as { resultCode?: unknown }).resultCode;
+          const message = err instanceof Error ? err.message : '나이스페이 결제취소 실패';
+          return { ok: false, error: typeof code === 'string' ? `${message} (${code})` : message };
         }
       }
       try {
@@ -553,13 +579,42 @@ export async function POST(req: NextRequest) {
   };
 
   const result = await executeRefund({ requestId, approvedBy: check.userId }, deps);
+  let followUpError: string | null = null;
 
   // 2026-07-13 — 전액환불 완료 시 원주문을 refunded 로 표기(webhook 취소통보 경로와 대칭).
   //   이게 없으면 admin 환불한 주문이 fulfilled 로 남아 매출에 과대계상된다.
   //   부분환불은 나머지 매출을 지키기 위해 건드리지 않는다(비차단 — 실패해도 환불 자체는 완료).
+  //   2026-09-14 — 단 멤버십 일부 환불은 기간을 줄인다(applyPartialRefund — 비멤버십은 무동작). 취소 거래는 PG 응답 cancels[] 의
+  //     새 원소 — 나중에 오는 partialCancelled 통보와 같은 거래 tid 라 둘이 겹쳐도 1회. 잔액이 0 이 됐으면(나머지 전부 취소) 전액 경로.
   if (result.status === 'completed') {
     try {
       const snapshot = await deps.loadRequest(requestId);
+      if (snapshot?.payment_key && !isFullRefund({ amount: snapshot.amount, originalAmount: snapshot.original_amount })) {
+        const order = await getPaymentOrderByPaymentKey(snapshot.payment_key);
+        const raw = (result.response ?? {}) as Record<string, unknown>;
+        const payment = (raw.payment && typeof raw.payment === 'object' ? raw.payment : raw) as Record<string, unknown>;
+        const cancel = pickNicepayCancel(payment);
+        if (order && getPackage(order.packageId)?.kind === 'subscription') {
+          if (isPgFullyCancelled(payment)) {
+            await markPaymentOrderRefunded({ orderId: order.orderId, reason: '관리자 환불 승인(잔여 전부 취소)', source: 'admin-refund', payment });
+          } else if (!cancel) {
+            followUpError = 'PG 응답에 취소 거래가 없어 멤버십 기간을 줄이지 못했습니다 — 수동 확인(나중에 오는 나이스 일부 취소 통보가 반영할 수 있음)';
+          } else {
+            const outcome = await applyPartialRefund({
+              orderId: order.orderId,
+              cancelTid: cancel.tid,
+              amount: cancel.amount,
+              reason: '관리자 일부 환불 승인',
+              source: 'admin-refund',
+              payment,
+            });
+            // 실패·표에 없음은 화면으로(last_error·운영 메일은 프로덕션에서만 남는다). 중복(통보가 먼저 반영)·무효된 기간은 정상.
+            if (outcome === 'failed' || outcome === 'missing') {
+              followUpError = `환불은 완료 · 멤버십 기간 줄이기 ${outcome === 'failed' ? '실패' : '대상 없음(표에 이 결제 기간 없음)'} — 주문 last_error 확인 후 수동 반영`;
+            }
+          }
+        }
+      }
       if (
         snapshot?.payment_key &&
         isFullRefund({ amount: snapshot.amount, originalAmount: snapshot.original_amount })
@@ -581,16 +636,17 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (err) {
-      console.error('[admin/refund] 원주문 refunded 표기 실패', {
+      console.error('[admin/refund] 원주문 refunded 표기·멤버십 후처리 실패', {
         requestId,
         error: err instanceof Error ? err.message : String(err),
       });
+      followUpError = `환불은 완료 · 원장 후처리 실패: ${err instanceof Error ? err.message : String(err)}`;
     }
   }
 
   return NextResponse.json({
     ok: result.status === 'completed',
     status: result.status,
-    error: result.error ?? null,
+    error: result.error ?? followUpError,
   });
 }

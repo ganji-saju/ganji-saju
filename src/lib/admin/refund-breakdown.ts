@@ -10,7 +10,7 @@
 //   ⚠️ 조회 전용. 집계(metrics_daily.refunded_won)는 건드리지 않는다.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPackage } from '@/lib/payments/catalog';
-import { kstDateKey, shiftDateKey } from './analytics-rollup';
+import { expandRefundRows, kstDateKey, shiftDateKey } from './analytics-rollup';
 
 export interface RefundBreakdownItem {
   orderId: string;
@@ -47,6 +47,7 @@ interface RefundOrderRow {
   confirmed_at: string | null;
   fulfilled_at: string | null;
   created_at: string | null;
+  metadata?: unknown;
 }
 
 /** 순수 계산 — I/O 없이 테스트한다. */
@@ -108,20 +109,26 @@ export async function getRefundBreakdown(
   const startIso = new Date(Date.parse(`${fromKey}T00:00:00+09:00`)).toISOString();
   const endIso = new Date(Date.parse(`${shiftDateKey(toKey, 1)}T00:00:00+09:00`)).toISOString();
 
+  const columns = 'order_id, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at, metadata';
   const { data, error } = await service
     .from('payment_orders')
-    .select('order_id, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at')
+    .select(columns)
     .eq('status', 'refunded')
     .gte('refunded_at', startIso)
     .lt('refunded_at', endIso)
     .order('refunded_at', { ascending: false })
     .limit(MAX_ITEMS + 1);
+  // 2026-09-14 — 일부 환불(주문은 결제 상태 그대로) — 기록이 있는 주문을 읽어 취소 시각으로 창 필터(computeRefundBreakdown).
+  const partial = error
+    ? null
+    : await service.from('payment_orders').select(columns).not('metadata->partialRefunds', 'is', null).limit(MAX_ITEMS + 1);
 
-  if (error) {
+  if (error || partial?.error) {
     // 환불 내역은 보조 정보다 — 실패해도 지표 화면 전체를 죽이지 않는다.
-    console.error('[refund-breakdown] query failed:', error.message);
+    console.error('[refund-breakdown] query failed:', (error ?? partial?.error)?.message);
     return { items: [], totalWon: 0, outsideWindowWon: 0, truncated: 0 };
   }
 
-  return computeRefundBreakdown((data ?? []) as RefundOrderRow[], { fromKey, toKey });
+  const rows = expandRefundRows((data ?? []) as RefundOrderRow[], (partial?.data ?? []) as RefundOrderRow[]);
+  return computeRefundBreakdown(rows, { fromKey, toKey });
 }

@@ -89,6 +89,8 @@ export interface RefundEligibleItem {
   id: string;
   productName: string;
   amountWon: number;
+  /** 멤버십 주문(주문 단위) — 관리자 화면이 일부 환불 금액 입력칸을 연다(2026-09-14). */
+  membership?: boolean;
   hasPaymentKey: boolean;
   paymentKey: string | null;
   orderId: string | null;
@@ -167,6 +169,7 @@ export function determineRefundEligibility(
       id: order.id,
       productName: pkg?.name ?? order.package_id,
       amountWon: order.amount,
+      membership: pkg?.kind === 'subscription',
       hasPaymentKey: Boolean(order.payment_key),
       paymentKey: order.payment_key,
       orderId: order.order_id,

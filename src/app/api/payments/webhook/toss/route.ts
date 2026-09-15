@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
     paymentStatus,
   });
 
-  if (insertState === 'duplicate') {
+  // 미완(received/failed) 재수신 재처리는 나이스 웹훅만(2026-09-14) — 토스 경로는 기존 동작 유지(별도 검토).
+  if (insertState !== 'inserted') {
     return NextResponse.json({ ok: true, duplicate: true });
   }
 
