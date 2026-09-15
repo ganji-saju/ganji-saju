@@ -33,9 +33,11 @@ export function consumePendingUnlock(sourceSessionId: string): boolean {
 }
 
 // 2026-09-14 — 하루 1회에 막힌 다른 사람 사주의 결제 경로엔 무료 실행기록(run)이 없어, 결제 후 상세 스냅샷이
-//   폼 이름을 모르고 계정 주인 이름으로 호명했다. 버튼이 reading 별로 폼 이름을 남기고 상세가 unlock 에 넘긴다.
-//   localStorage — 로그인·결제창 왕복(탭·팝업)을 건너야 한다.
-// ponytail: 이 브라우저 한정. 다른 기기에서 열면 기존 폴백(계정 표시명) — 필요해지면 주문 metadata 로 옮긴다.
+//   폼 이름을 모르고 계정 주인 이름으로 호명했다. 버튼이 reading 별로 폼 이름을 남기고
+//   카드 결제는 결제 화면이 prepare → 주문 metadata.subjectName → 지급 스냅샷으로(2026-09-15), 멤버 열기는 상세가 unlock POST 로 넘긴다.
+//   localStorage — 로그인·결제창 왕복(탭·팝업)을 건너야 한다. URL 에 싣지 않는 이유: 가족 이름이 기록·로그로 퍼진다.
+//   값은 표시 이름뿐이다(CodeQL #64 는 birth-profile JSON 왕복으로 프로필 전체가 오염 표시된 과대근사 — 오탐 처리).
+// ponytail: 이 브라우저 한정. 결제를 다른 기기에서 열면 기존 폴백(계정 표시명).
 const DETAIL_NAME_PREFIX = 'moonlight:today-detail:name:';
 
 export function rememberTodayDetailName(readingId: string, name: string | null | undefined) {

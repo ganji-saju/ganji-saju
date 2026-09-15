@@ -437,6 +437,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-09-15 — 하루 1회에 막힌 다른 사람 사주의 결제 경로는 run 이 없어, 지급 스냅샷이 폼 이름을 모르고 계정 주인 이름으로 굳었다.
+  //   결제 화면이 넘긴 폼 이름을 today-detail 주문에만 싣고 지급 스냅샷의 nameHint 로 쓴다(표시 전용 · 20자).
+  const subjectName =
+    isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail'
+      ? readString(payload, 'subjectName').slice(0, 20) || null
+      : null;
+
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
@@ -462,6 +469,7 @@ export async function POST(req: NextRequest) {
       checkoutPath,
       provider: getPaymentProvider(),
       origin,
+      ...(subjectName ? { subjectName } : {}),
     },
   });
 

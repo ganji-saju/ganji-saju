@@ -75,7 +75,8 @@ test('prepare 가 요청 본문에서 읽는 키는 허용 목록뿐 — 금액�
   });
   assert.deepEqual(
     [...keys].sort(),
-    ['acceptedKinds', 'analyticsConsent', 'couponCode', 'expectedAmount', 'from', 'packageId', 'paymentMethod', 'plan', 'product', 'scope', 'slug'],
+    // subjectName(2026-09-15) — today-detail 주문 metadata 의 표시 이름(20자)뿐, 금액·할인에 안 쓰인다.
+    ['acceptedKinds', 'analyticsConsent', 'couponCode', 'expectedAmount', 'from', 'packageId', 'paymentMethod', 'plan', 'product', 'scope', 'slug', 'subjectName'],
     '새 키를 읽으려면 금액·할인에 쓰이지 않는지 확인하고 이 목록을 고쳐라'
   );
   assert.equal(rest.match(/\bpayload\b/g)?.length, 2, 'payload 는 선언과 null 검사에만 — 구조분해·전개·전달 금지');

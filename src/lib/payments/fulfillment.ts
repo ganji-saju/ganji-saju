@@ -74,6 +74,9 @@ async function snapshotTodayDetailFulfillment(input: {
       entitlementId: input.entitlementId ?? null,
       paymentOrderId: input.order.id,
       paymentKey: input.paymentKey,
+      // 2026-09-15 — 결제 화면이 주문에 실은 폼 이름(prepare). 이 스냅샷이 먼저 생기면 착지 unlock GET 은 그대로 돌려줘
+      //   거기서 넘기는 name 은 쓰이지 않는다 — 여기서 넘겨야 가족 결제가 가족 이름으로 굳는다.
+      nameHint: typeof input.order.metadata.subjectName === 'string' ? input.order.metadata.subjectName : null,
     });
   } catch (error) {
     console.warn('today-detail fulfillment snapshot failed', error);
