@@ -29,8 +29,10 @@ vi.mock('@/lib/supabase/server', () => {
         return { data: { id: 'rr_new' }, error: null };
       },
       then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => {
-        if (mode === 'update' && table === 'refund_requests' && db.request) Object.assign(db.request, payload);
-        return Promise.resolve({ data: [], error: null }).then(resolve, reject);
+        const updated = mode === 'update' && table === 'refund_requests' && db.request;
+        if (updated) Object.assign(db.request!, payload);
+        // 승인 선점(setStatus from)은 바뀐 행이 있어야 진행한다 — 필터는 흉내 내지 않고 요청 행 1개가 바뀐 것으로 본다.
+        return Promise.resolve({ data: updated ? [{ id: db.request!.id }] : [], error: null }).then(resolve, reject);
       },
     });
     return chain;
