@@ -1,5 +1,61 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-15 — 카드로 산 가족 사주도 가족 이름으로(머지 전 리뷰 차단 1건) + CodeQL #64 판정
+
+브랜치 `fix/today-fortune-other-saju-checkout`(#827) — main(#829·#828) 병합 + 수정 1커밋.
+- 🔴 **정정: 아래 "[중] 가족 상세가 계정 주인 이름" 수정은 카드 결제(주 경로)에서 효과가 없었다.** 지급(`fulfillPaymentOrder` → `snapshotTodayDetailFulfillment`)이 착지보다 먼저
+  이름 없이 스냅샷을 만들고, 착지 unlock GET 은 같은 scope 스냅샷을 그대로 돌려줘 넘긴 `name` 이 한 번도 쓰이지 않았다(route.spec 은 스냅샷 조회를 null 로 고정해 못 잡음).
+  nameHint 가 먹던 건 지급이 없는 멤버 열기(POST)뿐. → 결제 화면(`toss-membership-checkout`)이 localStorage 폼 이름을 prepare 에 `subjectName` 으로 보내고,
+  prepare 가 **막힌 경로(from=*-limit)의 today-detail 주문에만** `metadata.subjectName`(20자) 저장, 지급 스냅샷이 `nameHint` 로 넘긴다. 마이그레이션 없음(metadata jsonb).
+- 수정 리뷰(비차단) 반영: 처음엔 모든 today-detail 결제에 실어, 같은 reading 으로 예전에 막힌 경로에서 남긴 이름("아빠")이 무료 결과에서 온 정상 결제의
+  run 이름("아버지")을 이겼다(nameHint 가 run 보다 앞). → 서버가 `-limit` 진입만 싣고, 상세 클라도 착지 `from=limit`(`fromLimit` prop)일 때만 이름을 보낸다(멤버 열기 포함).
+  `resolveNamedReadingInput` 주석 순서를 코드와 맞춤(③ nameHint → run), unlock-marker 주석의 "URL 안 씀" 을 사실대로(unlock GET 쿼리엔 폴백으로 실림).
+- 검증: `payments/fulfillment-today-detail-name.spec.ts`(주문 이름 → nameHint · 없으면 null) · **`payments/prepare/route.spec.ts` 5건**(-limit 만 · 무료 결과 결제 제외 · 20자·공백 ·
+  비 today-detail 제외 · 퍼널 로그에 이름 없음) · 상세 클라 +1(막힌 경로 아니면 이름 미전송) · nameHint vs run 순서 고정 +1. 뮤테이션 6종(nameHint:null · -limit 조건 ·
+  today-detail 조건 · 20자 · 퍼널 로그로 이동 · 상세 fromLimit 조건) 전부 red. prepare 본문 키 허용 목록에 `subjectName`(금액 무관). tsc 0 · npm test 1718 · test:spec 414 green.
+- **CodeQL #64(`js/clear-text-storage-of-sensitive-data`, unlock-marker.ts:45)** — 걸린 건 키가 아니라 **값(폼 이름)**. SARIF 경로상 오염은 `birth-profile-store.ts:139`
+  (프로필 전체 JSON 저장) → `:117`(다시 읽어 JSON.parse) 에서 객체 전체로 번진 과대근사로, 저장값은 이름뿐이다(메인·리뷰어 독립 판정 일치). 키가 DB 폴백 때 toSlug 인 것도
+  같은 브라우저에 birth-profile 이 이미 평문 저장하는 정보라 새 노출이 아니다. URL 로 옮기면 가족 이름이 기록·로그로 퍼져 더 나쁘다 → **코드 유지 + 오탐 처리(dismiss)**.
+- ⏳ 결정 대기(리뷰 THE CONVERSATION): 같은 사주 다음 날 재구매가 **어제 이용권 행을 이 결제로 덮어쓴다**(created_at·결제키). 어제 주문은 이용권 행 없는 결제가 되어
+  결제키 회수 대칭(#819)·관리자 이용권 기준 환불 화면에서 어제 구매가 안 보인다. 대안은 scope 에 KST 날짜(`today:<readingKey>:<YYYY-MM-DD>`) — 판정 함수 scope 파싱·레거시 공존 손봐야 함.
+- 남은 테스트 빈칸(리뷰): 재구매 갱신 뒤 어제/오늘 결제키 회수 단언 · prepare 가 `hasTodayDetailEntitlementForSaju` 에 넘기는 인자 단언. 키 누적(reading 마다 1개, 지우지 않음)은 표시 이름 하나라 유지.
+
+## 2026-09-14 — 다른 사람 사주 결제 경로 적대적 리뷰 반영(가족 이름 · 멤버 중복결제 · 돌아가기 · 테스트)
+
+브랜치 `fix/today-fortune-other-saju-checkout` 두 번째 커밋(PR·머지 전).
+- **[중] 가족 상세가 계정 주인 이름으로 불림**: 이 경로는 run 기록이 없어(만들면 #825 재열람이 가족 무료 결과를 내줌) 스냅샷 이름 해석이
+  ①원본 이름 없음 ②미등록 가족 ③run 없음 → ④계정 표시명으로 떨어졌다. 버튼(`prepareTodayDetailCheckout`)이 reading 별 폼 이름을
+  localStorage(`rememberTodayDetailName`, unlock-marker.ts)에 남기고, 상세가 unlock GET/POST 에 `name` 으로 넘겨 `resolveNamedReadingInput` 의
+  ③(nameHint, 20자 · 등록 가족 이름보다 뒤)로 쓴다. input.name 엔 넣지 않는다(toSlug 해시 → scope 흔들림). 한계: 결제를 다른 브라우저에서 열면 기존 폴백.
+- **[하] 로그아웃 멤버가 로그인 후 3,300원 재결제**: 결제 화면 today-detail 분기에서 프리미엄 멤버(`computeMemberFreeEligible`)면 결제창 대신
+  '멤버십으로 바로 열기'(`MemberTodayDetailOpenButton` — 열기 표식 후 상세 → POST unlock 이 멤버십 혜택으로 기록). 퍼널 blocked=active_membership.
+- **[하] 착지 '돌아가기' 막다른 길**: `-limit` 진입이면 착지 URL 에 `from=limit`(buildTasteProductHref · buildPurchasedProductHref) → 상세 backHref=/today-fortune.
+- **[하] 테스트 빈칸**: `/start` 분기 jsdom 3건(딥링크·선택화면·다른 오류) · checkout-reading 로그인 신규 reading 소유자 + `recordTodayFortuneRun` 0회 ·
+  unlock route.spec(GET/POST name → nameHint) · 상세 클라 jsdom(GET/POST 에 name) · 이름 해석 단위 3건 · from=limit 단위 · 멤버 버튼 jsdom + 결제 화면 배선 가드.
+  뮤테이션 12종(각 수정 되돌리기) 전부 red 확인. tsc 0 · npm test 1694 · test:spec 331 green.
+- **반려(사용자 결정 필요)**: "그날 아무 사주로든 오늘 자세히 1회 사면 가족 것도 열림"(`hasTodayDetailEntitlementForDay` 가 scope_key 를 안 봄) — 2026-06-05
+  일일 만료 정책의 기존 규칙. 좁히려면 checkout·prepare·unlock 세 곳을 같은 scope 함수로 동시에 바꿔야 해(어긋나면 결제하고 못 여는 사고) 이 PR 범위 밖.
+- **[사용자 결정 2026-09-14] 오늘 자세히는 산 사주만 열린다**(세 번째 커밋): `hasTodayDetailEntitlementForDay` → `hasTodayDetailEntitlementForSaju`(판정 `todayDetailRowsOpenSaju`) — 오늘(KST) 이용권 중 scope `today:<readingKey>` 가 #699 정체성(`readingKeyMatchesCurrentSaju`)으로 이 사주인 것만. 결제 화면·prepare·unlock GET/POST 동일 함수(가드 테스트). 레거시(scope 없음·옛 readingId·현재 사주 미해석)는 누구 것인지 몰라 전처럼 그날 넓게 연다. 남은 틈: unlock 의 coin-daily(전·멤버·쿠폰 당일 기록) 폴백은 여전히 사주 무관.
+- **리뷰 반영(네 번째 커밋)**: [상] unlock 4단계 coin-daily(그날 detail_report 행 아무거나 — 0원 후속질문 포함)로 가족 사주가 무료로 열림 → `hasTodayFortuneAccessForSaju`(판정 `detailReportRowsOpenSaju`): 열람 kind 3종 중 readingKey 가 #699 정체성으로 이 사주인 행만, `today_result_followup` 제외. [중] 같은 사주를 다음 날 재구매하면 UNIQUE(user,product,scope) 로 어제 행이 돌아와 결제하고 못 엶(가짜 DB 재현) → `grantProductEntitlement` 가 today-detail 의 지난 날 행을 이 결제로 갱신(created_at·결제키, 정확 scope 만 — 'global' 은 안 건드림). 마이그레이션 없음. [하] 현재 사주 미해석이면 넓히지 않음(정확일치만) + route.spec 인자 단언. [하] 멤버십 환불 잠금 근거는 날 단위로 남기고 주석만 사실대로(사주 단위로 좁히면 더 지우는 쪽). 수정 전 red·뮤테이션 7종 red.
+
+## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
+
+브랜치 `fix/today-fortune-other-saju-checkout`(PR·머지 전).
+- **왜**: 무료 1회를 쓴 뒤 가족 등 다른 사람 사주를 넣으면 429 안내만 뜨고 막다른 길이었다(/today-fortune · /start). 잠금 ON 때만 붙던
+  `/saju/new?product=today-detail` 링크는 입력을 다시 받고 사주 결과(/saju/{id})를 거쳐야 결제 카드가 나오는 우회였고, `submitSajuFromProfile` 이
+  수동 입력(=가족)을 **본인 프로필로 자동저장**하는 부작용도 탄다.
+- **방식**: 새 `POST /api/today-fortune/checkout-reading` — 오늘운세와 같은 파싱(`parseTodayPayload` export 재사용)·reading 규칙(로그인=`findReadingByInput` 재사용,
+  아니면 `createReading`, DB 없으면 toSlug 폴백)으로 **reading id 만** 돌려준다. 무료 결과 생성·무료 1회 판정/소비 없음.
+  클라 `prepareTodayDetailCheckout`(submit-today.ts) → `/membership/checkout?product=today-detail&slug=<reading>&scope=<고민>&from=today-fortune-limit|start-limit`.
+  버튼 `TodayDetailCheckoutButton`(가격 = `usePriceLabel('saju_entry')` 리졸버) 을 `free_daily_limit` **코드**일 때만 두 화면에 붙임 — 잠금 ON/OFF 같은 코드라 두 모드 동일. 잠금 전용 링크는 삭제.
+- **끝까지**: 비로그인 → 체크아웃 결제 버튼이 기존 `/login?next=…&returned=1` 로 같은 slug 복귀(reading 은 소유자 없음 — unlock 은 null 소유자 허용) · 이미 오늘 산 사람은
+  체크아웃 `checkTodayDetailAccess` 가 '이미 구매한 풀이 → 구매한 풀이 열기' · 결제 후 `buildTasteProductHref`(from 이 saju* 아님) → `/today-fortune/detail?paid=today-detail&sourceSessionId=<reading>`
+  → unlock **GET** 이 reading 만으로 연다(스냅샷 scope 가 readingKey 라 그 사람 것). 착지·unlock 은 무료 결과 세션이 필요 없어 무수정.
+- 검증: `checkout-reading/route.spec.ts` 4건(계정 재사용 · 익명 생성 · 무료 결과/1회 판정·소비 0 · 400) + `today-fortune-experience.test.tsx`(jsdom) 3건(코드일 때 카탈로그 가격 버튼 →
+  체크아웃 href · 실패 시 이동 없음 · 다른 오류엔 버튼 없음). 수정 전 red(라우트 없음·버튼 없음), 뮤테이션(재사용 삭제·코드 판정 삭제) red. tsc 0, npm test·test:spec 전부 green.
+- 남은 것: 같은 날 **아무 사주로든** 오늘 자세히를 산 계정은 다른 사람 것도 열린다(`hasTodayDetailEntitlementForDay` same-day 규칙, 기존 정책 — 무수정).
+  /start 화면 분기 테스트는 없음(같은 컴포넌트·같은 코드 판정).
+
 ## 2026-09-15 — 드리프트 메일: 구독 행 없음은 '무효 금지'로 따로 안내(머지 전 리뷰 반영)
 
 브랜치 `feat/membership-drift-daily-check`(#828) — main(#829) 병합 커밋 + 리뷰 1건(하).

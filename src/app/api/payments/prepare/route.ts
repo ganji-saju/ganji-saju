@@ -17,7 +17,7 @@ import {
 } from '@/lib/payments/product-scope';
 import {
   getTasteProductEntitlement,
-  hasTodayDetailEntitlementForDay,
+  hasTodayDetailEntitlementForSaju,
 } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -317,7 +317,10 @@ export async function POST(req: NextRequest) {
         isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail';
 
       const entitlement = isTodayDetail
-        ? await hasTodayDetailEntitlementForDay(user.id, todayKey)
+        ? await hasTodayDetailEntitlementForSaju(user.id, todayKey, {
+            readingKey: paymentScope.readingKey,
+            slug: paymentScope.slug,
+          })
         : isTasteProductPackage(pkg)
           ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
           : await getLifetimeReportEntitlement(
@@ -434,6 +437,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-09-15 — 하루 1회에 막힌 다른 사람 사주의 결제 경로(from=*-limit)는 run 이 없어, 지급 스냅샷이 폼 이름을 모르고 계정 주인 이름으로 굳었다.
+  //   그 경로의 today-detail 주문에만 결제 화면이 넘긴 폼 이름을 싣고 지급 스냅샷의 nameHint 로 쓴다(표시 전용 · 20자).
+  //   무료 결과에서 온 결제엔 싣지 않는다 — 그 실행의 폼 이름(run)이 정본이고, 같은 reading 으로 예전에 막힌 경로에서 남긴 이름이 이기면 안 된다.
+  const subjectName =
+    isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail' && from?.endsWith('-limit')
+      ? readString(payload, 'subjectName').slice(0, 20) || null
+      : null;
+
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
@@ -459,6 +470,7 @@ export async function POST(req: NextRequest) {
       checkoutPath,
       provider: getPaymentProvider(),
       origin,
+      ...(subjectName ? { subjectName } : {}),
     },
   });
 

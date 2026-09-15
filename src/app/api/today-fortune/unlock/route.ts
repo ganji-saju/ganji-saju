@@ -7,7 +7,7 @@ import { resolveMoonlightCounselor } from '@/lib/counselors';
 import {
   getKoreaAccessDay,
   hasDetailReportAccess,
-  hasTodayFortuneDailyAccess,
+  hasTodayFortuneAccessForSaju,
   hasTodayFortunePremiumAccess,
   hasTodayFortunePremiumAccessByReading,
   unlockTodayFortunePremium,
@@ -15,7 +15,7 @@ import {
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   buildTodayDetailScopeKey,
-  hasTodayDetailEntitlementForDay,
+  hasTodayDetailEntitlementForSaju,
 } from '@/lib/product-entitlements';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import type { ConcernId } from '@/lib/today-fortune/types';
@@ -47,6 +47,8 @@ async function getOrCreateTodayDetailSnapshot(input: {
   occurredOn: string;
   now: Date;
   accessSource: string | null;
+  /** 2026-09-14 — 폼 이름(하루 1회에 막힌 사주의 결제 경로엔 run 이 없어 클라가 넘긴다). 표시 전용. */
+  nameHint: string;
 }) {
   const scopeKey = buildTodayFortuneResultSnapshotScopeKey({
     readingKey: input.readingKey,
@@ -71,6 +73,7 @@ async function getOrCreateTodayDetailSnapshot(input: {
     counselorId: input.counselorId,
     now: input.now,
     accessSource: input.accessSource,
+    nameHint: input.nameHint,
   });
   if (written) {
     return {
@@ -87,6 +90,7 @@ async function getOrCreateTodayDetailSnapshot(input: {
     concernId: input.concernId,
     counselorId: input.counselorId,
     now: input.now,
+    nameHint: input.nameHint,
   });
   return {
     snapshotId: null,
@@ -148,10 +152,10 @@ export async function GET(req: NextRequest) {
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
       //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
-      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   제거하고 당일 entitlement 만 본다 — 2026-09-14 부터 **이 사주로 산 것만**(hasTodayDetailEntitlementForSaju).
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
-        hasTodayDetailEntitlementForDay(userId, todayKey),
+        hasTodayDetailEntitlementForSaju(userId, todayKey, { readingKey, slug: sourceSessionId }),
       // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
       getTopicProductEntitlement: (userId, productId) =>
         getTasteProductEntitlement(userId, productId as TasteProductId, null),
@@ -160,7 +164,7 @@ export async function GET(req: NextRequest) {
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>
         hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
       hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
-      hasTodayFortuneDailyAccess,
+      hasTodayFortuneAccessForSaju,
     },
   );
 
@@ -181,6 +185,7 @@ export async function GET(req: NextRequest) {
     occurredOn: todayKey,
     now,
     accessSource,
+    nameHint: req.nextUrl.searchParams.get('name') ?? '',
   });
 
   return NextResponse.json({
@@ -246,10 +251,10 @@ export async function POST(req: NextRequest) {
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
       //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
-      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   제거하고 당일 entitlement 만 본다 — 2026-09-14 부터 **이 사주로 산 것만**(hasTodayDetailEntitlementForSaju).
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
-        hasTodayDetailEntitlementForDay(userId, todayKey),
+        hasTodayDetailEntitlementForSaju(userId, todayKey, { readingKey, slug: sourceSessionId }),
       // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
       getTopicProductEntitlement: (userId, productId) =>
         getTasteProductEntitlement(userId, productId as TasteProductId, null),
@@ -258,7 +263,7 @@ export async function POST(req: NextRequest) {
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>
         hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
       hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
-      hasTodayFortuneDailyAccess,
+      hasTodayFortuneAccessForSaju,
     },
   );
 
@@ -288,6 +293,7 @@ export async function POST(req: NextRequest) {
     // 2026-09-14 — 멤버십 혜택으로 만든 스냅샷 표식(기록용). 전액환불 잠금은 이 표식이 아니라 **날** 로 판정한다 —
     //   표식은 그날 첫 스냅샷에만 붙어 GET·주제 전환 스냅샷을 놓쳤다(lockMembershipContentForRefund). 응답의 access 값은 그대로.
     accessSource: 'viaMembership' in access && access.viaMembership ? 'membership' : responseAccess,
+    nameHint: readString(payload ?? {}, 'name'),
   });
 
   return NextResponse.json({

@@ -120,3 +120,56 @@ test('배선 가드 — 오늘운세 라우트·스냅샷·달력이 주체 기�
     '가족 제출이 내 정보 저장소를 덮어쓰면 재방문 시 가족 이름으로 채워진다'
   );
 });
+
+// 2026-09-14 — 하루 1회에 막힌 가족 사주를 결제 경로(checkout-reading)로 사면 run 기록이 없다(만들면 무료 재열람 누출).
+//   그때 폼 이름(nameHint)이 없으면 결제한 계정 주인 이름으로 스냅샷에 굳는다(2026-08-31 버그 재발).
+test('run 기록이 없는 결제 경로는 폼 이름(nameHint)으로 호명한다(계정 주인 이름 아님)', async () => {
+  const named = await resolveNamedReadingInput(MOTHER, 'user-1', deps(), 'reading-mom', '어머니');
+  assert.equal(named.name, '어머니');
+});
+
+test('nameHint 는 등록 가족 이름보다 뒤·20자 제한 · 비로그인 reading 에도 적용', async () => {
+  const registered = await resolveNamedReadingInput(
+    MOTHER,
+    'user-1',
+    deps({ loadSubjectName: async () => '엄마' }),
+    'reading-mom',
+    '어머니'
+  );
+  assert.equal(registered.name, '엄마');
+  const long = await resolveNamedReadingInput(MOTHER, 'user-1', deps(), 'r', '가'.repeat(40));
+  assert.equal(long.name, '가'.repeat(20));
+  const anon = await resolveNamedReadingInput(MOTHER, null, deps(), 'r', '어머니');
+  assert.equal(anon.name, '어머니');
+  assert.equal((await resolveNamedReadingInput(MOTHER, 'user-1', deps(), 'r', '  ')).name, '김영민');
+});
+
+test('배선 가드 — 스냅샷 빌더가 nameHint 를 이름 해석에 넘긴다', () => {
+  const snapshots = fs.readFileSync(
+    path.join(process.cwd(), 'src/lib/today-fortune/result-snapshots.ts'),
+    'utf8'
+  );
+  assert.ok(/nameDeps,\s*sourceSessionId,\s*nameHint\s*\)/.test(snapshots));
+});
+
+// 2026-09-15 — 카드 결제는 지급이 착지보다 먼저 스냅샷을 만든다(착지 unlock GET 의 name 은 안 쓰인다).
+//   폼 이름은 결제 화면 → prepare(today-detail 주문 metadata.subjectName) → 지급 스냅샷 nameHint 로 가야 한다
+//   (prepare 규칙은 app/api/payments/prepare/route.spec.ts, 지급은 payments/fulfillment-today-detail-name.spec.ts).
+test('배선 가드 — 결제 화면이 폼 이름을 prepare 요청 본문으로 보낸다', () => {
+  const client = fs.readFileSync(path.join(process.cwd(), 'src/components/membership/toss-membership-checkout.tsx'), 'utf8');
+  const start = client.indexOf("fetch('/api/payments/prepare'");
+  const body = client.slice(start, client.indexOf('});', start));
+  assert.ok(start >= 0 && /subjectName: product === 'today-detail' && slug \? readTodayDetailName\(slug\) : undefined/.test(body));
+});
+
+// 순서 고정 — nameHint 는 막힌 경로 결제(prepare 가 from=*-limit 만 싣는다)와 멤버 열기에서만 온다. 그땐 방금 입력한 이름이 run 보다 앞선다.
+test('nameHint 와 run 이름이 둘 다 있으면 nameHint 가 이긴다(③ 안의 순서)', async () => {
+  const named = await resolveNamedReadingInput(
+    MOTHER,
+    'user-1',
+    deps({ loadRunDisplayName: async () => '어머님' }),
+    'reading-mom',
+    '엄마'
+  );
+  assert.equal(named.name, '엄마');
+});

@@ -134,7 +134,7 @@ function summarizeUserSituation(s: UserSituation | null): string | null {
 
 export const runtime = 'nodejs';
 
-function parseTodayPayload(payload: unknown): TodayFortuneBirthPayload | null {
+export function parseTodayPayload(payload: unknown): TodayFortuneBirthPayload | null {
   if (!payload || typeof payload !== 'object') return null;
   const data = payload as Record<string, unknown>;
 
