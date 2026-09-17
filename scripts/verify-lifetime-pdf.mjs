@@ -58,10 +58,11 @@ try {
       @font-face{font-family:ReportPretendard;src:url(data:font/woff2;base64,${font}) format('woff2');font-weight:100 900}
       *{box-sizing:border-box}body{margin:0} :root{--font-body:ReportPretendard,sans-serif}
       ${css}
-      </style></head><body><div class="admin-shell"><aside>ADMIN_NAV_SHOULD_NOT_PRINT</aside><div><div>ADMIN_TABS_SHOULD_NOT_PRINT</div><main class="external-report-workspace"><header>ADMIN_HEADER_SHOULD_NOT_PRINT</header><div class="external-report-controls">ADMIN_FORM_SHOULD_NOT_PRINT</div><div class="external-report-preview">${article}</div></main></div></div></body></html>`;
+      </style></head><body><div class="analytics-consent-banner">COOKIE_CONSENT_SHOULD_NOT_PRINT 동의 · 거부</div><div class="admin-shell"><aside>ADMIN_NAV_SHOULD_NOT_PRINT</aside><div><div>ADMIN_TABS_SHOULD_NOT_PRINT</div><main class="external-report-workspace"><header>ADMIN_HEADER_SHOULD_NOT_PRINT</header><div class="external-report-controls">ADMIN_FORM_SHOULD_NOT_PRINT</div><div class="external-report-preview">${article}</div></main></div></div></body></html>`;
     fs.writeFileSync(path.join(outputDir, `sample-${index + 1}.html`), html);
-    const page = await browser.newPage({ viewport: { width: 1000, height: 1300 } });
+    const page = await browser.newPage({ viewport: { width: index === 1 ? 390 : 1000, height: 1300 } });
     await page.setContent(html, { waitUntil: 'load' });
+    assert.ok(await page.locator('.analytics-consent-banner').isVisible(), 'Consent banner must remain visible on screen');
     await page.emulateMedia({ media: 'print' });
     await page.evaluate(() => document.fonts.ready);
     assert.ok((await page.locator('.rp-subject-title').textContent()).includes(input.name), 'Buyer name missing from the cover');
@@ -70,16 +71,28 @@ try {
       years: [...document.querySelectorAll('[data-year]')].map((el) => Number(el.getAttribute('data-year'))),
       controlsHidden: [...document.querySelectorAll('.external-report-controls,.external-report-workspace > header,.admin-shell > aside')].every((el) => getComputedStyle(el).display === 'none'),
       horizontalOverflow: [...document.querySelectorAll('.report-page')].some((el) => el.scrollWidth > el.clientWidth + 1),
+      consentHidden: getComputedStyle(document.querySelector('.analytics-consent-banner')).display === 'none',
+      watermarks: [...document.querySelectorAll('.report-page')].map((el) => {
+        const style = getComputedStyle(el, '::after');
+        return { content: style.content, opacity: style.opacity, top: parseFloat(style.top), width: parseFloat(style.width), pageWidth: el.getBoundingClientRect().width, zIndex: Number(style.zIndex) };
+      }),
     }));
     assert.deepEqual(metrics.years, Array.from({ length: 101 }, (_, age) => input.year + age));
     assert.ok(metrics.pages.length >= 30);
     assert.deepEqual(metrics.pages.map((item) => item.number), Array.from({ length: metrics.pages.length }, (_, i) => i + 1));
     assert.ok(metrics.controlsHidden, 'Admin controls leaked into print');
+    assert.ok(metrics.consentHidden, 'Cookie consent banner leaked into print');
+    for (const watermark of metrics.watermarks) {
+      assert.ok(watermark.content.includes('간지사주'), 'A report page has no brand watermark');
+      assert.equal(watermark.opacity, '0.1', 'Watermark must use 10% opacity');
+      assert.ok(Math.abs(watermark.top - 297 / 25.4 * 96 / 2) < 1, 'Watermark is not at the A4 vertical center');
+      assert.ok(Math.abs(watermark.width - watermark.pageWidth) < 1 && watermark.zIndex > 1, 'Watermark must span the page above opaque cards');
+    }
     assert.equal(metrics.horizontalOverflow, false, 'Report overflows horizontally');
     const tooTall = metrics.pages.filter((item) => item.height > 1122.6); // A4 at Chromium 96dpi.
     assert.deepEqual(tooTall, [], `A report sheet exceeds A4: ${JSON.stringify(tooTall)}`);
     const pdfPath = path.join(outputDir, `sample-${index + 1}.pdf`);
-    const pdfBytes = await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, preferCSSPageSize: true });
+    const pdfBytes = await page.pdf({ path: pdfPath, format: 'A4', printBackground: index !== 1, preferCSSPageSize: true });
     // Chromium/Skia writes page dictionaries outside compressed streams.
     const physicalPages = (pdfBytes.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
     assert.equal(physicalPages, metrics.pages.length, 'Physical PDF pagination differs from the printed contents');

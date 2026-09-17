@@ -117,8 +117,6 @@ export function ReportDocument({
             <article className="report-doc" aria-label="사주 리포트 PDF 미리보기">
               {/* ─────────────── PAGE 1 · 표지 / 요약 ─────────────── */}
               <section className="report-page" data-page="1">
-                <span className="rp-watermark" aria-hidden="true">干支</span>
-
                 <header className="rp-cover-head">
                   <div className="rp-brand">
                     <span className="rp-logo" aria-hidden="true">干</span>
