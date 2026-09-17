@@ -6,6 +6,7 @@ import type { ReadingRecord } from './readings';
 import type { BirthInput } from './types';
 import { getBirthLocationPreset } from './birth-location';
 import { buildLifetimePdfTimeline } from './lifetime-pdf-timeline';
+import { ganziToKorean } from './terminology';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
@@ -15,6 +16,17 @@ const REPORT = { patternAndYongsin: { supportSymbols: [] } } as unknown as SajuL
 function readingFor(input: BirthInput = INPUT): ReadingRecord {
   // The pure PDF builder needs only input + engine output; no DB or account data.
   return { input, sajuData: calculateSajuDataV1(input, { calculatedAt: '2026-06-15T12:00:00.000Z' }) } as ReadingRecord;
+}
+
+function withoutYearLabels(text: string, ganzi: string[]): string {
+  // A new year number, pillar name or ten-god label alone is not new advice.
+  for (const value of ganzi) text = text.replaceAll(ganziToKorean(value), '').replaceAll(value, '');
+  return text
+    .replace(/\d+(?:\s*(?:년\s*차|년|세))?/g, '')
+    .replace(/비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/g, '')
+    .replace(/[목화토금수](?=\s*(?:기운|일간|천간|지지))/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 test('lifetime PDF timeline covers each calendar age 0 through 100 exactly once with full narratives', () => {
@@ -168,4 +180,75 @@ test('lifetime PDF does not mutate input report or reading data', () => {
   buildLifetimePdfTimeline(reading, REPORT, 2026);
   assert.equal(JSON.stringify(reading), before);
   assert.equal(JSON.stringify(REPORT), reportBefore);
+});
+
+test('lifetime PDF changes practical advice beyond year labels for recurring stems and neighboring same-element branches', () => {
+  const timeline = buildLifetimePdfTimeline(readingFor(), REPORT, 2026);
+  const ganzi = [...timeline.years, ...timeline.cycles].map((row) => row.ganzi);
+  // 2018/2028 share the same stem and adult life stage; 2004/2005 have metal branches.
+  for (const [leftYear, rightYear] of [[2018, 2028], [2004, 2005]]) {
+    const left = timeline.years.find((row) => row.year === leftYear)!;
+    const right = timeline.years.find((row) => row.year === rightYear)!;
+    for (const field of ['learningCareer', 'resources', 'wellbeing', 'action'] as const) {
+      assert.notEqual(
+        withoutYearLabels(left[field], ganzi),
+        withoutYearLabels(right[field], ganzi),
+        `${leftYear}/${rightYear} ${field} needs a different explanation, not renamed headings`,
+      );
+    }
+  }
+});
+
+test('lifetime PDF retains simultaneous natal clash, harmony and repetition instead of stopping at the first match', () => {
+  const reading = readingFor();
+  // Rule regression fixture, not a claimed real birth chart: 子 meets 午, 丑 and 子.
+  reading.sajuData.pillars = {
+    ...reading.sajuData.pillars,
+    year: { ...reading.sajuData.pillars.year, branch: '午' },
+    month: { ...reading.sajuData.pillars.month, branch: '丑' },
+    day: { ...reading.sajuData.pillars.day, branch: '子' },
+    hour: null,
+  };
+  const annual = buildLifetimePdfTimeline(reading, REPORT, 2026).years.find((row) => row.year === 2020)!;
+  assert.equal(annual.ganzi[1], '子');
+  for (const slot of ['태어난 해', '태어난 달', '태어난 날']) assert.ok(annual.relationships.includes(slot), slot);
+  assert.match(annual.relationships, /충/);
+  assert.match(annual.relationships, /육합/);
+  assert.match(annual.relationships, /반복|겹/);
+});
+
+test('lifetime PDF ignores a stale hour pillar when the birth time is unknown', () => {
+  const reading = readingFor({ ...INPUT, hour: undefined, minute: undefined, unknownTime: true });
+  const expected = buildLifetimePdfTimeline(reading, REPORT, 2026);
+  assert.equal(reading.sajuData.input.hourKnown, false);
+  // Old snapshots can retain an estimated hour pillar; it is not known birth evidence.
+  reading.sajuData.pillars.hour = readingFor().sajuData.pillars.hour;
+  const actual = buildLifetimePdfTimeline(reading, REPORT, 2026);
+  assert.deepEqual(actual, expected, 'unknown-time advice must not use an estimated hour pillar');
+  assert.ok(actual.years.every((row) => !row.relationships.includes('태어난 시간')));
+});
+
+test('lifetime PDF major-cycle entry, adaptation and completion change the practical priority', () => {
+  const timeline = buildLifetimePdfTimeline(readingFor(), REPORT, 2026);
+  const reverse = buildLifetimePdfTimeline(readingFor({ ...INPUT, gender: 'female' }), REPORT, 2026);
+  const cycle = timeline.cycles.find((row) => row.startAge >= 35 && row.endAge <= 54)!;
+  assert.ok(cycle, 'fixture contains a full cycle inside one adult life stage');
+  const entry = timeline.years.find((row) => row.year === cycle.startYear)!;
+  const adapting = timeline.years.find((row) => row.year === cycle.startYear + 1)!;
+  const completion = timeline.years.find((row) => row.year === cycle.endYear)!;
+  const ganzi = [...timeline.years, ...timeline.cycles, ...reverse.cycles].map((row) => row.ganzi);
+  assert.equal(new Set([entry, adapting, completion].map((row) => withoutYearLabels(row.action, ganzi))).size, 3);
+  for (const annual of [entry, adapting, completion]) {
+    const reversedAnnual = reverse.years.find((row) => row.year === annual.year)!;
+    // Same natal pillars, age and annual pillar; only major-cycle direction changes.
+    assert.equal(annual.ganzi, reversedAnnual.ganzi);
+    assert.notEqual(
+      withoutYearLabels(annual.action, ganzi),
+      withoutYearLabels(reversedAnnual.action, ganzi),
+      `${annual.year} practical advice must use its major cycle, not only the annual ten god`,
+    );
+  }
+  assert.match(entry.action, /작은|작게|시도|시험/);
+  assert.match(adapting.action, /지난|첫|시도|확인|조정/);
+  assert.match(completion.action, /마무리|인계|남길|정리|다음/);
 });

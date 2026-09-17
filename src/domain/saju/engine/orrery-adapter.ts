@@ -883,7 +883,7 @@ function sortBranchKey(left: Branch, right: Branch) {
     : `${right}-${left}`;
 }
 
-function getBranchPrimaryTenGod(dayMasterStem: Stem, branch: Branch): TenGodCode | null {
+export function getBranchPrimaryTenGod(dayMasterStem: Stem, branch: Branch): TenGodCode {
   return getTenGodHangul(dayMasterStem, BRANCH_MAIN_STEM[branch]);
 }
 
