@@ -37,6 +37,7 @@ const fixtures = [
   { name: '김하늘 · 샘플', year: 1990, month: 5, day: 15, hour: 14, minute: 30, gender: 'male' },
   { name: '어린이 · 생시 모름 샘플', year: 2020, month: 2, day: 29, gender: 'female', unknownTime: true },
   { name: '긴 본문 · 샘플', year: 1982, month: 1, day: 29, hour: 8, minute: 45, gender: 'male' },
+  { name: '생시·성별 미상 샘플', year: 2020, month: 2, day: 29, unknownTime: true },
 ];
 const browser = await chromium.launch({ headless: true });
 const summaries = [];
