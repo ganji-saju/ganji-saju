@@ -822,32 +822,30 @@
   flex-direction: column;
 }
 
-/* 干支 워터마크 (P1) — 페이지 중앙 하단에 옅게 깔림. */
-.rp-watermark {
+/* 모든 페이지 중앙의 장식용 워터마크. 빈 대체 텍스트로 중복 낭독을 피한다. */
+.report-page::after {
+  content: '간지사주' / '';
   position: absolute;
   left: 0;
-  right: 0;
-  top: 360px;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
   text-align: center;
-  font-family: var(--font-han, serif);
-  font-size: 220px;
-  font-weight: 700;
+  font-family: var(--font-body, 'Noto Sans KR', sans-serif);
+  font-size: 64px;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: 14px;
   white-space: nowrap;
-  color: rgba(142, 42, 32, 0.045);
+  color: #111114;
+  opacity: 0.1;
   pointer-events: none;
   user-select: none;
-  z-index: 0;
+  z-index: 2;
 }
 
 .report-page > * {
   position: relative;
   z-index: 1;
-}
-
-.report-page > .rp-watermark {
-  position: absolute;
 }
 
 /* eyebrow 라벨 */
@@ -2159,8 +2157,8 @@
    데스크톱은 A4 고정폭 페이지 룩을 유지하고, 모바일은 transform: scale 을
    버리고 실제 1단 흐름으로 재배치한다. (scale 은 레이아웃 박스를 줄이지 않아
    595px 고정폭이 그대로 남아 가로 넘침/글 잘림이 발생함.)
-   각 페이지는 카드처럼 세로로 쌓여 스크롤로 읽는 뷰. */
-@media (max-width: 640px) {
+   각 페이지는 카드처럼 세로로 쌓여 스크롤로 읽는 뷰. 인쇄에는 A4 규칙만 적용. */
+@media screen and (max-width: 640px) {
   .pdf-report-page-wrap {
     width: 100%;
   }
@@ -2180,11 +2178,6 @@
     border-radius: 14px;
     box-shadow: 0 8px 24px rgba(17, 17, 20, 0.1);
     overflow: visible;
-  }
-
-  /* 干支 워터마크(220px abs)는 모바일 리플로우에서 넘치므로 숨김 (장식). */
-  .report-page .rp-watermark {
-    display: none;
   }
 
   /* 모든 다단 그리드 → 1단. */
@@ -2626,6 +2619,7 @@
 
   body::before,
   body::after,
+  .analytics-consent-banner,
   .pdf-print-actions,
   .app-desktop-sidebar,
   .app-top-header,
@@ -2754,9 +2748,10 @@
     print-color-adjust: exact !important;
   }
 
-  /* 干支 워터마크는 장식이므로 인쇄에서도 숨기지 않고 그대로 렌더. */
-  .rp-watermark {
-    display: block !important;
+  /* 본문 길이와 무관하게 실제 A4 용지(297mm)의 세로 중앙에 배치한다. */
+  .report-page::after {
+    top: 148.5mm;
+    font-size: 80px;
   }
 }
 
