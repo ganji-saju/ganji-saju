@@ -4,6 +4,7 @@ import {
   isOpenAIConfigured,
 } from '@/server/ai/openai-text';
 import type { ChapterLLMClient } from './generate-chapter';
+import type { LlmTelemetryStore } from '../llm-telemetry';
 
 // 2026-05-19 (다) 3차 — OpenAIChapterClient 구현. ChapterLLMClient interface
 //   를 기존 openai-text 모듈 (saju-lifetime-service 가 이미 사용 중) 위에 wrap.
@@ -21,6 +22,11 @@ export interface OpenAIChapterClientOptions {
   temperature?: number;
   /** OpenAI 호출 타임아웃 (기본 15초) */
   timeoutMs?: number;
+  /** 외부 구매자 등 DB에 생성 기록을 남기지 않는 서버 전용 경로의 저장소 주입. */
+  telemetryStore?: LlmTelemetryStore;
+  /** 전체 작업의 절대 마감 시각. 챕터 재시도도 남은 시간 안에서만 호출한다. */
+  deadlineAt?: number;
+  signal?: AbortSignal;
   /**
    * 2026-05-20 V2-5 PR N — JSON structured output 사용 여부.
    *   true (기본): { body: string } JSON schema 강제 → 응답 안정성 ↑.
@@ -63,6 +69,11 @@ export class OpenAIChapterClient implements ChapterLLMClient {
   }
 
   async generate(systemPrompt: string, userMessage: string): Promise<string> {
+    this.options.signal?.throwIfAborted();
+    const remainingMs = this.options.deadlineAt === undefined ? undefined : this.options.deadlineAt - Date.now();
+    if (remainingMs !== undefined && remainingMs <= 0) {
+      throw new OpenAIChapterClientError('풀이 생성 제한 시간을 초과했습니다.', 'openai_error');
+    }
     if (!isOpenAIConfigured()) {
       throw new OpenAIChapterClientError(
         'OPENAI_API_KEY 미설정 — generateChapter 의 fallbackBody 사용 권장',
@@ -81,8 +92,12 @@ export class OpenAIChapterClient implements ChapterLLMClient {
       maxOutputTokens: this.options.maxOutputTokens ?? 700,
       // temperature 는 명시 시에만 전달 (미설정=undefined=미전달). GPT-5.x 미지원 대응.
       temperature: this.options.temperature,
-      timeoutMs: this.options.timeoutMs,
+      timeoutMs: remainingMs === undefined
+        ? this.options.timeoutMs
+        : Math.min(this.options.timeoutMs ?? 15_000, remainingMs),
       feature: 'chapter',
+      telemetryStore: this.options.telemetryStore,
+      signal: this.options.signal,
       // 2026-05-20 V2-5 PR N — JSON structured output 활성 (default: true).
       //   { body: string } schema 강제로 응답 안정성 ↑. validator 후처리는 동일
       //   (자유 텍스트 시 동일 흐름, generateAiText 가 body 추출 후 반환).

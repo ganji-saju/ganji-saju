@@ -775,7 +775,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   사주 리포트 PDF 저장 화면 — 8페이지 A4 정확 복제 (2026-05-23).
+   사주 리포트 PDF 저장 화면 — 생애 분석 A4 문서.
    화면 미리보기: A4 고정폭 페이지를 카드처럼 쌓고 모바일에선 축소.
    인쇄(@media print): 각 .report-page 가 A4 1장, page-break-after.
    ───────────────────────────────────────────────────────────────────────── */
@@ -844,6 +844,10 @@
 .report-page > * {
   position: relative;
   z-index: 1;
+}
+
+.report-page > .rp-watermark {
+  position: absolute;
 }
 
 /* eyebrow 라벨 */
@@ -2652,11 +2656,7 @@
     display: block !important;
   }
 
-  /* 2026-07-23 — 연속 흐름으로 바꿨었다(짧은 챕터 아래 빈 여백을 줄이려고).
-     2026-08-30 — **되돌린다.** 사용자 재요청: "챕터 하나당 한 페이지씩 보이게 하는 게 더
-     깔끔하다." 실측으로 뒷받침된다 — 1~8장이 141~272mm 라 A4(297mm) 한 장에 전부 들어간다.
-     즉 강제 개장이 챕터를 쪼개지 않는다. 남는 여백(52~156mm)은 이제 의도된 여백이다.
-     ⚠️ 9장(깊은 풀이 전문)만 736mm 라 한 장을 넘는다 — 아래에서 따로 다룬다. */
+  /* 기본 챕터·분량별 본문·대운·연도별 묶음마다 한 장씩 출력한다. */
   .report-page {
     width: 210mm !important;
     height: auto !important;
@@ -2678,10 +2678,9 @@
     page-break-after: auto;
   }
 
-  /* 9장만은 한 장을 넘길 수밖에 없다(본문 4,000자 이상). 흐르게 두되 **섹션이 페이지
-     경계에서 쪼개지지 않게** 한다 — 리드만 앞장에 남고 본문이 넘어가면 더 읽기 나쁘다. */
-  .report-page[data-page="9"] .rp-deep-sec,
-  .report-page[data-page="9"] .rp-deep-rules {
+  /* 긴 본문은 모델에서 나누고 각 섹션은 페이지 안에서 함께 배치한다. */
+  .rp-narrative-page .rp-deep-sec,
+  .rp-narrative-page .rp-deep-rules {
     break-inside: avoid;
   }
 
@@ -2902,4 +2901,105 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
     padding-inline: 0.42rem;
     font-size: 0.78rem;
   }
+}
+
+/* Lifetime PDF v2: bounded narrative pages, ten-year chapters, two years per sheet. */
+.rp-lifetime-index,
+.rp-guide-contents { margin-top: 24px; border-top: 2px solid var(--rp-ink); }
+.rp-lifetime-index-row { display: grid; grid-template-columns: 150px 1fr 38px; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rp-line); align-items: center; font-size: 11px; }
+.rp-lifetime-index-row strong,
+.rp-lifetime-index-row span { display: block; }
+.rp-lifetime-index-row strong { font-size: 13px; }
+.rp-lifetime-index-row div span { margin-top: 5px; color: var(--rp-ink-muted); }
+.rp-lifetime-index-row > span { text-align: right; color: var(--rp-ink-muted); }
+.rp-lifetime-index-row p { margin: 0; line-height: 1.65; word-break: keep-all; }
+.rp-lifetime-index-row.is-current { color: var(--rp-pink); }
+.rp-guide-contents > div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rp-line); font-size: 12px; }
+.rp-guide-contents span { white-space: nowrap; color: var(--rp-ink-muted); }
+.rp-year-finder { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 22px 0; }
+.rp-year-finder > div { display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--rp-line); }
+.rp-year-finder strong { font-size: 12px; }
+.rp-year-finder span { font-size: 11px; color: var(--rp-ink-muted); }
+.rp-guide-note { margin-top: 20px; padding: 15px; background: var(--rp-card-bg); border-left: 2px solid var(--rp-pink); font-size: 11px; line-height: 1.8; word-break: keep-all; }
+.rp-guide-note p { margin: 0 0 7px; }
+.rp-guide-note p:last-child { margin-bottom: 0; }
+.rp-guide-copy { margin-top: 20px; font-size: 12px; line-height: 1.8; word-break: keep-all; }
+.rp-guide-copy h3 { margin: 0 0 6px; font-size: 14px; }
+.rp-guide-copy p { margin: 0; }
+.rp-cycle-overview { margin: 24px 0 16px; font-size: 13px; line-height: 1.9; font-weight: 600; word-break: keep-all; }
+.rp-cycle-fields { display: grid; gap: 13px; }
+.rp-cycle-fields h3,
+.rp-transition h3,
+.rp-cycle-actions h3 { margin: 0 0 5px; font-size: 13px; font-weight: 750; }
+.rp-cycle-fields p,
+.rp-transition p,
+.rp-cycle-actions li { margin: 0; font-size: 12px; line-height: 1.8; word-break: keep-all; }
+.rp-transition { margin-top: 20px; padding: 17px 19px; background: var(--rp-card-bg); border-top: 2px solid var(--rp-pink); }
+.rp-transition > div { padding-top: 10px; }
+.rp-transition strong { display: block; font-size: 11px; margin-bottom: 3px; color: var(--rp-pink); }
+.rp-cycle-actions { margin-top: 20px; }
+.rp-cycle-actions ol { padding-left: 20px; margin: 8px 0 0; }
+.rp-cycle-actions li + li { margin-top: 6px; }
+.rp-annual-entries { display: grid; gap: 24px; margin-top: 24px; }
+.rp-annual-entry { border-top: 2px solid var(--rp-ink); padding-top: 14px; break-inside: avoid; }
+.rp-annual-entry.is-current { border-top-color: var(--rp-pink); }
+.rp-annual-entry header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.rp-annual-entry h3 { font-size: 20px; line-height: 1.2; margin: 0; font-weight: 800; }
+.rp-annual-entry h3 span { font-size: 12px; font-weight: 500; margin-left: 7px; color: var(--rp-ink-muted); }
+.rp-annual-entry header p { margin: 5px 0 0; font-size: 11px; color: var(--rp-ink-muted); }
+.rp-annual-phase { font-size: 10px; line-height: 1.5; text-align: right; padding: 4px 7px; background: var(--rp-card-bg); max-width: 155px; }
+.rp-annual-entry h4 { font-size: 14px; margin: 14px 0 7px; color: var(--rp-pink); font-weight: 750; }
+.rp-annual-overview { margin: 0; font-size: 12px; line-height: 1.8; word-break: keep-all; }
+.rp-annual-entry dl { margin: 12px 0; display: grid; gap: 8px; }
+.rp-annual-entry dl > div { display: grid; grid-template-columns: 64px 1fr; gap: 10px; }
+.rp-annual-entry dt { padding-top: 1px; font-size: 11px; font-weight: 750; }
+.rp-annual-entry dd { margin: 0; font-size: 12px; line-height: 1.75; word-break: keep-all; }
+.rp-annual-action { margin: 0; padding: 11px 13px; font-size: 11.5px; line-height: 1.8; background: var(--rp-card-bg); word-break: keep-all; }
+.rp-annual-action strong { color: var(--rp-pink); margin-right: 8px; }
+
+@media screen and (max-width: 640px) {
+  .rp-lifetime-index-row { grid-template-columns: 118px 1fr 32px; gap: 8px; }
+  .rp-lifetime-index-row strong { font-size: 12px; }
+  .rp-annual-entry dl > div { grid-template-columns: 58px 1fr; gap: 7px; }
+  .rp-annual-entry dd,
+  .rp-annual-overview,
+  .rp-cycle-fields p,
+  .rp-transition p,
+  .rp-cycle-actions li { font-size: 13px; }
+  .rp-guide-contents > div { font-size: 11px; }
+}
+
+@media print {
+  .admin-shell:has(.external-report-workspace),
+  .admin-shell:has(.external-report-workspace) > div,
+  .external-report-workspace,
+  .external-report-preview {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+  .admin-shell:has(.external-report-workspace) > :not(:has(.external-report-workspace)),
+  .admin-shell:has(.external-report-workspace) > div > :not(.external-report-workspace),
+  .external-report-workspace > header,
+  .external-report-controls { display: none !important; }
+  .external-report-preview > .report-doc { margin: 0 !important; }
+  .rp-annual-entry,
+  .rp-cycle-fields > div,
+  .rp-transition > div,
+  .rp-cycle-actions li { break-inside: avoid; }
+  .rp-narrative-page .rp-deep-sec { margin-top: 18px; }
+  .rp-lifetime-index-row { padding: 12px 0; }
+  .rp-annual-entries { gap: 22px; margin-top: 20px; }
+}
+
+@media print {
+  .rp-annual-entries { gap: 18px; }
+  .rp-annual-entry h4 { margin-top: 10px; }
+  .rp-annual-entry dl { margin: 8px 0; gap: 6px; }
+  .rp-annual-action { padding: 9px 12px; }
 }

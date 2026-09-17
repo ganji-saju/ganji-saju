@@ -392,6 +392,11 @@ export async function resolveReading(
   const input = fromSlug(identifier);
   if (!input) return null;
 
+  return buildTransientReading(input, identifier);
+}
+
+/** 입력을 저장하지 않고 공통 계산·grounding으로 읽기 객체를 만든다. 이름도 그대로 유지한다. */
+export function buildTransientReading(input: BirthInput, identifier: string): ReadingRecord {
   // V2-3 (a) 정책: guest slug resolve 도 in-memory V2 로 통일. 저장 없음.
   const sajuData = loadSajuDataV2(input, null);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);

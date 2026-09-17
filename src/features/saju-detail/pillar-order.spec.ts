@@ -37,7 +37,7 @@ describe('네 기둥 표시 순서', () => {
   });
 
   it.each([
-    ['PDF', 'src/components/report/report-document.tsx'],
+    ['PDF', 'src/lib/saju/pdf-report-model.ts'],
     ['평생리포트 패널', 'src/components/ai/lifetime-report-panel.tsx'],
   ])('%s 도 같은 순서다', (_name, file) => {
     expect(pillarSequence(read(file))).toEqual([...PILLAR_DISPLAY_ORDER]);
@@ -58,6 +58,7 @@ describe('네 기둥 표시 순서', () => {
       'src/app/saju/[slug]/page.tsx',
       'src/features/saju-detail/sections/myeongsik-section.tsx',
       'src/components/report/report-document.tsx',
+      'src/lib/saju/pdf-report-model.ts',
       'src/components/ai/lifetime-report-panel.tsx',
     ]) {
       if (/['"]년주['"]/.test(read(file))) offenders.push(file);
