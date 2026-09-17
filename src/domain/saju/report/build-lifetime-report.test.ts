@@ -6,6 +6,7 @@ import { validateChapterBody } from '@/lib/saju/chapter-validator';
 import { validateDaewoonText } from '@/lib/saju/daewoon-validator';
 import { buildFallbackLifetimeInterpretation } from '@/server/ai/saju-lifetime-interpretation';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { getBirthLocationPreset } from '@/lib/saju/birth-location';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -40,6 +41,26 @@ test('buildLifetimeReport creates a lifetime-first structure with yearly appendi
   assert.ok(report.yearlyAppendix.ctaAnchor === '#yearly-report');
 });
 
+test('lifetime identity, balance, health and strategy never inherit daily or monthly advice', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const changedLuck = structuredClone(data);
+  if (changedLuck.currentLuck) {
+    changedLuck.currentLuck.wolwoon = { ganzi: '乙丑', year: 2026, month: 9, notes: ['이번 달에만 적용하는 월운 주의문'] };
+    changedLuck.currentLuck.saewoon = { ganzi: '丙寅', year: 2026, month: null, notes: ['올해에만 적용하는 세운 주의문'] };
+  }
+  const original = buildLifetimeReport(birthInput, data, 2026);
+  const differentDay = buildLifetimeReport(birthInput, changedLuck, 2026);
+  for (const key of ['coreIdentity', 'strengthBalance', 'healthRhythm', 'lifetimeStrategy'] as const) {
+    assert.deepEqual(differentDay[key], original[key], `${key} must depend on natal evidence, not daily luck`);
+    assert.doesNotMatch(JSON.stringify(original[key]), /오늘|내일|이번 달|월운 주의문|일진 주의문/);
+  }
+  const fallback = buildFallbackLifetimeInterpretation(original);
+  assert.doesNotMatch(Object.values(fallback.sections).join(' '), /오늘은|이번 달|하세요입니다|보세요입니다/);
+  const noCurrent = buildLifetimeReport(birthInput, { ...data, currentLuck: null }, 2026);
+  assert.match(noCurrent.lifetimeStrategy.rememberRules.join(' '), /현재 대운이 확인되지 않은/);
+  assert.doesNotMatch(noCurrent.majorLuckTimeline.currentMeaning, /대운은 지금/);
+});
+
 test('buildLifetimeReport marks a current major-luck cycle when available', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildLifetimeReport(birthInput, data, 2026);
@@ -48,6 +69,59 @@ test('buildLifetimeReport marks a current major-luck cycle when available', () =
     report.majorLuckTimeline.cycles.some((cycle) => cycle.isCurrent) ||
       report.majorLuckTimeline.cycles[0]?.ganzi === '대운 미산정'
   );
+});
+
+test('lifetime cycle ages, notes and transition checks use year minus birth year', () => {
+  for (const input of [birthInput, { year: 1990, month: 5, day: 15, hour: 14, minute: 30, gender: 'female' } as BirthInput]) {
+    const data = normalizeToSajuDataV1(input, null);
+    const before = structuredClone(data);
+    const report = buildLifetimeReport(input, data, 2026);
+    const engineBirthYear = data.input.birthTimeCorrection?.adjustedBirth.year ?? data.input.birth.year;
+    for (const [index, cycle] of (data.majorLuck ?? []).entries()) {
+      const rendered = report.majorLuckTimeline.cycles[index];
+      const startAge = engineBirthYear + cycle.startAge! - 1 - input.year;
+      const endAge = engineBirthYear + cycle.endAge! - 1 - input.year;
+      assert.equal(rendered.ageLabel, `${startAge}-${endAge}세`);
+      assert.match(rendered.summary, new RegExp(`연도 나이 ${startAge}세부터 ${endAge}세`));
+      const currentAge = 2026 - input.year;
+      assert.equal(rendered.transitionPhase, Math.abs(currentAge - startAge) <= 1 ? 'entering' : Math.abs(currentAge - endAge) <= 1 ? 'leaving' : null);
+    }
+    const current = report.majorLuckTimeline.cycles.find((cycle) => cycle.isCurrent)!;
+    assert.equal(current.ageLabel, input.year === 1982 ? '37-46세' : '33-42세');
+    assert.deepEqual(data, before, 'engine nominal ages and notes are never mutated');
+  }
+});
+
+test('lifetime calendar ages retain the original birth year after a New Year solar-time correction', () => {
+  const location = getBirthLocationPreset('seoul');
+  assert.ok(location);
+  const input: BirthInput = { year: 2000, month: 1, day: 1, hour: 0, minute: 10, gender: 'male', birthLocation: location, solarTimeMode: 'longitude' };
+  const data = normalizeToSajuDataV1(input, null);
+  assert.equal(data.input.birthTimeCorrection?.adjustedBirth.year, 1999);
+  const first = data.majorLuck![0];
+  const report = buildLifetimeReport(input, data, 2026);
+  assert.equal(report.majorLuckTimeline.cycles[0].ageLabel, `${first.startAge! - 2}-${first.endAge! - 2}세`);
+});
+
+test('lifetime missing gender creates no fictional transition cycle or phase in the fallback', () => {
+  const input: BirthInput = { ...birthInput, gender: undefined };
+  const data = normalizeToSajuDataV1(input, null);
+  const report = buildLifetimeReport(input, data, 2026);
+  assert.deepEqual(report.majorLuckTimeline.cycles, []);
+  assert.match(report.majorLuckTimeline.summary, /시작 시기와 단계는 해석하지 않습니다/);
+  assert.match(report.majorLuckTimeline.currentMeaning, /실제|역할|시간과 비용/);
+  assert.doesNotMatch(buildFallbackLifetimeInterpretation(report).sections.majorLuckTimeline, /전환기|진입기|퇴장기|정보 부족 대운 미산정 흐름/);
+});
+
+test('lifetime cycle metadata ignores a stale hour pillar when the birth time is unknown', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const staleHour = { ...data, input: { ...data.input, hourKnown: false } };
+  const withoutHour = { ...staleHour, pillars: { ...staleHour.pillars, hour: null } };
+  const input: BirthInput = { ...birthInput, unknownTime: true };
+  const staleReport = buildLifetimeReport(input, staleHour, 2026);
+  const cleanReport = buildLifetimeReport(input, withoutHour, 2026);
+  assert.deepEqual(staleReport.majorLuckTimeline.cycles, cleanReport.majorLuckTimeline.cycles);
+  assert.ok(staleReport.majorLuckTimeline.cycles.every((cycle) => !cycle.wonjinWith?.includes('시지')));
 });
 
 test('buildLifetimeReport gives major-luck cycles distinct readings by ganzi', () => {

@@ -2,6 +2,7 @@
 //   도넛 분포 + 균형 메모. 구 라우트는 앵커 리다이렉트.
 
 import { ELEMENT_INFO } from '@/lib/saju/elements';
+import { buildSajuPersonalizationContext } from '@/domain/saju/report/personalization-context';
 import type { Element } from '@/lib/saju/types';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
@@ -18,12 +19,12 @@ const ELEMENT_SUPPORT_GUIDE: Record<
   목: {
     label: '새로 시작하고 추진하는 힘',
     support: '막혀 있던 흐름을 다시 자라게 하는 축이 필요합니다.',
-    habits: ['아침에 먼저 움직이는 약속 만들기', '할 일을 한 줄로 먼저 적기', '식물이나 나무 결이 있는 공간 가까이 두기'],
+    habits: ['아침에 먼저 움직이는 약속 만들기', '할 일을 한 줄로 먼저 적기', '새로 시작한 일의 첫 결과를 확인할 날짜 정하기'],
   },
   화: {
     label: '마음을 꺼내고 활력을 더하는 힘',
     support: '안에 쌓인 생각을 밖으로 꺼내고 분위기를 데우는 축이 더 필요합니다.',
-    habits: ['결정 전 감정을 먼저 한 문장으로 말하기', '몸을 따뜻하게 깨우는 산책 넣기', '붉은 계열 포인트를 작은 소품으로 쓰기'],
+    habits: ['결정 전 감정을 먼저 한 문장으로 말하기', '몸을 따뜻하게 깨우는 산책 넣기', '전하고 싶은 마음과 부탁할 내용을 나눠 말하기'],
   },
   토: {
     label: '흔들리지 않게 중심을 잡는 힘',
@@ -33,7 +34,7 @@ const ELEMENT_SUPPORT_GUIDE: Record<
   금: {
     label: '결단하고 매듭짓는 힘',
     support: '정리하고 마무리하는 축이 더해질수록 전체 리듬이 또렷해집니다.',
-    habits: ['흰색·은색 소품을 가까이 두기', '서쪽 방향에서 잠깐 숨 고르기', '정리와 마감 시간을 하루 안에 따로 빼두기'],
+    habits: ['완료됐다고 볼 기준을 시작 전에 정하기', '맡지 않을 일의 범위를 짧게 말하기', '정리와 마감 시간을 하루 안에 따로 빼두기'],
   },
   수: {
     label: '깊이 사고하고 유연하게 흐르는 힘',
@@ -68,11 +69,12 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
   const dominant = sajuData.fiveElements.dominant;
   const weakest = sajuData.fiveElements.weakest;
   const dominantPercent = Math.round(sajuData.fiveElements.byElement[dominant]?.percentage ?? 0);
-  const dominantColor = ELEMENT_INFO[dominant].color;
   // 글자에는 원색 대신 대비를 맞춘 변형을 쓴다(도넛 조각·범례 점은 원색 유지).
   const dominantTextColor = ELEMENT_INFO[dominant].textColor;
   const donutGradient = buildDonutGradient(sajuData);
-  const supportGuide = ELEMENT_SUPPORT_GUIDE[weakest];
+  const supportElement = buildSajuPersonalizationContext(sajuData).yongsinKiyshin.용신;
+  const supportGuide = supportElement ? ELEMENT_SUPPORT_GUIDE[supportElement] : null;
+  const weakestState = sajuData.fiveElements.byElement[weakest]?.state;
 
   return (
     <div className="space-y-5">
@@ -91,7 +93,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
             className="rounded-[12px] border px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
             style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
           >
-            {dominant}왕
+            {dominant} 기운 {dominantPercent}%
           </span>
         </div>
         <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
@@ -145,9 +147,8 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
             className="mt-3.5 rounded-[10px] px-3 py-2.5 text-[14.4px] leading-[1.55] text-[var(--app-pink-strong)]"
             style={{ background: 'var(--app-pink-soft)' }}
           >
-            <strong>해석</strong> · {ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고,{' '}
-            {ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있어요. 채울 쪽을 의식하면 강한
-            쪽도 더 또렷이 살아납니다.
+            <strong>분포 읽기</strong> · {dominant} 기운의 비율이 가장 크고 {weakest} 기운의 비율이 가장 작습니다.
+            같은 분포라도 태어난 계절과 다른 기운의 관계에 따라 해석이 달라져요.
           </p>
         </article>
       </section>
@@ -158,17 +159,17 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
           균형 메모
         </div>
         <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
-          이렇게 채우면 편해집니다
+          적은 기운을 무조건 채워야 할까요?
         </h2>
         <p className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]">
-          {supportGuide.support}
+          {supportGuide ? `${supportElement} 기운을 보완 방향으로 읽습니다. ${supportGuide.support}` : '현재 정보로는 특정 보완 기운을 정하지 않았습니다.'} 최소 비율과 용신은 같은 뜻이 아니며, 오행이 적다는 이유만으로 약점이나 질환을 판단하지 않습니다.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <article
             className="rounded-[14px] border p-3.5"
             style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
           >
-            <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">강한 쪽</div>
+            <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">분포에서 큰 쪽</div>
             <div
               className="mt-1 text-[17.3px] font-extrabold tracking-tight"
               style={{ color: dominantTextColor }}
@@ -176,28 +177,28 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
               {ELEMENT_INFO[dominant].name}
             </div>
             <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
-              {ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.
+              전체 분포의 {dominantPercent}%입니다. 비율만으로 성격이나 능력의 우열을 정하지 않습니다.
             </p>
           </article>
           <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-            <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">채울 쪽</div>
+            <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">분포에서 적은 쪽</div>
             <div
               className="mt-1 text-[17.3px] font-extrabold tracking-tight"
               style={{ color: ELEMENT_INFO[weakest].color }}
             >
-              {supportGuide.label}
+              {weakest} 기운
             </div>
             <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
-              {ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.
+              {weakestState === 'weak' || weakestState === 'missing' ? '계산상 비중이 작지만, 실제 보완 방향은 원국의 균형과 함께 판단합니다.' : '다른 기운보다 비율은 작아도 부족한 상태로 분류되지 않았습니다.'}
             </p>
           </article>
-          {supportGuide.habits.slice(0, 2).map((habit, index) => (
+          {supportGuide?.habits.slice(0, 2).map((habit, index) => (
             <article
               key={habit}
               className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
             >
               <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
-                작은 습관 {index + 1}
+                생활에서 확인할 방법 {index + 1}
               </div>
               <p className="mt-1.5 text-[15px] font-bold leading-[1.5] text-[var(--app-ink)]">
                 {habit}

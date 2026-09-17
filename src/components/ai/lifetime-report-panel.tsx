@@ -29,7 +29,7 @@ import type { SajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
 import type { AiFallbackReason, AiGenerationSource } from '@/server/ai/openai-text';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
-import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 
 interface Props {
   slug: string;
@@ -69,12 +69,12 @@ interface LifetimeInterpretationResponse {
 // 9개 챕터 메타 — 토큰 컬러 cycling + chapter feedback 챕터 id 매핑.
 const SECTION_META = [
   { key: 'coreIdentity', label: '타고난 성향', tone: 'pink', chapterId: 1 },
-  { key: 'strengthBalance', label: '기운의 균형', tone: 'jade', chapterId: 2 },
-  { key: 'patternAndYongsin', label: '역할과 보완 힌트', tone: 'amber', chapterId: 3 },
-  { key: 'relationshipPattern', label: '관계 패턴', tone: 'coral', chapterId: 4 },
-  { key: 'wealthStyle', label: '재물 감각', tone: 'amber', chapterId: 5 },
-  { key: 'careerDirection', label: '직업 방향', tone: 'indigo', chapterId: 6 },
-  { key: 'healthRhythm', label: '건강 리듬', tone: 'jade', chapterId: 7 },
+  { key: 'wealthStyle', label: '돈을 벌고 남기는 방식', tone: 'amber', chapterId: 5 },
+  { key: 'careerDirection', label: '잘하는 일과 오래할 수 있는 일', tone: 'indigo', chapterId: 6 },
+  { key: 'relationshipPattern', label: '연애와 가까운 관계', tone: 'coral', chapterId: 4 },
+  { key: 'strengthBalance', label: '부담과 회복의 균형', tone: 'jade', chapterId: 2 },
+  { key: 'patternAndYongsin', label: '내 선택을 돕는 기준', tone: 'amber', chapterId: 3 },
+  { key: 'healthRhythm', label: '생활과 회복의 방식', tone: 'jade', chapterId: 7 },
   { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름 (대운)', tone: 'pink', chapterId: 8 },
   { key: 'lifetimeStrategy', label: '평생 활용 전략', tone: 'indigo', chapterId: 9 },
 ] as const;
@@ -95,7 +95,7 @@ const TONES: Record<ToneKey, {
 };
 
 function splitParagraphs(text: string) {
-  return simplifySajuCopy(text)
+  return koreanizeGanzi(text)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((paragraph) => paragraph.trim())
@@ -131,7 +131,7 @@ function FactCard({ label, body, tone = 'pink' }: { label: string; body: string;
         className="mt-2 text-[15.5px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        {limitSajuSentences(body, 2)}
+        {koreanizeGanzi(body)}
       </p>
     </div>
   );
@@ -155,7 +155,7 @@ function BasisNotes({ items }: { items: string[] }) {
             className="rounded-[12px] border bg-white px-4 py-3 text-[14.4px] leading-[1.7] text-[var(--app-copy-soft)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            {simplifySajuCopy(line)}
+            {koreanizeGanzi(line)}
           </div>
         ))}
       </div>
@@ -599,7 +599,7 @@ function CycleSection({
         className="mt-1 text-[15px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        {body}
+        {koreanizeGanzi(body)}
       </p>
     </div>
   );
@@ -660,7 +660,7 @@ function LifetimeSectionBody({
                   className="rounded-[12px] border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
-                  {simplifySajuCopy(item)}
+                  {koreanizeGanzi(item)}
                 </span>
               ))}
             </div>
@@ -728,28 +728,28 @@ function LifetimeSectionBody({
     case 'relationshipPattern':
       return (
         <div className="mt-4 grid gap-2.5">
-          <FactCard label="거리감" body={report.relationshipPattern.distanceStyle} tone={tone} />
-          <FactCard label="감정 말투" body={report.relationshipPattern.expressionStyle} tone={tone} />
-          <FactCard label="갈등 지점" body={report.relationshipPattern.conflictTriggers} tone={tone} />
-          <FactCard label="오래 가는 법" body={report.relationshipPattern.longevityGuide} tone={tone} />
+          <FactCard label="어떤 거리에서 편안함을 느낄까요?" body={report.relationshipPattern.distanceStyle} tone={tone} />
+          <FactCard label="마음과 표현은 왜 엇갈릴까요?" body={report.relationshipPattern.expressionStyle} tone={tone} />
+          <FactCard label="비슷한 갈등이 반복되면 무엇을 살펴볼까요?" body={report.relationshipPattern.conflictTriggers} tone={tone} />
+          <FactCard label="오래 이어갈 관계에는 어떤 기준이 필요할까요?" body={report.relationshipPattern.longevityGuide} tone={tone} />
         </div>
       );
     case 'wealthStyle':
       return (
         <div className="mt-4 grid gap-2.5">
-          <FactCard label="돈을 버는 방식" body={report.wealthStyle.earningStyle} tone={tone} />
-          <FactCard label="돈을 지키는 방식" body={report.wealthStyle.keepingStyle} tone={tone} />
-          <FactCard label="지출 실수 패턴" body={report.wealthStyle.spendingMistakes} tone={tone} />
-          <FactCard label="맞는 운영 스타일" body={report.wealthStyle.operatingStyle} tone={tone} />
+          <FactCard label="어떤 방식으로 돈을 벌 때 강점이 드러날까요?" body={report.wealthStyle.earningStyle} tone={tone} />
+          <FactCard label="번 돈을 남기려면 무엇을 살펴볼까요?" body={report.wealthStyle.keepingStyle} tone={tone} />
+          <FactCard label="어떤 지출을 반복하고 있나요?" body={report.wealthStyle.spendingMistakes} tone={tone} />
+          <FactCard label="안정과 확장 사이에서 무엇을 기준으로 정할까요?" body={report.wealthStyle.operatingStyle} tone={tone} />
         </div>
       );
     case 'careerDirection':
       return (
         <div className="mt-4 grid gap-2.5">
-          <FactCard label="잘 맞는 일의 구조" body={report.careerDirection.fitStructure} tone={tone} />
-          <FactCard label="버티는 일 vs 빛나는 일" body={report.careerDirection.endureVsShine} tone={tone} />
-          <FactCard label="독립 / 조직 적성" body={report.careerDirection.independenceStyle} tone={tone} />
-          <FactCard label="인정받는 방식" body={report.careerDirection.recognitionStyle} tone={tone} />
+          <FactCard label="어떤 역할에서 실력이 드러날까요?" body={report.careerDirection.fitStructure} tone={tone} />
+          <FactCard label="잘하는 일과 오래할 수 있는 일은 어떻게 다를까요?" body={report.careerDirection.endureVsShine} tone={tone} />
+          <FactCard label="조직과 독립 중 어떤 조건을 비교해야 할까요?" body={report.careerDirection.independenceStyle} tone={tone} />
+          <FactCard label="내 실력을 어떻게 보여줘야 할까요?" body={report.careerDirection.recognitionStyle} tone={tone} />
         </div>
       );
     case 'healthRhythm':

@@ -1,6 +1,7 @@
 export interface PdfNarrativeSection {
   label: string;
   text: string;
+  chapter?: string;
 }
 
 /** Keep every character while bounding the amount of prose on one A4 page. */
@@ -9,6 +10,11 @@ export function paginatePdfNarrative(sections: PdfNarrativeSection[]): PdfNarrat
   let page: PdfNarrativeSection[] = [];
   let weight = 0;
   for (const section of sections) {
+    if (page.length && section.chapter !== page[0].chapter) {
+      pages.push(page);
+      page = [];
+      weight = 0;
+    }
     let remaining = section.text.trim();
     let continuation = false;
     while (remaining) {
@@ -19,9 +25,9 @@ export function paginatePdfNarrative(sections: PdfNarrativeSection[]): PdfNarrat
         if (boundary > 700) end = boundary;
       }
       const text = remaining.slice(0, end).trim();
-      const item = { label: `${section.label}${continuation ? ' · 계속' : ''}`, text };
+      const item = { ...section, label: `${section.label}${continuation ? ' · 계속' : ''}`, text };
       const itemWeight = text.length + 160;
-      if (page.length && (weight + itemWeight > 1600 || page.length >= 3)) {
+      if (page.length && (weight + itemWeight > 1600 || page.length >= (section.chapter ? 4 : 3))) {
         pages.push(page);
         page = [];
         weight = 0;

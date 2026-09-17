@@ -21,6 +21,13 @@ export interface TodayFortuneGrounding {
   triggeredCaseSummaries: string[]; // 발동 케이스 한 줄 의미(전체)
   concernLabel: string;
   situation: string | null;  // 프로필 상황 한 줄
+  readingDate?: string;
+  reasoning?: string;
+  choice?: string;
+  lifeStage?: TodayFortuneFreeResult['birthMeta']['lifeStage'];
+  unknownBirthTime?: boolean;
+  answer?: string;
+  example?: string;
 }
 
 /**
@@ -55,6 +62,9 @@ export function buildTodayFortuneGrounding(args: {
     .sort((a: TodayScoreItem, b: TodayScoreItem) => b.score - a.score)
     .slice(0, 3)
     .map(({ key, label, score }) => ({ key, label, score }));
+  const focusKey = result.concernId === 'energy_health' ? 'condition'
+    : result.focusTopic === 'today' ? 'overall' : result.focusTopic;
+  const reading = result.scores.find((score) => score.key === focusKey)?.reading;
 
   return {
     name: result.userName ?? '',
@@ -67,5 +77,12 @@ export function buildTodayFortuneGrounding(args: {
     triggeredCaseSummaries: caseSummaries,
     concernLabel: result.concernLabel,
     situation,
+    readingDate: result.dateKey,
+    reasoning: reading?.evidence ?? result.reasonSnippet.body,
+    choice: reading?.choice,
+    answer: reading?.answer,
+    example: reading?.example,
+    lifeStage: result.birthMeta.lifeStage,
+    unknownBirthTime: result.birthMeta.unknownBirthTime,
   };
 }

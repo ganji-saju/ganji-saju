@@ -26,3 +26,14 @@ test('PDF annual pages contain all 101 years once, with a final single year', ()
   assert.deepEqual(pages.flat(), years);
   assert.deepEqual(pages.at(-1), [2090]);
 });
+
+test('PDF questions in a new chapter start on their own page and retain their chapter after splitting', () => {
+  const pages = paginatePdfNarrative([
+    { chapter: '돈', label: '버는 방식', text: '재물 풀이입니다.' },
+    { chapter: '일', label: '맞는 일', text: '긴 직업 풀이입니다. '.repeat(170) },
+  ]);
+  assert.equal(pages[0].length, 1);
+  assert.ok(pages.slice(1).every((page) => page.every((section) => section.chapter === '일')));
+  const shortChapter = paginatePdfNarrative(Array.from({ length: 4 }, (_, i) => ({ chapter: '돈', label: i === 3 ? '종합 해설' : `질문 ${i + 1}`, text: '짧은 답입니다.' })));
+  assert.equal(shortChapter.length, 1, 'A short closing explanation must not create an almost empty extra sheet');
+});

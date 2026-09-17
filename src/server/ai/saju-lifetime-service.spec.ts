@@ -50,6 +50,7 @@ describe('lifetime generation isolated persistence and budget', () => {
     const calls = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
     expect(calls.filter((request) => request.feature === 'chapter')).toHaveLength(24);
     expect(calls.filter((request) => request.feature === 'lifetime')).toHaveLength(1);
+    expect(calls.find((request) => request.feature === 'lifetime')?.maxOutputTokens).toBe(4800);
     for (const request of calls) expect(request.telemetryStore).toBe(telemetryStore);
     expect(createServiceClient).not.toHaveBeenCalled();
   });
