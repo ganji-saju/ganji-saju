@@ -1,5 +1,30 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-17 — PR #832 머지 전 보완: 새 워크트리 의존성 설치 옵션 통일
+
+- **수정**: `scripts/setup-codex.sh`의 신규 의존성 설치에 CI와 같은 `--legacy-peer-deps --engine-strict` 적용. Toss 하위 타입의 TypeScript 4 peer 제약과 프로젝트 TypeScript 5 충돌을 우회하는 기존 CI 정책을 따르면서 Node 엔진 조건은 강제한다. 기존 `node_modules`는 재설치하지 않는다.
+- **회귀 검증**: `scripts/setup-codex.test.mjs`의 임시 경로·Git/Node/npm 스텁으로 최초 설정·재실행·기존 의존성 보존·Node 버전 교체·설치 실패 전파를 4개 테스트로 확인. `package.json`의 `test:codex-setup` 및 CI 단계 추가.
+- **실행 결과**: 프로젝트 Node 22 실행기로 새 테스트 **4/4 통과**, `sh -n scripts/setup-codex.sh`·`git diff --check` 통과. 실제 의존성 설치·네트워크·운영 DB 호출은 하지 않았다.
+- **남은 작업**: PR #832 보완 커밋·push 후 변경된 HEAD의 필수 CI/CodeQL 확인과 머지는 상위 작업에서 진행한다.
+
+## 2026-09-17 — 작업 종료 자동 보고: PROGRESS 기록·커밋 확인 → HTML 생성
+
+- **사용자 요청**: 작업 종료 시 `PROGRESS.md` 기록과 HTML 생성을 자동화. `.codex/hooks.json`에 `UserPromptSubmit`·`Stop`을 연결하고 `scripts/codex-progress-hook.mjs` 추가.
+- **동작**: 작업 시작 시 저장소 상태 해시를 로컬 `.codex-run/progress-hooks/`에 저장 → 종료 시 실제 변경과 새 보고서 섹션 확인 → 기록 누락·기존 기록 훼손·보고서 미커밋이면 Codex에 한 번 보완 요청 → 보고서가 준비되면 HTML 생성. 자동 보완/중복 종료가 무한 반복되지 않으며, 미해결 문제는 명시적으로 경고한다.
+- **범위 보존**: 훅은 직접 stage·commit하거나 대화 전문·비밀값을 저장하지 않는다. 변경 없는 조회·기존 사용자 변경 그대로인 작업·서브에이전트 종료에는 새 기록을 강제하지 않는다. 다른 작업자의 변경은 자신의 성과로 기록하지 않도록 안내한다.
+- **활성화**: Codex 공식 `hooks/list`·`config/batchWrite` API로 이 프로젝트의 보고 훅 두 개만 신뢰 등록. 둘 다 `enabled=true`, `trustStatus=trusted` 재확인. Codex 앱에 수동 “보고서 HTML 생성” 액션도 추가.
+- **검증**: `npm run test:progress-hooks` **17건 통과**(임시 Git 저장소, DB/네트워크 사용 없음). 기록 누락·커밋 후 코드 변경·같은 크기 파일 수정·과거 기록 보존·재진입·렌더 실패·심링크·JSON 출력 검증. 독립 리뷰에서 발견한 Git `assume-unchanged`로 미커밋 보고서가 가려지는 문제는 HEAD 원문 해시 대조로 수정. 실제 저장소에서도 새 기록이 없을 때 보완 요청 확인(시작 스냅샷 약 0.7초).
+- **지속 검증**: `package.json`과 CI에 훅 테스트 명령 추가. `AGENTS.md`·`docs/codex-handoff.md`에 최종 답변 전 사실 기반 기록·본인 변경만 커밋·HTML 생성 규칙 반영. 제품 기능 코드는 변경하지 않았다.
+
+## 2026-09-17 — Claude Code → Codex 로컬 작업 환경 인계
+
+- **최신 상태 확인**: `git pull --ff-only origin main` 최신. 인계 기준 로컬·원격 main·staging 모두 `0d361e0e`(#830), 마지막 제품 코드 `2467140a`(#827). 같은 저장소 Claude 워크트리 31개 전부 미커밋 변경 없음. #829·#828·#827은 완료이며 옛 머지 대기 지시는 재실행하지 않는다.
+- **공통 파일 유지**: `/Users/kionya/ganji-saju`의 기존 `.env.local`·`.env.development.local`·`node_modules`·lockfile 그대로 사용. Claude 설정 원본·비밀값·다른 프로젝트·전역 Claude 대화/메모리는 변경하거나 가져오지 않았다.
+- **Codex 설정**: `AGENTS.md`에 어휘 정책 우선·최신 인계 확인·Node 22 실행·프로젝트 범위·CodeQL 요약 체크 규칙 추가. `.codex/config.toml`은 기존 Supabase 프로젝트 연결과 로컬 **비활성 상태**를 유지(토큰은 환경변수 이름만). `.codex/hooks.json`에 PROGRESS HTML 종료 훅 이관. 자동 변환기의 AGENTS↔CLAUDE 순환 링크는 적용하지 않고 기존 AGENTS를 보존했다.
+- **로컬 실행 환경**: `scripts/setup-codex.sh`·`scripts/with-node22.sh` 추가. 시스템 Node 24 대신 프로젝트의 무시된 `.codex-run/node22`에 **Node v22.23.2** 준비, 전역 Node 설정 무변경. 기존 의존성 재설치 없음. `.codex/environments/environment.toml`에 새 워크트리 초기 설정과 개발·검증 액션 추가.
+- **검증**: 설정 TOML 검증·실제 `codex mcp get supabase`(disabled)·hooks 기능 로딩 확인. Node 22에서 `typecheck` 0, `npm test`(1718 tests passed / Node runner 191 pass), `test:spec` 55파일·414건 통과. 개발 서버 `127.0.0.1:3000` Ready, 홈·로그인 HTTP 200. 초기 설정 재실행도 추가 설치 없이 통과.
+- **인계 문서**: `docs/codex-handoff.md`. GitHub 실조회 기준 #831(관리자 환불 동시 승인 선점)·#822(의존성 업데이트) OPEN. 기존 PR 머지·DB 변경·배포는 이번 설정에 포함하지 않았다. 새 종료 훅은 Codex `/hooks`에서 최초 신뢰 검토가 필요할 수 있으며 수동 HTML 생성 명령도 공통 지침에 남겼다.
+
 ## 2026-09-15 — 세션: 인계 머지 3건 완료(#829·#828·#827 → staging) + 머지 전 리뷰 반영 + CodeQL 3건 오탐 처리
 
 아래 '세션 인계' 의 머지 대기 3건을 끝냈다. main = staging = `2467140a`(수동 마이그레이션 없음).

@@ -1,0 +1,30 @@
+version = 1
+name = "ganji-saju"
+
+[setup]
+script = "./scripts/setup-codex.sh"
+
+[[actions]]
+name = "개발 서버"
+icon = "run"
+command = "./scripts/with-node22.sh npm run dev -- --port 3000"
+
+[[actions]]
+name = "타입 검사"
+icon = "test"
+command = "./scripts/with-node22.sh npm run typecheck"
+
+[[actions]]
+name = "단위 테스트"
+icon = "test"
+command = "./scripts/with-node22.sh npm test"
+
+[[actions]]
+name = "스펙 테스트"
+icon = "test"
+command = "./scripts/with-node22.sh npm run test:spec"
+
+[[actions]]
+name = "보고서 HTML 생성"
+icon = "tool"
+command = "./scripts/with-node22.sh npm run progress:html"
