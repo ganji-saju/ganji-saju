@@ -1,5 +1,11 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-18 — 질문형 풀이 개선 #837 운영 반영 완료
+
+- **머지**: PR #837 HEAD `e2bff22c`의 CI 2건·CodeQL 분석 및 요약·Playwright E2E·Vercel 검사 모두 통과 후 squash 머지(`f14e531e`). 검증본과 머지 결과의 파일 차이 없음. 독립 최종 원고 검수도 나이·미산정 대운·원국별 선택 차이·어린이 중복 제거를 확인했다.
+- **운영**: production `dpl_8JMN31Q8MYF2DkaXhnbQSXVg6spe` **READY**, 실제 `ganjisaju.kr`·www 연결과 루트 HTTP 200 확인. 기존 저장 PDF는 보존하고 일반·관리자 신규 생성에 개선본을 적용한다. 실제 고객 데이터나 유료 AI를 사용하지 않고 검증했다.
+- **산출물·정리**: 새 목차 및 가상 핵심 3장 원고를 문서로 커밋했고, 로컬 `.codex-run/reading-quality-samples.html`과 `.codex-run/pdf-verification/core-samples.pdf`를 생성했다. 이 배포 기록도 커밋·push하고 main/staging을 같은 커밋으로 동기화하며 `PROGRESS.html`을 재생성한다. 상세 변경과 검증 수치는 아래에 보존한다.
+
 ## 2026-09-18 — 평생·기본·오늘 풀이의 질문형 구성과 근거 정합성 개선
 
 - **구성·샘플**: 월별 풀이는 추가하지 않는다. 평생 PDF를 핵심 요약→성향→돈·일·관계 질문→부담·회복→대운→0~100세 연표→구조 참고 순으로 배치했다. `docs/reading-quality-plan.md`에 목차·원고 기준, `docs/reading-quality-samples.md`에 가상 입력으로 실제 생성한 핵심 3장과 다른 원국의 답을 기록했다. 로컬 HTML과 3장 발췌 PDF도 생성했다.
