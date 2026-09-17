@@ -30,7 +30,8 @@ PATH="$(dirname "$node_bin"):$PATH"
 export PATH
 
 if [ ! -d "$repo/node_modules" ]; then
-  npm ci --no-audit --no-fund
+  # CI와 동일: Toss 하위 타입의 TS4 peer 충돌을 우회하고 Node 엔진 조건은 강제한다.
+  npm ci --legacy-peer-deps --engine-strict --no-audit --no-fund
 fi
 
 node_version=$(node --version)
