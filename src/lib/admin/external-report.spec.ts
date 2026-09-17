@@ -44,6 +44,19 @@ describe('external report input', () => {
     if (result.ok) expect(result.input.hour).toBeUndefined();
   });
 
+  it('keeps the validated original lunar birthday and only whitelisted fields for history', () => {
+    const original = { ...draft, calendarType: 'lunar', day: '5', unknownBirthTime: true };
+    const result = parseExternalReportRequest({ ...original, phone: '010-private', snapshot: { injected: true }, created_by: 'other-admin' });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error);
+    expect(result.birth).toEqual({
+      ...original, name: '스마트 구매자', hour: '', minute: '',
+    });
+    expect(result.birth).toMatchObject({ calendarType: 'lunar', year: '1982', month: '1', day: '5' });
+    const solar = Lunar.fromYmd(1982, 1, 5).getSolar();
+    expect(result.input).toMatchObject({ year: solar.getYear(), month: solar.getMonth(), day: solar.getDay() });
+  });
+
   it('requires location and coordinates for known-time true solar correction', () => {
     const location = { birthLocationCode: 'custom', birthLocationLabel: '서울', birthLatitude: '37.5665', birthLongitude: '126.978' };
     for (const missing of [{ birthLocationCode: '' }, { birthLatitude: ' ' }, { birthLongitude: '' }]) {

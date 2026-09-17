@@ -3,6 +3,7 @@ import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase/server';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { generateExternalReport, parseExternalReportRequest } from '@/lib/admin/external-report';
+import { saveExternalReport } from '@/lib/admin/external-report-history';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -52,18 +53,19 @@ export async function POST(req: NextRequest) {
   try {
     const result = await generateExternalReport(parsed.input, { signal: req.signal });
     req.signal.throwIfAborted();
+    const saved = await saveExternalReport({ actorId: check.userId, birth: parsed.birth, report: result });
     await logAdminAccess({
       actorId: check.userId,
       actorRole: check.role,
       action: 'generate_external_report',
       targetUser: null,
-      meta: { reportNo: result.data.reportNo, generationSource: result.generationSource },
+      meta: { reportNo: result.data.reportNo, generationSource: result.generationSource, recordId: saved.id },
     });
-    return json({ ok: true, ...result });
+    return json({ ok: true, ...result, recordId: saved.id, createdAt: saved.createdAt });
   } catch {
     // 원문 입력·AI 오류 원문에는 구매자의 개인정보가 들어갈 수 있어 출력하지 않는다.
     if (req.signal.aborted) return json({ ok: false, error: '리포트 생성을 취소했습니다.' }, 499);
-    return json({ ok: false, error: '리포트를 생성하지 못했습니다. 잠시 뒤 다시 시도해 주세요.' }, 500);
+    return json({ ok: false, error: '리포트 생성 또는 기록 저장을 완료하지 못했습니다. PDF 생성 기록에서 저장 여부를 먼저 확인한 뒤 다시 시도해 주세요.' }, 500);
   } finally {
     if (running.get(check.userId)?.token === token) running.delete(check.userId);
   }
