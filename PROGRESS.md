@@ -1,5 +1,12 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-17 — PR #832 머지 전 보완: 새 워크트리 의존성 설치 옵션 통일
+
+- **수정**: `scripts/setup-codex.sh`의 신규 의존성 설치에 CI와 같은 `--legacy-peer-deps --engine-strict` 적용. Toss 하위 타입의 TypeScript 4 peer 제약과 프로젝트 TypeScript 5 충돌을 우회하는 기존 CI 정책을 따르면서 Node 엔진 조건은 강제한다. 기존 `node_modules`는 재설치하지 않는다.
+- **회귀 검증**: `scripts/setup-codex.test.mjs`의 임시 경로·Git/Node/npm 스텁으로 최초 설정·재실행·기존 의존성 보존·Node 버전 교체·설치 실패 전파를 4개 테스트로 확인. `package.json`의 `test:codex-setup` 및 CI 단계 추가.
+- **실행 결과**: 프로젝트 Node 22 실행기로 새 테스트 **4/4 통과**, `sh -n scripts/setup-codex.sh`·`git diff --check` 통과. 실제 의존성 설치·네트워크·운영 DB 호출은 하지 않았다.
+- **남은 작업**: PR #832 보완 커밋·push 후 변경된 HEAD의 필수 CI/CodeQL 확인과 머지는 상위 작업에서 진행한다.
+
 ## 2026-09-17 — 생애 전체 연도별 PDF 확장 + 외부 주문 관리자 생성
 
 - **사용자 요청**: 깊은 사주풀이 PDF를 30쪽 이상으로 확장하고 생애 전체를 연도별로 분석. 대운 전환기를 더 깊게 다루며, 스마트스토어 구매자 정보를 최고 관리자가 입력해 사이트 결제·회원가입 없이 PDF를 저장할 수 있도록 구현.
