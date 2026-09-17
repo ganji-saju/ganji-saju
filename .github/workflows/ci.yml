@@ -43,6 +43,9 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      - name: Verify route authorization and UI behavior
+        run: npm run test:spec
+
       - name: Verify automatic progress reporting hooks
         run: npm run test:progress-hooks
 

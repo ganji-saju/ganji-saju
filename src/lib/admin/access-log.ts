@@ -9,6 +9,7 @@ export type AdminAction =
   | 'force_reconsent' | 'refund_request' | 'refund_approve'
   | 'batch_refund_request' | 'purge_deleted_user'
   | 'grant_lifetime_report'
+  | 'generate_external_report'
   // 2026-08-31 — 유료상품 이용권 수동 부여(궁합·점수·달력·당일권 등 전 상품).
   | 'grant_product'
   | 'revoke_product'

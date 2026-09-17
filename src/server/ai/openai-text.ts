@@ -44,6 +44,8 @@ export interface AiTextRequest {
   userId?: string | null;
   /** 테스트/DI 용 텔레메트리 스토어. 미지정 시 Supabase. */
   telemetryStore?: LlmTelemetryStore;
+  /** 요청 종료 시 진행 중인 SDK 호출도 중단한다. 기존 고객 호출은 미지정. */
+  signal?: AbortSignal;
 }
 
 export interface AiTextResult {
@@ -113,6 +115,7 @@ function fallbackResult(
 export async function generateAiText(
   request: AiTextRequest
 ): Promise<AiTextResult> {
+  request.signal?.throwIfAborted();
   const startedAt = Date.now();
   const result = await runGenerateAiText(request);
   // 2026-05-25 Phase 0b — feature 지정 시에만 중앙 계측(성공·fallback 모든 경로). 비차단.
@@ -188,7 +191,7 @@ async function runGenerateAiText(
         }
       : baseRequest;
 
-    const response = await client.responses.create(apiRequest as never);
+    const response = await client.responses.create(apiRequest as never, { signal: request.signal });
     const raw = response.output_text?.trim();
 
     if (!raw) {
