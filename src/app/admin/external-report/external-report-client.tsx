@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { ReportDocument, type PdfReportModel } from '@/components/report/report-document';
+import type { BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import {
   resolveUnifiedBirthInput,
@@ -10,6 +12,8 @@ import {
 import styles from './external-report.module.css';
 
 interface GeneratedReport {
+  recordId: string;
+  createdAt: string;
   data: PdfReportModel;
   issuedAt: string;
   generationSource: 'openai' | 'fallback';
@@ -39,6 +43,10 @@ export function ExternalReportClient() {
   const [busy, setBusy] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
+  const [locationResults, setLocationResults] = useState<BirthLocationSearchResultLike[]>([]);
+  const locationRequest = useRef<AbortController | null>(null);
   const request = useRef<AbortController | null>(null);
   const revision = useRef(0);
   const preview = useRef<HTMLDivElement>(null);
@@ -46,6 +54,7 @@ export function ExternalReportClient() {
   useEffect(() => () => {
     revision.current += 1;
     request.current?.abort();
+    locationRequest.current?.abort();
   }, []);
 
   function invalidateReport() {
@@ -59,13 +68,76 @@ export function ExternalReportClient() {
 
   function patchDraft(patch: Partial<UnifiedBirthEntryDraft>) {
     invalidateReport();
+    if ('birthLocationCode' in patch || 'birthLocationLabel' in patch
+      || 'birthLatitude' in patch || 'birthLongitude' in patch) {
+      resetLocationSearch();
+    }
     setDraft((current) => ({ ...current, ...patch }));
   }
 
   function resetBuyer() {
     invalidateReport();
+    resetLocationSearch();
     setName('');
     setDraft({ ...EMPTY_DRAFT });
+  }
+
+  function resetLocationSearch() {
+    locationRequest.current?.abort();
+    locationRequest.current = null;
+    setLocationLoading(false);
+    setLocationMessage('');
+    setLocationResults([]);
+  }
+
+  async function searchLocation() {
+    resetLocationSearch();
+    const query = draft.birthLocationLabel.trim();
+    if (query.length < 2) {
+      setLocationMessage('출생 지역을 두 글자 이상 입력해 주세요.');
+      return;
+    }
+    const controller = new AbortController();
+    locationRequest.current = controller;
+    setLocationLoading(true);
+    try {
+      const response = await fetch(`/api/geo/birth-location?q=${encodeURIComponent(query)}`, {
+        cache: 'force-cache',
+        signal: controller.signal,
+      });
+      const body = await response.json().catch(() => null) as
+        | { ok: boolean; error?: string; items?: BirthLocationSearchResultLike[] }
+        | null;
+      if (controller.signal.aborted) return;
+      if (!response.ok || !body?.ok) {
+        setLocationMessage(body?.error ?? '지역 좌표를 찾지 못했습니다. 다시 시도해 주세요.');
+        return;
+      }
+      const items = body.items ?? [];
+      setLocationResults(items);
+      setLocationMessage(items.length
+        ? '검색 결과에서 출생지를 선택하면 위도와 경도가 자동으로 입력됩니다.'
+        : '검색 결과가 없습니다. 시/군/구 이름을 더 구체적으로 입력해 주세요.');
+    } catch {
+      if (!controller.signal.aborted) {
+        setLocationMessage('지역 좌표를 찾는 중 연결이 끊겼습니다. 다시 시도해 주세요.');
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        locationRequest.current = null;
+        setLocationLoading(false);
+      }
+    }
+  }
+
+  function applyLocation(result: BirthLocationSearchResultLike) {
+    patchDraft({
+      birthLocationCode: 'custom',
+      birthLocationLabel: result.label,
+      birthLatitude: String(result.latitude),
+      birthLongitude: String(result.longitude),
+    });
+    setLocationMessage(`${result.label} 좌표를 적용했습니다.`);
   }
 
   function selectLocation(code: string) {
@@ -82,6 +154,7 @@ export function ExternalReportClient() {
     event.preventDefault();
     if (busy) return;
     invalidateReport();
+    resetLocationSearch();
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length > 40) {
       setError('보고서에 표시할 이름을 1~40자로 입력해 주세요.');
@@ -127,7 +200,7 @@ export function ExternalReportClient() {
       setResult(body);
     } catch {
       if (currentRevision === revision.current && !controller.signal.aborted) {
-        setError('연결이 끊겨 보고서를 받지 못했습니다. 연결 상태를 확인한 뒤 다시 생성해 주세요.');
+        setError('연결이 끊겨 보고서를 받지 못했습니다. PDF 생성 기록에서 저장 여부를 먼저 확인한 뒤 다시 시도해 주세요.');
       }
     } finally {
       if (currentRevision === revision.current) {
@@ -149,8 +222,10 @@ export function ExternalReportClient() {
       document.title = `간지사주_깊은사주풀이_${filenameName}`;
       window.print();
     } finally {
-      document.title = previousTitle;
-      setPrinting(false);
+      if (currentRevision === revision.current) {
+        document.title = previousTitle;
+        setPrinting(false);
+      }
     }
   }
 
@@ -264,23 +339,49 @@ export function ExternalReportClient() {
               </select>
             </label>
             {draft.birthLocationCode === 'custom' ? (
-              <div className={styles.customLocation}>
-                <label className={styles.field} htmlFor="external-report-location-label">
-                  지역명
-                  <input id="external-report-location-label" value={draft.birthLocationLabel} required maxLength={80}
-                    placeholder="경기 성남" onChange={(event) => patchDraft({ birthLocationLabel: event.target.value })} />
-                </label>
-                <label className={styles.field} htmlFor="external-report-latitude">
-                  위도
-                  <input id="external-report-latitude" type="number" step="any" min={-90} max={90} required
-                    value={draft.birthLatitude} onChange={(event) => patchDraft({ birthLatitude: event.target.value })} />
-                </label>
-                <label className={styles.field} htmlFor="external-report-longitude">
-                  경도
-                  <input id="external-report-longitude" type="number" step="any" min={-180} max={180} required
-                    value={draft.birthLongitude} onChange={(event) => patchDraft({ birthLongitude: event.target.value })} />
-                </label>
-              </div>
+              <>
+                <div className={styles.customLocation}>
+                  <label className={styles.field} htmlFor="external-report-location-label">
+                    지역명
+                    <input id="external-report-location-label" value={draft.birthLocationLabel} required maxLength={80}
+                      placeholder="경기 성남"
+                      onChange={(event) => patchDraft({ birthLocationLabel: event.target.value, birthLatitude: '', birthLongitude: '' })}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                          event.preventDefault();
+                          if (!locationLoading) void searchLocation();
+                        }
+                      }} />
+                  </label>
+                  <label className={styles.field} htmlFor="external-report-latitude">
+                    위도
+                    <input id="external-report-latitude" type="number" step="any" min={-90} max={90} required
+                      value={draft.birthLatitude} onChange={(event) => patchDraft({ birthLatitude: event.target.value })} />
+                  </label>
+                  <label className={styles.field} htmlFor="external-report-longitude">
+                    경도
+                    <input id="external-report-longitude" type="number" step="any" min={-180} max={180} required
+                      value={draft.birthLongitude} onChange={(event) => patchDraft({ birthLongitude: event.target.value })} />
+                  </label>
+                </div>
+                <div className={styles.actions}>
+                  <button type="button" className={styles.secondary} onClick={searchLocation} disabled={locationLoading}>
+                    {locationLoading ? '좌표 검색 중…' : '좌표 찾기'}
+                  </button>
+                  <p role="status" className={styles.hint}>
+                    {locationMessage || '지역명을 입력하고 좌표 찾기를 눌러 주세요.'}
+                  </p>
+                </div>
+                {locationResults.length > 0 ? (
+                  <div className={styles.actions} aria-label="출생지 검색 결과">
+                    {locationResults.map((item) => (
+                      <button key={item.id} type="button" className={styles.secondary} onClick={() => applyLocation(item)}>
+                        {item.displayName} · 위도 {item.latitude} · 경도 {item.longitude}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </fieldset>
 
@@ -293,7 +394,7 @@ export function ExternalReportClient() {
               {busy ? '생성 취소 · 입력 초기화' : '다음 구매자 · 입력 초기화'}
             </button>
           </div>
-          <p className={styles.hint}>입력 정보와 보고서는 이 화면에서만 유지됩니다. 새로고침하거나 초기화하면 사라집니다.</p>
+          <p className={styles.hint}>완료된 보고서와 사주 입력 정보는 <Link href="/admin/external-report/history" className="underline underline-offset-4">PDF 생성 기록</Link>에 저장됩니다. 입력을 초기화해도 저장된 기록에서 다시 내려받을 수 있습니다.</p>
           {busy ? <p role="status" className={styles.hint}>생애 연도별 풀이와 대운 전환기를 구성하고 있습니다. 완료될 때까지 화면을 유지해 주세요.</p> : null}
         </form>
 
@@ -301,7 +402,7 @@ export function ExternalReportClient() {
           <div className={styles.ready} role="status">
             <div>
               <h3>{result.data.subjectName}님의 보고서가 준비되었습니다</h3>
-              <p>내용과 출생 정보를 확인한 뒤 저장하세요. 인쇄 창에서 ‘PDF로 저장’을 선택하면 파일로 보관할 수 있습니다.</p>
+              <p>생성 기록에 저장했습니다. 내용과 출생 정보를 확인한 뒤 인쇄 창에서 ‘PDF로 저장’을 선택하면 파일로 보관할 수 있습니다.</p>
               {result.generationWarning ? <p className={styles.warning}>{result.generationWarning}</p> : null}
             </div>
             <div className={styles.actions}>
@@ -311,6 +412,7 @@ export function ExternalReportClient() {
               <button type="button" className={styles.secondary} onClick={() => preview.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
                 보고서 미리보기
               </button>
+              <Link href={`/admin/external-report/history/${result.recordId}`} prefetch={false} className="text-sm underline underline-offset-4">저장된 보고서 열기</Link>
             </div>
           </div>
         ) : null}

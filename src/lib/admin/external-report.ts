@@ -9,7 +9,7 @@ import { createInMemoryLifetimeCacheStore } from '@/server/ai/lifetime/lifetime-
 import { createInMemoryLlmTelemetryStore } from '@/server/ai/llm-telemetry';
 
 export type ExternalReportRequest = UnifiedBirthEntryDraft & { name: string };
-export type ParsedExternalReport = { ok: true; input: BirthInput } | { ok: false; error: string };
+export type ParsedExternalReport = { ok: true; input: BirthInput; birth: ExternalReportRequest } | { ok: false; error: string };
 
 /** 원문을 URL·회원 프로필에 저장하지 않는다. 음력 변환도 검증 실패로 안전하게 돌려준다. */
 export function parseExternalReportRequest(payload: unknown): ParsedExternalReport {
@@ -44,7 +44,19 @@ export function parseExternalReportRequest(payload: unknown): ParsedExternalRepo
       hour: payload.unknownBirthTime ? '' : payload.hour,
       minute: payload.unknownBirthTime ? '' : payload.minute,
     }, { requireGender: true });
-    return result.ok ? { ok: true, input: { ...result.input, name } } : result;
+    if (!result.ok) return result;
+    // 양력 변환 전 입력을 명시한 필드만 보관한다. 임의의 요청 키는 저장하지 않는다.
+    const birth: ExternalReportRequest = {
+      name, calendarType: payload.calendarType, timeRule: payload.timeRule,
+      year: payload.year, month: payload.month, day: payload.day,
+      hour: payload.unknownBirthTime ? '' : payload.hour,
+      minute: payload.unknownBirthTime ? '' : payload.minute,
+      unknownBirthTime: payload.unknownBirthTime, gender: payload.gender,
+      birthLocationCode: payload.birthLocationCode.trim(),
+      birthLocationLabel: payload.birthLocationLabel.trim(),
+      birthLatitude: payload.birthLatitude.trim(), birthLongitude: payload.birthLongitude.trim(),
+    };
+    return { ok: true, input: { ...result.input, name }, birth };
   } catch {
     return invalid('해당 달력에 없는 날짜입니다. 생년월일을 다시 확인해 주세요.');
   }
