@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=$(git rev-parse --show-toplevel) && cd \"$repo_root\" && { [ ! -f PROGRESS.html ] || [ PROGRESS.md -nt PROGRESS.html ]; } && ./scripts/with-node22.sh npm run progress:html >/dev/null 2>&1 || true; printf '{}\\n'",
+            "timeout": 60,
+            "statusMessage": "PROGRESS.html 렌더"
+          }
+        ]
+      }
+    ]
+  }
+}

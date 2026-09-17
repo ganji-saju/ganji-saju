@@ -1,5 +1,14 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-17 — Claude Code → Codex 로컬 작업 환경 인계
+
+- **최신 상태 확인**: `git pull --ff-only origin main` 최신. 인계 기준 로컬·원격 main·staging 모두 `0d361e0e`(#830), 마지막 제품 코드 `2467140a`(#827). 같은 저장소 Claude 워크트리 31개 전부 미커밋 변경 없음. #829·#828·#827은 완료이며 옛 머지 대기 지시는 재실행하지 않는다.
+- **공통 파일 유지**: `/Users/kionya/ganji-saju`의 기존 `.env.local`·`.env.development.local`·`node_modules`·lockfile 그대로 사용. Claude 설정 원본·비밀값·다른 프로젝트·전역 Claude 대화/메모리는 변경하거나 가져오지 않았다.
+- **Codex 설정**: `AGENTS.md`에 어휘 정책 우선·최신 인계 확인·Node 22 실행·프로젝트 범위·CodeQL 요약 체크 규칙 추가. `.codex/config.toml`은 기존 Supabase 프로젝트 연결과 로컬 **비활성 상태**를 유지(토큰은 환경변수 이름만). `.codex/hooks.json`에 PROGRESS HTML 종료 훅 이관. 자동 변환기의 AGENTS↔CLAUDE 순환 링크는 적용하지 않고 기존 AGENTS를 보존했다.
+- **로컬 실행 환경**: `scripts/setup-codex.sh`·`scripts/with-node22.sh` 추가. 시스템 Node 24 대신 프로젝트의 무시된 `.codex-run/node22`에 **Node v22.23.2** 준비, 전역 Node 설정 무변경. 기존 의존성 재설치 없음. `.codex/environments/environment.toml`에 새 워크트리 초기 설정과 개발·검증 액션 추가.
+- **검증**: 설정 TOML 검증·실제 `codex mcp get supabase`(disabled)·hooks 기능 로딩 확인. Node 22에서 `typecheck` 0, `npm test`(1718 tests passed / Node runner 191 pass), `test:spec` 55파일·414건 통과. 개발 서버 `127.0.0.1:3000` Ready, 홈·로그인 HTTP 200. 초기 설정 재실행도 추가 설치 없이 통과.
+- **인계 문서**: `docs/codex-handoff.md`. GitHub 실조회 기준 #831(관리자 환불 동시 승인 선점)·#822(의존성 업데이트) OPEN. 기존 PR 머지·DB 변경·배포는 이번 설정에 포함하지 않았다. 새 종료 훅은 Codex `/hooks`에서 최초 신뢰 검토가 필요할 수 있으며 수동 HTML 생성 명령도 공통 지침에 남겼다.
+
 ## 2026-09-15 — 세션: 인계 머지 3건 완료(#829·#828·#827 → staging) + 머지 전 리뷰 반영 + CodeQL 3건 오탐 처리
 
 아래 '세션 인계' 의 머지 대기 3건을 끝냈다. main = staging = `2467140a`(수동 마이그레이션 없음).

@@ -8,6 +8,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+# Claude Code · Codex 공통 작업 환경
+
+- 어휘가 충돌하면 `docs/claude-specs/02-naming-policy.md`를 우선한다(`CLAUDE.md`와 같은 기준).
+- 세션 시작 시 `PROGRESS.md`의 **상단 최신 기록**을 읽고 실제 Git/PR 상태와 대조한다. 오래된 인계 섹션의 머지 대기·수정 지시를 그대로 재실행하지 않는다.
+- Codex 초기 설정은 `./scripts/setup-codex.sh`, 실행·검증은 `./scripts/with-node22.sh npm ...`을 사용한다. `.nvmrc`와 `package.json`의 Node 22를 지키고 전역 Node 설정을 바꾸지 않는다.
+- `.env.local`·`.env.development.local`은 현재 체크아웃의 기존 파일을 사용한다. 값을 출력하거나 커밋하지 않는다. 워크트리는 아래 설정 스크립트로 같은 저장소의 파일만 연결한다.
+- Codex 인계 기준·실행 방법·남은 작업은 `docs/codex-handoff.md`를 참조한다. 작업 기록은 Claude/Codex 모두 이 저장소의 `PROGRESS.md`에 남긴다.
+- PROGRESS를 갱신한 작업은 끝내기 전에 `./scripts/with-node22.sh npm run progress:html`로 로컬 HTML도 갱신한다. Codex Stop 훅은 같은 작업을 보조하며, 훅 최초 신뢰 승인이 필요할 수 있다.
+- 다른 프로젝트 파일·대화·Harness 공유 메모리는 명시적 승인 없이 조회·동기화하지 않는다.
+- PR 머지 전 워크플로 실행 결과뿐 아니라 `./scripts/gh-ganji pr checks <번호>`의 **CodeQL 요약 체크**도 확인한다.
+
 # 워크트리 세션(Orca 포함): 시작 전에 `./scripts/setup-worktree.sh` 1회 실행
 
 워크트리에는 gitignore 파일(.env.local, .claude/settings.local.json)이 없고, Claude 메모리도
