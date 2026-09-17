@@ -1,5 +1,14 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-18 — Codex 환경 설정·생애 PDF 관리자 기능 머지 및 운영 배포
+
+- **사용자 승인**: 커밋·push·머지·배포 요청에 따라 PR #832 → #833 순서로 squash 머지. #832 `465e967e`, #833 `a03643d7`. 관련 없는 #831·#822는 변경하지 않았다.
+- **머지 전 검증**: #832 최종 HEAD `1fa25b16`, #833 최종 HEAD `864a49a5`에서 CI 테스트·타입 검사·빌드, CodeQL 분석 및 별도 **CodeQL 요약 체크**, Playwright E2E, Vercel 미리보기 모두 통과. 독립 리뷰 완료. 새 워크트리 초기화 테스트 4건도 통과.
+- **병합 정합성**: #832 squash 후 공통 CI/작업 기록 충돌은 양쪽 기록·검증 단계를 보존해 해결. 해결 결과 전체 Git tree가 이미 검증한 PDF 코드와 동일함을 확인한 뒤 최종 HEAD 검사를 다시 완료했다. 운영 머지 결과도 최종 검증본과 차이가 없다.
+- **운영 배포**: `a03643d7`의 Vercel production `dpl_DbeqoGaM4igXdNSQXqmy3wTXXhXB` **READY**, GitHub Production deployment 성공 및 `ganjisaju.kr` alias 확인. 운영 홈 HTTP **200**, `/admin/external-report` HTTP **307**(로그인 이동), 미인증 `/api/admin/external-report` POST HTTP **401** 확인. 실제 유료 AI 생성·구매자 발송·운영 데이터 변경은 실행하지 않았다.
+- **관리자 사용 위치**: `https://ganjisaju.kr/admin/external-report` — 최고 관리자(`super_admin`) 로그인 후 운영 도구의 외부 주문 PDF 메뉴에서 사용. 구매자 정보를 입력해 생성 후 인쇄 창에서 PDF로 저장한다. 상세 사용법은 `docs/admin-external-report.md`.
+- **동기화·정리**: 기능 배포 커밋으로 로컬 main·원격 main/staging 동기화 완료. 이번 작업의 임시 `pr832-fix` 워크트리만 정리했고 기존 환경 파일·다른 Claude 워크트리는 보존했다. 이 기록은 별도 문서 커밋으로 push하고 `PROGRESS.html`을 다시 생성한다.
+
 ## 2026-09-17 — PR #832 머지 전 보완: 새 워크트리 의존성 설치 옵션 통일
 
 - **수정**: `scripts/setup-codex.sh`의 신규 의존성 설치에 CI와 같은 `--legacy-peer-deps --engine-strict` 적용. Toss 하위 타입의 TypeScript 4 peer 제약과 프로젝트 TypeScript 5 충돌을 우회하는 기존 CI 정책을 따르면서 Node 엔진 조건은 강제한다. 기존 `node_modules`는 재설치하지 않는다.
