@@ -1,5 +1,14 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-17 — 작업 종료 자동 보고: PROGRESS 기록·커밋 확인 → HTML 생성
+
+- **사용자 요청**: 작업 종료 시 `PROGRESS.md` 기록과 HTML 생성을 자동화. `.codex/hooks.json`에 `UserPromptSubmit`·`Stop`을 연결하고 `scripts/codex-progress-hook.mjs` 추가.
+- **동작**: 작업 시작 시 저장소 상태 해시를 로컬 `.codex-run/progress-hooks/`에 저장 → 종료 시 실제 변경과 새 보고서 섹션 확인 → 기록 누락·기존 기록 훼손·보고서 미커밋이면 Codex에 한 번 보완 요청 → 보고서가 준비되면 HTML 생성. 자동 보완/중복 종료가 무한 반복되지 않으며, 미해결 문제는 명시적으로 경고한다.
+- **범위 보존**: 훅은 직접 stage·commit하거나 대화 전문·비밀값을 저장하지 않는다. 변경 없는 조회·기존 사용자 변경 그대로인 작업·서브에이전트 종료에는 새 기록을 강제하지 않는다. 다른 작업자의 변경은 자신의 성과로 기록하지 않도록 안내한다.
+- **활성화**: Codex 공식 `hooks/list`·`config/batchWrite` API로 이 프로젝트의 보고 훅 두 개만 신뢰 등록. 둘 다 `enabled=true`, `trustStatus=trusted` 재확인. Codex 앱에 수동 “보고서 HTML 생성” 액션도 추가.
+- **검증**: `npm run test:progress-hooks` **17건 통과**(임시 Git 저장소, DB/네트워크 사용 없음). 기록 누락·커밋 후 코드 변경·같은 크기 파일 수정·과거 기록 보존·재진입·렌더 실패·심링크·JSON 출력 검증. 독립 리뷰에서 발견한 Git `assume-unchanged`로 미커밋 보고서가 가려지는 문제는 HEAD 원문 해시 대조로 수정. 실제 저장소에서도 새 기록이 없을 때 보완 요청 확인(시작 스냅샷 약 0.7초).
+- **지속 검증**: `package.json`과 CI에 훅 테스트 명령 추가. `AGENTS.md`·`docs/codex-handoff.md`에 최종 답변 전 사실 기반 기록·본인 변경만 커밋·HTML 생성 규칙 반영. 제품 기능 코드는 변경하지 않았다.
+
 ## 2026-09-17 — Claude Code → Codex 로컬 작업 환경 인계
 
 - **최신 상태 확인**: `git pull --ff-only origin main` 최신. 인계 기준 로컬·원격 main·staging 모두 `0d361e0e`(#830), 마지막 제품 코드 `2467140a`(#827). 같은 저장소 Claude 워크트리 31개 전부 미커밋 변경 없음. #829·#828·#827은 완료이며 옛 머지 대기 지시는 재실행하지 않는다.

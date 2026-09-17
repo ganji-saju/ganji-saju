@@ -15,7 +15,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Codex 초기 설정은 `./scripts/setup-codex.sh`, 실행·검증은 `./scripts/with-node22.sh npm ...`을 사용한다. `.nvmrc`와 `package.json`의 Node 22를 지키고 전역 Node 설정을 바꾸지 않는다.
 - `.env.local`·`.env.development.local`은 현재 체크아웃의 기존 파일을 사용한다. 값을 출력하거나 커밋하지 않는다. 워크트리는 아래 설정 스크립트로 같은 저장소의 파일만 연결한다.
 - Codex 인계 기준·실행 방법·남은 작업은 `docs/codex-handoff.md`를 참조한다. 작업 기록은 Claude/Codex 모두 이 저장소의 `PROGRESS.md`에 남긴다.
-- PROGRESS를 갱신한 작업은 끝내기 전에 `./scripts/with-node22.sh npm run progress:html`로 로컬 HTML도 갱신한다. Codex Stop 훅은 같은 작업을 보조하며, 훅 최초 신뢰 승인이 필요할 수 있다.
+- 파일을 변경한 작업이나 중요한 결정·검증을 마친 작업은 **최종 답변 전에** `PROGRESS.md` 맨 위에 날짜·수행 내용·실제 검증 결과·남은 일을 기록하고, 본인 작업 파일과 함께 커밋한다. 단순 질문·변경 없는 조회는 새 기록을 강제하지 않는다. 비밀값과 대화 전문은 보고서에 넣지 않는다.
+- Codex 자동 보고 훅은 작업 시작 상태와 종료 상태를 비교한다. 새 기록 누락·옛 기록 훼손·기록 미커밋을 발견하면 한 번 보완을 요청하므로, 실제 수행한 작업만 기록하고 본인 변경만 커밋한다. 다른 작업이 동시에 바꾼 파일이나 검토 전용 작업의 변경은 임의로 커밋하지 않는다.
+- 마무리한 `PROGRESS.md`는 Stop 훅이 `PROGRESS.html`로 렌더한다. 자동 보완 뒤에도 해결되지 않으면 경고를 표시하므로 완료했다고 보고하지 않는다. 수동 복구 명령은 `./scripts/with-node22.sh npm run progress:html`이며 HTML은 커밋하지 않는다.
 - 다른 프로젝트 파일·대화·Harness 공유 메모리는 명시적 승인 없이 조회·동기화하지 않는다.
 - PR 머지 전 워크플로 실행 결과뿐 아니라 `./scripts/gh-ganji pr checks <번호>`의 **CodeQL 요약 체크**도 확인한다.
 

@@ -1,13 +1,26 @@
 {
+  "description": "작업 시작 기준점 저장 → PROGRESS.md 기록·커밋 확인 → HTML 자동 생성",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=$(git rev-parse --show-toplevel) && exec \"$repo_root/scripts/with-node22.sh\" node \"$repo_root/scripts/codex-progress-hook.mjs\"",
+            "timeout": 60,
+            "statusMessage": "작업 보고 기준점 저장"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "repo_root=$(git rev-parse --show-toplevel) && cd \"$repo_root\" && { [ ! -f PROGRESS.html ] || [ PROGRESS.md -nt PROGRESS.html ]; } && ./scripts/with-node22.sh npm run progress:html >/dev/null 2>&1 || true; printf '{}\\n'",
+            "command": "repo_root=$(git rev-parse --show-toplevel) && exec \"$repo_root/scripts/with-node22.sh\" node \"$repo_root/scripts/codex-progress-hook.mjs\"",
             "timeout": 60,
-            "statusMessage": "PROGRESS.html 렌더"
+            "statusMessage": "PROGRESS.md 기록 확인 및 HTML 생성"
           }
         ]
       }

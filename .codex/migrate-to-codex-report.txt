@@ -4,7 +4,7 @@ Scope: ganji-saju only; no global Claude settings or other-project history impor
 
 Added: AGENTS.md — preserved existing shared rules and incorporated naming policy and Codex startup/handoff workflow. Rejected converter's circular AGENTS.md -> CLAUDE.md -> AGENTS.md link.
 Added: .codex/config.toml — Supabase URL scoped to the existing project; environment-token reference only; enabled=false preserved from Claude local settings; current features.hooks used.
-Check before using: .codex/hooks.json — migrated PROGRESS HTML Stop hook; root-aware path, Node22 wrapper, JSON stdout. First-use hook trust is managed by Codex /hooks; manual render remains available.
+Added: .codex/hooks.json — UserPromptSubmit baseline and Stop report/commit guard plus HTML generation; validated with 17 temp-repository tests. Both project hooks trusted/enabled through supported Codex API on 2026-09-17. Changed definitions or another machine require their own trust review; manual render remains available.
 Added: .codex/environments/environment.toml — verified installed desktop schema; setup and development/test actions.
 Added: scripts/setup-codex.sh, scripts/with-node22.sh — project-local Node22; existing root dependencies reused.
 Added: docs/codex-handoff.md — verified Git/PR state and continuation commands.

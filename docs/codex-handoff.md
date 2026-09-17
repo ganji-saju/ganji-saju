@@ -36,9 +36,22 @@ Codex 앱의 로컬 환경에는 같은 명령의 **개발 서버·타입 검사
 - GitHub 작업은 `./scripts/gh-ganji`로 `ganji-saju` 계정을 사용한다. 다른 프로젝트의 전역 활성 계정을 바꾸지 않는다.
 - `.mcp.json`의 Supabase 연결을 프로젝트 `.codex/config.toml`에 옮겼다. `.claude/settings.local.json`에 있던 **비활성화 상태**를 유지한다. 인증은 `SUPABASE_ACCESS_TOKEN` 환경변수 참조이며 값은 저장하지 않는다.
 - 전역 Apify MCP는 이번 인계 전에 별도로 등록·로그인한 설정을 그대로 사용한다.
-- `.claude/settings.local.json`의 작업 종료 시 PROGRESS HTML 생성 기능을 `.codex/hooks.json`에 옮겼다. 저장소 하위 폴더에서도 루트를 찾아 실행하며 Node 22 실행기를 사용한다.
-- 새 Codex 훅은 `/hooks`에서 현재 정의를 최초 검토·신뢰해야 자동 실행될 수 있다. 승인 전에도 `./scripts/with-node22.sh npm run progress:html`로 동일한 로컬 보고서를 만든다. [Codex 훅 문서](https://learn.chatgpt.com/docs/hooks)
+- `.codex/hooks.json`의 `UserPromptSubmit`·`Stop` 훅이 작업 기록과 HTML 생성을 연결한다. `scripts/codex-progress-hook.mjs`는 저장소 하위 폴더에서도 루트를 찾아 실행하며 Node 22 실행기를 사용한다.
+- 2026-09-17 이 컴퓨터의 보고 훅 두 개를 Codex 공식 설정 API로 신뢰 등록하고 `enabled=true`·`trustStatus=trusted`를 확인했다. 다른 컴퓨터나 변경된 정의는 `/hooks`에서 신뢰 상태를 확인한다. 수동 HTML 생성은 `./scripts/with-node22.sh npm run progress:html`이다. [Codex 훅 문서](https://learn.chatgpt.com/docs/hooks)
 - 프로젝트 전용 Claude skills·commands·agents는 없었다. 전역 Claude 설정과 다른 프로젝트의 대화·메모리는 이번 인계 범위에 포함하지 않는다.
+
+## 자동 작업 보고
+
+1. 프롬프트가 시작되면 현재 커밋·파일 변경 상태·PROGRESS 해시를 `.codex-run/progress-hooks/`에 저장한다. 비밀값·대화 전문·파일 본문은 상태 파일에 저장하지 않는다.
+2. Codex는 실제 작업 내용, 실행한 검증 결과, 남은 일을 `PROGRESS.md` 상단에 기록하고 본인 작업과 함께 커밋한다.
+3. 종료 시 훅이 작업 변경과 보고서를 대조한다. 기록 누락, 기존 기록 삭제/변경, 미커밋 보고서는 한 번 자동 보완을 요청한다. 자동 보완 프롬프트에서는 처음 작업 기준점을 유지한다.
+4. 보고서가 준비되면 HTML을 생성한다. 렌더 실패도 보완 대상이며, 재시도 후 해결되지 않은 문제는 경고로 표시해 무한 반복을 막는다.
+
+기존 사용자의 변경을 그대로 둔 조회, 변경 없는 질문, 서브에이전트 종료에는 새 기록을 강제하지 않는다. 중요한 판단처럼 Git 변경이 없는 작업은 Codex가 공통 지침에 따라 기록한다. 훅은 `git add`·`git commit`을 실행하지 않으며, 같은 체크아웃에서 동시에 생긴 변경의 작성자를 판별할 수 없으므로 보고·커밋 범위는 Codex가 확인한다.
+
+훅 정의를 바꾸면 Codex가 새 정의의 신뢰 검토를 요구할 수 있다. 최초 설정 전부터 진행 중이던 작업은 기준점이 없으므로 HTML만 생성하며, 다음 프롬프트부터 변경 감지가 시작된다.
+
+검증 명령: `./scripts/with-node22.sh npm run test:progress-hooks`. 임시 Git 저장소에서 기록 누락·미커밋·기존 기록 보존·자동 재진입·HTML 실패를 확인하고 CI에서도 실행한다.
 
 ## 이어서 볼 작업
 

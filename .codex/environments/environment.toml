@@ -23,3 +23,8 @@ command = "./scripts/with-node22.sh npm test"
 name = "스펙 테스트"
 icon = "test"
 command = "./scripts/with-node22.sh npm run test:spec"
+
+[[actions]]
+name = "보고서 HTML 생성"
+icon = "tool"
+command = "./scripts/with-node22.sh npm run progress:html"

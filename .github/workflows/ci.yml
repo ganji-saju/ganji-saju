@@ -43,6 +43,9 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      - name: Verify automatic progress reporting hooks
+        run: npm run test:progress-hooks
+
       - name: Audit dead anchors (PR #183 회귀 차단)
         run: npm run audit:dead-anchors:strict
 
