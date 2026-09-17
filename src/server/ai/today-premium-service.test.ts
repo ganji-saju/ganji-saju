@@ -79,13 +79,14 @@ function fixtureFreeAndPremium() {
   return { free, premium };
 }
 
-// step 3 — 프롬프트: naming-policy 가드(한자/명리어/"기운" 0) + 입력 grounding 포함.
+// step 3 — 프롬프트: 본문 한자 금지·한글 원어와 설명 + 입력 grounding 포함.
 test('buildTodayPremiumPrompt: naming-policy 가드 + grounding 입력 포함', () => {
   const { instructions, input } = buildTodayPremiumPrompt(SAMPLE_INPUT);
-  // 한자·명리어 금지 지시가 명시돼야 한다.
+  // 한자 차단과 원어 보존 지시가 함께 있어야 한다.
   assert.match(instructions, /한자/);
-  assert.match(instructions, /기운/);
-  assert.match(instructions, /일진|용신|격국/);
+  assert.match(instructions, /한글 원어를 유지/);
+  assert.match(instructions, /처음 등장할 때 짧은 일상어 설명/);
+  assert.match(instructions, /정관\(책임과 규범의 별\)/);
   // grounding(고민·점수·행동)이 사용자 입력에 흘러야 한다.
   assert.ok(input.includes('재물·지출'), '고민 주제 누락');
   assert.ok(input.includes('오전에 가계부를 정리하기'), '추천 행동 누락');
@@ -143,12 +144,16 @@ test('generateTodayPremiumInterpretation: 출력 한자 누출 → null (하드 
   assert.equal(out, null);
 });
 
-// step 3 — naming-policy 하드 가드: 명리어("기운"/"격국") 누출 시 null.
-test('generateTodayPremiumInterpretation: 출력 명리어 누출 → null (하드 가드)', async () => {
-  const generate = async (_req: AiTextRequest): Promise<AiTextResult> =>
-    aiResult({ source: 'openai', text: '오늘은 기운이 강해 격국이 살아나는 하루입니다.' });
-  const out = await generateTodayPremiumInterpretation(SAMPLE_INPUT, { env: ENV_ON, generate });
-  assert.equal(out, null);
+test('generateTodayPremiumInterpretation: 설명을 붙인 한글 원어 근거는 보존한다', async () => {
+  for (const text of [
+    '정관(책임과 규범의 별)을 기준으로 오늘 맡은 일을 살펴보세요.',
+    '일진(해당 날짜의 간지)과 원국을 함께 보며 확인할 조건을 정해보세요.',
+    '화 기운(말과 표현)을 살펴 오늘 전할 말을 짧게 정리해보세요.',
+  ]) {
+    const generate = async (_req: AiTextRequest): Promise<AiTextResult> => aiResult({ source: 'openai', text });
+    const out = await generateTodayPremiumInterpretation(SAMPLE_INPUT, { env: ENV_ON, generate });
+    assert.equal(out, text);
+  }
 });
 
 // step 4 핵심 로직 — attach: 성공 시 premium.aiNarrative 주입 + 매핑 + 기존 필드 보존.
@@ -207,4 +212,21 @@ test('today_premium 은 유효한 LlmFeature 로 계측된다', () => {
   });
   assert.equal(record.feature, 'today_premium');
   assert.ok(record.costUsd > 0, '단가 계산이 적용되어야 한다');
+});
+
+
+test('today premium maps the same dated personal evidence and rejects deterministic predictions', async () => {
+  const { free, premium } = fixtureFreeAndPremium();
+  const dto = toTodayPremiumInterpretationInput(free, premium);
+  assert.equal(dto.readingDate, free.dateKey);
+  assert.equal(dto.reasoning, premium.causalNarrative!.body);
+  assert.deepEqual(dto.dailyEvidence, [...new Set(free.scores.map((score) => score.reading!.evidence))]);
+  const prompt = buildTodayPremiumPrompt(dto);
+  assert.match(prompt.instructions, /질문의 답.*근거.*생활 장면.*선택 기준/);
+  assert.ok(prompt.input.includes(free.dateKey));
+  assert.ok(prompt.input.includes(dto.reasoning!));
+  for (const text of ['오늘은 반드시 수익이 납니다.', '오늘은 무조건 성공합니다.', '성공 확률은 100%입니다.']) {
+    const out = await generateTodayPremiumInterpretation(SAMPLE_INPUT, { env: ENV_ON, generate: async () => aiResult({ source: 'openai', text }) });
+    assert.equal(out, null);
+  }
 });

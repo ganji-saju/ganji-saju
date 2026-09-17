@@ -131,7 +131,7 @@ export function TodayFortuneExperience({
       const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
       for (let i = 0; i < window.sessionStorage.length; i += 1) {
         const key = window.sessionStorage.key(i);
-        if (!key || !key.startsWith('moonlight:today-fortune:result:v3:')) continue;
+        if (!key || !key.startsWith('moonlight:today-fortune:result:v4:')) continue;
         const raw = window.sessionStorage.getItem(key);
         if (!raw) continue;
         const parsed = JSON.parse(raw) as {

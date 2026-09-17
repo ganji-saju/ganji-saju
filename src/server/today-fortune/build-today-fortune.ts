@@ -36,7 +36,7 @@ import {
   rankJijiRelations,
   type CausalInput,
 } from '@/lib/today-fortune/causal-narrative';
-import { calculateSipsung } from '@/lib/today-fortune/iljin-rules';
+import { calculateSipsung, isYukhap, isBranchChung, isBranchHyung, isBranchHae, isBranchPa } from '@/lib/today-fortune/iljin-rules';
 // 2026-05-16 PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬.
 import { reorderTodayScoresBySituation } from '@/lib/today-fortune/situation-score-priority';
 // 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화 helper.
@@ -676,6 +676,7 @@ interface PublicTodayProfile {
   // 2026-08-26 — 무료 본문 개인화 개편: 오늘 천간↔내 일간 관계(10종) + 오늘 지지↔내 일지
   //   관계(충/합/형/해/파)로 사람마다 갈라지는 구체 조언. 산출 불가 시 null(레거시 조립 폴백).
   personalToday: {
+    relation: PersonalDayRelation;
     opening: string;
     focus: string;
     doOne: string;
@@ -1315,7 +1316,7 @@ function buildSignatureSeed(
     ? Math.round(Math.abs(input.birthLocation.latitude * 10) + Math.abs(input.birthLocation.longitude * 10))
     : 0;
   const ganziSeed = Array.from(
-    `${sajuData.pillars.day.ganzi}${sajuData.pillars.hour?.ganzi ?? ''}`
+    `${sajuData.pillars.day.ganzi}${sajuData.input.hourKnown ? sajuData.pillars.hour?.ganzi ?? '' : ''}`
   ).reduce((sum, char) => sum + char.charCodeAt(0), 0);
   const calendarSeed = options.calendarType === 'lunar' ? 19 : 0;
   const timeRuleSeed =
@@ -1388,24 +1389,9 @@ type PersonalDayRelation =
   | '비견' | '겁재' | '식신' | '상관' | '편재'
   | '정재' | '편관' | '정관' | '편인' | '정인';
 
-const PERSONAL_YANG_STEMS = new Set(['甲', '丙', '戊', '庚', '壬']);
-const PERSONAL_STEM_ELEMENTS: Record<string, Element> = {
-  甲: '목', 乙: '목', 丙: '화', 丁: '화', 戊: '토',
-  己: '토', 庚: '금', 辛: '금', 壬: '수', 癸: '수',
-};
-const PERSONAL_GENERATES: Record<Element, Element> = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
-const PERSONAL_CONTROLS: Record<Element, Element> = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };
-
 function resolvePersonalDayRelation(myStem: string, todayStem: string): PersonalDayRelation | null {
-  const myEl = PERSONAL_STEM_ELEMENTS[myStem];
-  const dayEl = PERSONAL_STEM_ELEMENTS[todayStem];
-  if (!myEl || !dayEl) return null;
-  const samePolarity = PERSONAL_YANG_STEMS.has(myStem) === PERSONAL_YANG_STEMS.has(todayStem);
-  if (myEl === dayEl) return samePolarity ? '비견' : '겁재';
-  if (PERSONAL_GENERATES[myEl] === dayEl) return samePolarity ? '식신' : '상관';
-  if (PERSONAL_CONTROLS[myEl] === dayEl) return samePolarity ? '편재' : '정재';
-  if (PERSONAL_CONTROLS[dayEl] === myEl) return samePolarity ? '편관' : '정관';
-  return samePolarity ? '편인' : '정인';
+  if (!Object.hasOwn(STEM_ELEMENT_MAP, myStem) || !Object.hasOwn(STEM_ELEMENT_MAP, todayStem)) return null;
+  return calculateSipsung(myStem as IljinStem, todayStem as IljinStem);
 }
 
 // 명리 용어 없이, 그 관계의 하루가 실제로 어떻게 느껴지는지로 옮긴 카피.
@@ -1419,7 +1405,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 내 페이스가 또렷해지고, 비슷한 처지의 사람이 눈에 들어오는 날입니다.',
       '오늘은 남의 눈치보다 내 기준이 또렷해지는 날입니다.',
     ],
-    focus: '혼자 끙끙대던 일을 동료나 친구와 나누면 생각보다 쉽게 정리됩니다.',
+    focus: '내 기준을 세우되 혼자 막힌 부분은 함께 확인할 사람에게 물어보세요.',
     doOne: '오늘 하나만 한다면, 미뤄둔 일 중 혼자 시작할 수 있는 것 하나를 먼저 여세요.',
     caution: '다만 고집이 세지기 쉬운 날이라, 다른 의견도 한 번은 끝까지 들어보세요.',
   },
@@ -1429,7 +1415,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 주변과 비교하는 마음이 커지기 쉬운 날입니다.',
     ],
     focus:
-      '누가 뭘 샀다더라, 어디에 넣었다더라 하는 말에 흔들리기 쉬우니 큰돈 결정은 하루 미루는 편이 좋습니다.',
+      '주변과 비교하게 된다면 내게 필요한 것과 남을 따라 하고 싶은 것을 먼저 나눠보세요.',
     doOne: '오늘 하나만 한다면, 저녁에 오늘 나간 돈을 한 번만 적어보세요.',
     caution: '내기나 즉흥 약속은 오늘은 가볍게 웃고 넘기는 편이 낫습니다.',
   },
@@ -1439,7 +1425,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 만들고 표현하는 일에 힘이 실리는 날입니다.',
     ],
     focus:
-      '미뤄둔 제안, 하고 싶던 말, 써두고 싶던 글이 있다면 오늘 꺼내기 좋습니다. 식사 자리나 가벼운 대화에서 일이 풀리기도 해요.',
+      '머릿속에만 있던 생각을 짧은 글이나 작은 결과물 하나로 옮겨보세요.',
     doOne: '오늘 하나만 한다면, 말하려다 삼켰던 것 하나를 편한 자리에서 꺼내보세요.',
     caution: '다만 편한 분위기에 과식이나 충동구매가 따라오기 쉬우니 마무리는 가볍게 하세요.',
   },
@@ -1449,17 +1435,17 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 재치가 살아나는 대신 말끝이 날카로워지기 쉬운 날입니다.',
     ],
     focus:
-      '아이디어와 순발력은 좋은데, 답답한 규칙이나 윗사람 얘기가 말로 튀어나오기 쉽습니다. 보내기 전에 한 번 읽어보는 것만으로 오늘 문제의 절반이 줄어요.',
+      '고치고 싶은 점이 눈에 들어온다면 문제 하나와 실행할 대안 하나를 함께 정리해보세요.',
     doOne: '오늘 하나만 한다면, 중요한 답장은 쓰고 나서 십 분 뒤에 보내세요.',
     caution: '옳은 말이라도 오늘은 순서와 표현을 골라서 하는 편이 좋습니다.',
   },
   편재: {
     opening: [
       '오늘은 기회와 돈 얘기가 밖에서 굴러 들어오기 쉬운 날입니다.',
-      '오늘은 움직인 만큼 소득이 생기는, 발이 바쁜 날입니다.',
+      '오늘은 새로 접한 선택지의 조건을 비교해볼 날입니다.',
     ],
     focus:
-      '사람을 만나고 자리를 옮길수록 정보와 기회가 붙습니다. 다만 들어오는 만큼 나가기도 쉬운 날이라, 즉흥 결제는 장바구니에 하루 재워두세요.',
+      '새로운 제안이나 정보가 있다면 전부 잡기보다 오늘 확인할 하나를 골라보세요.',
     doOne: '오늘 하나만 한다면, 오늘 들어온 제안이나 정보 중 하나를 메모로 남겨두세요.',
     caution: '좋아 보이는 얘기일수록 숫자를 한 번 확인하고 움직이세요.',
   },
@@ -1469,7 +1455,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 화려한 것보다 실속이 어울리는 날입니다.',
     ],
     focus:
-      '가계부, 정기결제, 미뤄둔 정산처럼 숫자를 만지는 일이 잘 풀립니다. 약속과 시간도 평소보다 정확하게 맞아 들어가는 흐름이에요.',
+      '이미 약속한 일과 사용할 자원을 정리하고 빠진 부분 하나를 마무리해보세요.',
     doOne: '오늘 하나만 한다면, 안 쓰는 자동이체나 구독 하나를 정리해보세요.',
     caution: '다만 너무 아끼려다 사람에게 박해 보일 수 있으니, 밥값 한 번은 기분 좋게 내세요.',
   },
@@ -1479,7 +1465,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 갑자기 일이 몰리며 어깨가 무거워지기 쉬운 날입니다.',
     ],
     focus:
-      '예정에 없던 일이 끼어들 수 있습니다. 전부 받아내려 하지 말고 순서를 정해 하나씩 쳐내면 오히려 인정받는 날이 됩니다.',
+      '급한 일과 부담스러운 일이 겹친다면 혼자 다 맡기 전에 순서와 도움받을 부분을 정해보세요.',
     doOne: '오늘 하나만 한다면, 쌓인 일을 급한 것 세 개만 남기고 나머지는 내일로 미루세요.',
     caution: '몸이 먼저 지치는 날이라, 무리한 저녁 약속은 줄이는 편이 좋습니다.',
   },
@@ -1489,7 +1475,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 공적인 일, 서류, 윗사람과의 자리가 잘 풀리는 날입니다.',
     ],
     focus:
-      '미뤄둔 신청서·계약·보고처럼 격식이 필요한 일을 오늘 처리하면 순조롭습니다. 단정한 차림과 정확한 시간이 평소보다 크게 작용해요.',
+      '역할이나 순서가 정해진 일에서 내가 책임질 부분과 완료 기준을 먼저 확인해보세요.',
     doOne: '오늘 하나만 한다면, 미뤄둔 공적인 처리 하나(서류·예약·신고)를 끝내세요.',
     caution: '다만 원칙만 앞세우면 딱딱해 보일 수 있으니 말투는 부드럽게 가져가세요.',
   },
@@ -1499,7 +1485,7 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 감이 예민해지는 대신 몸이 처지기 쉬운 날입니다.',
     ],
     focus:
-      '결정을 미루고 정보를 더 모으고 싶어지는 날인데, 오늘은 그게 맞습니다. 다만 걱정을 키우는 검색은 삼십 분에서 끊으세요.',
+      '생각이 길어진다면 이미 아는 사실과 아직 확인하지 않은 추측을 나눠 적어보세요.',
     doOne: '오늘 하나만 한다면, 머릿속에 맴도는 걱정 하나를 종이에 적어 내려놓으세요.',
     caution: '끼니를 거르기 쉬운 날이라 식사만은 챙기세요.',
   },
@@ -1509,41 +1495,30 @@ const PERSONAL_DAY_COPY: Record<
       '오늘은 어른이나 경험자의 말이 힘이 되는 날입니다.',
     ],
     focus:
-      '혼자 애쓰기보다 물어보면 빨리 풀립니다. 문서·공부·자격처럼 차곡차곡 쌓아두는 일에도 좋은 흐름이에요.',
+      '막힌 부분을 혼자 반복하기보다 믿을 만한 사람에게 구체적으로 묻고 직접 적용해보세요.',
     doOne: '오늘 하나만 한다면, 막혀 있던 일 하나를 아는 사람에게 물어보세요.',
     caution: '받기만 하는 날이 되지 않게, 고맙다는 표현은 바로바로 하세요.',
   },
 };
 
 // 오늘 지지↔내 일지 관계 — 부딪히거나 맞물리는 날의 실전 노트. 해당 없으면 null.
-const PERSONAL_BRANCH_CLASHES = new Set(['子午', '丑未', '寅申', '卯酉', '辰戌', '巳亥']);
-const PERSONAL_BRANCH_HARMONIES = new Set(['子丑', '寅亥', '卯戌', '辰酉', '巳申', '午未']);
-const PERSONAL_BRANCH_HARMS = new Set(['子未', '丑午', '寅巳', '卯辰', '申亥', '酉戌']);
-const PERSONAL_BRANCH_BREAKS = new Set(['子酉', '卯午', '辰丑', '未戌', '寅亥', '巳申']);
-const PERSONAL_BRANCH_PUNISH = new Set(['寅巳', '巳申', '寅申', '丑戌', '戌未', '丑未', '子卯']);
-
-function personalBranchPair(a: string, b: string): string {
-  return [a, b].sort().join('');
-}
-
 function resolvePersonalBranchNote(myDayBranch: string | null, todayBranch: string): string | null {
   if (!myDayBranch || !todayBranch) return null;
-  const pair = personalBranchPair(myDayBranch, todayBranch);
-  // 합이 충돌 표보다 우선 — 寅亥·巳申은 합이자 파(破)라, 부드러운 쪽을 먼저 알려준다.
-  if (PERSONAL_BRANCH_HARMONIES.has(pair)) {
-    return '오늘은 손발이 잘 맞는 사람이 나타나는 날이라, 부탁과 협업이 평소보다 부드럽게 통합니다.';
+  // 점수 엔진과 같은 규칙을 사용한다. 문자 정렬로 짝을 만들면 子丑·子午 등이 누락된다.
+  if (isYukhap(myDayBranch, todayBranch)) {
+    return '태어난 날과 오늘의 지지가 맞물리는 관계여서, 함께할 때도 각자 맡을 부분을 확인하는 데 초점을 둡니다.';
   }
-  if (PERSONAL_BRANCH_CLASHES.has(pair)) {
-    return '다만 오늘은 정해둔 일정이 한 번 뒤집히기 쉬운 날이라, 중요한 약속은 미리 한 번 확인해두면 흔들림이 적습니다.';
+  if (isBranchChung(myDayBranch, todayBranch)) {
+    return '태어난 날과 오늘의 지지가 충돌하는 관계여서, 변화가 생긴다고 단정하기보다 일정과 기대가 다른 부분을 확인합니다.';
   }
-  if (PERSONAL_BRANCH_PUNISH.has(pair)) {
-    return '가까운 사이일수록 사소한 신경전이 생기기 쉬운 날이라, 농담과 지적은 평소의 반으로 줄이면 편합니다.';
+  if (isBranchHyung(myDayBranch, todayBranch)) {
+    return '태어난 날과 오늘의 지지에서 조율이 필요한 관계를 읽어, 가까운 사람에게 익숙하게 요구하던 방식을 살펴봅니다.';
   }
-  if (PERSONAL_BRANCH_HARMS.has(pair)) {
-    return '사소한 어긋남이 생기기 쉬운 날이라, 시간과 장소 같은 기본 확인을 한 번 더 하면 하루가 순해집니다.';
+  if (isBranchHae(myDayBranch, todayBranch)) {
+    return '태어난 날과 오늘의 지지에서 어긋남을 살피는 관계를 읽어, 말하지 않은 기대를 확인하는 데 초점을 둡니다.';
   }
-  if (PERSONAL_BRANCH_BREAKS.has(pair)) {
-    return '해둔 약속이나 계획에 잔금이 가기 쉬운 날이라, 오늘은 새 판을 벌리기보다 기존 것을 지키는 쪽이 낫습니다.';
+  if (isBranchPa(myDayBranch, todayBranch)) {
+    return '태어난 날과 오늘의 지지에서 기존 약속을 점검하는 관계를 읽어, 바뀐 조건이 있는지 살펴봅니다.';
   }
   return null;
 }
@@ -1560,6 +1535,7 @@ function buildPersonalToday(
   const copy = PERSONAL_DAY_COPY[relation];
   const myDayBranch = sajuData.pillars?.day?.branch ?? null;
   return {
+    relation,
     opening: pickVariant([...copy.opening], signatureSeed, 3),
     focus: copy.focus,
     doOne: copy.doOne,
@@ -1584,7 +1560,7 @@ function buildPublicTodayProfile(
   const supportCopy = PUBLIC_ELEMENT_COPY[supportElement];
   const dominantCopy = PUBLIC_ELEMENT_COPY[dominantElement];
   const weakestCopy = PUBLIC_ELEMENT_COPY[weakestElement];
-  const hourBranch = sajuData.pillars.hour?.branch ?? null;
+  const hourBranch = sajuData.input.hourKnown ? sajuData.pillars.hour?.branch ?? null : null;
   const hourCopy = hourBranch
     ? PUBLIC_TIME_BRANCH_COPY[hourBranch]
     : {
@@ -1666,6 +1642,182 @@ function buildPublicTodayHeadline(
       );
   }
 }
+
+// 같은 점수라도 일간과 오늘 천간의 관계가 다르면 답의 초점이 달라진다.
+// 분야 문구는 날짜 시드로 뽑지 않고 계산된 십성에 연결한다.
+const DAILY_TOPIC_ANSWERS: Record<PersonalDayRelation, Record<Exclude<TodayScoreItem['key'], 'overall'>, string>> = {
+  비견: {
+    career: '다른 사람의 속도에 맞추기 전에 내가 끝낼 범위부터 정해보세요.',
+    wealth: '함께 쓰는 돈과 내가 쓸 돈을 나눠 두면 내 기준을 지키기 쉽습니다.',
+    love: '상대에게 맞추기만 하기보다 내가 편한 연락 방식도 함께 이야기해보세요.',
+    relationship: '의견이 같아야 친한 것은 아닙니다. 다른 의견을 들은 뒤 내 입장을 덧붙여보세요.',
+    condition: '남의 활동량보다 오늘 내가 유지할 수 있는 속도를 기준으로 삼아보세요.',
+  },
+  겁재: {
+    career: '경쟁이 신경 쓰인다면 더 많은 일을 맡기보다 내 역할을 분명히 해보세요.',
+    wealth: '주변의 구매 이야기에 마음이 움직인다면 필요한 지출인지부터 구분해보세요.',
+    love: '다른 관계와 비교하기보다 서로 기대하는 연락 빈도를 확인해보세요.',
+    relationship: '호의로 맡은 일이 부담이 되기 전에 도울 수 있는 범위를 알려주세요.',
+    condition: '모임 분위기에 맞추느라 일정을 늘리기보다 빠져도 되는 약속을 골라보세요.',
+  },
+  식신: {
+    career: '아이디어를 더 모으기보다 작더라도 보여줄 수 있는 결과 하나를 만들어보세요.',
+    wealth: '만들고 즐기는 데 쓸 돈은 먼저 한도를 정하면 부담 없이 선택하기 쉽습니다.',
+    love: '마음을 설명할 말이 막힌다면 함께 즐길 작은 활동을 제안해보세요.',
+    relationship: '고마웠던 행동을 구체적으로 말하면 막연한 칭찬보다 뜻을 전하기 쉽습니다.',
+    condition: '몰아서 해내기보다 식사와 쉬는 시간을 포함해 일정한 리듬을 만들어보세요.',
+  },
+  상관: {
+    career: '불편한 방식을 지적할 때 바꿔볼 대안 하나를 함께 제시해보세요.',
+    wealth: '새로운 상품 설명이 매력적으로 들리면 실제 사용할 기능과 추가 비용을 나눠보세요.',
+    love: '솔직한 표현을 하고 싶다면 평가보다 내가 바라는 행동을 한 가지 말해보세요.',
+    relationship: '맞는 말을 하는 것과 뜻을 전하는 것은 다릅니다. 지적을 요청 문장으로 바꿔보세요.',
+    condition: '생각과 말이 이어져 쉬기 어렵다면 화면을 끄고 잠시 조용한 시간을 두세요.',
+  },
+  편재: {
+    career: '새 제안이 있다면 여러 일을 벌이기 전에 오늘 확인할 가능성 하나를 골라보세요.',
+    wealth: '선택지가 늘어날 때는 할인 폭보다 총금액과 취소 조건을 먼저 비교해보세요.',
+    love: '새로운 대화를 시작하고 싶다면 짧게 제안한 뒤 상대가 선택할 여지를 남겨주세요.',
+    relationship: '여러 사람을 챙기려 할 때는 지킬 수 있는 약속의 수부터 정해보세요.',
+    condition: '이동이나 만남이 많다면 일정 사이의 빈 시간을 먼저 확보해보세요.',
+  },
+  정재: {
+    career: '새 일을 더하기보다 진행 중인 일의 빠진 부분과 마감 조건을 확인해보세요.',
+    wealth: '오늘 쓸 돈과 이미 약속된 돈을 나눠 적고, 중복되거나 필요 없어진 지출을 살펴보세요.',
+    love: '큰 표현보다 약속한 시간과 작은 부탁을 지키는 방식으로 마음을 전해보세요.',
+    relationship: '늘 내가 챙기던 일이 있다면 서로 맡기로 한 부분이 맞는지 확인해보세요.',
+    condition: '새로운 관리법을 늘리기보다 평소 식사와 휴식 시간을 지킬 수 있게 조정해보세요.',
+  },
+  편관: {
+    career: '급한 요청이 들어오면 마감과 도움받을 사람부터 확인하고 맡을 범위를 정해보세요.',
+    wealth: '지금 결정하라는 권유가 있어도 금액과 조건을 확인할 시간을 확보하세요.',
+    love: '답을 빨리 받고 싶어도 상대의 사정을 확인한 뒤 대화 시간을 정해보세요.',
+    relationship: '다른 사람의 부탁이 부담스럽다면 가능 여부를 먼저 말하고 방법을 조율해보세요.',
+    condition: '해야 할 일이 몰린다면 일정을 줄일 기준과 쉴 시간을 먼저 정해보세요.',
+  },
+  정관: {
+    career: '맡은 일의 기준이 불분명하다면 완료로 보는 조건을 짧게 확인해보세요.',
+    wealth: '돈이 오가는 약속은 금액뿐 아니라 지급 날짜와 서로의 책임을 확인해보세요.',
+    love: '연락에 대한 기대가 다르다면 당연하게 여기던 약속부터 맞춰보세요.',
+    relationship: '각자의 책임이 분명할수록 편한 관계도 있습니다. 부탁의 주체와 범위를 나눠보세요.',
+    condition: '계획을 모두 지키는 것보다 실제 상태에 맞춰 강도를 조절하는 기준을 세워보세요.',
+  },
+  편인: {
+    career: '자료를 더 찾고 싶다면 결정에 꼭 필요한 질문 하나로 탐색 범위를 좁혀보세요.',
+    wealth: '정보가 서로 다르다면 추천 후기를 더 읽기보다 가격과 조건의 원문을 확인해보세요.',
+    love: '짧은 답장에 여러 뜻을 붙이기보다 궁금한 부분을 직접 확인해보세요.',
+    relationship: '상대의 의도를 추측할 때는 들은 말과 내가 해석한 뜻을 구분해보세요.',
+    condition: '생각이 오래 이어진다면 더 검색하기보다 기록한 뒤 잠시 다른 활동으로 옮겨보세요.',
+  },
+  정인: {
+    career: '혼자 막혀 있는 부분은 이미 해본 사람에게 구체적인 질문 하나를 건네보세요.',
+    wealth: '익숙하지 않은 결제라면 설명을 받은 뒤 내가 이해한 조건이 맞는지 확인해보세요.',
+    love: '배려를 받고 싶다면 알아주기를 기다리기보다 필요한 도움을 작게 요청해보세요.',
+    relationship: '도움을 받았다면 고마운 점을 전하고 다음에 내가 맡을 수 있는 부분도 생각해보세요.',
+    condition: '회복에 도움이 됐던 생활 습관을 하나 되살리고 필요한 지원을 요청해보세요.',
+  },
+};
+
+const DAILY_TOPIC_QUESTIONS: Record<TodayScoreItem['key'], { question: string; example: string; choice: string }> = {
+  overall: { question: '오늘 무엇부터 하면 좋을까요?', example: '할 일이 여러 개라 시작을 미루고 있다면, 오늘 안에 확인할 수 있는 일 하나를 골라보세요.', choice: '저녁에는 얼마나 많이 했는지보다 선택한 한 가지를 실제로 해봤는지 돌아보세요.' },
+  career: { question: '오늘 맡은 일을 어떻게 풀어가면 좋을까요?', example: '업무나 공부에서 요청이 여러 개 겹친다면, 마감과 필요한 도움을 적어보세요.', choice: '자료와 시간이 갖춰진 일부터 진행하고, 빠진 조건은 확인한 뒤 다음 순서를 정하세요.' },
+  wealth: { question: '오늘 돈을 쓸 때 무엇을 확인할까요?', example: '결제나 비용 분담을 앞두고 있다면, 필요한 이유와 실제 부담할 총액을 나눠 적어보세요.', choice: '예산과 조건을 설명할 수 있을 때 결정하고, 불명확하면 확인할 시간을 두세요.' },
+  love: { question: '오늘 마음을 어떻게 전하면 좋을까요?', example: '연락을 고민한다면, 대화를 나누고 싶은 것인지 즉시 답을 확인하고 싶은 것인지 구분해보세요.', choice: '상대가 대화를 원하면 이어가고, 답이 없거나 거절하면 간격과 의사를 존중하세요.' },
+  relationship: { question: '가까운 사람과 무엇을 조율할까요?', example: '부탁을 받거나 의견이 다를 때, 확인된 사실과 내가 원하는 것을 각각 한 문장으로 정리해보세요.', choice: '서로 이해한 내용이 같으면 약속하고, 다르면 결론보다 확인 질문을 먼저 건네세요.' },
+  condition: { question: '오늘 활동과 휴식을 어떻게 나눌까요?', example: '일정 사이에 여유가 없다면, 줄일 수 있는 활동과 쉬는 시간을 함께 살펴보세요.', choice: '점수보다 실제 몸 상태에 맞춰 강도를 조절하세요. 불편함이 이어지면 필요한 도움을 받으세요.' },
+};
+
+const CHILD_DAILY_TOPICS: Record<TodayScoreItem['key'], { answer: string; example: string; choice: string }> = {
+  overall: {
+    answer: '보호자가 아이의 반응을 보며 오늘 함께할 놀이 하나를 골라주세요.',
+    example: '놀이를 바꾸거나 외출을 준비할 때 아이가 멈칫한다면, 무엇을 하다가 멈췄는지 먼저 살펴주세요.',
+    choice: '다음 활동에 관심을 보이면 함께 옮기고, 아직 마무리하지 못했다면 정리할 시간을 주세요.',
+  },
+  career: {
+    answer: '새로운 활동은 보호자가 먼저 보여주고 아이가 따라 해볼 시간을 주세요.',
+    example: '블록이나 그림을 하다가 방법을 묻는다면, 어느 부분까지 혼자 해봤는지 함께 확인해주세요.',
+    choice: '해보려는 시도가 이어지면 기다리고, 막혀 도움을 구하면 한 단계만 보여주세요.',
+  },
+  wealth: {
+    answer: '물건을 사거나 나누는 상황에서는 보호자가 가능한 범위를 정하고 아이에게 선택지를 보여주세요.',
+    example: '장난감을 더 갖고 싶어 하거나 함께 쓰는 물건을 놓지 못한다면, 원하는 이유를 짧게 물어보세요.',
+    choice: '살 수 있는 것과 함께 써야 하는 것을 구분해 알려주고, 약속한 범위 안에서 고르게 해주세요.',
+  },
+  love: {
+    answer: '아이가 원하는 친밀감의 정도를 살피고, 싫다는 표현도 존중해주세요.',
+    example: '안기려다가 떨어져 놀기를 원하거나 낯선 어른 앞에서 숨는다면, 가까이 와야 한다고 재촉하지 마세요.',
+    choice: '아이가 다가오면 반응하고, 거리를 원하면 곁에서 기다리며 스스로 정한 간격을 존중해주세요.',
+  },
+  relationship: {
+    answer: '함께 노는 순서나 물건을 나누는 방법을 보호자가 짧게 설명해주세요.',
+    example: '친구와 순서를 두고 다투거나 놀이 방식이 맞지 않는다면, 각자 무엇을 원했는지 차례로 들어주세요.',
+    choice: '함께 정한 순서를 지킬 수 있으면 이어가고, 감정이 커지면 잠시 떨어져 진정할 시간을 주세요.',
+  },
+  condition: {
+    answer: '수면과 식사, 놀이 뒤의 반응을 실제로 살피며 활동량을 조절해주세요.',
+    example: '잘 놀다가 하품하거나 평소보다 쉽게 짜증 낸다면, 마지막으로 먹고 쉰 때를 확인해주세요.',
+    choice: '피로 신호가 보이면 활동을 줄이고 쉬게 해주세요. 평소와 다른 불편함이 이어지면 필요한 도움을 받으세요.',
+  },
+};
+
+// 어른의 금전·업무 조언을 어린이에게 붙이지 않고 같은 십성의 과제를 돌봄 장면으로 옮긴다.
+const CHILD_ROLE_GUIDANCE: Record<PersonalDayRelation, string> = {
+  비견: '스스로 해보려 한다면 어른이 대신 결정하기 전에 아이가 고를 부분을 남겨주세요.',
+  겁재: '다른 아이를 따라 하거나 비교한다면 누가 먼저 했는지보다 자기 차례와 몫을 알려주세요.',
+  식신: '말이나 몸짓으로 표현하려 한다면 끝까지 지켜보고 같은 시도를 한 번 더 해볼 수 있게 해주세요.',
+  상관: '왜 그래야 하는지 묻거나 다른 방법을 제안한다면 이유를 짧게 설명하고 가능한 대안을 함께 찾아주세요.',
+  편재: '새로운 것에 관심이 옮겨간다면 여러 가지를 한꺼번에 꺼내기보다 먼저 살펴볼 것을 고르게 해주세요.',
+  정재: '익숙한 것을 지키고 싶어 한다면 갑자기 바꾸기보다 원래 약속과 달라지는 부분을 알려주세요.',
+  편관: '어렵다는 반응을 보이면 끝까지 버티게 하기보다 부담을 줄여 한 단계만 시도하게 해주세요.',
+  정관: '순서를 알고 싶어 한다면 시작과 끝을 미리 알려주고 지킬 수 있는 약속 하나를 정해주세요.',
+  편인: '바로 참여하지 않고 살펴본다면 어른이 먼저 보여주고 관찰할 시간을 충분히 주세요.',
+  정인: '익숙한 어른에게 확인을 구한다면 처음에는 함께해본 뒤 아이가 이어갈 작은 부분을 남겨주세요.',
+};
+
+function buildTodayQuestionReading(
+  key: TodayScoreItem['key'], input: BirthInput, sajuData: SajuDataV1 | SajuDataV2,
+  profile: PublicTodayProfile, todayPillar: TodayPillarSnapshot,
+): TodayScoreItem['reading'] {
+  const personal = profile.personalToday;
+  if (!personal) return undefined;
+  const topic = DAILY_TOPIC_QUESTIONS[key];
+  const lifeStage = getTodayLifeStage(input, todayPillar.dateKey);
+  const underage = lifeStage !== 'adult';
+  const needsCaregiver = lifeStage === 'child';
+  const answer = key === 'overall' ? `${personal.focus} ${asSentence(profile.actionBody)}` : DAILY_TOPIC_ANSWERS[personal.relation][key];
+  const natalStem = `${toKoreanGanzi(sajuData.dayMaster.stem)}${sajuData.dayMaster.element}`;
+  const evidence = `태어난 날의 중심인 ${withKoreanParticle(natalStem, '과', '와')} 오늘 ${toKoreanGanzi(todayPillar.ganzi)}의 관계를 ${withKoreanParticle(personal.relation, '으로', '로')} 읽어, ${withKoreanParticle(PERSONAL_DAY_MEANINGS[personal.relation], '을', '를')} 살펴봅니다.`;
+  const natalRole = profile.tenGod as PersonalDayRelation;
+  const natalMeaning = PERSONAL_DAY_MEANINGS[natalRole];
+  const natalTone = TEN_GOD_PUBLIC_TONES[natalRole];
+  const natalAdvice = natalMeaning && natalRole !== personal.relation
+    ? key === 'overall' ? PERSONAL_DAY_COPY[natalRole].focus : DAILY_TOPIC_ANSWERS[natalRole][key]
+    : '';
+  const example = underage && key === 'career' ? '공부나 함께 하는 활동에서 할 일이 겹친다면, 오늘 끝낼 부분과 물어볼 부분을 나눠보세요.'
+    : underage && key === 'wealth' ? '용돈이나 물건을 쓰고 싶다면, 필요한 이유를 적고 보호자와 사용 범위를 정해보세요.' : topic.example;
+  const child = CHILD_DAILY_TOPICS[key];
+  return {
+    question: underage && key === 'love' ? '친구와 가까운 사람에게 마음을 어떻게 전할까요?' : topic.question,
+    answer: needsCaregiver ? child.answer : answer,
+    evidence: `${evidence}${natalMeaning ? ` 원국에서 두드러진 ${profile.tenGod}(${natalMeaning})도 함께 고려합니다.` : ''}${personal.branchNote ? ` ${personal.branchNote}` : ''}`,
+    example: needsCaregiver ? `${child.example}${key === 'overall' ? ` ${CHILD_ROLE_GUIDANCE[personal.relation]}` : ''}`
+      : `${natalTone ? `평소 ${natalTone.body} ` : ''}${example}`,
+    choice: needsCaregiver ? `${child.choice}${key === 'overall' && natalMeaning && natalRole !== personal.relation ? ` ${CHILD_ROLE_GUIDANCE[natalRole]}` : ''}`
+      : `${natalAdvice ? `${natalAdvice} ` : ''}${topic.choice}${input.unknownTime ? ' 태어난 시간을 몰라 특정 시간대의 결과는 단정하지 않습니다.' : ''}`,
+  };
+}
+
+function getTodayLifeStage(input: BirthInput, dateKey: string): 'child' | 'teen' | 'adult' {
+  const birthday = `${String(input.month).padStart(2, '0')}-${String(input.day).padStart(2, '0')}`;
+  const age = Number(dateKey.slice(0, 4)) - input.year - Number(dateKey.slice(5) < birthday);
+  return age < 7 ? 'child' : age < 19 ? 'teen' : 'adult';
+}
+
+const PERSONAL_DAY_MEANINGS: Record<PersonalDayRelation, string> = {
+  비견: '자기 기준과 동등한 관계', 겁재: '비교와 공동 자원의 경계', 식신: '표현을 결과로 만드는 과정', 상관: '문제 제기와 전달 방식',
+  편재: '여러 선택지와 자원 배분', 정재: '약속된 자원의 관리', 편관: '부담을 나누고 대응하는 순서', 정관: '역할과 책임의 기준',
+  편인: '정보 탐색과 해석의 구분', 정인: '배움과 도움을 받아들이는 방식',
+};
 
 // 2026-05-15: concern 별 본문 한 줄도 매일 다른 후보가 뽑히도록 3 variant 화.
 const CONCERN_BODY_VARIANTS: Record<ConcernId, string[]> = {
@@ -2094,7 +2246,7 @@ function getTimeBlockRelationImpact(
   sajuData: SajuDataV1 | SajuDataV2
 ) {
   const natalBranches = [
-    { slot: '시주', branch: sajuData.pillars.hour?.branch ?? null, weight: 0.9 },
+    { slot: '시주', branch: sajuData.input.hourKnown ? sajuData.pillars.hour?.branch ?? null : null, weight: 0.9 },
     { slot: '일주', branch: sajuData.pillars.day.branch, weight: 1.35 },
     { slot: '월주', branch: sajuData.pillars.month.branch, weight: 1.15 },
     { slot: '년주', branch: sajuData.pillars.year.branch, weight: 0.8 },
@@ -2873,7 +3025,7 @@ function buildSajuChartSnapshot(
         branch: sajuData.pillars.day.branch,
         ganzi: sajuData.pillars.day.ganzi,
       },
-      hour: sajuData.pillars.hour
+      hour: sajuData.input.hourKnown && sajuData.pillars.hour
         ? {
             stem: sajuData.pillars.hour.stem,
             branch: sajuData.pillars.hour.branch,
@@ -2957,7 +3109,13 @@ export function buildTodayFortuneFreeResult(
   // grounding.personalizationContext.userSituation 에서 추출.
   const userSituation =
     options.grounding?.personalizationContext?.userSituation ?? null;
-  const scores = reorderTodayScoresBySituation(unifiedScores, userSituation);
+  const scores = reorderTodayScoresBySituation(unifiedScores, userSituation).map((score) => {
+    const reading = buildTodayQuestionReading(score.key, input, sajuData, profile, todayPillar);
+    return { ...score, ...(reading ? { reading, summary: reading.answer } : {}) };
+  });
+  const focusKey = options.concernId === 'energy_health' ? 'condition'
+    : concern.focusTopic === 'today' ? 'overall' : concern.focusTopic;
+  const focusReading = scores.find((score) => score.key === focusKey)?.reading;
   // Task 5 — 인과 서사 조립기 배선. buildCausalInput 이 파생 가능하면(십성/오행 등)
   // brief 요약을 무료 reasonSnippet.body 로 사용, 실패 시(시 미입력 등) 기존 정적 문구로 폴백.
   const causalDetectedSinsals = detectTodaySinsals(sajuData, todayPillar.stem, todayPillar.branch);
@@ -2986,11 +3144,13 @@ export function buildTodayFortuneFreeResult(
       timeRule: options.timeRule,
       unknownBirthTime: Boolean(input.unknownTime),
       usesLocation: Boolean(input.birthLocation),
+      lifeStage: getTodayLifeStage(input, todayPillar.dateKey),
     },
     oneLine: {
       eyebrow: `${concern.prompt} · ${concern.hanja}`,
-      headline: sanitizeUserFacingCopy(buildPublicTodayHeadline(options.concernId, profile)),
-      body: sanitizeUserFacingCopy(
+      headline: focusReading?.answer ?? sanitizeUserFacingCopy(buildPublicTodayHeadline(options.concernId, profile)),
+      // 직접 작성한 한글 설명은 그대로 보존한다. 전역 치환은 십성을 다른 이름으로 바꾼다.
+      body: focusReading ? [focusReading.answer, focusReading.evidence, focusReading.example, focusReading.choice].join(' ') : sanitizeUserFacingCopy(
         buildPublicTodayBody(
           options.concernId,
           profile,
@@ -3108,7 +3268,7 @@ export function detectTodaySinsals(
         yearBranch: sajuData.pillars.year.branch as IljinBranch,
         monthBranch: sajuData.pillars.month.branch as IljinBranch,
         dayBranch: sajuData.pillars.day.branch as IljinBranch,
-        hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
+        hourBranch: (sajuData.input.hourKnown ? sajuData.pillars.hour?.branch ?? null : null) as IljinBranch | null,
         dayGanziIndex,
       },
       {
@@ -3138,7 +3298,7 @@ function pickTopSinsal(hits: SinsalHit[]): SinsalHit | null {
 // Task 4 — CausalInput 파생 (십성/세운월운/지지관계/용신기신/우세오행/최상위 신살).
 export function buildCausalInput(
   sajuData: SajuDataV1 | SajuDataV2,
-  todayPillar: { stem: string | null; branch: string | null },
+  todayPillar: { stem: string | null; branch: string | null; yearGanzi?: string; monthGanzi?: string },
   detectedSinsals: SinsalHit[],
 ): CausalInput | null {
   if (!todayPillar.stem || !todayPillar.branch) return null;
@@ -3150,9 +3310,8 @@ export function buildCausalInput(
     sajuData.pillars.year.branch,
     sajuData.pillars.month.branch,
     sajuData.pillars.day.branch,
-    sajuData.pillars.hour?.branch,
+    sajuData.input.hourKnown ? sajuData.pillars.hour?.branch : null,
   ].filter(Boolean) as IljinBranch[];
-  const cl = sajuData.currentLuck;
   const tenGodOf = (ganzi?: string | null) =>
     ganzi ? calculateSipsung(dayMaster, ganzi[0] as IljinStem) : null;
   const top = pickTopSinsal(detectedSinsals);
@@ -3161,8 +3320,8 @@ export function buildCausalInput(
     todayStem,
     todayBranch,
     iljinTenGod: calculateSipsung(dayMaster, todayStem),
-    saewoonTenGod: tenGodOf(cl?.saewoon?.ganzi),
-    wolwoonTenGod: tenGodOf(cl?.wolwoon?.ganzi),
+    saewoonTenGod: tenGodOf(todayPillar.yearGanzi),
+    wolwoonTenGod: tenGodOf(todayPillar.monthGanzi),
     topRelation: rankJijiRelations(todayBranch, natal),
     yongsin: lucky,
     kishin: unlucky,
@@ -3188,8 +3347,8 @@ export function buildSajuOriginForIljin(
     monthStem: sajuData.pillars.month.stem as IljinStem,
     monthBranch: sajuData.pillars.month.branch as IljinBranch,
     dayBranch: sajuData.pillars.day.branch as IljinBranch,
-    hourStem: (sajuData.pillars.hour?.stem ?? null) as IljinStem | null,
-    hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
+    hourStem: (sajuData.input.hourKnown ? sajuData.pillars.hour?.stem ?? null : null) as IljinStem | null,
+    hourBranch: (sajuData.input.hourKnown ? sajuData.pillars.hour?.branch ?? null : null) as IljinBranch | null,
     elementPercentages: {
       목: byEl['목']?.percentage ?? 0,
       화: byEl['화']?.percentage ?? 0,

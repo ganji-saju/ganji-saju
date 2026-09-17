@@ -151,7 +151,7 @@ function buildWonkuk(
 
   const ilgan_easy = {
     label: ctx.sixtyGapja?.title ?? `${dm.element} 기운`,
-    detail: dm.description ?? ctx.sixtyGapja?.core ?? '',
+    detail: [dm.description ?? ctx.sixtyGapja?.core ?? '', data.input.hourKnown ? '' : '태어난 시간은 미입력입니다. 시간 정보에 의존하는 개인사와 특정 시기를 추측하지 않습니다.'].filter(Boolean).join(' '),
     metaphor: dm.metaphor ?? '',
   };
   const ilju_easy = {
@@ -215,8 +215,8 @@ function buildWonkuk(
   // naming-policy §4 + 총평 §2: 격국 원어("식신격")를 입력 label 에 노출하지 않고 설명형으로.
   //   (총평은 jargon-free — 본문에 격국명 금지. 원어 echo → validator fallback 위험 차단.)
   const kyeokguk_easy = {
-    label: patternCue ? `${patternCue}이 명확한 사주` : '',
-    detail: patternCue ? `${patternCue}이 중심에 있어 그 방식이 평생 따라오는 사주` : '',
+    label: patternCue ? `${patternCue}을 중심 역할의 후보로 읽는 사주` : '',
+    detail: patternCue ? `${patternCue}을 역할 해석의 근거로 봅니다. ${data.pattern?.confidence === '낮음' ? '판단 신뢰도가 낮아 한 가지 역할로 단정하지 않습니다.' : '직업명이나 성공 여부를 확정하는 근거는 아닙니다.'}` : '특정 역할을 중심으로 확정할 정보가 부족합니다.',
     career_fit: tenGod ? KYEOKGUK_CAREER_FIT[tenGod] ?? [] : [],
   };
 
@@ -232,10 +232,12 @@ function buildWonkuk(
   // 약점 3 = sixtyGapja.watchPoints(1) + 부족오행·강약·일반 보강
   const strengthLevel = data.strength?.level;
   const weaknessFillers = [
-    `${elementLabel(weakest)}—${ELEMENT_PLAIN_EFFECT_LOCAL[weakest] ?? '원칙을 정하는'} 힘—이 부족해 그 자리에서 흔들리기 쉬움`,
+    ohaeng_lack_easy.length > 0 ? `${elementLabel(weakest)} 비중이 작아 관련 행동이 덜 익숙한지 살펴볼 수 있으나, 실제 약점이나 질환이 있다는 뜻은 아님` : '',
     strengthLevel === '신약' ? '너무 많은 일·사람에 둘러싸이면 본인 페이스를 잃기 쉬움' : '',
     strengthLevel === '신강' ? '주관이 강해 주변과 속도를 맞추는 자리에서 마찰이 생기기 쉬움' : '',
-    '한 가지에 몰입하다 다른 신호를 늦게 알아채기 쉬움',
+    data.pattern?.confidence === '낮음' ? '중심 역할의 판단 신뢰도가 낮으므로 특정 성격적 약점을 확정하지 않음' : '',
+    '자료에 없는 약점은 만들어내지 않고 실제로 반복되는 행동인지 확인할 것',
+    '보완 방향을 능력의 부족이나 특정 사건의 예고로 해석하지 않을 것',
   ].filter(Boolean);
   const key_weaknesses_easy = padToThree(ctx.sixtyGapja?.watchPoints ?? [], weaknessFillers);
 
@@ -265,8 +267,8 @@ function buildTimeline(data: SajuDataV1 | SajuDataV2, now: Date): TotalReviewTim
   const labelShort =
     startAge != null && endAge != null ? `${startAge}-${endAge}세` : '지금 시기';
   const daewoonMeaning = cues.length
-    ? `${cues.join(' 기운과 ')} 기운이 함께 들어오는 10년이에요. 본인이 직접 의사결정을 해야 할 자리가 늘어납니다.`
-    : '본인이 직접 결정하고 드러내야 할 자리가 늘어나는 시기예요.';
+    ? `${cues.join(' 기운과 ')} 기운을 살피는 10년입니다. 원국의 강점과 보완 방향을 함께 읽되, 구체적인 사건이나 직업·관계 변화를 예고하지 않습니다.`
+    : '현재 대운은 미산정입니다. 시기 변화나 전환 나이를 만들지 말고 원국과 입력된 현재 상황을 기준으로 설명합니다.';
 
   const saewoonGanzi = data.currentLuck?.saewoon?.ganzi ?? '';
   const saewoonEl = saewoonGanzi ? STEM_ELEMENT[saewoonGanzi.charAt(0)] : undefined;
@@ -279,8 +281,8 @@ function buildTimeline(data: SajuDataV1 | SajuDataV2, now: Date): TotalReviewTim
       label_easy:
         startAge != null && endAge != null
           ? `지금 진행 중인 ${startAge}-${endAge}세의 10년`
-          : '지금 지나고 있는 10년',
-      is_current: true,
+          : major ? '현재 대운의 나이 범위 미상' : '현재 대운 미산정',
+      is_current: Boolean(major),
       meaning_easy: daewoonMeaning,
     },
     saewoon: {

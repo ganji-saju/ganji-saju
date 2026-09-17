@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { Price } from '@/components/payments/price-provider';
 import { PDF_ELEMENT_COLORS, ELEMENT_HANJA } from '@/lib/saju/pdf-report-maps';
 import { ganziToKorean } from '@/lib/saju/terminology';
@@ -93,6 +94,12 @@ function ChapterHead({
   );
 }
 
+/** 새 목차와 이전 저장본 모두 실제 인쇄 순서가 표시 쪽수와 같도록 한다. */
+function OrderedPages({ children }: { children: ReactNode }) {
+  const pageNumber = (node: ReactNode) => isValidElement<{ 'data-page': number | string }>(node) ? Number(node.props['data-page']) : 0;
+  return <>{Children.toArray(children).sort((a, b) => pageNumber(a) - pageNumber(b))}</>;
+}
+
 /** 공통 생애 보고서: 성향, 대운 심층 분석, 출생~100세 연도별 풀이. */
 export function ReportDocument({
   data,
@@ -103,18 +110,34 @@ export function ReportDocument({
   issuedAt: string;
   showRecommendations?: boolean;
 }) {
+  const questionEdition = data.readingEdition === 'questions-v1';
   const narrativePages = paginatePdfNarrative(data.deepReading ? [
-    { label: '풀이를 시작하며', text: data.deepReading.opening },
+    { label: '풀이를 시작하며', text: data.deepReading.opening, chapter: questionEdition ? '타고난 성향' : undefined },
     ...data.deepReading.sections,
-    { label: '기억할 규칙', text: data.deepReading.rememberRules.join('\n\n') },
+    { label: '기억할 규칙', text: data.deepReading.rememberRules.join('\n\n'), chapter: questionEdition ? '평생 활용 전략' : undefined },
   ] : []);
   const annualPages = chunkPdfYears(data.timeline.years);
-  const cycleStartPage = 8 + narrativePages.length;
+  const narrativeStartPage = questionEdition ? 5 : 8;
+  const cycleIndexPage = questionEdition ? narrativeStartPage + narrativePages.length : 4;
+  const cycleStartPage = questionEdition ? cycleIndexPage + 1 : 8 + narrativePages.length;
   const annualStartPage = cycleStartPage + data.timeline.cycles.length;
-  const totalPages = annualStartPage + annualPages.length;
+  const annualEndPage = annualStartPage + annualPages.length - 1;
+  const tenGodPage = questionEdition ? annualEndPage + 1 : 2;
+  const patternPage = questionEdition ? annualEndPage + 2 : 6;
+  const guidePage = questionEdition ? 2 : 7;
+  const areaPage = questionEdition ? 3 : 5;
+  const identityPage = questionEdition ? 4 : 3;
+  const totalPages = annualEndPage + (questionEdition ? 3 : 1);
+  const chapterRanges = narrativePages.reduce<Array<{ title: string; start: number; end: number }>>((ranges, sections, index) => {
+    const title = sections[0].chapter ?? sections[0].label;
+    if (ranges.at(-1)?.title === title) ranges[ranges.length - 1].end = narrativeStartPage + index;
+    else ranges.push({ title, start: narrativeStartPage + index, end: narrativeStartPage + index });
+    return ranges;
+  }, []);
   const birthYear = data.timeline.years[0].year;
   return (
-            <article className="report-doc" aria-label="사주 리포트 PDF 미리보기">
+            <article className={`report-doc${questionEdition ? ' rp-question-edition' : ''}`} aria-label="사주 리포트 PDF 미리보기">
+              <OrderedPages>
               {/* ─────────────── PAGE 1 · 표지 / 요약 ─────────────── */}
               <section className="report-page" data-page="1">
                 <header className="rp-cover-head">
@@ -130,7 +153,7 @@ export function ReportDocument({
                       REPORT NO. <strong>{data.reportNo}</strong>
                     </span>
                     <br />
-                    <span>발행일 {issuedAt} · v2.0</span>
+                    <span>발행일 {issuedAt} · {questionEdition ? 'v3.0' : 'v2.0'}</span>
                   </div>
                 </header>
 
@@ -208,8 +231,8 @@ export function ReportDocument({
                   </div>
 
                   <div className="rp-card">
-                    <div className="rp-eyebrow">분야별 흐름</div>
-                    <div className="rp-bars">
+                    <div className="rp-eyebrow">{questionEdition ? '나를 이해하는 세 가지 질문' : '분야별 흐름'}</div>
+                    {questionEdition ? <div className="rp-cover-questions">{data.fieldNotes.map((note) => <p key={note.label}><strong>{note.label}</strong>{note.text}</p>)}</div> : <div className="rp-bars">
                       {data.areaBars.map((bar) => (
                         <div key={bar.label} className="rp-bar-row">
                           <div className="rp-bar-head">
@@ -221,7 +244,7 @@ export function ReportDocument({
                           </div>
                         </div>
                       ))}
-                    </div>
+                    </div>}
                   </div>
                 </div>
 
@@ -241,10 +264,10 @@ export function ReportDocument({
               </section>
 
               {/* ─────────────── PAGE 2 · 십성 ─────────────── */}
-              <section className="report-page" data-page="2">
+              <section className="report-page" data-page={tenGodPage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
-                  no="02"
+                  no={questionEdition ? '참고 01' : '02'}
                   titleLines={['십성(十星)으로 보는', '기운의 분포']}
                   lead="십성은 일간(나)을 바탕으로 다른 글자들과의 관계를 10가지로 분류한 것입니다. 나를 둘러싼 기운을 보는 가장 직관적인 방법이에요."
                 />
@@ -294,14 +317,14 @@ export function ReportDocument({
                   <p>{data.tenGodSummary}</p>
                 </div>
 
-                <PageFooter page={2} total={totalPages} />
+                <PageFooter page={tenGodPage} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 3 · 일주 ─────────────── */}
-              <section className="report-page" data-page="3">
+              <section className="report-page" data-page={identityPage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
-                  no="03"
+                  no={questionEdition ? '02' : '03'}
                   titleLines={['일주(日柱)', '당신을 보여주는 두 글자']}
                   lead="일주는 사주에서 ‘나’를 의미합니다. 일간(나의 본질)과 일지(나의 환경)가 만나 만들어진 캐릭터예요."
                 />
@@ -377,12 +400,12 @@ export function ReportDocument({
                   <p>{data.ilju.peers}</p>
                 </div>
 
-                <PageFooter page={3} total={totalPages} />
+                <PageFooter page={identityPage} total={totalPages} />
               </section>
 
-              <section className="report-page" data-page="4">
+              <section className="report-page" data-page={cycleIndexPage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
-                <ChapterHead no="04" titleLines={['대운', '10년 단위의 생애 지도']}
+                <ChapterHead no={questionEdition ? '07' : '04'} titleLines={['대운', '10년 단위의 생애 지도']}
                   lead="대운은 약 10년 단위로 살펴보는 환경의 흐름입니다. 연도별 변화와 함께 읽고, 바뀌는 시기에는 정리·진입·적응의 순서로 준비해보세요." />
                 <div className="rp-lifetime-index">
                   {data.timeline.cycles.map((cycle, index) => (
@@ -394,14 +417,14 @@ export function ReportDocument({
                 </div>
                 {data.timeline.cycles.length === 0 && <p className="rp-guide-copy">성별 정보가 없어 대운을 산정하지 않았습니다. 연도별 세운 풀이는 이어지는 생애 연표에서 확인할 수 있습니다.</p>}
                 <div className="rp-guide-note">출생 직후부터 첫 대운이 시작되기 전까지는 ‘대운 시작 전’으로 구분합니다. 나이는 모두 해당 연도에서 출생연도를 뺀 연도 나이이며, 생일 기준 만 나이와 다를 수 있습니다.</div>
-                <PageFooter page={4} total={totalPages} />
+                <PageFooter page={cycleIndexPage} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 5 · 분야별 종합 ─────────────── */}
-              <section className="report-page" data-page="5">
+              <section className="report-page" data-page={areaPage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
-                  no="05"
+                  no={questionEdition ? '01' : '05'}
                   titleLines={['분야별 종합', '네 영역의 깊은 흐름']}
                   lead={`${data.ilju.name}의 강점은 분야마다 다르게 드러납니다. 어느 영역에서 더 무게를 두면 좋을지 짚어봤어요.`}
                 />
@@ -417,28 +440,28 @@ export function ReportDocument({
                           <div className="rp-area-name">{a.label}</div>
                           <div className="rp-area-sub">{a.sub}</div>
                         </div>
-                        <div className="rp-area-score">
+                        {a.score !== null && <div className="rp-area-score">
                           <strong style={{ color: a.color }}>{a.score}</strong>
                           <span>/ 100</span>
-                        </div>
+                        </div>}
                       </div>
                       <div className="rp-area-sw">
                         <div>
                           <div className="rp-area-sw-label" style={{ color: '#0f9f7a' }}>
-                            강점
+                            {questionEdition ? '나의 방식' : '강점'}
                           </div>
                           <div className="rp-area-sw-text">{a.strength}</div>
                         </div>
                         <div>
                           <div className="rp-area-sw-label" style={{ color: a.color }}>
-                            약점
+                            {questionEdition ? '살펴볼 조건' : '약점'}
                           </div>
                           <div className="rp-area-sw-text">{a.weakness}</div>
                         </div>
                       </div>
                       <div className="rp-area-tip">
                         <div className="rp-area-tip-label" style={{ color: a.color }}>
-                          <InkIcon name="lantern" size={15} /> 조언
+                          <InkIcon name="lantern" size={15} /> {questionEdition ? '선택 기준' : '조언'}
                         </div>
                         <p>{a.advice}</p>
                       </div>
@@ -446,14 +469,14 @@ export function ReportDocument({
                   ))}
                 </div>
 
-                <PageFooter page={5} total={totalPages} />
+                <PageFooter page={areaPage} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 6 · 신살·격국 ─────────────── */}
-              <section className="report-page" data-page="6">
+              <section className="report-page" data-page={patternPage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
-                  no="06"
+                  no={questionEdition ? '참고 02' : '06'}
                   titleLines={['신살과 격국', '사주에 자리잡은 별']}
                   lead="신살은 사주의 특수한 별들이고, 격국은 전체 구조의 기본 골격입니다. 두 개를 함께 보면 타고난 성향을 더 또렷이 알 수 있어요."
                 />
@@ -496,18 +519,19 @@ export function ReportDocument({
                   <p>{data.gyeokguk.tip}</p>
                 </div>
 
-                <PageFooter page={6} total={totalPages} />
+                <PageFooter page={patternPage} total={totalPages} />
               </section>
 
-              <section className="report-page" data-page="7">
+              <section className="report-page rp-contents-page" data-page={guidePage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
-                <ChapterHead no="07" titleLines={['생애 보고서 안내', '필요한 시기부터 찾아 읽기']}
+                <ChapterHead no={questionEdition ? '목차' : '07'} titleLines={['생애 보고서 안내', '필요한 질문부터 찾아 읽기']}
                   lead={`${birthYear}년부터 ${birthYear + 100}년까지 101개 연도를 한 해씩 살펴봅니다. 100세까지라는 범위는 보고서의 분석 기간이며 수명을 뜻하지 않습니다.`} />
                 <div className="rp-guide-contents">
-                  <div><strong>타고난 성향과 사주의 구조</strong><span>1–6쪽</span></div>
-                  {narrativePages.length > 0 && <div><strong>깊은 사주풀이 전문</strong><span>8–{cycleStartPage - 1}쪽</span></div>}
-                  {data.timeline.cycles.length > 0 && <div><strong>대운별 심층 풀이와 전환기</strong><span>{cycleStartPage}–{annualStartPage - 1}쪽</span></div>}
-                  <div><strong>출생부터 100세까지 연도별 풀이</strong><span>{annualStartPage}–{totalPages - 1}쪽</span></div>
+                  <div><strong>{questionEdition ? '핵심 요약과 나의 성향' : '타고난 성향과 사주의 구조'}</strong><span>{questionEdition ? '3–4쪽' : '1–6쪽'}</span></div>
+                  {questionEdition ? chapterRanges.map((chapter) => <div key={chapter.title}><strong>{chapter.title}</strong><span>{chapter.start === chapter.end ? chapter.start : `${chapter.start}–${chapter.end}`}쪽</span></div>) : narrativePages.length > 0 && <div><strong>깊은 사주풀이 전문</strong><span>8–{cycleStartPage - 1}쪽</span></div>}
+                  {data.timeline.cycles.length > 0 && <div><strong>대운별 심층 풀이와 전환기</strong><span>{questionEdition ? cycleIndexPage : cycleStartPage}–{annualStartPage - 1}쪽</span></div>}
+                  <div><strong>출생부터 100세까지 연도별 풀이</strong><span>{annualStartPage}–{annualEndPage}쪽</span></div>
+                  {questionEdition && <div><strong>참고 · 사주의 구조와 용어</strong><span>{tenGodPage}–{patternPage}쪽</span></div>}
                   <div><strong>마무리와 활용 방법</strong><span>{totalPages}쪽</span></div>
                 </div>
                 <div className="rp-year-finder">
@@ -517,15 +541,15 @@ export function ReportDocument({
                 </div>
                 <div className="rp-guide-note">{data.timeline.notes.map((note) => <p key={note}>{note}</p>)}</div>
                 <div className="rp-guide-copy"><h3>이렇게 활용해보세요</h3><p>먼저 올해의 풀이를 읽고, 해당 대운의 전환기 조언을 확인하세요. 과거 연도는 실제 경험을 돌아보는 질문으로, 미래 연도는 선택을 준비하는 참고로 활용할 수 있습니다. 같은 세운이 돌아와도 생애 단계와 대운이 달라 풀이의 초점은 달라집니다.</p></div>
-                <PageFooter page={7} total={totalPages} />
+                <PageFooter page={guidePage} total={totalPages} />
               </section>
 
               {narrativePages.map((sections, index) => (
-                <section className="report-page rp-narrative-page" data-page={8 + index} key={`deep-${index}`}>
+                <section className="report-page rp-narrative-page" data-page={narrativeStartPage + index} key={`deep-${index}`}>
                   <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
-                  <ChapterHead no="08" titleLines={['깊은 사주풀이', sections[0].label]} lead="타고난 성향과 삶의 선택을 연결하는 상세 풀이입니다. 연도별 흐름과 함께 참고하세요." />
+                  <ChapterHead no={questionEdition ? '풀이' : '08'} titleLines={['깊은 사주풀이', sections[0].chapter ?? sections[0].label]} lead="타고난 성향과 삶의 선택을 연결하는 상세 풀이입니다. 생활 예시는 실제 이력을 뜻하지 않으며, 자신의 상황에 맞는 선택 기준을 찾아보세요." />
                   {sections.map((section, sectionIndex) => <DeepSection key={`${section.label}-${sectionIndex}`} no={sectionIndex + 1} label={section.label} text={section.text} />)}
-                  <PageFooter page={8 + index} total={totalPages} />
+                  <PageFooter page={narrativeStartPage + index} total={totalPages} />
                 </section>
               ))}
 
@@ -635,13 +659,14 @@ export function ReportDocument({
                   <div className="rp-final-meta">
                     <span>REPORT NO. {data.reportNo}</span>
                     <br />
-                    <span>ISSUED {issuedAt} · v2.0</span>
+                    <span>ISSUED {issuedAt} · {questionEdition ? 'v3.0' : 'v2.0'}</span>
                   </div>
                 </div>
 
                 <PageFooter page={totalPages} total={totalPages} />
               </section>
 
+              </OrderedPages>
             </article>
   );
 }

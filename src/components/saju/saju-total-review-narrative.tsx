@@ -1,13 +1,13 @@
 // 2026-05-21 — 총평 LLM 4단락 narrative 카드. saju-total-review-llm-spec.md §9-2.
-//   한 줄 요약 + 의미별 라벨 4단락(당신은 어떤 사람인가 / 잘 살아나는 환경 / 조심할 자리 /
-//   지금 시기 핵심). SajuNarrativeCard 스타일 토큰 재사용. 빈 단락은 렌더 생략.
+//   한 줄 요약 + 의미별 라벨 4단락(어떤 성향이 반복해서 드러날까요? / 어떤 환경에서 장점을 쓰기 쉬울까요? / 잘하던 일이 왜 부담으로 바뀔까요? /
+//   지금 바꿔볼 선택 기준은 무엇일까요?). SajuNarrativeCard 스타일 토큰 재사용. 빈 단락은 렌더 생략.
 import type { TotalReviewNarrative } from '@/server/ai/total-review/total-review-types';
 
 const PARAGRAPH_LABELS: ReadonlyArray<{ key: keyof TotalReviewNarrative; label: string }> = [
-  { key: 'paragraph_1_who_you_are', label: '당신은 어떤 사람인가' },
-  { key: 'paragraph_2_strong_environment', label: '잘 살아나는 환경' },
-  { key: 'paragraph_3_weak_zone', label: '조심할 자리' },
-  { key: 'paragraph_4_now', label: '지금 시기 핵심' },
+  { key: 'paragraph_1_who_you_are', label: '어떤 성향이 반복해서 드러날까요?' },
+  { key: 'paragraph_2_strong_environment', label: '어떤 환경에서 장점을 쓰기 쉬울까요?' },
+  { key: 'paragraph_3_weak_zone', label: '잘하던 일이 왜 부담으로 바뀔까요?' },
+  { key: 'paragraph_4_now', label: '지금 바꿔볼 선택 기준은 무엇일까요?' },
 ];
 
 export function SajuTotalReviewNarrative({

@@ -16,7 +16,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
       }}
     >
       <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-        한 단락으로 정리
+        질문으로 읽는 내 사주
       </div>
 
       {narrative.headline ? (
@@ -28,14 +28,17 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
         </h2>
       ) : null}
 
-      {narrative.body ? (
-        <p
-          className="mt-3 text-[15.5px] leading-[1.75] text-[var(--app-copy)]"
-          style={{ wordBreak: 'keep-all' }}
-        >
-          {narrative.body}
-        </p>
-      ) : null}
+      <div className="mt-4 space-y-5">
+        {narrative.questions.map((item) => (
+          <section key={item.question}>
+            <h3 className="text-[16px] font-bold text-[var(--app-pink-strong)]">{item.question}</h3>
+            <p className="mt-2 text-[15.5px] font-semibold leading-[1.75] text-[var(--app-ink)]">{item.answer}</p>
+            <p className="mt-2 text-[14px] leading-[1.75] text-[var(--app-copy-muted)]"><strong>풀이 근거 · </strong>{item.evidence}</p>
+            <p className="mt-2 text-[15px] leading-[1.75] text-[var(--app-copy)]">{item.example}</p>
+            <p className="mt-2 text-[15px] leading-[1.75] text-[var(--app-copy)]"><strong>선택 기준 · </strong>{item.choice}</p>
+          </section>
+        ))}
+      </div>
 
       {narrative.chips.length > 0 ? (
         <ul className="mt-4 flex flex-wrap gap-1.5">

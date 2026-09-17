@@ -80,3 +80,16 @@ test('buildTotalReviewInput: ohaeng_balance 는 5 오행 키를 모두 가진다
     assert.ok(element in input.wonkuk.ohaeng_balance, `${element} 키 누락`);
   }
 });
+
+test('buildTotalReviewInput: 균형 오행을 부족으로 만들거나 미산정 대운을 현재 10년으로 만들지 않는다', () => {
+  const { data, ctx } = buildFixture();
+  const balanced = structuredClone(data);
+  for (const value of Object.values(balanced.fiveElements.byElement)) value.state = 'balanced';
+  if (balanced.currentLuck) balanced.currentLuck.currentMajorLuck = null;
+  const input = buildTotalReviewInput(balanced, ctx);
+  assert.deepEqual(input.wonkuk.ohaeng_lack_easy, []);
+  assert.ok(!input.wonkuk.key_weaknesses_easy.some((line) => /기운.*부족|힘.*부족/u.test(line)));
+  assert.equal(input.current_timeline.daewoon.is_current, false);
+  assert.match(input.current_timeline.daewoon.meaning_easy, /미산정/);
+  assert.doesNotMatch(input.current_timeline.daewoon.label_easy, /진행 중|지나고 있는/);
+});

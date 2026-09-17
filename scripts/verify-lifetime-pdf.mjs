@@ -50,9 +50,27 @@ try {
     const interpretation = buildFallbackLifetimeInterpretation(report);
     if (index === 2) {
       for (const key of Object.keys(interpretation.sections)) interpretation.sections[key] = '기존 풀이가 길어져도 생략 없이 이어지는 페이지에 보존되어야 합니다. '.repeat(40);
+      interpretation.sections.wealthStyle += '정재격은 예전에 저장된 유료 해설의 고유한 문장입니다.';
       interpretation.opening = '전체 본문의 분량이 늘어나는 경우에도 페이지 넘김과 한글 표시를 확인합니다. '.repeat(25);
     }
     const data = buildPdfModel(reading, report, `SAMPLE-${index + 1}`, 2026, interpretation);
+    assert.deepEqual(data.areaBars, [], 'Lifetime reading must not reuse daily fortune scores');
+    assert.ok(data.areaCards.every((card) => card.score === null));
+    assert.equal(data.deepReading.sections.filter((section) => section.label.endsWith('?')).length, 9, 'Core chapters need nine complete questions');
+    if (input.unknownTime) {
+      const stale = structuredClone(reading);
+      stale.input.unknownTime = false; // Older input may omit this flag; the engine still knows the hour is unknown.
+      stale.sajuData.pillars.hour = loadSajuDataV2(fixtures[0]).pillars.hour;
+      const staleModel = buildPdfModel(stale, report, `SAMPLE-${index + 1}`, 2026, interpretation);
+      assert.deepEqual(staleModel.pillars, data.pillars);
+      assert.deepEqual(staleModel.sinsal, data.sinsal, 'Unknown hour must not create extra natal signals');
+    }
+    if (index === 2) {
+      const text = data.deepReading.sections.map((section) => section.text).join(' ');
+      assert.equal((text.match(/기존 풀이가 길어져도/g) ?? []).length, 9 * 40, 'Unique paid prose must not be lost');
+      assert.ok(text.includes('정재격은 예전에 저장된 유료 해설의 고유한 문장입니다.'), 'Existing paid technical prose must remain intact');
+    }
+    if (index === 0) fs.writeFileSync(path.join(outputDir, 'core-chapters.json'), JSON.stringify(data.deepReading.sections.filter((section) => ['돈을 벌고 남기는 방식', '잘하는 일과 오래할 수 있는 일', '연애와 가까운 관계'].includes(section.chapter)), null, 2));
     const article = renderToStaticMarkup(React.createElement(ReportDocument, { data, issuedAt: '2026.09.17', showRecommendations: false }));
     // Real admin ancestor structure exercises the print isolation selectors too.
     const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
@@ -98,7 +116,7 @@ try {
     const physicalPages = (pdfBytes.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
     assert.equal(physicalPages, metrics.pages.length, 'Physical PDF pagination differs from the printed contents');
     if (index === 0) {
-      for (const [name, selector] of [['cover', '[data-page="1"]'], ['guide', '[data-page="7"]'], ['cycle', '.rp-cycle-page'], ['annual', '.rp-annual-page']]) {
+      for (const [name, selector] of [['cover', '[data-page="1"]'], ['guide', '.rp-contents-page'], ['core', '.rp-narrative-page:has-text("어떤 방식으로 돈을 벌 때")'], ['cycle', '.rp-cycle-page'], ['annual', '.rp-annual-page']]) {
         await page.locator(selector).first().screenshot({ path: path.join(outputDir, `${name}.png`) });
       }
     }

@@ -28,7 +28,7 @@ import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
 
 // PR #166 — prefix 버전업. 옛 캐시 (점수 미통일 / 이름 누락) 자동 무효화.
-const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v3:';
+const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v4:';
 
 // 2026-07-03 — 공유 티저 경로: 날짜를 URL 에 고정해 수신자가 다음 날 열어도
 // 발신자가 본 그 날 결과가 재현된다. 이름·걱정도 유지.

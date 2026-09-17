@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import {
   buildChapterCacheKey,
   isChapterCacheFresh,
@@ -33,6 +34,17 @@ test('buildChapterCacheKey — 동일 input 은 동일 sha256 (안정성)', () =
   const k2 = buildChapterCacheKey(fakeSajuData, baseUserContext, 1);
   assert.equal(k1, k2);
   assert.equal(k1.length, 64); // sha256 hex
+});
+
+test('buildChapterCacheKey does not reuse a pre-question-content envelope', () => {
+  const legacyPayload = {
+    pillars: { year: '甲午', month: '丙寅', day: '己巳', hour: '甲子' },
+    dayMaster: { stem: '己', element: '토' },
+    userContext: { age: 35, relationshipStatus: 'married', occupation: 'employee', currentConcern: 'wealth' },
+    chapterId: 5,
+  };
+  const legacyKey = createHash('sha256').update(JSON.stringify(legacyPayload)).digest('hex');
+  assert.notEqual(buildChapterCacheKey(fakeSajuData, baseUserContext, 5), legacyKey);
 });
 
 test('buildChapterCacheKey — chapterId 가 다르면 다른 key', () => {

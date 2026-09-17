@@ -58,7 +58,7 @@ interface TodayFortuneApiResponse {
   error?: string;
 }
 
-const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v3:';
+const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v4:';
 
 function buildResultStorageKey(sourceSessionId: string, dateKey: string) {
   return `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:${dateKey}`;

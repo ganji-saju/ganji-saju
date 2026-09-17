@@ -145,3 +145,14 @@ test('프롬프트 §2 가 동음이의 일상어는 허용한다고 명시한�
     );
   }
 });
+
+test('질문 풀이 프롬프트: 근거와 가정한 장면을 구분하고 선택 기준으로 끝낸다', () => {
+  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('질문에 대한 답 →'));
+  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('조건에 따른 선택 기준'));
+  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('실제 경험을 아는 것처럼'));
+  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('is_current가 false'));
+  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('월별 목록이나 월운 예측을 추가하지 않는다'));
+  const message = buildSectionUserMessage('main_narrative', fixtureInput());
+  const example = JSON.parse(message.slice(message.indexOf('{'), message.indexOf('\n---')));
+  for (const text of Object.values(example.main_narrative) as string[]) assert.match(text, /입력|근거/);
+});

@@ -7,10 +7,7 @@ import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { Element, Stem, Branch } from '@/lib/saju/types';
 import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
-import {
-  computeSajuAreaScores,
-  type SajuAreaKey,
-} from '@/lib/today-fortune/compute-saju-area-scores';
+import type { PdfNarrativeSection } from './pdf-report-pages';
 import {
   PDF_COLORS,
   PDF_ELEMENT_COLORS,
@@ -24,7 +21,7 @@ import {
   SINSAL_DISPLAY,
   josa,
 } from '@/lib/saju/pdf-report-maps';
-import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
+import { buildFallbackLifetimeInterpretation, type SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
 import {
   resolvePdfSubjectName,
   pickInterpretationText,
@@ -34,12 +31,12 @@ import {
 
 const DEEP_SECTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'coreIdentity', label: '타고난 성향' },
-  { key: 'strengthBalance', label: '기운의 균형' },
-  { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
-  { key: 'relationshipPattern', label: '관계 패턴' },
-  { key: 'wealthStyle', label: '재물 감각' },
-  { key: 'careerDirection', label: '직업 방향' },
-  { key: 'healthRhythm', label: '건강 리듬' },
+  { key: 'wealthStyle', label: '돈을 벌고 남기는 방식' },
+  { key: 'careerDirection', label: '잘하는 일과 오래할 수 있는 일' },
+  { key: 'relationshipPattern', label: '연애와 가까운 관계' },
+  { key: 'strengthBalance', label: '부담과 회복의 균형' },
+  { key: 'patternAndYongsin', label: '내 선택을 돕는 기준' },
+  { key: 'healthRhythm', label: '생활과 회복의 방식' },
   { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ];
@@ -86,44 +83,32 @@ function formatBirthTime(hour?: number, minute?: number) {
 
 
 const AREA_META: Record<
-  Exclude<SajuAreaKey, 'condition' | 'overall'>,
-  { label: string; hanja: string; sub: string; color: string; strength: string; weakness: string; advice: string }
+  'love' | 'wealth' | 'career' | 'relationship',
+  { label: string; hanja: string; sub: string; color: string }
 > = {
   love: {
     label: '연애',
     hanja: '戀',
     sub: '타이밍과 말',
     color: '#ff6b6b',
-    strength: '먼저 마음을 여는 용기',
-    weakness: '감정을 다루는 인내',
-    advice: '중요한 대화는 오전 시간에. 늦은 밤 결정은 보류하세요.',
   },
   wealth: {
     label: '재물',
     hanja: '財',
     sub: '관리와 분산',
     color: '#d99020',
-    strength: '장기 계획 능력',
-    weakness: '충동적 지출',
-    advice: '큰 한 방보다 새는 작은 지출 점검이 체감 이익으로 이어집니다.',
   },
   career: {
     label: '직장',
     hanja: '業',
     sub: '성과와 결단',
     color: '#0f9f7a',
-    strength: '실력으로 인정받음',
-    weakness: '협업의 유연성',
-    advice: '역할을 먼저 명확히 정리. 회의는 짧게 끊는 습관이 도움이 됩니다.',
   },
   relationship: {
     label: '관계',
     hanja: '緣',
     sub: '거리와 온도',
     color: '#368ee8',
-    strength: '필요할 때의 신뢰감',
-    weakness: '먼저 다가가는 친화력',
-    advice: '결론보다 질문을 먼저. 말의 톤만 조정해도 체감 차이가 큽니다.',
   },
 };
 
@@ -142,6 +127,7 @@ export function buildPdfModel(
 ) {
   const sajuData = reading.sajuData;
   const input = reading.input;
+  const hourPillar = !input.unknownTime && sajuData.input.hourKnown ? sajuData.pillars.hour : null;
   const dayStem = sajuData.pillars.day.stem;
   const dayBranch = sajuData.pillars.day.branch;
   const dayElement = sajuData.pillars.day.stemElement;
@@ -154,7 +140,7 @@ export function buildPdfModel(
 
   // ── 사주팔자 4기둥 ─────────────────────────────
   const pillarSources = [
-    sajuData.pillars.hour,
+    hourPillar,
     sajuData.pillars.day,
     sajuData.pillars.month,
     sajuData.pillars.year,
@@ -200,17 +186,8 @@ export function buildPdfModel(
   const donutGradient = `conic-gradient(${segments.join(', ')})`;
   const dominantElement = sajuData.fiveElements.dominant;
 
-  // ── 분야별 점수 (운세 페이지와 1:1 일치) ─────────────
-  const areaScores = computeSajuAreaScores(input, sajuData);
-  const scoreOf = (key: SajuAreaKey) =>
-    Math.max(0, Math.min(100, Math.round(areaScores.find((s) => s.key === key)?.score ?? 0)));
-  const areaBars = [
-    { label: '총운', score: scoreOf('overall') },
-    { label: '연애', score: scoreOf('love') },
-    { label: '재물', score: scoreOf('wealth') },
-    { label: '직장', score: scoreOf('career') },
-    { label: '관계', score: scoreOf('relationship') },
-  ];
+  // 날짜별 운세 점수를 평생 점수처럼 제시하지 않는다. 이전 저장본의 필드는 계속 읽는다.
+  const areaBars: Array<{ label: string; score: number }> = [];
 
   // ── 십성 분포 (상위 5) ─────────────────────────────
   const tenGods = getTenGodPercentages(sajuData).map((t) => ({
@@ -229,7 +206,7 @@ export function buildPdfModel(
     yearBranch: sajuData.pillars.year.branch,
     monthBranch: sajuData.pillars.month.branch,
     dayBranch: sajuData.pillars.day.branch,
-    hourBranch: sajuData.pillars.hour?.branch ?? null,
+    hourBranch: hourPillar?.branch ?? null,
     dayGanziIndex: ganziIndexOf(dayStem, dayBranch),
   });
   const detectedNames = new Set(detected.map((d) => d.name));
@@ -239,7 +216,7 @@ export function buildPdfModel(
         sajuData.pillars.year.branch,
         sajuData.pillars.month.branch,
         sajuData.pillars.day.branch,
-        sajuData.pillars.hour?.branch,
+        hourPillar?.branch,
       ].includes(HONGYEOM_BRANCH[dayStem])
     : false;
   const sinsal = SINSAL_DISPLAY.map((s) => ({
@@ -300,7 +277,7 @@ export function buildPdfModel(
       (sixty?.strengths?.length
         ? `같은 ${iljuName}는 ${sixty.strengths.join(', ')}${josa(sixty.strengths.join(', '), '이', '가')} 돋보입니다. `
         : `같은 ${iljuName}는 결정의 자리에서 활약하는 경우가 많습니다. `) +
-      (sixty?.actionCue ?? '강점을 살리되 한 가지를 끝까지 마무리하는 습관이 큰 흐름을 만듭니다.'),
+      (sixty?.actionCue ?? '강점을 살리되 한 가지를 끝까지 마무리하는 습관이 큰 흐름을 만듭니다.').replace(/오늘(?:은|의)?\s*/gu, '').replace('하루가 좋습니다', '방식이 좋습니다'),
   };
 
   // ── 성격 키워드 (결정적) ─────────────────────────────
@@ -316,9 +293,19 @@ export function buildPdfModel(
   const timeline = buildLifetimePdfTimeline(reading, report, targetYear);
 
   // ── 분야별 종합 (P5) ─────────────────────────────
-  const areaCards = (['love', 'wealth', 'career', 'relationship'] as const).map((key) => ({
+  const { wealthStyle: wealth, careerDirection: career, relationshipPattern: relationship } = report;
+  const isMinor = targetYear - input.year < 19;
+  const areaCards = [
+    { key: 'wealth' as const, strength: wealth.earningStyle, weakness: wealth.spendingMistakes, advice: wealth.operatingStyle },
+    { key: 'career' as const, strength: career.fitStructure, weakness: career.endureVsShine, advice: career.recognitionStyle },
+    { key: 'love' as const, strength: relationship.distanceStyle, weakness: relationship.expressionStyle, advice: relationship.longevityGuide },
+    { key: 'relationship' as const, strength: relationship.summary, weakness: relationship.conflictTriggers, advice: relationship.longevityGuide },
+  ].map(({ key, strength, weakness, advice }) => ({
     ...AREA_META[key],
-    score: scoreOf(key),
+    score: null as number | null,
+    strength: firstSentences(strength, 2),
+    weakness: firstSentences(weakness, 1),
+    advice: firstSentences(advice, 1),
   }));
 
   // ── 격국 (P6) ─────────────────────────────
@@ -349,7 +336,7 @@ export function buildPdfModel(
   // ── 마무리 (P8) ─────────────────────────────
   const closing = {
     intro: `${subjectName}님, 여기까지 ${iljuName}의 타고난 성향과 생애 흐름을 함께 살펴봤습니다. ${ELEMENT_INFO_NAME(dominantElement)}이 중심을 잡고 있는 사주에 강점과 보완점이 함께 담겨 있었어요.`,
-    year: `${targetYear}년의 연도별 풀이와 지금 지나고 있는 대운을 함께 읽어보세요. 실제 경험과 현재 상황에 맞는 작은 실천 한 가지를 정해두면 보고서를 다시 읽을 때 변화가 더 잘 보입니다.`,
+    year: `${targetYear}년의 연도별 풀이${timeline.cycles.some((cycle) => cycle.isCurrent) ? '와 지금 지나고 있는 대운을 함께' : '를 생애 단계와 함께'} 읽어보세요. 실제 경험과 현재 상황에 맞는 작은 실천 한 가지를 정해두면 보고서를 다시 읽을 때 변화가 더 잘 보입니다.`,
     highlight: firstSentences(
       pickInterpretationText(interpretation, 'lifetimeStrategy', '오늘 한 가지를 끝까지 마무리하는 것'),
       1
@@ -370,19 +357,43 @@ export function buildPdfModel(
     { title: '1:1 상담', sub: '간지사주 상담방에서 대화', price: '무료~', href: '/dialogue' },
   ];
 
-  // ── 깊은 풀이 전문 (P9) — 결제한 LLM 본편 9섹션 verbatim ─────
-  const deepReading = interpretation
-    ? {
-        opening: interpretation.opening?.trim() ?? '',
-        sections: DEEP_SECTION_LABELS.map((s) => ({
-          label: s.label,
-          text: ((interpretation.sections as Record<string, string>)?.[s.key] ?? '').trim(),
-        })).filter((s) => s.text.length > 0),
-        rememberRules: (interpretation.rememberRules ?? []).filter((r) => Boolean(r && r.trim())),
-      }
-    : null;
+  const fullReading = interpretation ?? buildFallbackLifetimeInterpretation(report);
+  const questions: Record<string, Array<[string, string]>> = {
+    wealthStyle: [
+      [isMinor ? '원하는 것과 필요한 것을 어떻게 구분할까요?' : '어떤 방식으로 돈을 벌 때 강점이 드러날까요?', wealth.earningStyle],
+      [isMinor ? '내 몫을 나누고 남기는 연습은 어떻게 할까요?' : '돈을 남기기 어렵다면 무엇을 살펴볼까요?', `${wealth.keepingStyle} ${wealth.spendingMistakes}`],
+      [isMinor ? '혼자 고를 일과 도움받을 일은 어떻게 나눌까요?' : '안정과 확장 사이에서 무엇을 기준으로 정할까요?', wealth.operatingStyle],
+    ],
+    careerDirection: [
+      [isMinor ? '잘하는 활동과 즐기는 활동은 어떻게 다를까요?' : '잘하는 일과 오래할 수 있는 일은 어떻게 다를까요?', `${career.fitStructure} ${career.endureVsShine}`],
+      [isMinor ? '혼자 해보고 도움도 청하려면 무엇이 필요할까요?' : '조직과 독립 중 어떤 조건을 비교해야 할까요?', career.independenceStyle],
+      [isMinor ? '배운 것을 어떻게 표현하고 격려할까요?' : '내 실력을 어떻게 보여줘야 할까요?', career.recognitionStyle],
+    ],
+    relationshipPattern: [
+      ['가까워지고 싶은데 왜 표현이 엇갈릴까요?', `${relationship.distanceStyle} ${relationship.expressionStyle}`],
+      ['비슷한 갈등이 반복되면 무엇을 살펴볼까요?', relationship.conflictTriggers],
+      ['오래 이어갈 관계에서 어떤 기준이 필요할까요?', relationship.longevityGuide],
+    ],
+  };
+  const sections: PdfNarrativeSection[] = DEEP_SECTION_LABELS.flatMap(({ key, label: defaultLabel }) => {
+    const label = isMinor && questions[key] ? report[key as 'wealthStyle' | 'careerDirection' | 'relationshipPattern'].headline : defaultLabel;
+    const text = (fullReading.sections as Record<string, string>)[key]?.trim() ?? '';
+    if (!questions[key]) return text ? [{ label, text, chapter: label }] : [];
+    const answers = questions[key].map(([question, answer]) => ({ label: question, text: answer, chapter: label }));
+    // 정형 폴백과 정확히 같은 문장은 이미 질문의 답에 담겼다. 고유한 AI 해설은 모두 유지한다.
+    const sentences = (value: string) => value.split(/(?<=[.!?。])\s+/).map((s) => s.trim()).filter(Boolean);
+    const present = new Set(answers.flatMap((answer) => sentences(answer.text)));
+    const extra = sentences(text).filter((sentence) => !present.has(sentence)).join(' ');
+    return extra ? [...answers, { label: '종합 해설', text: extra, chapter: label }] : answers;
+  });
+  const deepReading = {
+    opening: fullReading.opening?.trim() ?? '',
+    sections,
+    rememberRules: (fullReading.rememberRules ?? []).filter((r) => Boolean(r && r.trim())),
+  };
 
   return {
+    readingEdition: 'questions-v1' as const,
     reportNo,
     targetYear,
     subjectName,
@@ -399,10 +410,9 @@ export function buildPdfModel(
     dominantElement,
     areaBars,
     fieldNotes: [
-      { label: '연애', text: firstSentences(pickInterpretationText(interpretation, 'relationshipPattern', AREA_META.love.advice), 1) },
-      { label: '재물', text: firstSentences(pickInterpretationText(interpretation, 'wealthStyle', AREA_META.wealth.advice), 1) },
-      { label: '직장', text: firstSentences(pickInterpretationText(interpretation, 'careerDirection', AREA_META.career.advice), 1) },
-      { label: '관계', text: firstSentences(pickInterpretationText(interpretation, 'coreIdentity', AREA_META.relationship.advice), 1) },
+      { label: '돈', text: '어떤 방식으로 벌고, 무엇을 기준으로 남길까요?' },
+      { label: '일', text: '잘하는 일과 오래할 수 있는 일은 어떻게 다를까요?' },
+      { label: '관계', text: '마음과 표현이 엇갈릴 때 무엇을 살펴볼까요?' },
     ],
     tenGods,
     tenGodSummary,

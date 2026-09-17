@@ -320,7 +320,7 @@ export async function POST(req: NextRequest) {
 
   // 오늘운세 무료 LLM 풀이(플래그 ON + 로그인 시). null 이면 결정론 유지.
   if (user?.id) {
-    const caseSummaries = buildTodayCaseSummaries({ sajuData });
+    const caseSummaries = buildTodayCaseSummaries({ sajuData, options: { now } });
     const situation = summarizeUserSituation(
       persistedGrounding?.personalizationContext?.userSituation ?? null
     );
