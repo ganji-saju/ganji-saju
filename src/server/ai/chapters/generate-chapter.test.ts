@@ -170,7 +170,7 @@ test('generateChapter — system prompt 가 챕터 lens 와 forbiddenTopics 포�
   await generateChapter(baseInput, client);
 
   // CHAPTER_META[1] 의 lens / forbiddenTopics 가 system prompt 에 들어가는지
-  assert.ok(client.lastSystemPrompt.includes('마음의 결'));
+  assert.ok(client.lastSystemPrompt.includes('사고 방식'));
   assert.ok(client.lastSystemPrompt.includes('관계 — 4장 영역'));
 });
 

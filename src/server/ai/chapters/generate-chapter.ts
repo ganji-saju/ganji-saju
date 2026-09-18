@@ -86,6 +86,10 @@ export function buildChapterUserMessage(input: ChapterLLMInput): string {
     JSON.stringify(input.userContext, null, 2)
   );
 
+  if (input.classicGrounding) {
+    lines.push('', '## classicGrounding — 출처와 적용 조건', JSON.stringify(input.classicGrounding, null, 2));
+  }
+
   if (input.priorChapterDigests && input.priorChapterDigests.length > 0) {
     // 9장(synthesis) — 1~7장 결론을 *재해석* 대상으로 받음.
     //   header 문구는 enhance-lifetime-chapter9.test 가 검증하므로 변경 금지.

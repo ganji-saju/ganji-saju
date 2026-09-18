@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import { buildLifetimeReport, type SajuInterpretationGrounding } from '@/domain/saju/report';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import {
@@ -96,9 +97,10 @@ export interface GenerateLifetimeInterpretationRequest {
   /** 생성 전체 제한 시각(ms). 고객 요청의 기본 동작은 변경하지 않는다. */
   deadlineAt?: number;
   signal?: AbortSignal;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
 }
 
-type ChapterGenerationOptions = Pick<GenerateLifetimeInterpretationRequest, 'telemetryStore' | 'deadlineAt' | 'signal'>;
+type ChapterGenerationOptions = Pick<GenerateLifetimeInterpretationRequest, 'telemetryStore' | 'deadlineAt' | 'signal'> & { classicGrounding?: ClassicReadingGrounding };
 
 export interface LifetimeGenerationStageResult {
   key: 'full';
@@ -109,6 +111,7 @@ export interface LifetimeGenerationStageResult {
 }
 
 export interface LifetimeInterpretationResponsePayload {
+  classicGrounding: ClassicReadingGrounding;
   ok: true;
   readingId: string;
   resolvedReadingId: string;
@@ -158,6 +161,8 @@ export async function generateLifetimeInterpretation(
   // buildLifetimeReport 로 흘려, 대운 cycle 8단의 hook/relationship/wealthCareer 분기에 사용.
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
   const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
+  const classicGrounding = await (request.getClassicGrounding ?? getClassicReadingGrounding)(reading.sajuData);
+  request.signal?.throwIfAborted();
   const model = getOpenAIInterpretationModel();
   // 🟡 대운 다양성 fix (이전 PR L 은 병렬): 챕터 1→2→3→4→5→6→7 *직렬* LLM enhance.
   //   - 직렬 이유: 각 챕터가 *앞서 생성된 챕터*(priorChapterDigests + 본문) 를 보고
@@ -185,6 +190,7 @@ export async function generateLifetimeInterpretation(
   //   아직 안 만든 챕터는 빈 문자열 → 매치 X.
   const accumulatedBodies: string[] = ['', '', '', '', '', '', '', '', ''];
   const generationOptions: ChapterGenerationOptions = {
+    classicGrounding,
     telemetryStore: request.telemetryStore,
     deadlineAt: request.deadlineAt === undefined ? undefined : request.deadlineAt - LIFETIME_TIMEOUT_MS,
     signal: request.signal,
@@ -253,7 +259,8 @@ export async function generateLifetimeInterpretation(
     reading,
     report,
     counselorId,
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
 
   // 2026-05-25 Phase 0a — 본편 read-through 캐시 (audit §5 후보 1). 본편 풀이 *내용* 은 불변, 캐시 인프라만.
@@ -266,7 +273,7 @@ export async function generateLifetimeInterpretation(
     gender: reading.input.gender ?? null,
     counselorId,
     targetYear: request.targetYear,
-    reportHash: hashLifetimeReport(report),
+    reportHash: hashLifetimeReport([report, readingGroundingFingerprint(classicGrounding)]),
     recentFeedbackSummary,
     promptVersion,
   };
@@ -375,6 +382,7 @@ export async function generateLifetimeInterpretation(
     errorMessage,
     generationMs: Date.now() - startedAt,
     grounding: reading.grounding,
+    classicGrounding,
     kasiComparison: reading.kasiComparison,
     interpretation,
     report,
@@ -417,7 +425,9 @@ async function applyChapter1LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1);
+  chapter1Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[1];
   const stageStartedAt = Date.now();
 
@@ -529,7 +539,9 @@ async function applyChapter4LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4);
+  chapter4Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[4];
   const stageStartedAt = Date.now();
 
@@ -627,7 +639,9 @@ async function applyChapter5LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5);
+  chapter5Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[5];
   const stageStartedAt = Date.now();
 
@@ -725,7 +739,9 @@ async function applyChapter2LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter2Input.userContext, 2);
+  chapter2Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter2Input.userContext, 2,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[2];
   const stageStartedAt = Date.now();
 
@@ -804,7 +820,9 @@ async function applyChapter3LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter3Input.userContext, 3);
+  chapter3Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter3Input.userContext, 3,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[3];
   const stageStartedAt = Date.now();
 
@@ -883,7 +901,9 @@ async function applyChapter6LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter6Input.userContext, 6);
+  chapter6Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter6Input.userContext, 6,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[6];
   const stageStartedAt = Date.now();
 
@@ -963,7 +983,9 @@ async function applyChapter7LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter7Input.userContext, 7);
+  chapter7Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter7Input.userContext, 7,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[7];
   const stageStartedAt = Date.now();
 
@@ -1058,7 +1080,9 @@ async function applyChapter9LLMEnhancement(
       age: null,
     }
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter9Input.userContext, 9);
+  chapter9Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter9Input.userContext, 9,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[9];
   const stageStartedAt = Date.now();
 

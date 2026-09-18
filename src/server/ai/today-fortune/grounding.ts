@@ -1,3 +1,4 @@
+import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 // Task 2 — 오늘운세 LLM facts grounding 빌더 (순수 결정론, LLM 호출 없음).
 //
 // `buildTodayFortuneGrounding` 은 기존 결정론 결과(`TodayFortuneFreeResult`)와
@@ -11,6 +12,7 @@ import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 
 export interface TodayFortuneGrounding {
+  classicGrounding?: ClassicReadingGrounding;
   name: string;
   todayGanzi: string;       // 일진 간지 (한자 아님, 한글 음 — 예: '갑자')
   iljinScore: number | null;

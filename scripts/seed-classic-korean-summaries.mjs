@@ -11,7 +11,7 @@ import {
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const EXPECTED_WIKISOURCE_REFS = [
-  'title=滴天髓',
+  'title=滴天髓&normalizer=2',
   'title=穷通宝鉴',
   'title=三命通會_(四庫全書本)',
 ];

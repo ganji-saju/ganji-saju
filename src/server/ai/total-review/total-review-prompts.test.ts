@@ -8,7 +8,6 @@ import {
   buildSectionUserMessage,
 } from './total-review-prompts';
 import {
-  BANNED_MYEONGRI_TERMS_LABELED,
   validateTotalReviewSection,
 } from '@/lib/saju/total-review-validator';
 
@@ -122,28 +121,10 @@ test('buildRetryCorrectionNote: 사유 없으면 빈 문자열, 있으면 항목
   assert.ok(note.includes('- 본문 문장 수 21 (목표 25~35)'));
 });
 
-test('프롬프트 §2 의 한자 병기가 검증기 목록과 일치한다', () => {
-  // 프롬프트가 '지지(地支)' 라고 알려주는데 검증기 사유가 '지지(支持)' 로 나가면
-  // 모델은 서로 다른 두 규칙을 받는다. 두 목록의 한자 표기는 반드시 같아야 한다.
-  // (프롬프트 목록이 더 넓은 건 정상 — 합/충/형/파/해 등은 hard-fail 대상이 아니다.)
-  for (const labeled of BANNED_MYEONGRI_TERMS_LABELED.split(', ')) {
-    assert.ok(
-      TOTAL_REVIEW_SYSTEM_PROMPT.includes(labeled),
-      `프롬프트 §2 에 '${labeled}' 표기가 없거나 한자가 다르다`
-    );
-  }
-});
-
-test('프롬프트 §2 가 동음이의 일상어는 허용한다고 명시한다', () => {
-  // 한자 병기의 목적 — '합·충·형·파·해' 같은 한 글자 금지는 한국어에서 지킬 수 없다.
-  // 어느 뜻이 금지인지 알려주지 않으면 모델이 일상어까지 회피해 문장이 뒤틀린다.
-  assert.ok(TOTAL_REVIEW_SYSTEM_PROMPT.includes('소리만 같은 일상어'));
-  for (const everyday of ['지지하다', '관대하다', '상관없다', '연주하다', '일주일']) {
-    assert.ok(
-      TOTAL_REVIEW_SYSTEM_PROMPT.includes(everyday),
-      `허용 예시 '${everyday}' 누락`
-    );
-  }
+test('프롬프트는 한글 명리어를 유지하고 계산·해석·생활 예시를 구분한다', () => {
+  assert.match(TOTAL_REVIEW_SYSTEM_PROMPT, /한글 원어를 유지/);
+  assert.doesNotMatch(TOTAL_REVIEW_SYSTEM_PROMPT, /다음 사주 전문 용어는 본문에 쓰지 않는다/);
+  assert.match(TOTAL_REVIEW_SYSTEM_PROMPT, /classicGrounding/);
 });
 
 test('질문 풀이 프롬프트: 근거와 가정한 장면을 구분하고 선택 기준으로 끝낸다', () => {

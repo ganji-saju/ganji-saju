@@ -14,7 +14,7 @@ export type ClassicEvidenceStatus =
   | 'missing-env'
   | 'db-error';
 
-interface ClassicEvidenceRow {
+export interface ClassicEvidenceRow {
   canonical_slug: string;
   canonical_title_zh_hant: string;
   canonical_title_ko: string;
@@ -39,7 +39,7 @@ interface ClassicEvidenceRow {
   source_url: string | null;
   source_work_ref: string;
   effective_license_label: string | null;
-  rank_score: number;
+  rank_score?: number;
 }
 
 export interface ClassicEvidenceItem {
@@ -73,6 +73,7 @@ export interface ClassicEvidenceItem {
     sourceRef: string;
     license: string | null;
     verificationStatus: string;
+    verificationLabel: string;
     publicReleaseStatus: string;
   };
   rankScore: number;
@@ -117,6 +118,19 @@ function clampClassicEvidenceLimit(limit: number | undefined) {
   return Math.max(1, Math.min(MAX_CLASSIC_EVIDENCE_LIMIT, Math.trunc(limit)));
 }
 
+export function isUsableClassicEvidenceRow(row: ClassicEvidenceRow) {
+  return row.public_release_status === 'live'
+    && ['reviewed', 'provisional'].includes(row.verification_status)
+    && [row.passage_id, row.original_text_zh, row.source_url, row.source_work_ref,
+      row.effective_license_label].every((value) => typeof value === 'string' && value.trim());
+}
+
+export function getClassicVerificationLabel(status: string) {
+  if (status === 'reviewed') return '원문 검수 완료';
+  if (status === 'provisional') return '원문 잠정 확인 · 전문 검수 전';
+  return '원문 검수 미확인';
+}
+
 function mapClassicEvidenceRow(row: ClassicEvidenceRow): ClassicEvidenceItem {
   return {
     work: {
@@ -149,9 +163,10 @@ function mapClassicEvidenceRow(row: ClassicEvidenceRow): ClassicEvidenceItem {
       sourceRef: row.source_work_ref,
       license: row.effective_license_label,
       verificationStatus: row.verification_status,
+      verificationLabel: getClassicVerificationLabel(row.verification_status),
       publicReleaseStatus: row.public_release_status,
     },
-    rankScore: row.rank_score,
+    rankScore: row.rank_score ?? 0,
   };
 }
 
@@ -182,7 +197,7 @@ export async function getClassicEvidence({
     const { data, error } = await supabase.rpc('search_classic_evidence', {
       p_concept: normalizedConcept,
       p_limit: clampClassicEvidenceLimit(limit),
-    });
+    }).abortSignal(AbortSignal.timeout(3_000));
 
     if (error) {
       return {
@@ -195,7 +210,9 @@ export async function getClassicEvidence({
       };
     }
 
-    const items = ((data ?? []) as ClassicEvidenceRow[]).map(mapClassicEvidenceRow);
+    const items = ((data ?? []) as ClassicEvidenceRow[])
+      .filter(isUsableClassicEvidenceRow)
+      .map(mapClassicEvidenceRow);
 
     return {
       concept: normalizedConcept,
@@ -213,6 +230,37 @@ export async function getClassicEvidence({
       setupRequired: true,
       error: error instanceof Error ? error.message : 'Classic evidence lookup failed.',
     };
+  }
+}
+
+/** Anchor lookup is service-only: the quality-gated view is not browser-readable. */
+export async function getClassicEvidenceByAnchor({
+  workSlug,
+  anchor,
+}: { workSlug: string; anchor: string }): Promise<ClassicEvidenceResult> {
+  const concept = anchor.trim();
+  const empty = { concept, count: 0, items: [] as ClassicEvidenceItem[] };
+  if (!hasSupabaseServiceEnv) {
+    return { ...empty, status: 'missing-env', setupRequired: true };
+  }
+  if (!workSlug.trim() || concept.length < 4) {
+    return { ...empty, status: 'ready', setupRequired: false };
+  }
+  try {
+    const supabase = await createServiceClient();
+    const escapedAnchor = concept.replace(/[\\%_]/g, '\\$&');
+    const { data, error } = await supabase.from('v_classic_evidence_flat').select('*')
+      .eq('canonical_slug', workSlug)
+      .ilike('original_text_zh', `%${escapedAnchor}%`)
+      .order('passage_id').limit(3).abortSignal(AbortSignal.timeout(3_000));
+    if (error) return { ...empty, status: 'db-error', setupRequired: true, error: error.message };
+    const items = ((data ?? []) as ClassicEvidenceRow[])
+      .filter((row) => row.canonical_slug === workSlug && isUsableClassicEvidenceRow(row))
+      .map(mapClassicEvidenceRow);
+    return { concept, count: items.length, items, status: 'ready', setupRequired: false };
+  } catch (error) {
+    return { ...empty, status: 'db-error', setupRequired: true,
+      error: error instanceof Error ? error.message : 'Classic anchor lookup failed.' };
   }
 }
 

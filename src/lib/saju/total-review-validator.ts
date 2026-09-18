@@ -133,7 +133,7 @@ export interface TotalReviewValidationResult {
 
 /** 한자/금지 명리어/일일 톤/자극어 — 어디서든 출력 폐기 사유.
  *  naming-policy 단일 소스 — 오행 가이드(Phase 5) 등 다른 LLM 검증기에서도 재사용. */
-export function hardTextReasons(text: string, where: string): string[] {
+export function hardTextReasons(text: string, where: string, allowMyeongriTerms = false): string[] {
   const reasons: string[] = [];
   const hanja = text.match(HANJA_RE);
   if (hanja?.length) {
@@ -141,7 +141,7 @@ export function hardTextReasons(text: string, where: string): string[] {
   }
   for (const [label, pattern] of BANNED_MYEONGRI_PATTERNS) {
     // label 은 `지지(地支)` 형태 — 재시도 프롬프트에서 어느 뜻이 걸렸는지 모델이 알 수 있어야 한다.
-    if (pattern.test(text)) reasons.push(`${where} 금지 용어: ${label}`);
+    if (!allowMyeongriTerms && pattern.test(text)) reasons.push(`${where} 금지 용어: ${label}`);
   }
   for (const pattern of DAILY_TONE_PATTERNS) {
     const m = text.match(pattern);
@@ -184,7 +184,7 @@ export function validateTotalReviewSection(
     if (typeof summary !== 'string' || !summary.trim()) {
       return { ok: false, reasons: ['one_line_summary 누락 또는 비문자열'] };
     }
-    reasons.push(...hardTextReasons(summary, '한 줄 요약'));
+    reasons.push(...hardTextReasons(summary, '한 줄 요약', true));
     const len = summary.trim().length;
     if (len < 12 || len > 90) reasons.push(`한 줄 요약 길이 ${len}자 (12~90 권장)`);
     return { ok: reasons.length === 0, reasons };
@@ -208,7 +208,7 @@ export function validateTotalReviewSection(
         reasons.push(`${key} 누락 또는 비문자열`);
         continue;
       }
-      reasons.push(...hardTextReasons(para, key));
+      reasons.push(...hardTextReasons(para, key, true));
     }
     // 본문 문장 수 25~35 enforce — 재시도 게이트에 포함(이전엔 validateTotalReview 로깅용으로만 검출).
     const sentenceCount = keys.reduce((sum, key) => {
@@ -235,7 +235,7 @@ export function validateTotalReviewSection(
         reasons.push(`카드 ${i + 1} ${field} 누락`);
         continue;
       }
-      reasons.push(...hardTextReasons(v, `카드 ${i + 1} ${field}`));
+      reasons.push(...hardTextReasons(v, `카드 ${i + 1} ${field}`, true));
     }
   });
   return { ok: reasons.length === 0, reasons };
@@ -262,7 +262,7 @@ export function validateTotalReview(
   ].join('\n');
 
   // 1·2·3·5 (한자 / 금지어 / 일일 톤 / 자극어) — 전체 텍스트
-  reasons.push(...hardTextReasons(fullText, '본문'));
+  reasons.push(...hardTextReasons(fullText, '본문', true));
 
   // 4. "결" 빈도 — naming-policy §9: 요약·카드 0회, 본문 단락당 최대 1회
   paragraphs.forEach((p, i) => {
@@ -343,5 +343,5 @@ export function hasHardTotalReviewViolation(output: TotalReviewOutput): boolean 
     output.main_narrative.paragraph_4_now,
     ...output.lifetime_keys.flatMap((k) => [k.title, k.subtitle, k.body]),
   ].join('\n');
-  return hardTextReasons(fullText, '').length > 0;
+  return hardTextReasons(fullText, '', true).length > 0;
 }

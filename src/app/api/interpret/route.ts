@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint } from '@/server/classics/reading-grounding';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   buildSajuInterpretationGrounding,
@@ -82,10 +83,9 @@ function parseInterpretRequest(payload: unknown): InterpretRequest | null {
 async function readCachedInterpretation(
   readingId: string,
   topic: string,
-  counselorId: MoonlightCounselorId
+  promptVersion: string
 ) {
   if (!hasSupabaseServiceEnv || !isReadingId(readingId)) return null;
-  const promptVersion = getInterpretationPromptVersion(counselorId);
 
   try {
     const supabase = await createServiceClient();
@@ -108,6 +108,7 @@ async function writeCachedInterpretation(input: {
   readingId: string;
   topic: string;
   counselorId: MoonlightCounselorId;
+  promptVersion: string;
   interpretation: SajuAiInterpretation;
   model: string | null;
   source: AiGenerationSource;
@@ -116,7 +117,7 @@ async function writeCachedInterpretation(input: {
 }) {
   if (!hasSupabaseServiceEnv || !isReadingId(input.readingId)) return;
   if (input.source !== 'openai') return;
-  const promptVersion = getInterpretationPromptVersion(input.counselorId);
+  const promptVersion = input.promptVersion;
 
   try {
     const supabase = await createServiceClient();
@@ -197,8 +198,11 @@ export async function POST(req: NextRequest) {
       ? await getRecentFortuneFeedbackSummary(reading.userId)
       : null;
 
+  const classicGrounding = await getClassicReadingGrounding(reading.sajuData, 'daily');
+  const promptVersion = `${getInterpretationPromptVersion(counselorId)}|${readingGroundingFingerprint(classicGrounding)}`;
+
   if (cacheable && !parsed.regenerate) {
-    const cached = await readCachedInterpretation(parsed.readingId, topic, counselorId);
+    const cached = await readCachedInterpretation(parsed.readingId, topic, promptVersion);
     if (cached) {
       await recordLlmRun({ feature: 'interpret', source: 'cache', model: cached.model, userId: reading.userId });
       return NextResponse.json({
@@ -215,7 +219,7 @@ export async function POST(req: NextRequest) {
         fallbackReason: cached.fallback_reason,
         errorMessage: cached.error_message,
         metadata: buildSajuReportRuntimeMetadata(reading.metadata, {
-          promptVersion: getInterpretationPromptVersion(counselorId),
+          promptVersion,
           llmModel: cached.model,
           generationSource: cached.source,
         }),
@@ -258,7 +262,8 @@ export async function POST(req: NextRequest) {
       scoreKey: report.focusScoreKey,
     },
     counselorId,
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
   const model = getOpenAIInterpretationModel();
   const aiResult = await generateAiText({
@@ -286,6 +291,7 @@ export async function POST(req: NextRequest) {
     readingId: parsed.readingId,
     topic,
     counselorId,
+    promptVersion,
     interpretation: parsedInterpretation.interpretation,
     model: aiResult.model,
     source,
@@ -307,7 +313,7 @@ export async function POST(req: NextRequest) {
     fallbackReason,
     errorMessage,
     metadata: buildSajuReportRuntimeMetadata(reading.metadata, {
-      promptVersion: getInterpretationPromptVersion(counselorId),
+      promptVersion,
       llmModel: aiResult.model,
       generationSource: source,
     }),

@@ -83,11 +83,11 @@ test('validateTotalReview: 단락 4에 고민 컨텍스트 미반영 시 실패'
   assert.ok(r.reasons.some((x) => x.includes('고민 컨텍스트')), r.reasons.join(' / '));
 });
 
-test('validateTotalReview: 금지 명리어(식신격) 있으면 실패', () => {
+test('validateTotalReview: 근거의 한글 명리어와 짧은 설명을 보존한다', () => {
   const bad = structuredClone(GOOD);
-  bad.main_narrative.paragraph_1_who_you_are += ' 식신격의 결이 뚜렷합니다.';
+  bad.main_narrative.paragraph_1_who_you_are += ' 식신격(나누고 베푸는 별이 중심인 사주)을 참고해요.';
   const r = validateTotalReview(bad, CTX);
-  assert.ok(r.reasons.some((x) => x.includes('금지 용어')), r.reasons.join(' / '));
+  assert.ok(!r.reasons.some((x) => x.includes('금지 용어')), r.reasons.join(' / '));
 });
 
 test('validateTotalReviewSection: one_line_summary 정상 통과', () => {

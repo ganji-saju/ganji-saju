@@ -169,6 +169,10 @@ function EvidenceSample({ item }: { item: ClassicEvidenceAuditItem }) {
       <div className="mt-4 text-base font-semibold text-[var(--app-ivory)]">
         {item.workTitleKo} · {item.sectionPath} · #{item.passageNo}
       </div>
+      <p className="mt-2 text-sm text-[var(--app-copy-muted)]">
+        {item.verificationStatus === 'reviewed' ? '원문 검수 완료' : '원문 잠정 확인 · 전문 검수 전'}
+        {' · '}{item.commentaryKo ? '검수된 한국어 해설 있음' : '검수된 한국어 해설 없음'}
+      </p>
       {item.commentaryKo ? (
         <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">{item.commentaryKo}</p>
       ) : null}
@@ -486,6 +490,10 @@ export default async function VerificationPage({ searchParams }: VerificationPag
               <h2 className="mt-2 text-3xl font-semibold text-[var(--app-ivory)]">
                 3종 live 적재와 API 게이트
               </h2>
+              <p className="mt-3 text-base text-[var(--app-copy-muted)]">
+                이 상태는 원문 적재·출처·검색 조건을 검사합니다. 잠정 원문의 전문 검수나 개인 풀이의 적중률을 뜻하지 않습니다.
+                실제 풀이에는 계산 조건에 맞는 원문과 별도 편집 해설을 연결하며, 검수 전 한국어 요약은 근거에서 제외합니다.
+              </p>
             </div>
             <JsonLink href={classicsApiHref} />
           </div>

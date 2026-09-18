@@ -332,6 +332,7 @@ export async function buildTodayFortuneSnapshotContent({
   );
   const premiumResult = await attachTodayPremiumNarrative(freeResult, basePremiumResult, {
     userId: reading.userId,
+    sajuData: todaySajuData,
   });
   const readingKey = toSlug(reading.input);
   const occurredOn = freeResult.dateKey;

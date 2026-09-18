@@ -1,3 +1,4 @@
+import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import { getLifetimeCalendarLuck } from '@/domain/saju/report/build-lifetime-report';
 import {
@@ -463,7 +464,8 @@ export function createLifetimeInterpretationPrompt(
   record: ReadingRecord,
   report: SajuLifetimeReport,
   counselorId: MoonlightCounselorId,
-  recentFeedbackSummary?: string | null
+  recentFeedbackSummary?: string | null,
+  classicGrounding?: ClassicReadingGrounding
 ) {
   const counselorInstructions = buildReportCounselorInstructions(counselorId).join('\n');
 
@@ -492,6 +494,7 @@ export function createLifetimeInterpretationPrompt(
       '  "rememberRules": string[5],',
       '  "oneLineSummary": string',
       '}',
+      CLASSIC_READING_INSTRUCTIONS,
       '규칙:',
       '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',
       '- 명리 용어는 정관·편관·신강·신약·격국·용신처럼 정확한 한글 원어를 유지하고, 처음 등장할 때만 짧은 생활 언어 설명을 붙인다. 서로 다른 용어를 하나의 뜻으로 뭉개지 않는다. 한자와 factJson·evidenceJson 같은 구현 용어는 본문에 쓰지 않는다.',
@@ -516,6 +519,7 @@ export function createLifetimeInterpretationPrompt(
     ].join('\n'),
     input: JSON.stringify({
       ...createGrounding(record, report, counselorId),
+      classicGrounding: classicGrounding ?? null,
       recentFeedbackSummary: recentFeedbackSummary ?? null,
     }),
   };
