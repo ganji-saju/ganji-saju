@@ -5,7 +5,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const TOTAL_REVIEW_PROMPT_VERSION = 'total-review/v3-question-evidence';
+export const TOTAL_REVIEW_PROMPT_VERSION = 'total-review/v4-classic-evidence';
 
 export const TOTAL_REVIEW_CACHE_TTL_DAYS = 30;
 
@@ -15,6 +15,7 @@ export interface TotalReviewCacheKeyContext {
   concern?: string | null;
   gender?: string | null;
   userName?: string | null;
+  classicEvidenceHash?: string | null;
 }
 
 /**
@@ -45,6 +46,7 @@ export function buildTotalReviewCacheKey(
       concern: normalizeCacheText(context.concern),
     },
     promptVersion: TOTAL_REVIEW_PROMPT_VERSION,
+    classicEvidenceHash: context.classicEvidenceHash ?? null,
   });
   return createHash('sha256').update(payload).digest('hex');
 }

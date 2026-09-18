@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint } from '@/server/classics/reading-grounding';
 // 2026-05-21 — 사주 총평 LLM 진입점. saju-total-review-llm-spec.md §8.
 //   흐름: 플래그 확인 → 입력 빌드 → 3섹션 *병렬* 생성 → 조립 → validateTotalReview →
 //   hard 위반 시 deterministic(buildSajuNarrative) fallback.
@@ -47,6 +48,7 @@ export interface GenerateTotalReviewArgs {
   maxRetries?: number;
   /** DI — 미지정 시 Supabase 캐시 스토어. 테스트는 in-memory 주입. */
   cacheStore?: TotalReviewCacheStore;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
 }
 
 export interface TotalReviewResult {
@@ -115,12 +117,16 @@ export async function generateTotalReview(
   });
   const deterministic = buildDeterministicOutput(narrative);
   const situation = args.personalizationContext.userSituation;
+  const classicGrounding = isTotalReviewLLMEnabled(env)
+    ? await (args.getClassicGrounding ?? getClassicReadingGrounding)(args.sajuData)
+    : undefined;
   const cacheKey = buildTotalReviewCacheKey(args.sajuData, {
     relationshipStatus: situation?.relationshipStatus ?? null,
     occupation: situation?.occupation ?? null,
     concern: situation?.currentConcern ?? null,
     gender: args.gender ?? null,
     userName: args.userName ?? null,
+    classicEvidenceHash: classicGrounding ? readingGroundingFingerprint(classicGrounding) : null,
   });
   const meta = {
     generatedAt: now.toISOString(),
@@ -168,6 +174,7 @@ export async function generateTotalReview(
     gender: args.gender ?? null,
     now,
   });
+  input.classicGrounding = classicGrounding;
   const client =
     args.client ??
     createOpenAITotalReviewClient({

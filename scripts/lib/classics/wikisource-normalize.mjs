@@ -18,7 +18,9 @@ const CONCEPT_KEYWORDS = [
 export const WIKISOURCE_WORKS = [
   {
     key: 'ditian-sui',
-    sourceWorkRef: 'title=滴天髓',
+    // New normalization version preserves formatted verses and their commentary.
+    // Keep the first import intact; never overwrite its passage/derived records.
+    sourceWorkRef: 'title=滴天髓&normalizer=2',
     title: '滴天髓',
     rootTitle: '滴天髓',
     scriptType: 'trad',
@@ -306,7 +308,7 @@ export function parseCleanedWikitextSections(wikitext, options = {}) {
 }
 
 export function cleanWikisourceWikitext(wikitext) {
-  let text = wikitext;
+  let text = wikitext.replace(/__(?:TOC|NOTOC|FORCETOC|NOEDITSECTION)__/g, '');
 
   text = text.replace(/<!--[\s\S]*?-->/g, '\n');
   text = text.replace(/<\s*\/?\s*(onlyinclude|poem|br|div|span|center|small)[^>]*>/gi, '\n');
@@ -320,6 +322,10 @@ export function cleanWikisourceWikitext(wikitext) {
     text = text.replace(/\{\{([^{}]+?)\}\}/g, (_match, body) => {
       const [name, ...parts] = body.split('|').map((part) => part.trim());
       if (!name || name.startsWith('#')) return '';
+      // Formatting templates contain source text, not metadata. Resolve the
+      // innermost + first, then retain color's text argument (not its color).
+      if (name === '+') return parts[0] ?? '';
+      if (name.toLowerCase() === 'color') return parts[1] ?? '';
       if (['lang', 'lang-zh', 'zh', 'ruby'].includes(name)) return parts.at(-1) ?? '';
       return parts.length === 1 ? parts[0] : '';
     });
@@ -338,8 +344,19 @@ export function cleanWikisourceWikitext(wikitext) {
 }
 
 export function splitPassages(text, maxChars = DEFAULT_MAX_PASSAGE_CHARS) {
-  return text
-    .split(/\n{2,}/)
+  const paragraphs = [];
+  for (const block of text.split(/\n{2,}/)) {
+    const paragraph = block.trim();
+    if (!paragraph) continue;
+    // Wikisource uses ':' for the commentary following a short verse. Keep
+    // its conditions with that verse; the next unindented verse starts anew.
+    if (paragraph.startsWith(':') && paragraphs.length > 0) {
+      paragraphs[paragraphs.length - 1] += `\n${paragraph}`;
+    } else {
+      paragraphs.push(paragraph);
+    }
+  }
+  return paragraphs
     .flatMap((block) => splitLongPassage(block, maxChars))
     .map((passage) => passage.replace(/\s+/g, ' ').trim())
     .filter((passage) => passage.length >= 2)

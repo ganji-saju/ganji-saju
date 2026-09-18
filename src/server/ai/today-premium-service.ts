@@ -1,3 +1,5 @@
+import { CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 // 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
 //   흐름: 언락(결제) 시 buildTodayFortuneSnapshotContent → attachTodayPremiumNarrative →
 //         generateTodayPremiumInterpretation → generateAiText(feature:'today_premium').
@@ -18,6 +20,7 @@ import type { LlmTelemetryStore } from './llm-telemetry';
 import { validateChapterBody } from '@/lib/saju/chapter-validator';
 
 export interface TodayPremiumInterpretationInput {
+  classicGrounding?: ClassicReadingGrounding;
   concernLabel: string;
   gradeLabel: string | null;
   gradeMessage: string | null;
@@ -47,6 +50,8 @@ export interface GenerateTodayPremiumDeps {
 }
 
 export interface AttachTodayPremiumNarrativeDeps {
+  sajuData?: SajuDataV1 | SajuDataV2;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
   /** 테스트/DI — 미지정 시 실제 generateTodayPremiumInterpretation. */
   generateInterpretation?: typeof generateTodayPremiumInterpretation;
   env?: NodeJS.ProcessEnv;
@@ -90,9 +95,11 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     '점수를 성공 확률이나 건강 상태로 해석하지 마세요. 날짜와 계산된 관계를 바꾸지 말고, 실제 근거가 없는 시간대나 다음 날 결과도 만들지 마세요.',
     '치료·진단 단정, "반드시/100%/완치" 같은 단정, 투자 종목 매수·매도 지시는 쓰지 마세요. 참고 조언 톤을 유지합니다.',
     NAMING_POLICY_GUARD,
+    CLASSIC_READING_INSTRUCTIONS,
   ].join('\n');
 
   const lines: Array<string | null> = [
+    input.classicGrounding ? `고전 해석 근거: ${JSON.stringify(input.classicGrounding)}` : null,
     input.readingDate ? `풀이 날짜: ${input.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 고민 주제: ${input.concernLabel}`,
     input.reasoning ? `원국과 오늘의 관계 근거: ${input.reasoning}` : null,
@@ -197,8 +204,12 @@ export async function attachTodayPremiumNarrative(
   deps: AttachTodayPremiumNarrativeDeps = {}
 ): Promise<TodayFortunePremiumResult> {
   const generate = deps.generateInterpretation ?? generateTodayPremiumInterpretation;
+  const input = toTodayPremiumInterpretationInput(free, premium, deps.userId);
+  if (deps.sajuData && isTodayPremiumLLMEnabled(deps.env)) {
+    input.classicGrounding = await (deps.getClassicGrounding ?? getClassicReadingGrounding)(deps.sajuData, 'daily');
+  }
   const narrative = await generate(
-    toTodayPremiumInterpretationInput(free, premium, deps.userId),
+    input,
     { env: deps.env, telemetryStore: deps.telemetryStore }
   );
   return { ...premium, aiNarrative: narrative };

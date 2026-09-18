@@ -1,3 +1,4 @@
+import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { FocusTopic, ReportScore, SajuReport } from '@/domain/saju/report/types';
 import {
   buildSajuInterpretationGrounding,
@@ -246,7 +247,8 @@ function buildStructuredInterpretationInput(
     scoreKey: ReportScore['key'];
   },
   counselorId: MoonlightCounselorId,
-  recentFeedbackSummary?: string | null
+  recentFeedbackSummary?: string | null,
+  classicGrounding?: ClassicReadingGrounding
 ) {
   const context = grounding.personalizationContext;
   const rawPayload = {
@@ -256,6 +258,7 @@ function buildStructuredInterpretationInput(
     personalizationContext: context,
     factJson: grounding.factJson,
     evidenceJson: grounding.evidenceJson,
+    classicGrounding: classicGrounding ?? null,
   };
 
   return [
@@ -291,7 +294,7 @@ function buildStructuredInterpretationInput(
     '- 위 사주 원국의 수치와 다른 판단을 새로 만들지 말 것.',
     '- 오행 비율, 십성 분포, 일간 강약, 용신/희신/기신 중 최소 3가지를 내부 근거로 사용하라.',
     '- 누구에게나 맞는 일반적인 사주 해설, 평균적인 위로, 반복 문장을 쓰지 말 것.',
-    '- 전문용어는 본문에 직접 노출하지 말고 생활 장면으로 번역하라.',
+    '- 입력에 있는 한글 명리 용어는 유지하고 처음 등장할 때 짧게 설명하라. 근거와 생활 장면을 함께 연결하라.',
     '- “오늘/이 주제에서 실제로 어떻게 나타나는가”를 구체적인 선택, 말투, 행동으로 바꿔라.',
     '- 출력은 JSON만 반환하라. headline, summary, insights 각각에 서로 다른 개인화 근거가 드러나야 한다.',
     '',
@@ -341,18 +344,21 @@ export function createInterpretationPrompt(
     scoreKey: ReportScore['key'];
   },
   counselorId: MoonlightCounselorId = 'female',
-  recentFeedbackSummary?: string | null
+  recentFeedbackSummary?: string | null,
+  classicGrounding?: ClassicReadingGrounding
 ) {
   const structuredInput = buildStructuredInterpretationInput(
     grounding,
     focus,
     counselorId,
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
 
   return {
     instructions: [
       '당신은 한국 사주 풀이 전문가가 운영하는 운세 서비스의 작가입니다. 명리 도메인 지식을 갖춘 글쓰기 가이드입니다.',
+      CLASSIC_READING_INSTRUCTIONS,
       '제공된 personalizationContext, factJson, evidenceJson 안에서만 해석하고, 없는 신살·격국·고전 출처를 새로 만들지 않습니다.',
       '개인화의 1순위 근거는 ===사주 원국===과 ===이 사주의 고유 특성===입니다. dayGanziCode, sixtyGapja, fiveElementRatio, tenGodDistribution, strengthJudgement, yongsinKiyshin, currentLuck을 반드시 참고해 사람마다 다른 결론을 만듭니다.',
       '사용자는 명리 공부가 아니라 오늘 내 삶에 필요한 말을 보러 왔습니다. 결론, 마음가짐, 오늘 할 행동을 먼저 씁니다.',
@@ -364,11 +370,11 @@ export function createInterpretationPrompt(
       'sixtyGapja.title 과 sixtyGapja.core 를 headline 또는 summary 첫 문장에 직접 인용하면 가장 좋습니다. 예: "갑자일주 큰 방향을 세우는 나무, 오늘은 ___합니다."',
       // 2026-05-15 P1: 유보형 → 단정형 + 명령형 전환. 시장 벤치마크상 "할 수 있어요",
       // "편이 좋습니다" 같은 어미가 일반론으로 들려 5명 부정 피드백 1차 원인.
-      '문장은 단정형 + 명령형으로 씁니다. "___ 할 수 있어요", "___ 편이 좋습니다", "___ 흐름입니다" 같은 유보형 어미는 금지. 대신 "___ 입니다", "___ 하세요", "___ 합니다" 로 끝맺습니다.',
+      '계산된 글자와 관계는 명확히 말하고, 명리 해석은 경향으로 설명합니다. 생활 장면은 "이런 상황이라면"처럼 조건을 붙여 실제 사실이나 미래 사건과 구분합니다.',
       '점수나 계산값을 그대로 반복 나열하지 말고, 지금 어떤 선택을 하면 덜 흔들리는지 생활 언어로 씁니다.',
       '서로 다른 사주가 같은 headline, 같은 summary, 같은 insights로 나오면 실패입니다. 반드시 해당 사주의 강한 기운, 약한 기운, 일주 특성, 보완 축 중 구체적인 차이를 반영합니다.',
-      'recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 단정 문구의 강도만 미세 조절하되 유보형으로 돌아가지 않습니다. 계산 근거를 앞세웁니다.',
-      '의학, 법률, 투자, 생명·안전 문제는 단정하지 말고 생활 조언 수준으로 제한합니다. 그 외 일·관계·연애·재물 등 일상 흐름은 단정형으로 작성합니다.',
+      'recentFeedbackSummary가 있으면 설명의 이해도와 생활 맥락을 보완하되 계산값과 근거의 확실성을 바꾸지 않습니다.',
+      '의학, 법률, 투자, 생명·안전 문제는 생활 조언 수준으로 제한합니다. 일·관계·재물에서도 실제 경험과 미래 결과를 확인한 사실처럼 단정하지 않습니다.',
       '근거 없는 일반론을 길게 늘어놓지 말고, 사용자가 바로 이해할 수 있는 상황과 행동으로 바꿉니다.',
       // 2026-07-06 — 밀착 개인화(show, don't tell): 추상 성격어 대신 이 사람의 실제 일상 장면으로.
       '[밀착 개인화] 성향·강점·약점을 추상적으로 서술하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여주세요. "책임감이 강합니다"(추상·일반론) ❌ → "맡은 일은 끝을 봐야 마음이 놓입니다. 남들이 이미 넘어간 자리를 혼자 한 번 더 확인합니다"(장면·단정형) ⭕.',

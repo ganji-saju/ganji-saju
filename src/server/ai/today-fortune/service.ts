@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint } from '@/server/classics/reading-grounding';
 // Task 6 — 오늘운세 LLM 오케스트레이터 (플래그 → 캐시 → 프롬프트 → 생성 → 검증 → 폴백).
 //
 // 핵심 흐름:
@@ -92,18 +93,21 @@ export async function generateTodayFortuneNarrative(args: {
   userId: string;
   /** 이 본문이 누구 사주인지(4기둥+성별). 캐시 교차 서빙 방지 — cache.ts 주석 참고. */
   subjectKey?: string | null;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
 }): Promise<TodayFortuneNarrative | null> {
   const { result, sajuData, caseSummaries, situation, userId, subjectKey } = args;
 
   // Step 1: 플래그 OFF → 결정론 유지.
   if (!isTodayFortuneLlmEnabled()) return null;
 
+  const classicGrounding = await (args.getClassicGrounding ?? getClassicReadingGrounding)(sajuData, 'daily');
+
   // Step 2: 캐시 조회.
   const key: TodayFortuneCacheKey = {
     userId,
     dateKey: result.dateKey,
     concernId: result.concernId,
-    promptVersion: todayFortuneCacheVersion(TODAY_FORTUNE_PROMPT_VERSION, subjectKey),
+    promptVersion: todayFortuneCacheVersion(`${TODAY_FORTUNE_PROMPT_VERSION}|${readingGroundingFingerprint(classicGrounding)}`, subjectKey),
   };
 
   const cached = await readTodayFortuneAi(key);
@@ -120,7 +124,7 @@ export async function generateTodayFortuneNarrative(args: {
 
   try {
     const grounding = buildTodayFortuneGrounding({ result, sajuData, caseSummaries, situation });
-    const { instructions, input } = createTodayFortunePrompt(grounding);
+    const { instructions, input } = createTodayFortunePrompt({ ...grounding, classicGrounding });
 
     const aiResult = await generateAiText({
       instructions,

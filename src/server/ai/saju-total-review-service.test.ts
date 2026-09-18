@@ -87,7 +87,7 @@ test('generateTotalReview: 플래그 ON + 정상 LLM → source llm + 3섹션 �
   assert.equal(result.output.lifetime_keys.length, 3);
 });
 
-test('generateTotalReview: 플래그 ON + 한자 누출 → hard 위반 deterministic fallback', async () => {
+test('generateTotalReview: 한자 누출 섹션은 fallback, 정상 섹션은 보존', async () => {
   const { sajuData, personalizationContext } = fixture();
   const result = await generateTotalReview({
     sajuData,
@@ -102,7 +102,7 @@ test('generateTotalReview: 플래그 ON + 한자 누출 → hard 위반 determin
     cacheStore: createInMemoryTotalReviewCacheStore(),
   });
   assert.equal(result.source, 'fallback');
-  assert.equal(result.output.lifetime_keys.length, 0);
+  assert.equal(result.output.lifetime_keys.length, 3, '검증을 통과한 다른 섹션은 보존');
   assert.ok(!/[一-鿿]/.test(result.output.one_line_summary), '폴백 출력에 한자 없음');
 });
 

@@ -1,3 +1,4 @@
+import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 // 2026-05-19 — 9 챕터 LLM 호출의 입력 JSON 스키마.
 //   report-llm-spec.md §2 의 ChapterLLMInput 을 TypeScript 로 구체화.
 //   LLM 호출 자체는 아직 구현 안 함 — 본 파일은 정적 자산.
@@ -88,6 +89,7 @@ export interface ChapterPriorDigest {
 }
 
 export interface ChapterLLMInput {
+  classicGrounding?: ClassicReadingGrounding;
   chapterId: ChapterId;
   chapter: ChapterMeta;
   saju: ChapterSaju;

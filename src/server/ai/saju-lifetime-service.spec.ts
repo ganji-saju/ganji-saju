@@ -4,6 +4,10 @@ import { buildTransientReading } from '@/lib/saju/readings';
 import { buildFallbackLifetimeInterpretation } from './saju-lifetime-interpretation';
 import { createInMemoryLifetimeCacheStore } from './lifetime/lifetime-cache-store';
 
+vi.mock('@/server/classics/reading-grounding', async (original) => ({
+  ...await original<typeof import('@/server/classics/reading-grounding')>(),
+  getClassicReadingGrounding: vi.fn(async () => ({ version: 'offline-test', status: 'unavailable', items: [], limitation: 'Offline test.' })),
+}));
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => { throw new Error('unexpected database access'); }),
   createServiceClient: vi.fn(() => { throw new Error('unexpected database access'); }),

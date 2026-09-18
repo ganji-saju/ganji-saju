@@ -1,39 +1,22 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import nextEnv from '@next/env';
 import { createClient } from '@supabase/supabase-js';
 
 export function loadLocalEnv(projectRoot) {
-  const envPath = path.join(projectRoot, '.env.local');
-  if (!fs.existsSync(envPath)) return;
-
-  const content = fs.readFileSync(envPath, 'utf8');
-  for (const rawLine of content.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) continue;
-
-    const separatorIndex = line.indexOf('=');
-    if (separatorIndex <= 0) continue;
-
-    const key = line.slice(0, separatorIndex).trim();
-    let value = line.slice(separatorIndex + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    process.env[key] ??= value;
-  }
+  nextEnv.loadEnvConfig(projectRoot, process.env.NODE_ENV !== 'production', {
+    info() {},
+    error() { throw new Error('Could not load local environment files.'); },
+  });
 }
 
 export function createSupabaseServiceClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const firstValue = (...keys) => keys.map((key) => process.env[key]?.trim())
+    .find((value) => value && value !== '""' && value !== "''");
+  const supabaseUrl = firstValue('NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_URL');
+  const serviceRoleKey = firstValue('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
 
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for --apply.'
+      'Supabase URL and service-role/secret key are required for corpus access.'
     );
   }
 
@@ -56,6 +39,8 @@ export async function upsertClassicWorkCorpus({ supabase, collected, replace = f
   });
 
   try {
+    const existingPassages = await loadExistingPassages(supabase, workVersion.work_version_id);
+    if (!replace) assertUnchangedPassages(collected.passages, existingPassages);
     if (replace) {
       await assertNoReviewedDerivedRows(supabase, workVersion.work_version_id);
       await deleteExistingPassages(supabase, workVersion.work_version_id);
@@ -94,7 +79,7 @@ export async function upsertClassicWorkCorpus({ supabase, collected, replace = f
           provenance_hash: passage.provenanceHash,
           source_line_ref: passage.sourceLineRef,
           license_label: licenseLabel,
-          verification_status: workVersion.verification_status,
+          verification_status: 'provisional',
           is_suspect: false,
           suspect_reason: null,
         },
@@ -103,7 +88,8 @@ export async function upsertClassicWorkCorpus({ supabase, collected, replace = f
 
     const passageResult = await upsertPassages(
       supabase,
-      passageInputs.map((input) => input.row)
+      passageInputs.map((input) => input.row),
+      replace ? [] : existingPassages
     );
     const tagCount = await upsertPassageConceptTags({
       supabase,
@@ -145,7 +131,7 @@ export async function upsertClassicWorkCorpus({ supabase, collected, replace = f
 async function loadWorkVersion(supabase, sourceWorkRef) {
   const { data, error } = await supabase
     .from('classic_work_versions')
-    .select('work_version_id, source_id, source_work_ref, license_override, verification_status')
+    .select('work_version_id, source_id, source_work_ref, license_override, verification_status, public_release_status, is_reference_only')
     .eq('source_work_ref', sourceWorkRef)
     .single();
 
@@ -153,7 +139,35 @@ async function loadWorkVersion(supabase, sourceWorkRef) {
     throw new Error(`Could not load classic_work_versions row for ${sourceWorkRef}: ${error.message}`);
   }
 
+  if (data.public_release_status !== 'live' || data.is_reference_only
+      || !['reviewed', 'provisional'].includes(data.verification_status)) {
+    throw new Error(`Refusing ingest for non-public or unverified work version ${sourceWorkRef}.`);
+  }
   return data;
+}
+
+async function loadExistingPassages(supabase, workVersionId) {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('classic_passages')
+      .select('passage_id, section_id, passage_no, original_text_zh, classic_sections!inner(section_key)')
+      .eq('work_version_id', workVersionId).order('passage_id').range(from, from + 999);
+    if (error) throw new Error(`Could not check existing source text: ${error.message}`);
+    rows.push(...(data ?? []));
+    if (!data || data.length < 1000) return rows;
+  }
+}
+
+export function assertUnchangedPassages(passages, existing) {
+  const previous = new Map(existing.map((row) => [
+    `${row.classic_sections.section_key}:${row.passage_no}`, row.original_text_zh,
+  ]));
+  for (const passage of passages) {
+    const oldText = previous.get(`${passage.sectionKey}:${passage.passageNo}`);
+    if (oldText !== undefined && oldText !== passage.originalTextZh) {
+      throw new Error('Source text changed at an existing passage. Use a new work version or review a protected --replace before updating derived text.');
+    }
+  }
 }
 
 async function loadEffectiveLicenseLabel(supabase, workVersion) {
@@ -223,8 +237,43 @@ async function assertNoReviewedDerivedRows(supabase, workVersionId) {
   const passageIds = await loadPassageIdsForWorkVersion(supabase, workVersionId);
   let readingCount = 0;
   let translationCount = 0;
+  const { count: versionCommentaries, error: commentaryError } = await supabase
+    .from('classic_commentaries').select('commentary_id', { count: 'exact', head: true })
+    .eq('work_version_id', workVersionId).in('review_status', ['reviewed', 'approved']);
+  if (commentaryError) throw new Error(`Could not protect reviewed commentaries: ${commentaryError.message}`);
+  if (versionCommentaries) throw new Error('Refusing --replace because reviewed/approved commentaries exist.');
+  const { count: protectedOriginals, error: originalError } = await supabase
+    .from('classic_passages').select('passage_id', { count: 'exact', head: true })
+    .eq('work_version_id', workVersionId).or('verification_status.eq.reviewed,is_suspect.eq.true');
+  if (originalError) throw new Error(`Could not protect original review decisions: ${originalError.message}`);
+  if (protectedOriginals) throw new Error('Refusing --replace because reviewed or suspect original passages exist.');
+  for (let from = 0; ; from += 1000) {
+    const { data: sections, error: sectionError } = await supabase.from('classic_sections')
+      .select('section_id').eq('work_version_id', workVersionId)
+      .order('section_id').range(from, from + 999);
+    if (sectionError) throw new Error(`Could not protect section commentaries: ${sectionError.message}`);
+    for (const batch of chunk(sections ?? [], 100)) {
+      const { count, error } = await supabase.from('classic_commentaries')
+        .select('commentary_id', { count: 'exact', head: true })
+        .in('section_id', batch.map((row) => row.section_id))
+        .in('review_status', ['reviewed', 'approved']);
+      if (error) throw new Error(`Could not protect section commentaries: ${error.message}`);
+      if (count) throw new Error('Refusing --replace because reviewed/approved section commentaries exist.');
+    }
+    if (!sections || sections.length < 1000) break;
+  }
 
   for (const batch of chunk(passageIds, 100)) {
+    const { count: commentaryCount, error: passageCommentaryError } = await supabase
+      .from('classic_commentaries').select('commentary_id', { count: 'exact', head: true })
+      .in('passage_id', batch).in('review_status', ['reviewed', 'approved']);
+    if (passageCommentaryError) throw new Error(`Could not protect passage commentaries: ${passageCommentaryError.message}`);
+    if (commentaryCount) throw new Error('Refusing --replace because reviewed/approved commentaries exist.');
+    const { count: manualTags, error: tagError } = await supabase
+      .from('classic_passage_concept_tags').select('passage_id', { count: 'exact', head: true })
+      .in('passage_id', batch).neq('tagging_source', 'wikisource_exact_keyword');
+    if (tagError) throw new Error(`Could not protect reviewed concept tags: ${tagError.message}`);
+    if (manualTags) throw new Error('Refusing --replace because non-generated concept tags exist.');
     const { count: batchReadingCount, error: readingError } = await supabase
       .from('classic_readings_ko')
       .select('reading_id', { count: 'exact', head: true })
@@ -345,14 +394,19 @@ async function upsertSections({ supabase, workVersionId, sections }) {
   return sectionIdByKey;
 }
 
-async function upsertPassages(supabase, passageRows) {
+async function upsertPassages(supabase, passageRows, existing) {
   let written = 0;
-  const passageIdBySectionAndNo = new Map();
-  for (const batch of chunk(passageRows, 250)) {
+  const passageIdBySectionAndNo = new Map(existing.map((row) => [
+    `${row.section_id}:${row.passage_no}`, row.passage_id,
+  ]));
+  // Unchanged source rows keep their provenance, review/suspect decisions and derivatives.
+  const newRows = passageRows.filter((row) => !passageIdBySectionAndNo.has(`${row.section_id}:${row.passage_no}`));
+  for (const batch of chunk(newRows, 250)) {
     const { data, error } = await supabase
       .from('classic_passages')
       .upsert(batch, {
         onConflict: 'section_id,passage_no',
+        ignoreDuplicates: true,
       })
       .select('passage_id, section_id, passage_no');
 
@@ -418,6 +472,7 @@ async function upsertPassageConceptTags({
   for (const batch of chunk(tagRows, 500)) {
     const { error } = await supabase.from('classic_passage_concept_tags').upsert(batch, {
       onConflict: 'passage_id,concept_tag_id',
+      ignoreDuplicates: true,
     });
 
     if (error) {

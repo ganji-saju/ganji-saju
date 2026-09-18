@@ -20,10 +20,12 @@ const CHAPTER_CONTENT_VERSION = 'lifetime-questions-v2';
 export function buildChapterCacheKey(
   sajuData: SajuDataV1 | SajuDataV2,
   userContext: ChapterUserContext,
-  chapterId: number
+  chapterId: number,
+  classicEvidenceHash: string | null = null
 ): string {
   const payload = JSON.stringify({
     contentVersion: CHAPTER_CONTENT_VERSION,
+    classicEvidenceHash,
     pillars: {
       year: sajuData.pillars.year.ganzi,
       month: sajuData.pillars.month.ganzi,

@@ -1,3 +1,4 @@
+import { CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
 // Task 3 — 오늘운세 LLM 프롬프트 빌더 (순수 함수 — LLM 호출 없음, DB 없음).
 //
 // `createTodayFortunePrompt` 은 Task-2 grounding DTO 를 받아 LLM 호출용
@@ -26,6 +27,7 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
     '직업·연애 상태 등 입력에 없는 사실은 지어내지 말고 "그런 상황이라면"으로 설명하세요. 과거 사건이나 상대의 마음을 맞혔다고 단정하지 마세요.',
     '점수는 성공·질병·수입의 확률이 아닙니다. 높은 점수로 성과를 보장하거나 낮은 점수로 나쁜 사건을 예고하지 마세요.',
     '근거에 없는 시간대·다음 날·미래 시점은 만들지 마세요. 계산된 관계와 생활 조언을 구분하고, 서로 다른 분야의 점수를 바꿔 해석하지 마세요.',
+    CLASSIC_READING_INSTRUCTIONS,
     '규칙:',
     '1. 사실만 자연스럽게 연결할 것. 근거 없이 단정하거나 과장하지 마세요.',
     '2. 단정 표현 금지 — "반드시", "절대", "100%", "무조건" 같은 단정 표현은 쓰지 마세요.',
@@ -38,6 +40,7 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
   ].join('\n');
 
   const lines: Array<string | null> = [
+    g.classicGrounding ? `고전 해석 근거: ${JSON.stringify(g.classicGrounding)}` : null,
     g.readingDate ? `풀이 날짜: ${g.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 일진: ${g.todayGanzi}`,
     `관심 주제: ${g.concernLabel}`,
