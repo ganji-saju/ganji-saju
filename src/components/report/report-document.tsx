@@ -536,7 +536,7 @@ export function ReportDocument({
                 </div>
                 <div className="rp-year-finder">
                   {Array.from({ length: 11 }, (_, i) => i * 10).map((age) => (
-                    <div key={age}><strong>{age === 0 ? '출생~9세' : age === 100 ? '100세' : `${age}~${age + 9}세`}</strong><span>{birthYear + age}년부터 · {annualStartPage + Math.floor(age / 2)}쪽</span></div>
+                    <div key={age}><strong>{age === 0 ? '출생~9세' : age === 100 ? '100세' : `${age}~${age + 9}세`}</strong><span>{birthYear + age}년부터 · {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.age === age))}쪽</span></div>
                   ))}
                 </div>
                 <div className="rp-guide-note">{data.timeline.notes.map((note) => <p key={note}>{note}</p>)}</div>

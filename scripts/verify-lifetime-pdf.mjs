@@ -88,6 +88,10 @@ try {
     const metrics = await page.evaluate(() => ({
       pages: [...document.querySelectorAll('.report-page')].map((element) => ({ number: Number(element.getAttribute('data-page')), height: element.getBoundingClientRect().height, width: element.getBoundingClientRect().width, text: element.textContent.length })),
       years: [...document.querySelectorAll('[data-year]')].map((el) => Number(el.getAttribute('data-year'))),
+      yearFinder: [...document.querySelectorAll('.rp-year-finder span')].map((el) => {
+        const [, year, page] = el.textContent.match(/(\d+)년부터 · (\d+)쪽/) ?? [];
+        return { year: Number(year), page: Number(page), actualPage: Number(document.querySelector(`[data-year="${year}"]`)?.closest('[data-page]')?.getAttribute('data-page')) };
+      }),
       controlsHidden: [...document.querySelectorAll('.external-report-controls,.external-report-workspace > header,.admin-shell > aside')].every((el) => getComputedStyle(el).display === 'none'),
       horizontalOverflow: [...document.querySelectorAll('.report-page')].some((el) => el.scrollWidth > el.clientWidth + 1),
       consentHidden: getComputedStyle(document.querySelector('.analytics-consent-banner')).display === 'none',
@@ -97,6 +101,8 @@ try {
       }),
     }));
     assert.deepEqual(metrics.years, Array.from({ length: 101 }, (_, age) => input.year + age));
+    assert.deepEqual(metrics.yearFinder.map((item) => item.year), Array.from({ length: 11 }, (_, i) => input.year + i * 10));
+    for (const item of metrics.yearFinder) assert.equal(item.page, item.actualPage, `${item.year} contents link must match its actual printed page`);
     assert.ok(metrics.pages.length >= 30);
     assert.deepEqual(metrics.pages.map((item) => item.number), Array.from({ length: metrics.pages.length }, (_, i) => i + 1));
     assert.ok(metrics.controlsHidden, 'Admin controls leaked into print');

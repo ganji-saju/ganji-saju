@@ -4,9 +4,10 @@ import type { Branch, Element, Stem } from './types';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import type { TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import { getBranchPrimaryTenGod, getTenGodHangul } from '@/domain/saju/engine/orrery-adapter';
-import { BRANCH_TO_ELEMENT as BRANCH_ELEMENT, STEM_TO_ELEMENT as STEM_ELEMENT, isBranchChung, isYukhap } from '@/lib/today-fortune/iljin-rules';
+import { BRANCH_TO_ELEMENT as BRANCH_ELEMENT, STEM_TO_ELEMENT as STEM_ELEMENT, isBranchChung, isYukhap, isStemHap, isStemChung } from '@/lib/today-fortune/iljin-rules';
 import { ganziToKorean } from './terminology';
 import { yearToGanji } from './year-ganji';
+import { josa } from './pdf-report-maps';
 
 /** Age is the calendar year minus the original solar birth year, not birthday age. */
 export interface LifetimePdfYear {
@@ -155,81 +156,61 @@ const ELEMENT_ROUTINE: Record<Element, string> = {
 
 // The annual stem supplies the focus; the branch's main hidden stem supplies
 // the way to put it into practice. These are not a rotation of synonymous copy.
-const YEAR_METHODS: Record<TenGodCode, { focus: string; learning: string; resource: string; rhythm: string; action: string }> = {
+const YEAR_METHODS: Record<TenGodCode, { focus: string; rhythm: string; action: string }> = {
   비견: {
     focus: '독립적인 연습',
-    learning: '설명을 듣는 데서 끝내지 말고 도움 없이 해볼 부분을 남겨야 자신의 방식이 드러납니다.',
-    resource: '함께 쓰는 것에도 각자 결정할 수 있는 몫을 남겨야 작은 선택마다 허락을 구하지 않아도 됩니다.',
     rhythm: '혼자 집중하는 시간과 함께 보내는 시간을 구분하고, 혼자 처리할 수 있다는 이유로 쉬는 시간까지 채우지는 마세요.',
     action: '다른 사람의 방식을 그대로 따르던 일에서 직접 선택할 부분을 하나 찾고, 필요한 도움의 범위도 함께 정하세요.',
   },
   겁재: {
     focus: '서로의 몫을 나누는 연습',
-    learning: '같은 목표를 가진 사람과 방법을 비교하되, 서로 대신해 줄 부분보다 각자 맡을 부분을 먼저 나누세요.',
-    resource: '공동으로 쓰는 시간과 물건은 누가 얼마나 맡을지 합의해야 부담이 한쪽으로 몰리지 않습니다.',
     rhythm: '여럿의 일정에 맞춘 날에는 따로 쉴 시간을 남기고, 다른 사람의 속도를 따라가기 위해 여유를 없애지는 마세요.',
     action: '함께하는 활동 하나에서 참여 범위와 쉬어갈 때의 약속을 합의하고, 한 사람에게 몰린 몫을 다시 나누세요.',
   },
   식신: {
     focus: '만들고 반복하는 연습',
-    learning: '눈에 보이는 작은 결과물을 직접 만들고 같은 과정을 되풀이하며 손에 익는 순서를 찾으세요.',
-    resource: '계속 써야 하는 재료와 시간을 먼저 확보하고, 새로 늘리는 것보다 이미 가진 것을 오래 쓰는 방법을 살펴보세요.',
     rhythm: '준비하고 활동한 뒤 정리하는 순서를 일정하게 두면 다시 시작하기가 수월합니다. 재미있는 활동도 마칠 시점을 정해 두세요.',
     action: '직접 만든 결과물을 모아 두고 다시 해볼 과정을 고르세요. 완성의 크기보다 반복하기 편한 순서를 남기는 것이 과제입니다.',
   },
   상관: {
     focus: '대안을 시험하는 연습',
-    learning: '기존 방법과 바꾼 방법을 같은 조건에서 비교하고, 설명만 그럴듯한 대안과 실제 도움이 되는 대안을 구분하세요.',
-    resource: '새 도구나 방식을 시험할 몫을 작게 떼어 두고, 바꾼 뒤에 필요한 유지 비용과 수고도 함께 비교하세요.',
     rhythm: '불편한 점을 고치는 시간에는 끝낼 기준이 필요합니다. 개선할 일을 떠올렸더라도 쉬는 동안 바로 처리하려 하지 마세요.',
     action: '불편한 과정 하나를 바꿔 보고 이전 방법과 차이를 비교하세요. 효과가 없다면 되돌릴 수 있도록 원래 방법도 남겨 두세요.',
   },
   편재: {
     focus: '선택지를 비교하는 연습',
-    learning: '다른 분야의 경험을 연결하되 모두 시작하지는 말고, 필요한 시간과 준비를 비교해 먼저 해볼 것을 고르세요.',
-    resource: '선택마다 드는 준비와 지속 부담을 따로 비교하세요. 시작할 여유가 있어도 계속 유지할 여유는 다를 수 있습니다.',
     rhythm: '이동과 만남을 여러 건 이어 잡기보다 사이에 여백을 두세요. 새 활동을 더할 때에는 먼저 줄일 일도 함께 골라야 합니다.',
     action: '관심 있는 선택지를 시간·준비·유지 부담으로 비교해 하나를 고르세요. 선택하지 않은 일은 당장 해야 할 목록에서 빼두세요.',
   },
   정재: {
     focus: '쌓인 것을 관리하는 연습',
-    learning: '진행 순서와 끝낼 범위를 미리 정하고, 이미 익힌 부분은 유지하면서 미완성인 부분부터 마무리하세요.',
-    resource: '반복해서 드는 몫과 한 번만 드는 몫을 구분하세요. 사용 내역을 보면 계속 남겨둘 것과 줄일 것을 가리기 쉽습니다.',
     rhythm: '준비에 드는 시간을 실제 일정에 포함하고, 정해둔 순서가 생활에 맞는지 살펴보세요. 빠진 일을 쉬는 시간에 몰아넣지 않는 편이 좋습니다.',
     action: '자주 사용하는 물건이나 시간의 흐름을 살피고 찾기 쉬운 자리를 정하세요. 비슷한 것을 더 늘리기 전에 가진 것부터 확인하세요.',
   },
   편관: {
     focus: '어려움을 나누는 연습',
-    learning: '난도가 높은 부분을 따로 연습하고, 막히는 지점에서 누구에게 무엇을 물을지 구체적으로 준비하세요.',
-    resource: '일정이 어긋났을 때 쓸 여유와 도움받을 경로를 먼저 남기세요. 부담을 줄일 순서를 정하면 급하게 모두 포기할 필요가 줄어듭니다.',
     rhythm: '집중을 많이 요구하는 활동 뒤에는 가벼운 일이나 휴식을 배치하세요. 긴장한 상태를 다음 일정까지 끌고 가지 않도록 구분하는 것이 핵심입니다.',
     action: '어려운 활동에서 멈추고 도움을 구할 기준을 미리 정하세요. 끝까지 버티는 것만 목표로 삼지 말고 다시 시도할 여유를 남기세요.',
   },
   정관: {
     focus: '약속한 기준을 맞추는 연습',
-    learning: '완성의 기준을 먼저 확인하고 설명할 근거를 남기세요. 혼자 높인 기준보다 서로 이해한 기준을 맞추는 데 힘을 쓰세요.',
-    resource: '맡은 역할에 필요한 몫부터 배분하되, 요청을 받을 때마다 책임의 범위까지 늘어나고 있지는 않은지 확인하세요.',
     rhythm: '정해진 약속 사이에 준비와 마무리 시간을 넣으세요. 빈 시간마다 다른 부탁을 받아들이면 원래 약속을 지킬 여유가 줄어듭니다.',
     action: '함께 정한 기준과 혼자 높여 잡은 기준을 구분하세요. 꼭 필요한 약속은 지키고 추가 요청은 가능한 범위를 다시 설명해 보세요.',
   },
   편인: {
     focus: '의문을 직접 확인하는 연습',
-    learning: '서로 다른 설명을 비교한 뒤 직접 확인할 질문을 하나 남기세요. 자료를 모으는 단계와 실제로 해보는 단계를 구분하는 것이 좋습니다.',
-    resource: '조사와 준비에 쓸 몫의 한계를 정하세요. 당장 확인할 수 없는 정보를 더 모으기보다 작은 실행에 필요한 것부터 마련하세요.',
     rhythm: '생각이 이어질 때에는 질문을 적어 두고 생활로 돌아올 구분점이 필요합니다. 답을 찾는 시간과 조용히 쉬는 시간을 분리해 보세요.',
     action: '확인한 사실과 아직 추측인 내용을 나누세요. 생각만으로 답을 정하기 어려운 질문은 직접 해보거나 적절한 사람에게 물어보세요.',
   },
   정인: {
     focus: '배운 것을 자기 것으로 만드는 연습',
-    learning: '믿을 만한 설명을 구하고 배운 순서를 다시 해보세요. 도움을 받은 뒤에는 혼자 해보며 추가로 필요한 질문을 찾는 과정이 중요합니다.',
-    resource: '배우고 회복하는 데 필요한 몫을 먼저 남기세요. 도움받을 수 있는 자원을 확인하되 전부 대신해 주는 방식에만 기대지는 마세요.',
     rhythm: '익숙하고 편안한 순서를 하루의 기준으로 두세요. 새로운 설명이나 활동을 받아들인 뒤에는 서두르지 않고 소화할 시간을 남겨두는 편이 좋습니다.',
     action: '도움받은 방법을 자신의 말이나 행동으로 다시 표현해 보세요. 잘 이해되지 않은 부분을 골라 다시 묻는 데까지 이어가면 좋습니다.',
   },
 };
 
 function annualScope(age: number) {
-  if (age <= 5) return { learning: '보호자가 놀이를 준비할 때', resource: '놀이 공간과 돌봄 시간을 마련할 때', action: '보호자가 아이의 반응을 보며 돌봄에 적용할 과제입니다.' };
+  if (age <= 5) return { learning: '보호자가 놀이를 준비할 때', resource: '보호자가 놀이 공간과 돌봄 시간을 마련할 때', action: '보호자가 아이의 반응을 보며 돌봄에 적용할 과제입니다.' };
   if (age <= 12) return { learning: '놀이와 기초 학습에서는', resource: '준비물과 용돈을 챙길 때', action: '아이가 해볼 부분과 보호자가 도울 부분을 나눠 적용하세요.' };
   if (age <= 18) return { learning: '공부와 관심 분야를 탐색할 때', resource: '용돈과 공부·취미 시간을 나눌 때', action: '진로를 한 번에 정하기보다 관심 분야에서 적용해 보세요.' };
   if (age <= 34) return { learning: '배움과 새로운 역할을 경험할 때', resource: '생활비와 배움에 쓸 여유를 나눌 때', action: '배움과 활동에서 실제로 선택할 수 있는 범위에 적용하세요.' };
@@ -261,13 +242,17 @@ function guideFor(dayStem: Stem, ganzi: string) {
   return { god, ...GOD_GUIDES[god] };
 }
 
-function branchReading(reading: ReadingRecord, branch: Branch): string {
-  const natal = [
+function knownNatalPillars(reading: ReadingRecord) {
+  return [
     ['태어난 해', reading.sajuData.pillars.year],
     ['태어난 달', reading.sajuData.pillars.month],
     ['태어난 날', reading.sajuData.pillars.day],
-    ['태어난 시간', reading.sajuData.input.hourKnown ? reading.sajuData.pillars.hour : null],
+    ['태어난 시간', !reading.input.unknownTime && reading.sajuData.input.hourKnown ? reading.sajuData.pillars.hour : null],
   ] as const;
+}
+
+function branchReading(reading: ReadingRecord, branch: Branch): string {
+  const natal = knownNatalPillars(reading);
   const clash = natal.filter(([, pillar]) => pillar && isBranchChung(branch, pillar.branch)).map(([label]) => label);
   const combine = natal.filter(([, pillar]) => pillar && isYukhap(branch, pillar.branch)).map(([label]) => label);
   const repeated = natal.filter(([, pillar]) => pillar?.branch === branch).map(([label]) => label);
@@ -349,10 +334,162 @@ function yearPhase(cycle: CycleRange | undefined, year: number) {
 function annualCycleReading(cycle: CycleRange | undefined, branch: Branch): string {
   if (!cycle) return '';
   const cycleBranch = cycle.ganzi[1] as Branch;
-  if (isBranchChung(branch, cycleBranch)) return '세운과 대운의 지지가 충하므로, 장기 계획과 당장의 요구가 엇갈리는 부분을 먼저 조정하는 관점입니다.';
-  if (isYukhap(branch, cycleBranch)) return '세운과 대운의 지지가 육합하므로, 올해의 시도를 오래 이어갈 활동과 연결하는 관점입니다.';
-  if (branch === cycleBranch) return '세운과 대운의 지지가 같으므로, 오랫동안 반복해 온 방법의 장점과 부담을 함께 돌아보는 관점입니다.';
+  if (isBranchChung(branch, cycleBranch)) return '세운과 대운의 지지는 충입니다.';
+  if (isYukhap(branch, cycleBranch)) return '세운과 대운의 지지는 육합입니다.';
+  if (branch === cycleBranch) return '세운과 대운의 지지가 같습니다.';
   return '';
+}
+
+type AnnualField = 'learningCareer' | 'relationships' | 'resources';
+
+// A focus and a concrete checkpoint, not interchangeable sentence variants.
+// The year's stem chooses the question; its branch chooses how to examine it.
+const ANNUAL_QUESTIONS: Record<TenGodCode, Record<AnnualField, readonly [string, string]>> = {
+  비견: {
+    learningCareer: ['스스로 완성하는 경험', '도움 없이 마칠 수 있는 범위'],
+    relationships: ['서로 다른 선택의 존중', '각자 결정할 일과 함께 결정할 일'],
+    resources: ['내 몫의 관리', '스스로 정해도 되는 사용 범위'],
+  },
+  겁재: {
+    learningCareer: ['협력과 역할 분담', '함께한 결과에서 내가 맡은 과정'],
+    relationships: ['부탁을 주고받는 경계', '서로 받아들일 수 있는 부탁의 크기'],
+    resources: ['공동 부담의 배분', '함께 쓴 몫과 각자 돌려놓을 몫'],
+  },
+  식신: {
+    learningCareer: ['꾸준히 만드는 결과물', '다시 해도 유지되는 완성도'],
+    relationships: ['작은 행동으로 전하는 마음', '상대가 편하게 받아들이는 표현'],
+    resources: ['이미 가진 것의 활용', '계속 쓰는 데 필요한 재료와 시간'],
+  },
+  상관: {
+    learningCareer: ['기존 방법의 개선', '바꾼 방법과 원래 방법의 차이'],
+    relationships: ['솔직한 의견의 전달', '들은 사실과 내가 붙인 해석의 차이'],
+    resources: ['새 방식의 효용 확인', '바꾸기 전후에 드는 수고와 비용'],
+  },
+  편재: {
+    learningCareer: ['서로 다른 경험의 연결', '여러 선택지 중 실제로 끝낼 수 있는 활동'],
+    relationships: ['새 인연과 기존 인연의 균형', '만남을 늘려도 지킬 수 있는 약속'],
+    resources: ['선택지의 비교', '시작할 때와 계속 유지할 때 필요한 몫'],
+  },
+  정재: {
+    learningCareer: ['미완성 과제의 마무리', '끝낸 부분과 아직 남은 부분'],
+    relationships: ['작은 약속에서 쌓는 신뢰', '서로 기억하는 약속 내용'],
+    resources: ['반복 지출의 정리', '자주 쓰는 몫과 가끔 필요한 몫'],
+  },
+  편관: {
+    learningCareer: ['어려운 과제의 단계별 해결', '막히는 지점과 도움을 청할 방법'],
+    relationships: ['한쪽으로 몰린 요구의 조정', '혼자 감당하는 역할과 나눌 역할'],
+    resources: ['예상 밖의 필요에 남겨둘 여유', '일정이 어긋나도 지킬 생활의 기본'],
+  },
+  정관: {
+    learningCareer: ['요구받은 수준의 확인', '약속한 완성 기준과 실제 결과'],
+    relationships: ['서로 기대하는 역할의 합의', '내 책임과 상대에게 남길 책임'],
+    resources: ['책임에 맞는 배분', '처음 정한 범위와 추가로 맡은 몫'],
+  },
+  편인: {
+    learningCareer: ['의문을 깊이 살피는 탐구', '직접 확인한 사실과 아직 남은 추측'],
+    relationships: ['혼자 생각할 시간의 확보', '혼자 있고 싶은 마음과 상대의 오해'],
+    resources: ['준비에 쓰는 몫의 점검', '모아둔 정보나 도구의 실제 사용량'],
+  },
+  정인: {
+    learningCareer: ['기초를 다시 익히는 배움', '도움받은 뒤 혼자 설명할 수 있는 내용'],
+    relationships: ['배려를 주고받는 방식', '도움이 필요한 부분과 대신하지 않을 부분'],
+    resources: ['배움과 회복을 위한 배분', '필요한 도움과 이미 갖춘 준비'],
+  },
+};
+
+function annualContacts(reading: ReadingRecord, ganzi: string) {
+  const natal = knownNatalPillars(reading).filter(([, pillar]) => pillar !== null);
+  const stem = ganzi[0];
+  const branch = ganzi[1];
+  // Keep simultaneous contacts, including opposite signals on different pillars.
+  // 合 here is contact only, not proof of 合化 or of a particular life event.
+  const rules = [
+    { kind: 'clash', part: '지지', label: '충', match: (p: NonNullable<typeof natal[number][1]>) => isBranchChung(branch, p.branch) },
+    { kind: 'clash', part: '천간', label: '충', match: (p: NonNullable<typeof natal[number][1]>) => isStemChung(stem, p.stem) },
+    { kind: 'combine', part: '지지', label: '육합', match: (p: NonNullable<typeof natal[number][1]>) => isYukhap(branch, p.branch) },
+    { kind: 'combine', part: '천간', label: '합', match: (p: NonNullable<typeof natal[number][1]>) => isStemHap(stem, p.stem) },
+    { kind: 'repeat', part: '지지', label: '반복', match: (p: NonNullable<typeof natal[number][1]>) => branch === p.branch },
+  ] as const;
+  return rules.flatMap((rule) => {
+    const slots = natal.filter(([, pillar]) => pillar && rule.match(pillar)).map(([label]) => label);
+    return slots.length ? [{ kind: rule.kind, part: rule.part, text: `${slots.join('·')}의 ${rule.part}${rule.label === '반복' ? ' ' : `${josa(rule.part, '과', '와')} `}${rule.label}` }] : [];
+  });
+}
+
+function annualFieldReadings(reading: ReadingRecord, ganzi: string, age: number, cycle: CycleRange | undefined) {
+  const dayStem = reading.sajuData.dayMaster.stem;
+  const god = getTenGodHangul(dayStem, ganzi[0] as Stem);
+  const branchGod = getBranchPrimaryTenGod(dayStem, ganzi[1] as Branch);
+  const contacts = annualContacts(reading, ganzi);
+  // Route practical advice by branch contacts first, then stem contacts when
+  // there are none. Otherwise a shared stem clash masks 辰/戌 or 丑/未 differences.
+  // This is an editorial focus, not a claim that one contact cancels another.
+  const branchContacts = contacts.filter((contact) => contact.part === '지지');
+  const practicalContacts = branchContacts.length ? branchContacts : contacts;
+  const clash = practicalContacts.some((contact) => contact.kind === 'clash');
+  const combine = practicalContacts.some((contact) => contact.kind === 'combine');
+  const repeat = practicalContacts.some((contact) => contact.kind === 'repeat');
+  const scope = annualScope(age);
+  const areas = {
+    learningCareer: age <= 18 || age >= 75 ? scope.learning : '',
+    relationships: age <= 5 ? '돌봄을 맡은 어른들 사이에서는' : age <= 18 ? '친구와 가족 사이에서는' : '가까운 사람과 관계를 이어갈 때',
+    resources: age <= 18 || age >= 75 ? scope.resource : '',
+  };
+  const fields = (['learningCareer', 'relationships', 'resources'] as const).map((field) => {
+    const [focus] = ANNUAL_QUESTIONS[god][field];
+    const [, check] = ANNUAL_QUESTIONS[branchGod][field];
+    const goal = `${focus}${josa(focus, '을', '를')}`;
+    const checkpoint = `${check}${josa(check, '을', '를')}`;
+    // Contacts change the choice itself (reconcile, collaborate, revisit or try).
+    // Changing a year number or swapping synonyms cannot change this priority.
+    const choices = {
+      learningCareer: clash && combine
+        ? `${goal} 위해 함께 배울 과정과 방법이 다른 과정을 나누고, ${checkpoint} 서로 비교해 보세요.`
+        : clash ? `${goal} 서두르기보다 ${checkpoint} 먼저 살펴, 기존 방식과 맞지 않는 요구를 구분하세요.`
+          : combine ? `${goal} 다른 사람의 경험과 연결하되, ${checkpoint} 본인이 직접 확인하는 단계는 남겨두세요.`
+            : repeat ? `${goal} 위해 익숙한 순서를 그대로 늘리기보다 ${checkpoint} 다시 살펴, 유지할 방법과 고칠 방법을 구분하세요.`
+              : `${goal} 작은 과제로 삼아 ${checkpoint} 기록하고, 직접 해본 결과에서 다음에 배울 내용을 고르세요.`,
+      relationships: clash && combine
+        ? `${goal} 생각할 때 ${checkpoint} 대화로 확인해, 편하게 함께할 일과 아직 의견이 다른 일을 나눠보세요.`
+        : clash ? `${goal} 위해 곧바로 설득하기보다 ${checkpoint} 각자의 말로 확인하고, 서로 다르게 이해한 부분부터 조율하세요.`
+          : combine ? `${goal} 함께 실천하되, 가까워졌다는 이유로 ${checkpoint} 묻지 않고 넘어가지는 마세요.`
+            : repeat ? `${goal} 익숙한 방식으로만 판단하지 말고 ${checkpoint} 다시 물어, 예전의 약속을 그대로 이어가도 괜찮은지 살펴보세요.`
+              : `${goal} 일상의 대화에 적용하고 ${checkpoint} 확인하며, 가까워지는 속도는 상대의 실제 반응에 맞춰보세요.`,
+      resources: clash && combine
+        ? `${goal} 위해 ${checkpoint} 맞춰 보고, 함께 쓸 몫과 따로 지킬 몫을 나눈 뒤 동의한 범위 안에서만 합치세요.`
+        : clash ? `${goal} 위해 ${checkpoint} 비교해 조정할 부담부터 고르고, 실제 여유가 확인된 부분만 바꾸세요.`
+          : combine ? `${goal} 위해 함께 쓰거나 도움받을 방법을 찾되, ${checkpoint} 먼저 합의해 한쪽의 부담이 늘지 않게 하세요.`
+            : repeat ? `${goal} 위해 ${checkpoint} 기준으로 내역을 다시 펼쳐, 계속 남길 것과 습관적으로 쓰던 것을 가려보세요.`
+              : `${goal} 생활 속 기록으로 확인하고 ${checkpoint} 비교해, 실제 쓰임에 맞춰 남겨둘 몫을 정하세요.`,
+    };
+    let timing = '';
+    if (cycle) {
+      const majorGod = getTenGodHangul(dayStem, cycle.ganzi[0] as Stem);
+      const [longFocus] = ANNUAL_QUESTIONS[majorGod][field];
+      const year = reading.input.year + age;
+      const offset = year - cycle.startYear;
+      const cycleBranch = cycle.ganzi[1] as Branch;
+      const phase = offset === 0 ? '진입기' : offset === 1 ? '적응기' : year >= cycle.endYear - 1 ? '마무리 시기' : offset <= 3 ? '초반' : offset <= 5 ? '중간 점검 시기' : '정착기';
+      const frame = `대운 ${phase}에는 '${longFocus}'${josa(longFocus, '과', '와')} 연결해`;
+      const practice = YEAR_METHODS[branchGod].focus;
+      const practiceObject = `${practice}${josa(practice, '을', '를')}`;
+      // The actual major pillar and boundary affect all three practical fields.
+      if (offset === 0) timing = `${frame} ${practiceObject} 작게 시험하세요.`;
+      else if (offset === 1) timing = `${frame} ${practiceObject} 첫해 경험에 대조해 수정하세요.`;
+      else if (year >= cycle.endYear - 1) timing = `${frame} ${practiceObject} 정리하고 다음 기간에 이어갈 것을 고르세요.`;
+      else if (isBranchChung(ganzi[1], cycleBranch)) timing = `${frame} ${practiceObject} 장기 계획과 비교해 어긋난 조건을 조정하세요.`;
+      else if (isYukhap(ganzi[1], cycleBranch)) timing = `${frame} ${practiceObject} 함께할 사람이나 활동을 찾아보세요.`;
+      else if (ganzi[1] === cycleBranch) timing = `${frame} ${practiceObject} 오래 지켜온 기준에 대조해 부담을 덜어보세요.`;
+      else if (offset <= 3) timing = `${frame} ${practiceObject} 해본 뒤 적용 범위를 넓혀보세요.`;
+      else if (offset <= 5) timing = `${frame} ${practiceObject} 처음 목표와 비교해 조정하세요.`;
+      else timing = `${frame} ${practiceObject} 일상에서 이어갈 순서로 정리하세요.`;
+    }
+    return [field, `${areas[field]} ${choices[field]} ${timing}`.trim()];
+  });
+  return {
+    ...Object.fromEntries(fields) as Record<AnnualField, string>,
+    basis: contacts.length ? `원국 접점: ${contacts.map((contact) => contact.text).join('; ')}.` : '원국과 직접적인 천간 합·충, 지지 충·육합·반복은 없습니다.',
+  };
 }
 
 /** PDF-only, synchronous, no DB/LLM or daily/monthly report generation. */
@@ -380,28 +517,23 @@ export function buildLifetimePdfTimeline(
     const scope = annualScope(age);
     const cycle = ranges.find((item) => year >= item.startYear && year <= item.endYear);
     const phase = yearPhase(cycle, year);
-    const majorGuide = cycle ? guideFor(dayStem, cycle.ganzi) : null;
-    const majorMeaning = annualCycleReading(cycle, branch) || (majorGuide
-      ? majorGuide.god === guide.god
-        ? '대운과 올해 천간의 십성이 같아 장기 과제를 올해의 작은 활동으로 구체화하는 데 초점을 둡니다.'
-        : `대운의 장기 주제는 '${majorGuide.theme}'입니다. 올해에는 '${method.focus}'으로 접근해 보세요.`
-      : ranges.length ? '첫 대운 전이므로 보호자가 마련하는 성장 환경을 중심으로 읽습니다.' : '대운 방향을 정하지 않고 연간 기운과 원국의 관계로 읽습니다.');
-    const previous = age > 0 ? guideFor(dayStem, yearToGanji(year - 1)) : null;
-    const shift = previous ? `지난해의 '${YEAR_METHODS[previous.god].focus}'보다 올해에는 '${YEAR_METHODS[guide.god].focus}'에 무게를 두는 해석입니다.` : '출생 연도에는 성과보다 아이의 반응과 돌봄 환경을 중심에 둡니다.';
+    const majorMeaning = annualCycleReading(cycle, branch) || (cycle
+      ? `대운 천간의 십성은 ${getTenGodHangul(dayStem, cycle.ganzi[0] as Stem)}입니다.`
+      : ranges.length ? '첫 대운 전, 성장 환경을 중심으로 읽습니다.' : '대운 미산정, 원국과 세운만 읽습니다.');
     // Each authored guide has a focus sentence and a supporting sentence. When
     // both axes agree, use the support instead of repeating the same advice.
     const sameGod = guide.god === branchGod;
-    const relationScope = age <= 5 ? '돌봄을 맡은 어른들의 관계에 적용하세요.' : age <= 18 ? '친구나 함께 배우는 사람과 적용하세요.' : age <= 54 ? '함께 활동하거나 가까운 사람과 적용하세요.' : '본인의 선택과 이어갈 인연을 살펴보세요.';
+    const annual = annualFieldReadings(reading, ganzi, age, cycle);
     return {
       year, age, ganzi,
       label: `${year}년 · ${age}세 · ${ganziToKorean(ganzi)}`,
       theme: guide.theme,
       majorLuckLabel: cycleContext(cycle, ranges, year),
       phase: [stage.label, phase.label].filter(Boolean).join(' · '),
-      overview: `천간 ${guide.god}: ${guide.theme}. 지지 본기 ${branchGod}: ${method.focus}. ${majorMeaning} ${shift}`,
-      learningCareer: `${scope.learning} ${sameGod ? detail(guide.learning) : opening(guide.learning)} ${method.learning}`,
-      relationships: `${relationScope} ${opening(guide.relation)} ${detail(GOD_GUIDES[branchGod].relation)} ${branchReading(reading, branch)}`,
-      resources: `${scope.resource} ${sameGod ? detail(guide.resource) : opening(guide.resource)} ${method.resource}`,
+      overview: `천간 ${guide.god}: ${guide.theme}. 지지 본기 ${branchGod}: ${method.focus}. ${annual.basis} ${majorMeaning}`,
+      learningCareer: annual.learningCareer,
+      relationships: annual.relationships,
+      resources: annual.resources,
       wellbeing: `${age <= 5 ? '돌봄을 맡은 보호자의 생활 리듬도 함께 살펴보세요. ' : ''}${sameGod ? detail(guide.mental) : opening(guide.mental)} ${method.rhythm}`,
       action: `${scope.action} ${phase.action} ${method.action}`,
       isCurrent: year === targetYear,
@@ -436,7 +568,9 @@ export function buildLifetimePdfTimeline(
     '나이는 출생한 양력 연도를 0세로 두는 연도 나이로, 생일 기준 만 나이와 다를 수 있습니다.',
     '연간 간지는 입춘 이후 기준이며 입춘 전에는 전년도 세운도 함께 봅니다. 연도 경계는 사건 발생일을 뜻하지 않습니다.',
     '대운은 생시·자시·출생지 보정을 반영합니다. 연간 기록은 100세까지이며 마지막 대운은 실제 경계를 보존해 그 이후까지 이어질 수 있습니다.',
-    '과거는 회고, 미래는 선택의 참고입니다. 천간은 올해 주제, 지지의 본기는 실천 방식으로 읽으며 충·육합·반복은 사건을 예고하지 않습니다.',
+    '과거는 회고, 미래는 선택의 참고입니다. 간지·십성·합충은 계산 근거이며, 천간을 주제와 지지 본기를 점검 방법으로 연결한 생활 조언은 간지사주의 해석입니다. 사건의 발생이나 적중을 입증하는 정보는 아닙니다.',
+    '원국의 합과 충이 함께 보이면 협력할 부분과 조정할 부분을 나누어 읽습니다. 해가 바뀌어도 같은 근거가 이어질 수 있으며, 합을 합화의 완성이나 충을 손실·이별로 단정하지 않습니다.',
+    '생활 조언은 지지 접점을 먼저 살피고 천간 합충을 함께 참고합니다. 이는 설명의 초점을 정하는 방식이며 다른 접점이 사라진다는 뜻은 아닙니다. 0–5세의 과제는 아이에게 요구하지 않고 보호자의 놀이 준비와 돌봄 조율에 적용합니다.',
     '대운의 단계는 장기 계획의 점검 순서입니다. 풀이가 결과나 건강을 보장하지 않으며, 몸의 변화나 불편함은 실제 상태에 맞는 도움을 받으세요.',
   ];
   if (!reading.sajuData.input.hourKnown) notes.push('출생 시각을 모르는 경우 정오를 기준으로 대운을 추정합니다. 시주와 세밀한 교운 시점은 확정할 수 없습니다.');

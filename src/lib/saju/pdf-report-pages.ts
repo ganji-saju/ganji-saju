@@ -1,3 +1,5 @@
+import type { LifetimePdfYear } from './lifetime-pdf-timeline';
+
 export interface PdfNarrativeSection {
   label: string;
   text: string;
@@ -42,8 +44,27 @@ export function paginatePdfNarrative(sections: PdfNarrativeSection[]): PdfNarrat
   return pages;
 }
 
-export function chunkPdfYears<T>(years: T[]): T[][] {
+type AnnualText = Pick<LifetimePdfYear, 'overview' | 'learningCareer' | 'relationships' | 'resources' | 'wellbeing' | 'action'>;
+
+function annualHeight(year: AnnualText): number {
+  const fields = [year.overview, year.learningCareer, year.relationships, year.resources, year.wellbeing, `이 해의 실천 ${year.action}`];
+  // ponytail: calibrated for controlled Korean A4 copy; recalibrate in the PDF layout check when fonts or styles change.
+  return 144 + fields.reduce((height, text, index) => {
+    const wide = index === 0 || index === 5;
+    const lines = text.split('\n').reduce((sum, paragraph) => {
+      const width = Array.from(paragraph).reduce((units, char) => units + (/\s/.test(char) ? 0.29 : /[ -~]/.test(char) ? 0.55 : 1), 0);
+      return sum + Math.max(1, Math.ceil(width / (wide ? 66 : 59)));
+    }, 0);
+    return height + lines * (index === 0 ? 21.6 : index === 5 ? 20.7 : 21);
+  }, 0);
+}
+
+export function chunkPdfYears<T extends AnnualText>(years: T[]): T[][] {
   const pages: T[][] = [];
-  for (let i = 0; i < years.length; i += 2) pages.push(years.slice(i, i + 2));
+  for (const year of years) {
+    const previous = pages.at(-1);
+    if (previous?.length === 1 && annualHeight(previous[0]) + annualHeight(year) <= 900) previous.push(year);
+    else pages.push([year]);
+  }
   return pages;
 }

@@ -20,11 +20,22 @@ test('PDF pagination handles unbroken prose and omits empty pages', () => {
 });
 
 test('PDF annual pages contain all 101 years once, with a final single year', () => {
-  const years = Array.from({ length: 101 }, (_, age) => 1990 + age);
+  const years = Array.from({ length: 101 }, (_, age) => ({ year: 1990 + age, overview: '', learningCareer: '', relationships: '', resources: '', wellbeing: '', action: '' }));
   const pages = chunkPdfYears(years);
   assert.equal(pages.length, 51);
   assert.deepEqual(pages.flat(), years);
-  assert.deepEqual(pages.at(-1), [2090]);
+  assert.deepEqual(pages.at(-1), [years[100]]);
+});
+
+test('PDF annual pagination isolates long entries while preserving every field and normal two-year pages', () => {
+  const short = { overview: '개요입니다.', learningCareer: '배움입니다.', relationships: '관계입니다.', resources: '생활입니다.', wellbeing: '리듬입니다.', action: '실천입니다.' };
+  const long = Object.fromEntries(Object.keys(short).map((key) => [key, '긴 사주 풀이를 빠뜨리지 않고 그대로 보존합니다. '.repeat(12)])) as typeof short;
+  const years = [short, short, long, long, short, short].map((text, age) => ({ ...text, age }));
+  const before = JSON.stringify(years);
+  const pages = chunkPdfYears(years);
+  assert.deepEqual(pages.map((page) => page.map((year) => year.age)), [[0, 1], [2], [3], [4, 5]]);
+  assert.deepEqual(pages.flat(), years);
+  assert.equal(JSON.stringify(years), before);
 });
 
 test('PDF questions in a new chapter start on their own page and retain their chapter after splitting', () => {
