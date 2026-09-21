@@ -95,3 +95,20 @@ test('내비: 할인쿠폰 관리(발급·요율 = 현금 증서)는 super_admin
   assert.ok(!admin.includes('/admin/coupons'), 'admin 에게 할인쿠폰 관리가 보이면 안 됨(페이지·액션도 super_admin 만)');
   assert.ok(superAdmin.includes('/admin/coupons'));
 });
+
+test('내비: 외부 주문 PDF는 super_admin 에게만 노출하고 해당 경로를 활성화한다', () => {
+  const admin = flattenNavItems(getVisibleNavGroups('admin')).map((item) => item.href);
+  const superAdmin = flattenNavItems(getVisibleNavGroups('super_admin')).map((item) => item.href);
+  assert.ok(!admin.includes('/admin/external-report'));
+  assert.ok(superAdmin.includes('/admin/external-report'));
+  assert.equal(getActiveNavHref('/admin/external-report'), '/admin/external-report');
+});
+
+test('내비: PDF 생성 기록은 생성 메뉴 바로 아래에 있고 상세도 기록 메뉴를 활성화한다', () => {
+  const admin = flattenNavItems(getVisibleNavGroups('admin')).map((item) => item.href);
+  const superAdmin = flattenNavItems(getVisibleNavGroups('super_admin')).map((item) => item.href);
+  assert.ok(!admin.includes('/admin/external-report/history'));
+  assert.equal(superAdmin.indexOf('/admin/external-report/history'), superAdmin.indexOf('/admin/external-report') + 1);
+  assert.equal(getActiveNavHref('/admin/external-report/history'), '/admin/external-report/history');
+  assert.equal(getActiveNavHref('/admin/external-report/history/saved-id'), '/admin/external-report/history');
+});

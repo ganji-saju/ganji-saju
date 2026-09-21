@@ -19,6 +19,7 @@ import { getCycleSipsin } from '@/lib/saju/cycle-sipsin';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { buildSajuReport } from './build-report';
 import { buildYearlyReport } from './build-yearly-report';
+import { buildLifetimeCoreReadings } from './lifetime-core-readings';
 import type {
   LifetimeKeyword,
   LifetimeLuckPhase,
@@ -81,6 +82,37 @@ function formatLuckRange(cycle: { startAge: number | null; endAge: number | null
   if (cycle.startAge !== null && cycle.endAge !== null) return `${cycle.startAge}-${cycle.endAge}세`;
   if (cycle.startAge !== null) return `${cycle.startAge}세 이후`;
   return `${cycle.endAge}세 이전`;
+}
+
+/** Keep the engine's nominal ages intact; lifetime prose uses year minus birth year, like the PDF. */
+export function getLifetimeCalendarLuck(data: SajuDataV1 | SajuDataV2, birthYear: number) {
+  const engineBirthYear = data.input.birthTimeCorrection?.adjustedBirth.year ?? data.input.birth.year;
+  const ageOffset = engineBirthYear - birthYear - 1;
+  const convertCycle = (cycle: SajuMajorLuckCycle): SajuMajorLuckCycle => {
+    const startAge = cycle.startAge === null ? null : cycle.startAge + ageOffset;
+    const endAge = cycle.endAge === null ? null : cycle.endAge + ageOffset;
+    return {
+      ...cycle,
+      startAge,
+      endAge,
+      notes: cycle.notes.map((note) => /^\d+세부터 \d+세까지 적용됩니다\.$/.test(note)
+        ? startAge !== null && endAge !== null
+          ? `연도 나이 ${startAge}세부터 ${endAge}세까지 적용됩니다.`
+          : '나이 범위를 확인할 자료가 부족합니다.'
+        : note),
+    };
+  };
+  return {
+    majorLuck: data.majorLuck?.map(convertCycle) ?? null,
+    currentLuck: data.currentLuck ? {
+      ...data.currentLuck,
+      currentMajorLuck: data.currentLuck.currentMajorLuck ? convertCycle(data.currentLuck.currentMajorLuck) : null,
+      saewoon: data.currentLuck.saewoon ? {
+        ...data.currentLuck.saewoon,
+        notes: data.currentLuck.saewoon.notes.filter((note) => !note.startsWith('현재 대운 정보 나이는')),
+      } : null,
+    } : null,
+  };
 }
 
 const STEM_ELEMENT_BY_SYMBOL: Record<string, Element> = {
@@ -1054,21 +1086,10 @@ function buildMajorLuckCycles(
     dayMasterStem: Stem;
     natalBranches: Array<{ branch: Branch; slotLabel: string }>;
   } | null = null,
-  // 2026-05-15 PR 7 응답 3: 교운기 판정용 사용자 만 나이 (생년 + 현재 연도).
+  // 교운기 판정도 본문과 동일한 연도 나이(기준 연도 - 출생 연도)를 사용한다.
   currentAge: number | null = null
 ): LifetimeMajorLuckCycleRow[] {
-  if (!cycles || cycles.length === 0) {
-    return [
-      {
-        ganzi: '대운 미산정',
-        ageLabel: '정보 부족',
-        phase: '전환기',
-        summary: '성별 또는 생시 정보가 부족해 대운 시작 시점을 세밀하게 산정하지 못했습니다.',
-        task: '생시와 출생지를 보완하면 10년 흐름 지도를 더 선명하게 다시 볼 수 있습니다.',
-        isCurrent: false,
-      },
-    ];
-  }
+  if (!cycles || cycles.length === 0) return [];
 
   return cycles.slice(0, 10).map((cycle, index) => {
     const isCurrent = currentMajorLuckGanzi === cycle.ganzi;
@@ -1156,14 +1177,11 @@ export function buildLifetimeReport(
   // 대운 cycle 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.
   userSituation: UserSituation | null = null
 ): SajuLifetimeReport {
-  const todayReport = buildSajuReport(input, sajuData, 'today');
-  const loveReport = buildSajuReport(input, sajuData, 'love');
-  const wealthReport = buildSajuReport(input, sajuData, 'wealth');
-  const careerReport = buildSajuReport(input, sajuData, 'career');
-  const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
+  // Reuse natal evidence, not the daily report's scores, actions or time windows.
+  const evidenceCards = buildSajuReport(input, sajuData, 'today').evidenceCards;
   const yearlyReport = buildYearlyReport(input, sajuData, targetYear);
   const evidenceByKey = Object.fromEntries(
-    todayReport.evidenceCards.map((card) => [card.key, card])
+    evidenceCards.map((card) => [card.key, card])
   );
 
   const dominant = formatElementName(sajuData.fiveElements.dominant);
@@ -1182,7 +1200,6 @@ export function buildLifetimeReport(
   const pattern = evidenceByKey.pattern;
   const yongsin = evidenceByKey.yongsin;
   const relations = evidenceByKey.relations;
-  const gongmang = evidenceByKey.gongmang;
   const specialSals = evidenceByKey.specialSals;
   const yongsinLabels = sajuData.yongsin
     ? formatSymbolList([sajuData.yongsin.primary, ...sajuData.yongsin.secondary])
@@ -1197,13 +1214,29 @@ export function buildLifetimeReport(
     sajuData.yongsin && sajuData.yongsin.kiyshin.length > 0
       ? dedupeStrings(sajuData.yongsin.kiyshin.map((symbol) => symbol.label))
       : [`${weakest} 기운`];
-  const currentMajorLuck = sajuData.currentLuck?.currentMajorLuck ?? null;
-  const todayTimeline = todayReport.timeline.find((item) => item.label === '오늘') ?? null;
-  const monthTimeline = todayReport.timeline.find((item) => item.label === '이번 달') ?? null;
-  const majorTimeline = todayReport.timeline.find((item) => item.label === '대운 흐름') ?? null;
+  const calendarLuck = getLifetimeCalendarLuck(sajuData, input.year);
+  const currentMajorLuck = calendarLuck.currentLuck?.currentMajorLuck ?? null;
   // 2026-05-15 PR 4: 사주 원국의 dominant tenGod 추출 — practicalActions 사전 매핑에 사용.
   // pattern 의 tenGod 우선, fallback 으로 tenGods.dominant.
   const primaryTenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
+  const coreReadings = buildLifetimeCoreReadings(input, sajuData, targetYear, userSituation);
+  const dayPillarLabel = `${toKoreanGanzi(sajuData.pillars.day.ganzi)} 일주`;
+  const supportAction = SHORTAGE_ACTION_DICT[supportElementKeys[0] ?? sajuData.fiveElements.weakest];
+  const adjustAction = EXCESS_ACTION_DICT[sajuData.fiveElements.dominant];
+  const isMinor = targetYear - input.year < 19;
+  const reactionStyle = sajuData.strength?.level === '신강'
+    ? '신강은 자기 기준을 유지하는 힘을 읽는 말입니다. 결정을 맡으면 방향을 빠르게 잡는지, 다른 의견을 받아들일 여지도 남기는지 함께 살펴보세요.'
+    : sajuData.strength?.level === '신약'
+      ? '신약은 주변의 지원과 조건을 함께 살펴야 한다는 뜻입니다. 혼자 감당할 때와 도움을 받을 때의 반응을 비교하면 힘을 쓸 수 있는 환경이 더 잘 보입니다.'
+      : sajuData.strength
+        ? '강약이 중화에 가까운 사주입니다. 상황에 맞추는 능력과 결정을 미루는 습관을 구분하려면, 어떤 조건에서 자기 기준이 분명해지는지 살펴보세요.'
+        : '강약 자료가 충분하지 않으므로 반응의 속도를 한 가지로 정하지 않습니다. 낯선 상황과 익숙한 상황에서 선택이 어떻게 달라지는지 경험을 비교해 보세요.';
+  const strainPattern = sajuData.strength?.level === '신강'
+    ? '스스로 해결할 수 있다는 판단이 도움을 요청하는 시점을 늦추는지 살펴보세요. 시작은 빠르지만 맡은 일을 계속 늘린다면 잘하는 일도 부담이 될 수 있습니다.'
+    : sajuData.strength?.level === '신약'
+      ? '주변의 기대에 맞추느라 본인에게 필요한 시간과 지원을 줄이고 있지는 않은지 살펴보세요. 부탁의 크기보다 여러 부탁이 겹칠 때의 부담을 먼저 확인하는 편이 좋습니다.'
+      : '상황마다 적응하느라 기준을 계속 바꾸는지 살펴보세요. 모두에게 맞추는 선택과 본인이 유지할 수 있는 선택이 다를 때에는 우선순위를 다시 정할 수 있습니다.';
+  const supportPractice = `${supportLabels} 보완 방향은 생활에서 '${supportAction.what}'처럼 시험할 수 있습니다. 도움이 되는지는 사주 설명보다 실제로 이어가기 편한지 확인해 보세요.`;
   // 2026-05-15 PR 6: 12운성 + 원진 metadata 부착용 engineContext.
   const engineContext = {
     dayMasterStem: sajuData.dayMaster.stem,
@@ -1211,15 +1244,14 @@ export function buildLifetimeReport(
       { branch: sajuData.pillars.year.branch, slotLabel: '연지' },
       { branch: sajuData.pillars.month.branch, slotLabel: '월지' },
       { branch: sajuData.pillars.day.branch, slotLabel: '일지' },
-      ...(sajuData.pillars.hour
+      ...(sajuData.input.hourKnown && sajuData.pillars.hour
         ? [{ branch: sajuData.pillars.hour.branch, slotLabel: '시지' }]
         : []),
     ],
   };
-  // 2026-05-15 PR 7 응답 3: 사용자 만 나이 — 교운기 판정용. 생년 = input.year.
-  const currentAge = Math.max(0, targetYear - input.year + 1);
+  const currentAge = Math.max(0, targetYear - input.year);
   const majorLuckCycles = buildMajorLuckCycles(
-    sajuData.majorLuck,
+    calendarLuck.majorLuck,
     currentMajorLuck?.ganzi ?? null,
     {
       supportElements: supportElementKeys,
@@ -1231,7 +1263,7 @@ export function buildLifetimeReport(
     engineContext,
     currentAge
   );
-  const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
+  const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent);
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(
     ([element, value]) =>
       `${formatElementLabel(element as Element)} ${value.percentage}% · ${formatElementState(value.state)} · ${value.score}점`
@@ -1239,9 +1271,11 @@ export function buildLifetimeReport(
   const rememberRules = [
     `강한 ${dominant} 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.`,
     `${supportLabels} 기운을 생활 루틴으로 만들수록 명식의 장점이 안정적으로 살아납니다.`,
-    `${weakest} 축이 약해지는 날에는 속도보다 리듬을 먼저 바로잡는 편이 좋습니다.`,
+    `익숙한 ${dominant} 기운의 방식만 반복한다면 '${adjustAction.what}'도 선택지로 두세요.`,
     '관계와 일에서 서운함이나 조급함을 결론처럼 말하기보다, 사실과 원칙을 먼저 정리해야 합니다.',
-    `지금의 ${currentMajorLuck?.ganzi ?? '대운'}은 단기 반응보다 장기 원칙을 바로 세울수록 힘을 실어줍니다.`,
+    currentMajorLuck
+      ? `${toKoreanGanzi(currentMajorLuck.ganzi)} 대운의 주제는 장기 선택의 참고로 두고, 실제로 감당할 수 있는 조건을 함께 확인하세요.`
+      : '현재 대운이 확인되지 않은 자료에서는 시기를 단정하지 말고 원국의 강점과 실제 생활 조건부터 살펴보세요.',
   ];
 
   return {
@@ -1268,17 +1302,15 @@ export function buildLifetimeReport(
     },
     coreIdentity: {
       headline: '원국의 본질',
-      summary: `${personality} ${todayReport.summaryHighlights[0] ?? ''}`.trim(),
-      reactionStyle:
-        todayReport.dayMasterSummary ||
-        `${sajuData.dayMaster.stem} 일간은 반응이 빠른 편이며, 한 번 원칙이 잡히면 스스로 방향을 만들려는 힘이 강합니다.`,
-      bestEnvironment: `${supportLabels} 기운이 살아나는 구조, 즉 속도만 빠른 자리보다 원칙과 리듬이 함께 있는 환경에서 강점이 가장 크게 드러납니다.`,
-      weakPattern: `${weakest} 축이 비거나 ${dominant} 기운이 과속할 때, 장점이 곧 피로와 고집으로 바뀌기 쉽습니다. 특히 서둘러 결론을 내리거나 감정을 바로 행동으로 옮길 때 무너지기 쉽습니다.`,
+      summary: `${dayPillarLabel}의 기본 성향은 ${personality} 같은 일주라도 강약과 주변 기운에 따라 그 성향을 드러내는 방식은 달라집니다.`,
+      reactionStyle,
+      bestEnvironment: `${supportPractice} ${isMinor ? '아이에게 성향을 요구하기보다 놀이와 배움에서 자연스럽게 관심이 이어지는 조건을 관찰하세요.' : '집중할 수 있는 시간, 질문할 수 있는 사람, 결정할 수 있는 범위가 갖춰졌을 때와 없을 때를 비교하면 환경의 차이가 보입니다.'}`,
+      weakPattern: strainPattern,
       basis: compactStrings([
-        todayReport.headline,
+        `${dayPillarLabel} · ${formatElementLabel(sajuData.dayMaster.element)} 일간`,
         personality,
-        todayReport.summaryHighlights[0],
-        todayReport.summaryHighlights[1],
+        sajuData.strength ? `강약: ${sajuData.strength.level}` : null,
+        `보완 방향: ${supportLabels} 기운`,
       ]),
     },
     strengthBalance: {
@@ -1286,14 +1318,10 @@ export function buildLifetimeReport(
       summary:
         strength?.body ??
         `${dominant} 기운이 앞에 서고 ${weakest} 기운은 의식적으로 보완해야 하는 구조입니다.`,
-      strongAxis: `${dominant} 기운은 타고난 장점이자 즉시 반응하는 힘입니다. 이 축이 살아나면 추진력, 존재감, 판단 속도가 자연스럽게 드러납니다.`,
-      weakAxis: `${weakest} 기운은 몸과 마음의 균형을 잡는 약한 축입니다. 방치하면 피로가 누적되고, 감정이나 재정, 생활 리듬에서 빈틈이 생기기 쉽습니다.`,
-      energyDrain:
-        todayReport.cautionAction.description ||
-        `${dominant} 기운만 앞세우면 오래 버티는 힘보다 단기 반응이 앞서서 에너지가 쉽게 샙니다.`,
-      recovery:
-        todayReport.primaryAction.description ||
-        `${supportLabels} 기운을 살리는 루틴을 만들수록 회복 속도가 빨라지고, 강한 축도 안정적으로 오래 갑니다.`,
+      strongAxis: `${dominant} 기운은 ${ELEMENT_INFO[sajuData.fiveElements.dominant].traits.slice(0, 2).join('·')}의 관점으로 읽습니다. 이 방향이 실제로 도움이 된 상황과 지나치게 사용해 부담이 된 상황을 함께 살펴야 강점의 쓰임이 보입니다.`,
+      weakAxis: `${weakest} 기운은 원국의 분포에서 상대적으로 적게 보이는 축입니다. 적다는 이유만으로 능력이나 건강의 문제를 정하지 않습니다. 보완이 필요한 장면은 실제 경험을 통해 확인하세요.`,
+      energyDrain: `${dominant} 기운이 상대적으로 두드러진다는 것과 과하다는 것은 다릅니다. 익숙한 방식만 고집해 선택지가 줄어들 때 '${adjustAction.what}'을 시도해 보세요.`,
+      recovery: supportPractice,
       balanceGuide: [
         ...(strength?.practicalActions ?? []),
         ...(yongsin?.practicalActions ?? []),
@@ -1340,108 +1368,36 @@ export function buildLifetimeReport(
         yongsin?.details.find((detail) => detail.includes('후보')),
       ]),
     },
-    relationshipPattern: {
-      headline: '관계 패턴',
-      summary:
-        relationshipReport.summaryHighlights[0] ??
-        '관계는 친밀감 자체보다 거리감 조절 방식에서 성패가 갈리는 명식입니다.',
-      distanceStyle:
-        relationshipReport.primaryAction.description ||
-        '가까운 사람일수록 한 번에 결론을 내리기보다, 말의 속도와 순서를 조절하는 편이 좋습니다.',
-      expressionStyle:
-        loveReport.primaryAction.description ||
-        '감정은 깊어도 말은 늦게 나올 수 있어, 짧고 분명한 확인이 관계를 오래 가게 합니다.',
-      conflictTriggers:
-        relationshipReport.cautionAction.description ||
-        '서운함을 판단처럼 말하거나, 상대의 반응을 기다리기 전에 먼저 마음이 닫히는 방식이 갈등의 시작점이 되기 쉽습니다.',
-      longevityGuide:
-        loveReport.summaryHighlights[1] ??
-        '관계를 오래 가게 하는 힘은 큰 이벤트보다, 확인과 감사, 거리감 조절 같은 작은 루틴에 있습니다.',
-      basis: compactStrings([
-        relationshipReport.headline,
-        relationshipReport.summary,
-        loveReport.summary,
-        relations?.title ? `합충 단서: ${relations.title}` : relations?.body,
-      ]),
-    },
-    wealthStyle: {
-      headline: '재물 감각',
-      summary:
-        wealthReport.summaryHighlights[0] ??
-        '재물운은 한 번의 큰 수익보다 돈을 다루는 구조와 판단 습관을 읽는 편이 더 정확합니다.',
-      earningStyle:
-        wealthReport.primaryAction.description ||
-        '돈을 버는 방식은 흐름을 읽고 정리하는 쪽에서 힘이 납니다.',
-      keepingStyle:
-        wealthReport.summaryHighlights[1] ??
-        '벌어들이는 힘 못지않게, 약속된 금액과 반복 지출을 점검하는 습관이 재물운을 지켜줍니다.',
-      spendingMistakes:
-        wealthReport.cautionAction.description ||
-        '감정이 올라온 날의 결제, 지인 말만 믿고 움직이는 지출, 비교 없이 서두르는 선택이 재물 피로를 키우기 쉽습니다.',
-      operatingStyle:
-        wealthReport.summary ||
-        `${supportLabels} 기운이 살아나는 방식, 즉 자료 확인과 원칙 정리, 반복 가능한 운영 습관이 맞는 재물 체질입니다.`,
-      basis: compactStrings([
-        wealthReport.headline,
-        formatSymbolList(sajuData.yongsin ? [sajuData.yongsin.primary, ...sajuData.yongsin.secondary] : []),
-        strength?.title ? `강약 단서: ${strength.title}` : null,
-      ]),
-    },
-    careerDirection: {
-      headline: '직업 방향',
-      summary:
-        careerReport.summaryHighlights[0] ??
-        '직업운은 당장 붙는 자리보다 오래 버틸 수 있는 역할 구조를 봐야 정확합니다.',
-      fitStructure:
-        careerReport.primaryAction.description ||
-        '역할과 책임선이 분명한 구조에서 실력이 붙기 쉽습니다.',
-      endureVsShine:
-        careerReport.summaryHighlights[1] ??
-        '버티는 일과 빛나는 일의 차이는 속도보다 역할의 적합도에서 갈립니다.',
-      independenceStyle:
-        pattern?.body ??
-        '독립과 조직 중 무엇이 맞느냐보다, 원칙을 스스로 세울 수 있는 권한이 있는지가 더 중요합니다.',
-      recognitionStyle:
-        careerReport.cautionAction.description ||
-        '인정은 한 번의 강한 인상보다, 반복되는 신뢰와 원칙 있는 결과물로 쌓이는 명식입니다.',
-      basis: compactStrings([
-        careerReport.headline,
-        careerReport.summary,
-        pattern?.title ? `격국 단서: ${pattern.title}` : null,
-      ]),
-    },
+    ...coreReadings,
     healthRhythm: {
       headline: '건강 리듬',
-      summary: `${weakest} 축의 리듬이 흐트러지면 몸이 먼저 무너진다기보다 생활 전체의 템포가 어긋나기 쉬운 명식입니다.`,
-      warningSignals:
-        monthTimeline?.body ??
-        '수면, 식사, 회복 순서가 깨질 때 작은 피로가 오래 남고 예민함이 커지기 쉽습니다.',
-      recoveryRoutine:
-        todayReport.primaryAction.description ||
-        `${supportLabels} 기운이 살아나는 생활 루틴, 특히 휴식과 정리, 속도 조절이 회복의 핵심입니다.`,
+      summary: `이 장에서는 ${dominant} 기운을 쓰는 방식과 ${supportLabels} 보완 방향을 생활의 부담과 휴식에 연결해 읽습니다. 오행 분포로 질병이나 신체 상태를 진단하지 않습니다.`,
+      warningSignals: `${strainPattern} 수면이나 식사, 평소 즐기던 활동의 변화는 실제 생활을 기준으로 살펴보고, 불편함이 지속되면 그 상태에 맞는 도움을 받으세요.`,
+      recoveryRoutine: `${supportPractice} ${isMinor ? '보호자가 아이의 활동 뒤 반응을 살피고 쉬어도 되는 환경을 마련하는 것이 먼저입니다.' : '회복에 도움이 된 활동과 오히려 할 일을 늘린 활동을 구분해 보세요. 잘 쉬는 방법도 본인의 생활 조건에 맞게 바꿀 수 있습니다.'}`,
       habitPoints: [
-        ...(strength?.practicalActions ?? []),
-        ...(gongmang?.practicalActions ?? []),
-      ].slice(0, 4),
+        '활동 뒤 쉬는 시간을 함께 마련하기',
+        '부담이 늘어나는 상황과 편안한 상황을 구분하기',
+        isMinor ? '보호자와 함께 생활의 변화를 살피기' : '불편함을 참는 것과 실제로 괜찮은 상태를 구분하기',
+      ],
       basis: compactStrings([
         strength?.title ? `강약 단서: ${strength.title}` : null,
-        gongmang?.title ? `공망 단서: ${gongmang.title}` : gongmang?.body,
-        monthTimeline?.headline,
+        `원국의 상대적인 분포: ${dominant} 기운이 많고 ${weakest} 기운이 적음`,
+        `생활에서 참고할 보완 방향: ${supportLabels} 기운`,
       ]),
     },
     majorLuckTimeline: {
       headline: '대운 10년 흐름 지도',
-      summary:
-        majorTimeline?.body ??
-        '대운은 사건 하나를 맞히는 표가 아니라, 어느 시기에 확장·정리·전환 과제가 커지는지 읽는 장기 지도입니다.',
+      summary: majorLuckCycles.length
+        ? '대운은 10년 단위로 달라지는 주제와 원국의 관계를 읽는 장기 지도입니다. 이전 기간의 방식 중 유지할 것과 조정할 것을 비교하는 데 활용하세요.'
+        : '대운을 계산할 정보가 충분하지 않아 시작 시기와 단계는 해석하지 않습니다. 원국에서 확인한 성향을 실제 생활 조건과 비교하는 데 집중하세요.',
       currentMeaning: firstCurrentCycle
         ? `${firstCurrentCycle.ganzi} 대운은 지금 ${firstCurrentCycle.phase}의 과제가 커지는 구간입니다. ${firstCurrentCycle.summary}`
-        : '현재 대운의 의미를 읽을 수 있는 데이터가 아직 부족합니다.',
+        : '현재에 해당하는 대운은 확인되지 않았습니다. 중요한 선택은 지금 맡은 역할, 도움받을 수 있는 사람, 유지할 수 있는 시간과 비용을 함께 살펴보세요.',
       cycles: majorLuckCycles,
       basis: compactStrings([
+        majorLuckCycles.length ? '나이는 해당 연도에서 출생 연도를 뺀 연도 나이이며 생일에 따른 만 나이와 다를 수 있습니다.' : null,
         currentMajorLuck ? `현재 대운: ${currentMajorLuck.ganzi}` : null,
         ...(currentMajorLuck?.notes ?? []).slice(0, 2),
-        majorTimeline?.headline,
       ]),
     },
     lifetimeStrategy: {
@@ -1453,20 +1409,20 @@ export function buildLifetimeReport(
       //   원본 (`sajuData.fiveElements.{dominant,weakest}`) 을 직접 전달.
       summary: `${formatElementLabel(sajuData.fiveElements.dominant)}이 중심인 이 사주는 성향 해설보다 사용법이 더 중요합니다. ${supportLabels} 기운을 언제 살리고, ${formatElementLabel(sajuData.fiveElements.weakest)}이 흔들릴 때 무엇을 먼저 지킬지 아는 사람이 결국 흐름을 안정적으로 씁니다.`,
       useWhenStrong: compactStrings([
-        todayReport.primaryAction.description,
-        wealthReport.primaryAction.description,
-        careerReport.primaryAction.description,
+        `보완 방향을 활용하는 방법으로 '${supportAction.what}'을 한 가지 활동에서 시험해 보세요.`,
+        isMinor ? '관심이 생긴 활동은 보호자와 함께 다시 해볼 방법을 고르고 아이의 반응을 확인하세요.' : '새 기회를 고를 때는 할 수 있다는 자신감과 끝까지 유지할 조건을 따로 확인하세요.',
+        '잘된 결과만 기록하기보다 어떤 환경과 도움이 있었는지 남겨두면 다음 선택에 활용할 수 있습니다.',
       ]).slice(0, 4),
       defendWhenShaken: compactStrings([
-        todayReport.cautionAction.description,
-        relationshipReport.cautionAction.description,
-        wealthReport.cautionAction.description,
+        `${dominant} 기운의 익숙한 반응이 반복될 때는 '${adjustAction.what}'을 먼저 시도해 보세요.`,
+        '서운함이나 조급함이 커졌다면 확인한 사실과 예상한 일을 나누고, 혼자 정할 수 없는 조건은 상대에게 물어보세요.',
+        isMinor ? '어려운 활동은 멈추고 보호자에게 도움을 구할 수 있다는 약속을 먼저 지켜주세요.' : '부담이 커진 약속은 계속 버티기보다 범위와 마감을 다시 합의할 수 있습니다.',
       ]).slice(0, 4),
       rememberRules,
       basis: compactStrings([
         specialSals?.title ? `신살 단서: ${specialSals.title}` : specialSals?.body,
         relations?.title ? `합충 단서: ${relations.title}` : relations?.body,
-        majorTimeline?.body,
+        `보완 방향: ${supportLabels} 기운`,
       ]),
     },
     yearlyAppendix: {
@@ -1495,6 +1451,6 @@ export function buildLifetimeReport(
         yearlyReport.secondHalf.caution,
       ]),
     },
-    evidenceCards: todayReport.evidenceCards,
+    evidenceCards,
   };
 }

@@ -853,7 +853,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   상세 풀이 — 평생 소장 리포트
                 </h2>
                 <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.72 }}>
-                  대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관까지, 평생 다시 꺼내 보는 상세판.
+                  대운 심층 풀이 + 십성 디테일 + 출생~100세 연도별 PDF 보관까지, 평생 다시 꺼내 보는 상세판.
                 </p>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/premium`}

@@ -153,7 +153,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
         className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        궁금한 영역만 골라 읽어보세요. 점수가 낮아도 행동 한 가지만 챙기면 흐름이 정돈됩니다.
+        궁금한 질문부터 읽고 오늘의 선택에 참고하세요. 점수는 비교를 돕는 표시이며 결과의 확률은 아닙니다.
       </p>
       <div className="mt-3 grid gap-2.5">
         {items.map((score) => {
@@ -164,7 +164,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
           // 2026-05-15 PR 7: 카테고리 라이브러리에서 등급별 메시지 선택 (시드 = dateKey + score key).
           // 라이브러리 매핑 없으면 기존 룰 기반 fallback.
           const libraryCategory = SCORE_KEY_TO_CATEGORY[score.key];
-          const body = libraryCategory
+          const body = score.reading ? null : libraryCategory
             ? pickCategoryMessage(
                 libraryCategory,
                 value,
@@ -194,18 +194,29 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
                 </span>
               </div>
               {/* 운세톡톡 핵심: 파란색 헤드라인 — 본문 안 읽어도 한 줄 결론 인지 가능. */}
-              <p
-                className="mt-2.5 text-[15.5px] font-extrabold leading-[1.55]"
-                style={{ color: meta.accent, wordBreak: 'keep-all' }}
-              >
-                🔵 {headline}
+              {score.reading ? <h3 className="mt-3 text-[16px] font-extrabold text-[var(--app-ink)]">{score.reading.question}</h3> : null}
+              <p className="mt-2.5 text-[15.5px] font-extrabold leading-[1.55]" style={{ color: meta.accent, wordBreak: 'keep-all' }}>
+                {score.reading ? null : '🔵 '}{headline}
               </p>
-              <p
+              {score.reading ? (
+                <dl className="mt-3 space-y-3 text-[14.4px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
+                  {[
+                    ['이렇게 읽었어요', score.reading.evidence],
+                    ['생활에서 살펴볼 모습', score.reading.example],
+                    ['오늘의 선택 기준', score.reading.choice],
+                  ].map(([label, text]) => (
+                    <div key={label}>
+                      <dt className="font-bold text-[var(--app-ink)]">{label}</dt>
+                      <dd className="mt-1">{text}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : <p
                 className="mt-2 text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {body}
-              </p>
+              </p>}
               <div
                 className="relative mt-3 h-1 overflow-hidden rounded-full"
                 style={{ background: 'var(--app-line)' }}

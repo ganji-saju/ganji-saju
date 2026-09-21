@@ -7,12 +7,13 @@ import { normalizeClassicEvidenceQuery } from '@/server/classics/evidence';
 export const DEFAULT_CLASSICS_AUDIT_CONCEPT = '용신';
 
 const EXPECTED_LIVE_REFS = [
-  'title=滴天髓',
+  'title=滴天髓&normalizer=2',
   'title=穷通宝鉴',
   'title=三命通會_(四庫全書本)',
 ] as const;
 
 const EXPECTED_HOLD_REFS = [
+  'title=滴天髓', // superseded normalization; preserve its review history privately
   'title=三命通會',
   'title=淵海子平',
   'title=子平真詮',
@@ -384,10 +385,11 @@ async function auditWorkVersion(
     sectionCount > 0 &&
     passageRows.length > 0 &&
     missingRequired === 0;
-  const holdOk =
-    version.public_release_status === 'hold' &&
-    version.is_reference_only &&
-    !isReviewedEnough(version.verification_status);
+  const holdOk = version.is_reference_only && (
+    sourceWorkRef === 'title=滴天髓'
+      ? ['hold', 'internal'].includes(version.public_release_status)
+      : version.public_release_status === 'hold' && !isReviewedEnough(version.verification_status)
+  );
   const ok = expectedLive ? liveOk : expectedHold ? holdOk : true;
 
   return {

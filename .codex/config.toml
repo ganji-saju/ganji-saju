@@ -1,0 +1,12 @@
+# 간지사주 프로젝트 전용. Claude의 로컬 Supabase 비활성화 상태를 유지한다.
+personality = "friendly"
+
+[mcp_servers]
+
+[mcp_servers.supabase]
+enabled = false
+url = "https://mcp.supabase.com/mcp?project_ref=bgtzkjxihlbmxehmhtwg"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
+
+[features]
+hooks = true

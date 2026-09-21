@@ -164,7 +164,8 @@ test('today fortune free visible copy avoids legacy word choices', () => {
       now: new Date('2026-05-27T03:00:00Z'),
     });
     const text = visibleFreeResultText(result);
-    assert.doesNotMatch(text, /표현|기준/, `${concernId} legacy word remains: ${text}`);
+    // '표현'과 '기준'은 자연스러운 한국어다. 폐기한 오행 별칭·추상 신조어만 막는다.
+    assert.doesNotMatch(text, /결단과|안정과|열정과|새싹의 결|말의 기운|생각 기운|[\u3400-\u9fff]/, `${concernId} legacy word remains: ${text}`);
   }
 });
 
@@ -643,4 +644,113 @@ test('computeSajuAreaScores 는 stored sajuData 와 fresh sajuData 에 대해 �
         `(E2E saju.spec.ts:157 root cause regression)`
     );
   }
+});
+
+
+test('today question readings use the same calculated day and distinct personal advice across ten days', () => {
+  const input = createSampleInput();
+  const data = calculateSajuDataV1(input);
+  const results = Array.from({ length: 10 }, (_, offset) => buildTodayFortuneFreeResult(input, data, {
+    concernId: 'general', sourceSessionId: 'questions', calendarType: 'solar', timeRule: 'standard',
+    now: new Date(Date.UTC(2026, 8, 18 + offset, 3)),
+  }));
+  for (const result of results) {
+    for (const score of result.scores) {
+      assert.ok(score.reading);
+      assert.equal(score.summary, score.reading.answer);
+      assert.match(score.reading.evidence, /태어난 날.*오늘.*관계/);
+      assert.ok(score.reading.example.length > 20);
+      assert.ok(score.reading.choice.length > 20);
+      assert.doesNotMatch(JSON.stringify(score.reading), /[\u3400-\u9fff]|반드시|문제의 절반|소득이 생기는|무조건/);
+      assert.doesNotMatch(score.reading.evidence, /관계을|경계을|관리을|배분를/);
+    }
+  }
+  // 날짜 숫자나 간지 이름만 바꾼 문장이 아닌, 실제 선택의 초점이 달라야 한다.
+  for (const key of ['career', 'wealth', 'love', 'relationship', 'condition']) {
+    assert.equal(new Set(results.map((result) => result.scores.find((s) => s.key === key)!.reading!.answer)).size, 10);
+  }
+  const secondInput = createSampleInput({ year: '1977', month: '4', day: '25' });
+  const other = buildTodayFortuneFreeResult(secondInput, calculateSajuDataV1(secondInput), {
+    concernId: 'general', sourceSessionId: 'other', calendarType: 'solar', timeRule: 'standard',
+    now: new Date('2026-09-18T03:00:00Z'),
+  });
+  assert.notDeepEqual(results[0].scores.map((s) => s.reading), other.scores.map((s) => s.reading));
+});
+
+test('same day master with different natal roles changes practical scenes and decisions beyond role names', () => {
+  const inputs = [createSampleInput(), createSampleInput({ year: '1977', month: '4', day: '25', gender: 'female' })];
+  const data = inputs.map((input) => calculateSajuDataV1(input));
+  assert.equal(data[0].dayMaster.stem, data[1].dayMaster.stem);
+  assert.notEqual(data[0].pattern?.tenGod, data[1].pattern?.tenGod);
+  const results = inputs.map((input, index) => buildTodayFortuneFreeResult(input, data[index], {
+    concernId: 'general', sourceSessionId: 'natal-decisions', calendarType: 'solar', timeRule: 'standard',
+    now: new Date('2026-09-18T03:00:00Z'),
+  }));
+  const withoutRoleNames = (text: string) => text.replace(/비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/g, '');
+  for (const first of results[0].scores) {
+    const second = results[1].scores.find((score) => score.key === first.key)!;
+    assert.notEqual(withoutRoleNames(first.reading!.example), withoutRoleNames(second.reading!.example), `${first.key}: natal context must change the scene`);
+    assert.notEqual(withoutRoleNames(first.reading!.choice), withoutRoleNames(second.reading!.choice), `${first.key}: natal context must change the decision`);
+  }
+  assert.match(results[0].scores.find((score) => score.key === 'career')!.reading!.choice, /완료로 보는 조건/);
+  assert.match(results[1].scores.find((score) => score.key === 'career')!.reading!.choice, /마감과 도움받을 사람/);
+});
+
+test('child readings distinguish six caregiving scenes and apply daily guidance once', () => {
+  const input = { ...createSampleInput({ year: '2022', month: '5', day: '15' }), unknownTime: true, hour: undefined, minute: undefined };
+  const data = calculateSajuDataV1(input);
+  const results = [18, 19].map((day) => buildTodayFortuneFreeResult(input, data, {
+    concernId: 'general', sourceSessionId: 'child-scenes', calendarType: 'solar', timeRule: 'standard',
+    now: new Date(Date.UTC(2026, 8, day, 3)),
+  }));
+  for (const result of results) {
+    assert.equal(new Set(result.scores.map((score) => score.reading!.example)).size, 6);
+    assert.equal(new Set(result.scores.map((score) => score.reading!.choice)).size, 6);
+    const sentences = result.scores.flatMap((score) => [score.reading!.example, score.reading!.choice])
+      .flatMap((text) => text.split(/(?<=[.!?])\s+/)).filter(Boolean);
+    assert.equal(new Set(sentences).size, sentences.length, 'common caregiving guidance should not repeat across all six topics');
+  }
+  assert.notEqual(results[0].scores.find((score) => score.key === 'overall')!.reading!.example,
+    results[1].scores.find((score) => score.key === 'overall')!.reading!.example,
+    'the overall caregiving scene should change with the calculated day relationship');
+  assert.match(results[0].scores.find((score) => score.key === 'career')!.reading!.example, /블록이나 그림/);
+  assert.match(results[0].scores.find((score) => score.key === 'condition')!.reading!.example, /하품/);
+});
+
+test('today question readings respect Korean date, unknown time and child or teen contexts', () => {
+  for (const year of [2022, 2012]) {
+    const input = { ...createSampleInput({ year: String(year) }), unknownTime: true, hour: undefined, minute: undefined };
+    const data = calculateSajuDataV1(input);
+    const before = buildTodayFortuneFreeResult(input, data, {
+      concernId: 'general', sourceSessionId: 'age', calendarType: 'solar', timeRule: 'standard',
+      now: new Date('2026-09-17T14:59:59Z'),
+    });
+    const after = buildTodayFortuneFreeResult(input, data, {
+      concernId: 'general', sourceSessionId: 'age', calendarType: 'solar', timeRule: 'standard',
+      now: new Date('2026-09-17T15:00:00Z'),
+    });
+    assert.equal(before.dateKey, '2026-09-17');
+    assert.equal(after.dateKey, '2026-09-18');
+    assert.notEqual(before.oneLine.body, after.oneLine.body);
+    const copy = JSON.stringify(after.scores.map((score) => score.reading));
+    assert.doesNotMatch(copy, /결혼|연애|직장|업무|투자|사업|계약|시주/);
+    assert.match(copy, /보호자/);
+    assert.equal(after.birthMeta.lifeStage, year === 2022 ? 'child' : 'teen');
+    if (year === 2012) assert.match(copy, /태어난 시간을 몰라/);
+    assert.equal(after.userSituation, null);
+  }
+});
+
+
+test('today question evidence uses engine branch pairs without Unicode sorting omissions', () => {
+  const input = createSampleInput(); // 壬子 일주
+  const data = calculateSajuDataV1(input);
+  const results = Array.from({ length: 12 }, (_, offset) => buildTodayFortuneFreeResult(input, data, {
+    concernId: 'general', sourceSessionId: 'branch-pairs', calendarType: 'solar', timeRule: 'standard',
+    now: new Date(Date.UTC(2026, 8, 18 + offset, 3)),
+  }));
+  const harmony = results.find((result) => result.sajuChart?.todayGanzi?.[1] === '丑')!;
+  const clash = results.find((result) => result.sajuChart?.todayGanzi?.[1] === '午')!;
+  assert.match(harmony.scores[0].reading!.evidence, /맞물리는 관계/);
+  assert.match(clash.scores[0].reading!.evidence, /충돌하는 관계/);
 });

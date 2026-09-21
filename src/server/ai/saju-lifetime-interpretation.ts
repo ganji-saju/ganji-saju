@@ -1,12 +1,14 @@
+import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
+import { getLifetimeCalendarLuck } from '@/domain/saju/report/build-lifetime-report';
 import {
   buildReportCounselorInstructions,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
-import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
-export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v1';
+export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v2-questions';
 
 export type SajuLifetimeAiSectionKey =
   | 'coreIdentity'
@@ -52,10 +54,13 @@ const MAX_RULE_LENGTH = 420;
 const MAX_SECTION_LENGTH = 1800;
 const MAX_REMEMBER_LENGTH = 220;
 const MAX_SUMMARY_LENGTH = 220;
+const CORE_SECTION_KEYS = ['wealthStyle', 'careerDirection', 'relationshipPattern'] as const;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
-  return simplifySajuCopy(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  // Preserve distinctions such as 정관/편관 and explanations of 신강/신약.
+  // The legacy public-copy simplifier replaces or removes that natal evidence.
+  return koreanizeGanzi(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 function normalizeStringArray(
@@ -110,7 +115,7 @@ function formatKeywordLine(entry: string) {
 }
 
 function renderBulletLines(lines: string[]) {
-  return lines.map((line) => `- ${simplifySajuCopy(line)}`).join('\n');
+  return lines.map((line) => `- ${koreanizeGanzi(line)}`).join('\n');
 }
 
 function serializePillar(pillar: ReadingRecord['sajuData']['pillars']['year'] | null) {
@@ -248,14 +253,15 @@ function buildSectionFallback(
         withOpener(report.majorLuckTimeline.summary),
         report.majorLuckTimeline.currentMeaning,
         ...report.majorLuckTimeline.cycles
+          .filter((cycle) => cycle.ganzi !== '대운 미산정')
           .slice(0, 3)
           .map((cycle) => `${cycle.ageLabel} ${cycle.ganzi} 흐름은 ${cycle.phase} 쪽으로 읽고 ${cycle.summary}`),
       ].join(' ');
     case 'lifetimeStrategy':
       return [
         withOpener(report.lifetimeStrategy.summary),
-        `좋을 때는 ${joinPhrases(report.lifetimeStrategy.useWhenStrong)}`,
-        `흔들릴 때는 ${joinPhrases(report.lifetimeStrategy.defendWhenShaken)}`,
+        ...report.lifetimeStrategy.useWhenStrong,
+        ...report.lifetimeStrategy.defendWhenShaken,
       ].join(' ');
   }
 }
@@ -335,6 +341,12 @@ export function parseLifetimeInterpretationText(
       };
     }
 
+    // A syntactically valid nine-slot response can still omit the paid report's
+    // main answers. Keep the complete grounded fallback instead of a thin final.
+    if (CORE_SECTION_KEYS.some((key) => sections[key].length < 180 || /오늘은|오늘의 운세|이번\s*달|내일은/.test(sections[key]))) {
+      return { ok: false, interpretation: fallback, errorMessage: 'Lifetime core sections lack depth or contain daily-only advice.' };
+    }
+
     return {
       ok: true,
       interpretation: normalizeLifetimeInterpretation({
@@ -399,6 +411,7 @@ function createGrounding(
   counselorId: MoonlightCounselorId
 ) {
   const data = record.sajuData;
+  const luckCycles = getLifetimeCalendarLuck(data, record.input.year);
 
   return {
     counselor: {
@@ -414,6 +427,11 @@ function createGrounding(
       gender: record.input.gender ?? null,
       birthLocation: record.input.birthLocation?.label ?? null,
     },
+    readingContext: {
+      calendarAge: Math.max(0, report.targetYear - record.input.year),
+      isMinor: report.targetYear - record.input.year < 19,
+      userSituation: record.grounding.personalizationContext.userSituation ?? null,
+    },
     pillars: {
       year: serializePillar(data.pillars.year),
       month: serializePillar(data.pillars.month),
@@ -425,11 +443,18 @@ function createGrounding(
     strength: data.strength,
     pattern: data.pattern,
     yongsin: data.yongsin,
-    currentLuck: data.currentLuck,
-    majorLuck: data.majorLuck,
+    currentLuck: luckCycles.currentLuck,
+    majorLuck: luckCycles.majorLuck,
     personalizationContext: record.grounding.personalizationContext,
-    factJson: record.grounding.factJson,
-    evidenceJson: record.grounding.evidenceJson,
+    factJson: { ...record.grounding.factJson, luckCycles },
+    evidenceJson: {
+      ...record.grounding.evidenceJson,
+      luckFlow: {
+        ...record.grounding.evidenceJson.luckFlow,
+        currentMajorLuckNotes: luckCycles.currentLuck?.currentMajorLuck?.notes ?? [],
+        saewoonNotes: luckCycles.currentLuck?.saewoon?.notes ?? [],
+      },
+    },
     kasiComparison: record.kasiComparison,
     lifetimeEvidence: report,
   };
@@ -439,7 +464,8 @@ export function createLifetimeInterpretationPrompt(
   record: ReadingRecord,
   report: SajuLifetimeReport,
   counselorId: MoonlightCounselorId,
-  recentFeedbackSummary?: string | null
+  recentFeedbackSummary?: string | null,
+  classicGrounding?: ClassicReadingGrounding
 ) {
   const counselorInstructions = buildReportCounselorInstructions(counselorId).join('\n');
 
@@ -468,14 +494,24 @@ export function createLifetimeInterpretationPrompt(
       '  "rememberRules": string[5],',
       '  "oneLineSummary": string',
       '}',
+      CLASSIC_READING_INSTRUCTIONS,
       '규칙:',
       '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',
-      '- 격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않는다. 필요하면 쉬운 생활 언어로만 바꾼다.',
-      '- 계산 과정, 원칙 설명, 점수 설명을 반복하지 말고 결론, 조심할 패턴, 오늘 할 행동을 먼저 쓴다.',
+      '- 명리 용어는 정관·편관·신강·신약·격국·용신처럼 정확한 한글 원어를 유지하고, 처음 등장할 때만 짧은 생활 언어 설명을 붙인다. 서로 다른 용어를 하나의 뜻으로 뭉개지 않는다. 한자와 factJson·evidenceJson 같은 구현 용어는 본문에 쓰지 않는다.',
+      '- 계산 과정, 원칙 설명, 점수 설명을 반복하지 말고 결론, 조심할 패턴, 생활에서 적용할 선택을 먼저 쓴다.',
       '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 문구는 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
-      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다.',
+      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 기존 9개 section 키를 빠짐없이 유지한다.',
+      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 400~550자, 나머지 6개 장은 각 100~140자를 목표로 쓴다. 전체 문장은 2200~2700자 안에서 마무리하고 JSON을 완성한다.',
+      '- 재물 장은 ① 무엇을 어떤 조건으로 대가에 연결하는가 ② 벌어도 남지 않는 패턴은 무엇인가 ③ 큰 결정을 앞두고 어떤 조건을 비교할 것인가에 답한다. lifetimeEvidence.wealthStyle의 네 상세 필드를 근거로 사용한다.',
+      '- 직업 장은 ① 어떤 역할과 환경에서 실력이 드러나는가 ② 잘하지만 소진되는 일은 무엇인가 ③ 조직·독립을 고를 때 어떤 조건이 필요한가에 답한다. 직업명 목록 대신 실제로 맡는 과정·권한·평가 조건을 비교한다.',
+      '- 관계 장은 ① 편안하게 가까워지는 방식은 무엇인가 ② 표현과 기대가 어긋나는 장면은 무엇인가 ③ 오래 가는 관계를 위해 어떤 합의가 필요한가에 답한다. 입력한 현재 관계 상태만 사용한다.',
+      '- 각 핵심 장은 결론 → 확인된 사주 신호와 그 의미 → 실제로 있을 법한 조건부 장면 → 선택 기준 순서로 쓴다. 장마다 다른 장면을 쓰고, 같은 근거 설명이나 보편적 생활 조언을 반복해서 분량을 채우지 않는다.',
+      '- 핵심 장에서 오늘·내일·이번 달의 운세를 섞지 않는다. 참고 자료에 일일 조언이 있어도 평생 장의 답으로 복사하지 않는다. 월별 풀이를 추가하지 않는다.',
+      '- 나이는 해당 연도에서 출생 연도를 뺀 연도 나이를 사용한다. 대운 나이도 lifetimeEvidence.majorLuckTimeline의 범위를 그대로 따른다. cycles가 비어 있거나 현재 대운이 없으면 전환기·진입기 등 시기나 단계를 부여하지 말고 확인된 원국과 실제 생활 조건만 안내한다.',
+      '- readingContext.isMinor가 참이면 핵심 3장을 돌봄·친구·배움·준비물·용돈의 선택으로 해석한다. 성인의 혼인·직장·사업 상황을 대입하지 않고, 장래의 직업·수입·배우자를 확정하지 않는다.',
+      '- 생시 미입력은 시주를 근거로 쓰지 않는다. 입력하지 않은 소득·직업·부모의 성격·배우자의 외모·자녀 수·건강 상태를 만들어내지 않는다. 충·합이나 십성의 개수를 사건·성공 확률로 바꾸지 않는다.',
       '- opening은 첫 문단부터 흡입력 있게 쓰되 상담실 톤을 유지한다.',
       '- rememberRules는 실제 생활에 바로 적용 가능한 짧은 기억 문장 5개로 쓴다.',
       '- [밀착 개인화] 성향을 형용사로 요약하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여준다(show, don\'t tell). "책임감이 강하다"(요약) ❌ → "맡은 일은 끝을 봐야 마음이 놓여서, 남들이 이미 넘어간 자리를 혼자 한 번 더 확인하곤 한다"(장면) ⭕.',
@@ -483,6 +519,7 @@ export function createLifetimeInterpretationPrompt(
     ].join('\n'),
     input: JSON.stringify({
       ...createGrounding(record, report, counselorId),
+      classicGrounding: classicGrounding ?? null,
       recentFeedbackSummary: recentFeedbackSummary ?? null,
     }),
   };

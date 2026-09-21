@@ -134,3 +134,19 @@ test('causal: 비-오행 관계(충/육합/형/해/파/원진)도 지지 레이�
     }
   }
 });
+
+
+test('causal: 삼합과 방합은 중복되지 않은 세 지지가 모두 있어야 완성된다', () => {
+  for (const [today, natal, kind] of [['申', ['子', '子'], '삼합'], ['亥', ['子', '子'], '방합']] as const) {
+    const relation = rankJijiRelations(today, [...natal]);
+    assert.equal(relation?.kind, kind);
+    assert.equal(relation?.complete, false);
+    assert.equal(relation?.element, null, '부분 관계를 완성된 오행으로 사용하면 안 된다');
+    const narrative = buildCausalNarrative({ ...FIXTURE, todayBranch: today, topRelation: relation }, { seed: 'partial' });
+    assert.match(narrative.full, /일부를 이루지만, 세 지지가 모두 갖춰진 관계는 아니/);
+    assert.doesNotMatch(narrative.full, /기운.*으로 삼합을|기운.*으로 방합을/);
+  }
+  assert.equal(rankJijiRelations('申', ['子', '辰'])?.complete, true);
+  assert.equal(rankJijiRelations('亥', ['子', '丑'])?.complete, true);
+  assert.equal(rankJijiRelations('申', ['子', '寅'])?.kind, '충', '부분 삼합으로 실제 충 관계를 가리면 안 된다');
+});

@@ -6,6 +6,8 @@ import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { ChapterUserContext } from './chapter-input-types';
 
 export const CHAPTER_CACHE_TTL_DAYS = 30;
+// Bump when the chapter's content contract changes; old envelopes remain readable.
+const CHAPTER_CONTENT_VERSION = 'lifetime-questions-v2';
 
 /**
  * 챕터 LLM 결과 캐시 키.
@@ -18,9 +20,12 @@ export const CHAPTER_CACHE_TTL_DAYS = 30;
 export function buildChapterCacheKey(
   sajuData: SajuDataV1 | SajuDataV2,
   userContext: ChapterUserContext,
-  chapterId: number
+  chapterId: number,
+  classicEvidenceHash: string | null = null
 ): string {
   const payload = JSON.stringify({
+    contentVersion: CHAPTER_CONTENT_VERSION,
+    classicEvidenceHash,
     pillars: {
       year: sajuData.pillars.year.ganzi,
       month: sajuData.pillars.month.ganzi,

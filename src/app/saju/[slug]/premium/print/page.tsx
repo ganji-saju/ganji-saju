@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ReportPrintActions } from '@/components/report/report-print-actions';
 import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
-import { ReportDocument, buildPdfModel } from '@/components/report/report-document';
+import { ReportDocument } from '@/components/report/report-document';
+import { buildPdfModel } from '@/lib/saju/pdf-report-model';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import { generateLifetimeInterpretation } from '@/server/ai/saju-lifetime-service';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
@@ -18,10 +19,8 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { InkIcon } from '@/components/gangi/ink-icons';
 
-// 2026-05-23 PDF 8페이지 정확 복제 리디자인 — 사용자 목업(8장 A4)을 픽셀 단위 복제.
-//   인쇄(window.print) → 브라우저 "PDF로 저장" 플로우 그대로. 8페이지 문서 마크업은
-//   src/components/report/report-document.tsx (ReportDocument) 로 분리해 /dev 미리보기와
-//   동일 렌더를 공유한다. 데이터 갭은 src/lib/saju/pdf-report-maps.ts 결정적 매핑으로 채움.
+// 고객 이용권을 확인한 뒤 관리자 생성 경로와 동일한 생애 PDF 문서를 렌더한다.
+// 인쇄 창의 "PDF로 저장"을 사용하며 101개 연도와 대운 전환기 분석을 포함한다.
 
 function buildReportNumber(input: SajuDataV1['input']) {
   const yy = String(new Date().getFullYear()).slice(-2);
@@ -195,7 +194,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
     );
   }
 
-  const targetYear = new Date().getFullYear();
+  const targetYear = Number(new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'Asia/Seoul' }).format(new Date()));
   // 2026-05-15 PR 2: userSituation 을 grounding 에서 추출해 대운 cycle 8단 sub-section 에 흘림.
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
   const report = buildLifetimeReport(reading.input, reading.sajuData, targetYear, userSituation);
@@ -209,7 +208,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
     readingRecord: reading,
   });
   const interpretation = interpretationResult?.interpretation ?? null;
-  const data = buildPdfModel(reading, report, reportNo, targetYear, interpretation);
+  const data = buildPdfModel(reading, interpretationResult?.report ?? report, reportNo, targetYear, interpretation);
 
   return (
     // 인쇄 문서 페이지라 사이트 헤더/푸터(전역 SiteHeader·SiteFooter)를 싣지 않는다.

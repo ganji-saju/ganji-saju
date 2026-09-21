@@ -31,6 +31,14 @@ export interface TodayScoreItem {
   label: string;
   score: number;
   summary: string;
+  /** 원국과 해당 날짜를 함께 읽은 설명. 이전 저장 결과에는 없을 수 있다. */
+  reading?: {
+    question: string;
+    answer: string;
+    evidence: string;
+    example: string;
+    choice: string;
+  };
 }
 
 // 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md 5-6쪽).
@@ -85,6 +93,8 @@ export interface TodayFortuneFreeResult {
     timeRule: TodayTimeRule;
     unknownBirthTime: boolean;
     usesLocation: boolean;
+    /** 조언의 범위를 정하는 용도이며 과거 저장 결과에는 없을 수 있다. */
+    lifeStage?: 'child' | 'teen' | 'adult';
   };
   oneLine: {
     eyebrow: string;

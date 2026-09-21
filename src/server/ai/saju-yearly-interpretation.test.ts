@@ -165,3 +165,18 @@ test('createYearlyInterpretationPrompt grounds narrative and monthly passes on y
     false
   );
 });
+
+
+test('yearly parser and rendered report preserve different ten gods and their source condition', () => {
+  const record = createReadingRecord();
+  const report = buildYearlyReport(record.input, record.sajuData, 2026);
+  const fallback = buildFallbackYearlyInterpretation(report, 'female');
+  const evidence = '신약은 본인 기운이 다소 약한 편이라는 계산 결과입니다. 정관은 책임과 규범을, 편관은 압박에 대응하는 방식을 살피는 근거입니다. 둘을 같은 뜻으로 바꾸지 않고 월령과 함께 읽습니다.';
+  const sample = { ...fallback, categories: { ...fallback.categories, work: evidence } };
+  const parsed = parseYearlyInterpretationText(JSON.stringify(sample), fallback);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.interpretation.categories.work, evidence);
+  const rendered = renderYearlyInterpretationReport(parsed.interpretation);
+  assert.match(rendered, /신약은 본인 기운이 다소 약한 편/);
+  assert.match(rendered, /정관은 책임과 규범을, 편관은 압박/);
+});

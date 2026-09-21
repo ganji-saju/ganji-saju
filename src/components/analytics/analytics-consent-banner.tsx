@@ -41,7 +41,7 @@ export function AnalyticsConsentBanner() {
 
   return (
     <div
-      className="border-b bg-[var(--app-bg,#fff)] px-4 py-2.5"
+      className="analytics-consent-banner border-b bg-[var(--app-bg,#fff)] px-4 py-2.5"
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="mx-auto flex max-w-[34rem] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

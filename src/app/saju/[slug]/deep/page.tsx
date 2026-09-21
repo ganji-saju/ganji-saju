@@ -208,7 +208,7 @@ export default async function SajuDeepPage({ params }: Props) {
                 className="mt-2 text-[14.4px] leading-[1.55]"
                 style={{ opacity: 0.7 }}
               >
-                대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관 + 1:1 풀이 30분
+                대운 심층 풀이 + 십성 디테일 + 출생~100세 연도별 PDF 보관 + 1:1 풀이 30분
               </p>
               <div className="mt-4 flex items-end gap-2.5">
                 <div className="text-[26.5px] font-extrabold tracking-tight">

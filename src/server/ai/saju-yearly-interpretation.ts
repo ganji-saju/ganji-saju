@@ -1,9 +1,10 @@
+import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuYearlyReport, YearlyCategoryKey } from '@/domain/saju/report/yearly-types';
 import {
   buildReportCounselorInstructions,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
-import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v7';
@@ -92,11 +93,11 @@ const MIN_MONTHS = 12;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
-  return simplifySajuCopy(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  return koreanizeGanzi(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 function splitSentences(value: string) {
-  return simplifySajuCopy(value)
+  return koreanizeGanzi(value)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((line) => line.trim())
@@ -611,7 +612,8 @@ export function createYearlyInterpretationPrompt(
   report: SajuYearlyReport,
   counselorId: MoonlightCounselorId = 'female',
   section: SajuYearlyInterpretationPromptSection = 'full',
-  recentFeedbackSummary?: string | null
+  recentFeedbackSummary?: string | null,
+  classicGrounding?: ClassicReadingGrounding
 ) {
   const grounding =
     section === 'monthly'
@@ -640,6 +642,7 @@ export function createYearlyInterpretationPrompt(
 
   const groundedInput = {
     ...grounding,
+    classicGrounding: classicGrounding ?? null,
     recentFeedbackSummary: recentFeedbackSummary ?? null,
   };
 
@@ -678,7 +681,8 @@ export function createYearlyInterpretationPrompt(
       '과장, 희망고문, 공포 조장, 운명을 단정하는 말은 피합니다.',
       '무조건, 반드시, 100% 같은 단정 문구는 쓰지 않습니다.',
       'recentFeedbackSummary가 있으면 최근 실제 반응을 참고해 말 강도만 미세 조정하고, 계산 설명보다 사용자 체감을 앞세웁니다.',
-      '격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
+      CLASSIC_READING_INSTRUCTIONS,
+      '격국·용신·대운·세운 등 근거의 한글 명리 용어는 유지하고 첫 등장에 짧게 설명합니다. factJson·evidenceJson 같은 구현 용어와 한자는 본문에 쓰지 않습니다.',
       '연애, 일, 재물, 관계, 건강, 이동의 현실 주제를 우선하고, 왜 그런 흐름인지보다 그래서 무엇을 하면 좋은지를 먼저 씁니다.',
       '[밀착 개인화] 성향이나 흐름을 형용사로 요약하지 말고 그 흐름이 드러나는 구체적 장면으로 보여줍니다. "대인관계 운이 좋아요"(요약·일반론) ❌ → "먼저 연락하기 어색한 사람이 있다면, 이번 봄 가벼운 안부 한마디가 뜻밖의 자리로 이어지는 흐름입니다"(장면) ⭕. 열 사람 중 아홉에게 맞는 말은 쓰지 않고, 이 사주 데이터에서 나온 이 사람만의 장면을 짚습니다. 단, 없는 사실·사건(구체적 직업·관계·일화)은 지어내지 말고, 일어날 수 있는 장면은 "~한 사람이 있다면", "~하는 일이 생기면"처럼 조건으로 엽니다.',
       '길게 늘어놓기보다 읽기 쉽게 씁니다. 한 문단은 2~3문장을 넘기지 않고, 같은 접속어와 같은 결론 구조를 반복하지 않습니다.',

@@ -88,3 +88,31 @@ test('buildSajuNarrative differs across different birth inputs', () => {
 
   assert.notEqual(narrativeA.headline, narrativeB.headline);
 });
+
+test('질문 풀이: 같은 일간이어도 원국에 따라 근거와 선택 기준이 달라진다', () => {
+  const a = calculateSajuDataV1({ year: 1982, month: 1, day: 29, hour: 8, gender: 'male' }, { calculatedAt: '2026-09-18T00:00:00Z' });
+  const b = calculateSajuDataV1({ year: 1982, month: 2, day: 8, hour: 8, gender: 'male' }, { calculatedAt: '2026-09-18T00:00:00Z' });
+  assert.equal(a.dayMaster.stem, b.dayMaster.stem);
+  const read = (data: typeof a) => buildSajuNarrative(data, buildSajuPersonalizationContext(data));
+  const first = read(a);
+  const second = read(b);
+  assert.equal(first.questions.length, 4);
+  for (const item of first.questions) {
+    for (const key of ['answer', 'evidence', 'example', 'choice'] as const) assert.ok(item[key].length > 15);
+  }
+  assert.notDeepEqual(first.questions.map((q) => q.evidence), second.questions.map((q) => q.evidence));
+  assert.notDeepEqual(first.questions.map((q) => q.choice), second.questions.map((q) => q.choice));
+  assert.ok(!/[\u3400-\u9fff]/u.test(first.body));
+  assert.ok(!/계미 일간|갑자 일간/u.test(first.body));
+  assert.doesNotMatch(first.body, /오늘은|중화은/);
+});
+
+test('질문 풀이: 생시·성별·현재 상황 미입력의 어린이에게 가짜 대운과 성인 상황을 만들지 않는다', () => {
+  const data = calculateSajuDataV1({ year: 2020, month: 2, day: 29 }, { calculatedAt: '2026-09-18T00:00:00Z' });
+  const result = buildSajuNarrative(data, null);
+  assert.match(result.body, /보호자/);
+  assert.match(result.body, /대운은 미산정/);
+  assert.match(result.body, /태어난 시간이 없어/);
+  assert.doesNotMatch(result.body, /직장 생활|자영업|기혼|연애 관계|투자|사업|승진/);
+  assert.equal(result.chips.some((chip) => chip.label === '대운'), false);
+});

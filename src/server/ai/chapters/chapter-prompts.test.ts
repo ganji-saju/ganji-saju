@@ -4,6 +4,7 @@ import {
   COMMON_SYSTEM_PROMPT,
   CHAPTER_META,
   CHAPTER_OUTPUT_SPECS,
+  FEW_SHOT_EXAMPLES,
   buildChapterSystemPrompt,
 } from './chapter-prompts';
 import type { ChapterId } from './chapter-input-types';
@@ -117,4 +118,14 @@ test('CHAPTER_META 의 forbiddenTopics 가 cross-reference 차단 — 챕터 N �
     chapter9Topics.includes('복사') || chapter9Topics.includes('재인용'),
     '챕터 9 (synthesis) 의 forbiddenTopics 가 1~8장 복사 금지를 명시해야 함'
   );
+});
+
+
+test('chapter examples preserve conditional explanations instead of wealth or medical predictions', () => {
+  const examples = Object.values(FEW_SHOT_EXAMPLES).map((item) => `${item.input} ${item.output}`).join(' ');
+  assert.doesNotMatch(examples, /큰 흐름의 돈은 멀고|가을 음식|돌봄·후원의 결|돈의 결/);
+  assert.match(examples, /재산의 크기를 뜻하지/);
+  assert.match(examples, /실제 경험에 비춰/);
+  assert.match(CHAPTER_OUTPUT_SPECS[2].structureGuide, /부족 판정이 확인된 경우에만/);
+  assert.match(CHAPTER_OUTPUT_SPECS[7].structureGuide, /체질·질병·사고·수명을 추정하지/);
 });

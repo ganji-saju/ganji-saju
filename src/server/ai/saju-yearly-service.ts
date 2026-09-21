@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint } from '@/server/classics/reading-grounding';
 import {
   buildYearlyReport,
   type SajuInterpretationGrounding,
@@ -58,6 +59,7 @@ export interface GenerateYearlyInterpretationRequest {
   targetYear: number;
   counselorId?: MoonlightCounselorId | null;
   regenerate?: boolean;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
 }
 
 export interface YearlyInterpretationResponsePayload {
@@ -136,10 +138,10 @@ function buildCacheKeyParts(identifier: string): CacheKeyParts {
 async function readCachedInterpretation(
   key: CacheKeyParts,
   targetYear: number,
-  counselorId: MoonlightCounselorId
+  counselorId: MoonlightCounselorId,
+  promptVersion: string
 ) {
   if (!hasSupabaseServiceEnv || key.cacheKeyType === 'unavailable') return null;
-  const promptVersion = getYearlyInterpretationPromptVersion(counselorId);
 
   try {
     const supabase = await createServiceClient();
@@ -168,6 +170,7 @@ async function writeCachedInterpretation(input: {
   targetYear: number;
   counselorId: MoonlightCounselorId;
   interpretation: SajuYearlyAiInterpretation;
+  promptVersion: string;
   model: string | null;
   source: AiGenerationSource;
   fallbackReason: AiFallbackReason | null;
@@ -176,7 +179,7 @@ async function writeCachedInterpretation(input: {
   if (!hasSupabaseServiceEnv || input.key.cacheKeyType === 'unavailable') return;
   if (input.source !== 'openai') return;
 
-  const promptVersion = getYearlyInterpretationPromptVersion(input.counselorId);
+  const promptVersion = input.promptVersion;
   const row = {
     reading_id: input.key.readingId,
     reading_slug: input.key.readingSlug,
@@ -223,7 +226,8 @@ export async function generateYearlyInterpretation(
     normalizeMoonlightCounselor(request.counselorId) ?? undefined,
     storedCounselor
   );
-  const promptVersion = getYearlyInterpretationPromptVersion(counselorId);
+  const classicGrounding = await (request.getClassicGrounding ?? getClassicReadingGrounding)(reading.sajuData, 'yearly');
+  const promptVersion = `${getYearlyInterpretationPromptVersion(counselorId)}|${readingGroundingFingerprint(classicGrounding)}`;
   const cacheable = hasSupabaseServiceEnv && cacheKey.cacheKeyType !== 'unavailable';
   const recentFeedbackSummary =
     reading.userId && hasSupabaseServiceEnv
@@ -231,7 +235,7 @@ export async function generateYearlyInterpretation(
       : null;
 
   if (cacheable && !request.regenerate) {
-    const cached = await readCachedInterpretation(cacheKey, request.targetYear, counselorId);
+    const cached = await readCachedInterpretation(cacheKey, request.targetYear, counselorId, promptVersion);
     if (cached) {
       await recordLlmRun({ feature: 'yearly', source: 'cache', model: cached.model, userId: reading.userId });
       return {
@@ -277,14 +281,16 @@ export async function generateYearlyInterpretation(
     yearlyReport,
     counselorId,
     'narrative',
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
   const monthlyPrompt = createYearlyInterpretationPrompt(
     reading,
     yearlyReport,
     counselorId,
     'monthly',
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
 
   const [narrativeStage, monthlyStage] = await Promise.all([
@@ -369,6 +375,7 @@ export async function generateYearlyInterpretation(
       : null;
 
   await writeCachedInterpretation({
+    promptVersion,
     key: cacheKey,
     targetYear: request.targetYear,
     counselorId,

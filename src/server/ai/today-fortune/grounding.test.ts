@@ -103,3 +103,17 @@ test('name 이 result.userName 또는 빈 문자열에서 옴', () => {
   const g = buildTodayFortuneGrounding(args);
   assert.equal(g.name, args.result.userName ?? '');
 });
+
+
+test('grounding preserves the displayed date, personal evidence and decision rule', () => {
+  const args = makeArgs();
+  const g = buildTodayFortuneGrounding(args);
+  const reading = args.result.scores.find((score) => score.key === 'overall')!.reading!;
+  assert.equal(g.readingDate, args.result.dateKey);
+  assert.equal(g.reasoning, reading.evidence);
+  assert.equal(g.answer, reading.answer);
+  assert.equal(g.example, reading.example);
+  assert.equal(g.choice, reading.choice);
+  assert.equal(g.lifeStage, 'adult');
+  assert.equal(g.unknownBirthTime, false);
+});

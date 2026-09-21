@@ -1,3 +1,5 @@
+import { CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 // 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
 //   흐름: 언락(결제) 시 buildTodayFortuneSnapshotContent → attachTodayPremiumNarrative →
 //         generateTodayPremiumInterpretation → generateAiText(feature:'today_premium').
@@ -7,7 +9,7 @@
 //     /admin/llm-cost 자동 노출(aggregateByFeature 동적 그룹핑). 별도 연동 코드 불필요.
 //   - 플래그(OPENAI_INTERPRET_TODAY_PREMIUM, 기본 OFF): 코드 머지만으로 비용 미발생.
 //     운영자가 키 + 플래그를 켤 때 활성(total-review 의 isTotalReviewLLMEnabled 패턴).
-//   - naming-policy(plain 티어): 한자/명리어/"기운" 0, Phase 1 톤(흐름→성향→포인트→조언→주의→마무리).
+//   - naming-policy: 본문 한자 0, 명리 용어는 한글 원어와 짧은 일상어 설명을 함께 사용.
 //   - 실패/플래그 OFF/빈응답 → null. UI 는 블록 미노출(graceful degrade), 결제 가치는 기존 카드 유지.
 import type {
   TodayFortuneFreeResult,
@@ -15,8 +17,10 @@ import type {
 } from '@/lib/today-fortune/types';
 import { generateAiText, getOpenAIInterpretationModel } from './openai-text';
 import type { LlmTelemetryStore } from './llm-telemetry';
+import { validateChapterBody } from '@/lib/saju/chapter-validator';
 
 export interface TodayPremiumInterpretationInput {
+  classicGrounding?: ClassicReadingGrounding;
   concernLabel: string;
   gradeLabel: string | null;
   gradeMessage: string | null;
@@ -29,6 +33,11 @@ export interface TodayPremiumInterpretationInput {
   scenarioTitles: string[];
   userName: string | null;
   userId?: string | null;
+  readingDate?: string;
+  reasoning?: string;
+  dailyEvidence?: string[];
+  lifeStage?: TodayFortuneFreeResult['birthMeta']['lifeStage'];
+  unknownBirthTime?: boolean;
 }
 
 export interface GenerateTodayPremiumDeps {
@@ -41,6 +50,8 @@ export interface GenerateTodayPremiumDeps {
 }
 
 export interface AttachTodayPremiumNarrativeDeps {
+  sajuData?: SajuDataV1 | SajuDataV2;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
   /** 테스트/DI — 미지정 시 실제 generateTodayPremiumInterpretation. */
   generateInterpretation?: typeof generateTodayPremiumInterpretation;
   env?: NodeJS.ProcessEnv;
@@ -60,16 +71,14 @@ export function isTodayPremiumLLMEnabled(env: NodeJS.ProcessEnv = process.env): 
   return env.OPENAI_INTERPRET_TODAY_PREMIUM === '1';
 }
 
-// plain 티어 하드 가드: 프롬프트가 막지 못한 한자/명리어 누출은 실패로 간주(null 반환).
-//   목록은 vocab-quality.test 의 CJK·MYEONGRI_JARGON 과 동일 — 변경 시 함께 동기화.
+// 본문 한자는 차단하되, 근거에 쓰인 한글 명리 용어는 보존한다.
 const FORBIDDEN_CJK = /[㐀-鿿]/;
-const FORBIDDEN_MYEONGRI = /기운|강약|격국|용신|대운|세운|월운|일진/;
 
-// plain 티어 금지어: vocab-quality.test 의 MYEONGRI_JARGON 과 동일 목록 + 한자.
+// docs/claude-specs/02-naming-policy.md: 원어와 첫 등장 시 짧은 설명.
 const NAMING_POLICY_GUARD = [
-  '한자(漢字)를 절대 쓰지 마세요. 모든 표기는 한글로만 합니다.',
-  '명리 전문 용어(기운, 강약, 격국, 용신, 대운, 세운, 월운, 일진)를 쓰지 마세요.',
-  '대신 일상적인 한국어(에너지, 흐름, 성향, 컨디션, 리듬)로 풀어 쓰세요.',
+  '본문에 한자를 쓰지 마세요. 모든 표기는 한글로만 합니다.',
+  '근거의 명리 용어는 한글 원어를 유지하고, 처음 등장할 때 짧은 일상어 설명을 붙이세요. 예: 정관(책임과 규범의 별), 일진(해당 날짜의 간지).',
+  '십성 이름을 추상적인 역할명으로 바꾸지 마세요. 오행은 목 기운·화 기운·토 기운·금 기운·수 기운으로 표기하세요.',
 ].join(' ');
 
 export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput): {
@@ -79,15 +88,25 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
   const instructions = [
     '당신은 오늘 하루의 운세를 따뜻하고 차분하게 풀어주는 한국어 상담가입니다.',
     '결제한 사용자에게 보여줄 "오늘의 깊은 풀이" 한 단락을 작성하세요.',
-    '구조 순서: 오늘 전체 흐름 → 사용자의 성향과 오늘의 만남 → 핵심 포인트 → 행동 조언 → 주의할 점 → 차분한 마무리.',
+    '구조 순서: 오늘 질문의 답 → 원국과 해당 날짜가 만나는 근거 → 공감할 수 있는 조건부 생활 장면 → 상황별 차이 → 오늘의 선택 기준.',
     '4~6문장으로 자연스럽게 이어지는 한 단락만 작성합니다. 목록·번호·소제목 없이 줄글로.',
     '아래 입력 정보를 근거로 삼되 그대로 복사하지 말고 하나의 흐름으로 풀어 씁니다.',
+    '입력에 없는 직업·연애 상태·사건·상대의 마음은 지어내지 마세요. "그런 상황이라면"으로 구분하고, 조건이 다르면 어떻게 선택할지도 설명하세요.',
+    '점수를 성공 확률이나 건강 상태로 해석하지 마세요. 날짜와 계산된 관계를 바꾸지 말고, 실제 근거가 없는 시간대나 다음 날 결과도 만들지 마세요.',
     '치료·진단 단정, "반드시/100%/완치" 같은 단정, 투자 종목 매수·매도 지시는 쓰지 마세요. 참고 조언 톤을 유지합니다.',
     NAMING_POLICY_GUARD,
+    CLASSIC_READING_INSTRUCTIONS,
   ].join('\n');
 
   const lines: Array<string | null> = [
+    input.classicGrounding ? `고전 해석 근거: ${JSON.stringify(input.classicGrounding)}` : null,
+    input.readingDate ? `풀이 날짜: ${input.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 고민 주제: ${input.concernLabel}`,
+    input.reasoning ? `원국과 오늘의 관계 근거: ${input.reasoning}` : null,
+    input.dailyEvidence?.length ? `분야별 계산 근거: ${input.dailyEvidence.join(' / ')}` : null,
+    input.lifeStage === 'child' ? '어린이 대상: 보호자의 돌봄·놀이 선택으로 설명. 연애·결혼·투자·계약·직장 조언 금지.'
+      : input.lifeStage === 'teen' ? '미성년자 대상: 친구·학습·용돈 범위로 설명. 성인 관계·사업·투자·계약 조언 금지.' : null,
+    input.unknownBirthTime ? '태어난 시간 미상: 시주나 구체적 시간대를 근거로 삼지 마세요.' : null,
     input.gradeLabel
       ? `오늘 전반 컨디션: ${input.gradeLabel}${input.gradeMessage ? ` — ${input.gradeMessage}` : ''}`
       : null,
@@ -135,8 +154,9 @@ export async function generateTodayPremiumInterpretation(
   if (result.source !== 'openai') return null;
   const text = result.text.trim();
   if (text.length === 0) return null;
-  // naming-policy 하드 가드 — 프롬프트가 막지 못한 한자/명리어 누출은 실패로 간주.
-  if (FORBIDDEN_CJK.test(text) || FORBIDDEN_MYEONGRI.test(text)) return null;
+  // 원어 근거는 허용하고 한자·무근거 단정·본문 품질 위반은 차단한다.
+  if (FORBIDDEN_CJK.test(text)
+    || /100%|무조건/.test(text) || !validateChapterBody(text).passed) return null;
   return text;
 }
 
@@ -166,6 +186,11 @@ export function toTodayPremiumInterpretationInput(
     scenarioTitles: premium.scenarios.map((scenario) => scenario.title),
     userName: free.userName,
     userId: userId ?? null,
+    readingDate: free.dateKey,
+    reasoning: premium.causalNarrative?.body ?? free.reasonSnippet.body,
+    dailyEvidence: [...new Set(free.scores.flatMap((score) => score.reading ? [score.reading.evidence] : []))],
+    lifeStage: free.birthMeta.lifeStage,
+    unknownBirthTime: free.birthMeta.unknownBirthTime,
   };
 }
 
@@ -179,8 +204,12 @@ export async function attachTodayPremiumNarrative(
   deps: AttachTodayPremiumNarrativeDeps = {}
 ): Promise<TodayFortunePremiumResult> {
   const generate = deps.generateInterpretation ?? generateTodayPremiumInterpretation;
+  const input = toTodayPremiumInterpretationInput(free, premium, deps.userId);
+  if (deps.sajuData && isTodayPremiumLLMEnabled(deps.env)) {
+    input.classicGrounding = await (deps.getClassicGrounding ?? getClassicReadingGrounding)(deps.sajuData, 'daily');
+  }
   const narrative = await generate(
-    toTodayPremiumInterpretationInput(free, premium, deps.userId),
+    input,
     { env: deps.env, telemetryStore: deps.telemetryStore }
   );
   return { ...premium, aiNarrative: narrative };

@@ -71,6 +71,18 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     title: '운영 도구',
     items: [
+      {
+        href: '/admin/external-report',
+        label: '외부 주문 PDF',
+        description: '스마트스토어 구매자 깊은 사주풀이 생성',
+        minRole: 'super_admin',
+      },
+      {
+        href: '/admin/external-report/history',
+        label: 'PDF 생성 기록',
+        description: '외부 주문 사주 정보·생성일·PDF 재다운로드',
+        minRole: 'super_admin',
+      },
       { href: '/admin/push-ctr', label: '알림 CTR', description: '푸시 전송·클릭·CTR 추이' },
       {
         href: '/admin/pricing',

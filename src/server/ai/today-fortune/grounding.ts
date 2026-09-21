@@ -1,3 +1,4 @@
+import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 // Task 2 — 오늘운세 LLM facts grounding 빌더 (순수 결정론, LLM 호출 없음).
 //
 // `buildTodayFortuneGrounding` 은 기존 결정론 결과(`TodayFortuneFreeResult`)와
@@ -11,6 +12,7 @@ import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 
 export interface TodayFortuneGrounding {
+  classicGrounding?: ClassicReadingGrounding;
   name: string;
   todayGanzi: string;       // 일진 간지 (한자 아님, 한글 음 — 예: '갑자')
   iljinScore: number | null;
@@ -21,6 +23,13 @@ export interface TodayFortuneGrounding {
   triggeredCaseSummaries: string[]; // 발동 케이스 한 줄 의미(전체)
   concernLabel: string;
   situation: string | null;  // 프로필 상황 한 줄
+  readingDate?: string;
+  reasoning?: string;
+  choice?: string;
+  lifeStage?: TodayFortuneFreeResult['birthMeta']['lifeStage'];
+  unknownBirthTime?: boolean;
+  answer?: string;
+  example?: string;
 }
 
 /**
@@ -55,6 +64,9 @@ export function buildTodayFortuneGrounding(args: {
     .sort((a: TodayScoreItem, b: TodayScoreItem) => b.score - a.score)
     .slice(0, 3)
     .map(({ key, label, score }) => ({ key, label, score }));
+  const focusKey = result.concernId === 'energy_health' ? 'condition'
+    : result.focusTopic === 'today' ? 'overall' : result.focusTopic;
+  const reading = result.scores.find((score) => score.key === focusKey)?.reading;
 
   return {
     name: result.userName ?? '',
@@ -67,5 +79,12 @@ export function buildTodayFortuneGrounding(args: {
     triggeredCaseSummaries: caseSummaries,
     concernLabel: result.concernLabel,
     situation,
+    readingDate: result.dateKey,
+    reasoning: reading?.evidence ?? result.reasonSnippet.body,
+    choice: reading?.choice,
+    answer: reading?.answer,
+    example: reading?.example,
+    lifeStage: result.birthMeta.lifeStage,
+    unknownBirthTime: result.birthMeta.unknownBirthTime,
   };
 }

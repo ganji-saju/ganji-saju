@@ -1,3 +1,4 @@
+import { getClassicReadingGrounding, readingGroundingFingerprint, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import { buildLifetimeReport, type SajuInterpretationGrounding } from '@/domain/saju/report';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import {
@@ -81,7 +82,7 @@ import {
   createSupabaseLifetimeCacheStore,
   type LifetimeCacheStore,
 } from './lifetime/lifetime-cache-store';
-import { recordLlmRun } from './llm-telemetry';
+import { recordLlmRun, type LlmTelemetryStore } from './llm-telemetry';
 
 export interface GenerateLifetimeInterpretationRequest {
   readingIdentifier: string;
@@ -91,7 +92,15 @@ export interface GenerateLifetimeInterpretationRequest {
   readingRecord?: ReadingRecord | null;
   /** 테스트/DI 용 캐시 스토어 주입. 미지정 시 Supabase 스토어. */
   cacheStore?: LifetimeCacheStore<SajuLifetimeAiInterpretation>;
+  /** 서버 전용 저장소 주입. 미지정이면 기존 고객 생성 경로와 동일하다. */
+  telemetryStore?: LlmTelemetryStore;
+  /** 생성 전체 제한 시각(ms). 고객 요청의 기본 동작은 변경하지 않는다. */
+  deadlineAt?: number;
+  signal?: AbortSignal;
+  getClassicGrounding?: typeof getClassicReadingGrounding;
 }
+
+type ChapterGenerationOptions = Pick<GenerateLifetimeInterpretationRequest, 'telemetryStore' | 'deadlineAt' | 'signal'> & { classicGrounding?: ClassicReadingGrounding };
 
 export interface LifetimeGenerationStageResult {
   key: 'full';
@@ -102,6 +111,7 @@ export interface LifetimeGenerationStageResult {
 }
 
 export interface LifetimeInterpretationResponsePayload {
+  classicGrounding: ClassicReadingGrounding;
   ok: true;
   readingId: string;
   resolvedReadingId: string;
@@ -126,11 +136,12 @@ export interface LifetimeInterpretationResponsePayload {
 }
 
 const LIFETIME_TIMEOUT_MS = 38_000;
-const LIFETIME_OUTPUT_TOKENS = 2600;
+const LIFETIME_OUTPUT_TOKENS = 4800;
 
 export async function generateLifetimeInterpretation(
   request: GenerateLifetimeInterpretationRequest
 ): Promise<LifetimeInterpretationResponsePayload | null> {
+  request.signal?.throwIfAborted();
   const reading = request.readingRecord ?? (await resolveReading(request.readingIdentifier));
   if (!reading) return null;
 
@@ -150,6 +161,8 @@ export async function generateLifetimeInterpretation(
   // buildLifetimeReport 로 흘려, 대운 cycle 8단의 hook/relationship/wealthCareer 분기에 사용.
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
   const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
+  const classicGrounding = await (request.getClassicGrounding ?? getClassicReadingGrounding)(reading.sajuData);
+  request.signal?.throwIfAborted();
   const model = getOpenAIInterpretationModel();
   // 🟡 대운 다양성 fix (이전 PR L 은 병렬): 챕터 1→2→3→4→5→6→7 *직렬* LLM enhance.
   //   - 직렬 이유: 각 챕터가 *앞서 생성된 챕터*(priorChapterDigests + 본문) 를 보고
@@ -176,6 +189,12 @@ export async function generateLifetimeInterpretation(
   // allChapters 는 1-indexed 챕터 슬롯 9칸 (validator 가 chapterId-1 로 인덱싱).
   //   아직 안 만든 챕터는 빈 문자열 → 매치 X.
   const accumulatedBodies: string[] = ['', '', '', '', '', '', '', '', ''];
+  const generationOptions: ChapterGenerationOptions = {
+    classicGrounding,
+    telemetryStore: request.telemetryStore,
+    deadlineAt: request.deadlineAt === undefined ? undefined : request.deadlineAt - LIFETIME_TIMEOUT_MS,
+    signal: request.signal,
+  };
 
   const sequentialChapters: ReadonlyArray<{
     id: Exclude<ChapterId, 8 | 9>;
@@ -186,7 +205,8 @@ export async function generateLifetimeInterpretation(
       model: string,
       promptVersion: string,
       priorChapterDigests: ChapterPriorDigest[],
-      crossChapterContext: { allChapters: string[]; punchLines?: string[] }
+      crossChapterContext: { allChapters: string[]; punchLines?: string[] },
+      generationOptions?: ChapterGenerationOptions
     ) => Promise<ReturnType<typeof buildLifetimeReport>>;
     summaryOf: (report: ReturnType<typeof buildLifetimeReport>) => string;
   }> = [
@@ -200,6 +220,7 @@ export async function generateLifetimeInterpretation(
   ];
 
   for (const { id, apply, summaryOf } of sequentialChapters) {
+    request.signal?.throwIfAborted();
     // 앞 챕터들의 digest/본문 snapshot 을 넘긴다 (이번 챕터는 아직 미반영).
     report = await apply(
       reading,
@@ -208,7 +229,8 @@ export async function generateLifetimeInterpretation(
       model,
       promptVersion,
       [...priorChapterDigests],
-      { allChapters: [...accumulatedBodies], punchLines: [] }
+      { allChapters: [...accumulatedBodies], punchLines: [] },
+      generationOptions
     );
     // 이번 챕터의 enhanced(또는 fallback) summary 를 누적 — 다음 챕터가 본다.
     const summary = summaryOf(report);
@@ -223,9 +245,12 @@ export async function generateLifetimeInterpretation(
   //   priorChapterDigests 가 enhanced summary 를 digest 소스로 사용해야 LLM 이
   //   *최신 본문* 을 재해석함. 1~7 가 fallback 이면 deterministic summary 그대로
   //   digest 가 되므로 안전.
+  request.signal?.throwIfAborted();
   report = await applyChapter9LLMEnhancement(
-    reading, report, userSituation, model, promptVersion
+    reading, report, userSituation, model, promptVersion,
+    generationOptions
   );
+  request.signal?.throwIfAborted();
   const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
   const recentFeedbackSummary = reading.userId
     ? await getRecentFortuneFeedbackSummary(reading.userId)
@@ -234,7 +259,8 @@ export async function generateLifetimeInterpretation(
     reading,
     report,
     counselorId,
-    recentFeedbackSummary
+    recentFeedbackSummary,
+    classicGrounding
   );
 
   // 2026-05-25 Phase 0a — 본편 read-through 캐시 (audit §5 후보 1). 본편 풀이 *내용* 은 불변, 캐시 인프라만.
@@ -247,7 +273,7 @@ export async function generateLifetimeInterpretation(
     gender: reading.input.gender ?? null,
     counselorId,
     targetYear: request.targetYear,
-    reportHash: hashLifetimeReport(report),
+    reportHash: hashLifetimeReport([report, readingGroundingFingerprint(classicGrounding)]),
     recentFeedbackSummary,
     promptVersion,
   };
@@ -276,17 +302,25 @@ export async function generateLifetimeInterpretation(
       source: 'cache',
       model: cacheHit.model,
       userId: reading.userId,
-    });
+    }, request.telemetryStore);
   } else {
-    const aiResult = await generateAiText({
+    const remainingMs = request.deadlineAt === undefined ? LIFETIME_TIMEOUT_MS : request.deadlineAt - Date.now();
+    const aiResult = remainingMs <= 0 ? {
+      source: 'fallback' as const, text: JSON.stringify(fallback), model: null,
+      fallbackReason: 'openai_error' as const, errorMessage: '풀이 생성 제한 시간을 초과했습니다.',
+      inputTokens: undefined, outputTokens: undefined,
+    } : await generateAiText({
       ...prompt,
       fallbackText: JSON.stringify(fallback),
       model,
       maxOutputTokens: LIFETIME_OUTPUT_TOKENS,
-      timeoutMs: LIFETIME_TIMEOUT_MS,
+      timeoutMs: Math.min(LIFETIME_TIMEOUT_MS, remainingMs),
+      telemetryStore: request.telemetryStore,
+      signal: request.signal,
       feature: 'lifetime',
       userId: reading.userId,
     });
+    request.signal?.throwIfAborted();
     const parsed = parseLifetimeInterpretationText(aiResult.text, fallback);
     const llmOk = aiResult.source === 'openai' && parsed.ok;
     interpretation = llmOk ? parsed.interpretation : fallback;
@@ -348,6 +382,7 @@ export async function generateLifetimeInterpretation(
     errorMessage,
     generationMs: Date.now() - startedAt,
     grounding: reading.grounding,
+    classicGrounding,
     kasiComparison: reading.kasiComparison,
     interpretation,
     report,
@@ -379,7 +414,8 @@ async function applyChapter1LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(1)) return baseReport;
 
@@ -389,7 +425,9 @@ async function applyChapter1LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1);
+  chapter1Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[1];
   const stageStartedAt = Date.now();
 
@@ -416,7 +454,7 @@ async function applyChapter1LLMEnhancement(
 
   // Cache miss — OpenAI 호출.
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter1WithLLM(
       baseReport.coreIdentity,
       chapter1Input,
@@ -490,7 +528,8 @@ async function applyChapter4LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(4)) return baseReport;
 
@@ -500,7 +539,9 @@ async function applyChapter4LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4);
+  chapter4Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[4];
   const stageStartedAt = Date.now();
 
@@ -523,7 +564,7 @@ async function applyChapter4LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter4WithLLM(
       baseReport.relationshipPattern, chapter4Input, client, { crossChapterContext }
     );
@@ -587,7 +628,8 @@ async function applyChapter5LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(5)) return baseReport;
 
@@ -597,7 +639,9 @@ async function applyChapter5LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5);
+  chapter5Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[5];
   const stageStartedAt = Date.now();
 
@@ -620,7 +664,7 @@ async function applyChapter5LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter5WithLLM(
       baseReport.wealthStyle, chapter5Input, client, { crossChapterContext }
     );
@@ -684,7 +728,8 @@ async function applyChapter2LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(2)) return baseReport;
 
@@ -694,7 +739,9 @@ async function applyChapter2LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter2Input.userContext, 2);
+  chapter2Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter2Input.userContext, 2,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[2];
   const stageStartedAt = Date.now();
 
@@ -712,7 +759,7 @@ async function applyChapter2LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter2WithLLM(
       baseReport.strengthBalance, chapter2Input, client, { crossChapterContext }
     );
@@ -762,7 +809,8 @@ async function applyChapter3LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(3)) return baseReport;
 
@@ -772,7 +820,9 @@ async function applyChapter3LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter3Input.userContext, 3);
+  chapter3Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter3Input.userContext, 3,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[3];
   const stageStartedAt = Date.now();
 
@@ -790,7 +840,7 @@ async function applyChapter3LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter3WithLLM(
       baseReport.patternAndYongsin, chapter3Input, client, { crossChapterContext }
     );
@@ -840,7 +890,8 @@ async function applyChapter6LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(6)) return baseReport;
 
@@ -850,7 +901,9 @@ async function applyChapter6LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter6Input.userContext, 6);
+  chapter6Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter6Input.userContext, 6,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[6];
   const stageStartedAt = Date.now();
 
@@ -868,7 +921,7 @@ async function applyChapter6LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter6WithLLM(
       baseReport.careerDirection, chapter6Input, client, { crossChapterContext }
     );
@@ -919,7 +972,8 @@ async function applyChapter7LLMEnhancement(
   model: string,
   promptVersion: string,
   priorChapterDigests: ChapterPriorDigest[] = [],
-  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] },
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(7)) return baseReport;
 
@@ -929,7 +983,9 @@ async function applyChapter7LLMEnhancement(
     { name: reading.input.name ?? null, age: null },
     priorChapterDigests
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter7Input.userContext, 7);
+  chapter7Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter7Input.userContext, 7,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[7];
   const stageStartedAt = Date.now();
 
@@ -947,7 +1003,7 @@ async function applyChapter7LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter7WithLLM(
       baseReport.healthRhythm, chapter7Input, client, { crossChapterContext }
     );
@@ -1002,7 +1058,8 @@ async function applyChapter9LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  generationOptions: ChapterGenerationOptions = {}
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(9)) return baseReport;
 
@@ -1023,7 +1080,9 @@ async function applyChapter9LLMEnhancement(
       age: null,
     }
   );
-  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter9Input.userContext, 9);
+  chapter9Input.classicGrounding = generationOptions.classicGrounding;
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter9Input.userContext, 9,
+    generationOptions.classicGrounding ? readingGroundingFingerprint(generationOptions.classicGrounding) : null);
   const cached = reading.chaptersEnvelope?.chapters?.[9];
   const stageStartedAt = Date.now();
 
@@ -1046,7 +1105,7 @@ async function applyChapter9LLMEnhancement(
   }
 
   try {
-    const client = new OpenAIChapterClient({ model });
+    const client = new OpenAIChapterClient({ model, ...generationOptions });
     const enhanced = await enhanceLifetimeChapter9WithLLM(
       baseReport.lifetimeStrategy, chapter9Input, client
     );

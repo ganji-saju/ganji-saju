@@ -1,7 +1,7 @@
 import type { Stem, Branch, SipSung } from '@/lib/today-fortune/iljin-rules';
 import {
   SAMHAP_GROUPS, BANGHAP_GROUPS,
-  isSamhap, isBanghap, isYukhap,
+  isYukhap,
   isBranchChung, isBranchHyung, isBranchHae, isBranchPa, isBranchWonjin,
 } from '@/lib/today-fortune/iljin-rules';
 
@@ -104,10 +104,14 @@ export function rankJijiRelations(today: Branch, natal: Branch[]): JijiRelation 
     const matches = natal.filter((b) => b !== today && matcher(today, b));
     if (matches.length > 0) found.push({ kind, element, natalBranches: matches });
   };
-  const samEl = (SAMHAP_GROUPS.find((g) => g.branches.includes(today))?.element ?? null) as Element | null;
-  const bangEl = (BANGHAP_GROUPS.find((g) => g.branches.includes(today))?.element ?? null) as Element | null;
-  collect('삼합', isSamhap, samEl);
-  collect('방합', isBanghap, bangEl);
+  for (const [kind, groups] of [['삼합', SAMHAP_GROUPS], ['방합', BANGHAP_GROUPS]] as const) {
+    const group = groups.find((entry) => entry.branches.includes(today));
+    if (!group) continue;
+    const matches = [...new Set(natal.filter((branch) => branch !== today && group.branches.includes(branch)))];
+    if (matches.length === 0) continue;
+    const complete = group.branches.every((branch) => branch === today || matches.includes(branch));
+    found.push({ kind, element: complete ? group.element : null, natalBranches: matches, complete });
+  }
   collect('육합', isYukhap, null);
   collect('충', isBranchChung, null);
   collect('형', isBranchHyung, null);
@@ -115,7 +119,8 @@ export function rankJijiRelations(today: Branch, natal: Branch[]): JijiRelation 
   collect('파', isBranchPa, null);
   collect('원진', isBranchWonjin, null);
   if (found.length === 0) return null;
-  found.sort((a, b) => RELATION_RANK[b.kind] - RELATION_RANK[a.kind]);
+  const rank = (relation: JijiRelation) => relation.complete === false ? 1 : RELATION_RANK[relation.kind];
+  found.sort((a, b) => rank(b) - rank(a));
   return found[0];
 }
 
@@ -124,6 +129,7 @@ export interface JijiRelation {
   kind: '삼합' | '방합' | '육합' | '충' | '형' | '해' | '파' | '원진';
   element: Element | null; // 삼합/방합만 결과 오행
   natalBranches: Branch[]; // 오늘 지지와 만난 원국 지지들
+  complete?: boolean; // 삼합·방합은 서로 다른 세 지지가 모두 있을 때만 완성
 }
 
 export interface CausalSinsal {
@@ -189,7 +195,9 @@ function slotOverlap(i: CausalInput, ink: TermInk): string {
   const parts: string[] = [];
   if (i.topRelation) {
     const natal = i.topRelation.natalBranches.map((b) => BRANCH_KOR[b]).join('·');
-    if (i.topRelation.element) {
+    if (i.topRelation.complete === false) {
+      parts.push(`오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} ${i.topRelation.kind}의 일부를 이루지만, 세 지지가 모두 갖춰진 관계는 아니에요.`);
+    } else if (i.topRelation.element) {
       parts.push(
         `오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} 만나 ${ink.element(i.topRelation.element)}으로 ${josa(i.topRelation.kind, '을', '를')} 이루는데,`,
       );

@@ -134,7 +134,7 @@ function summarizeUserSituation(s: UserSituation | null): string | null {
 
 export const runtime = 'nodejs';
 
-function parseTodayPayload(payload: unknown): TodayFortuneBirthPayload | null {
+export function parseTodayPayload(payload: unknown): TodayFortuneBirthPayload | null {
   if (!payload || typeof payload !== 'object') return null;
   const data = payload as Record<string, unknown>;
 
@@ -320,7 +320,7 @@ export async function POST(req: NextRequest) {
 
   // 오늘운세 무료 LLM 풀이(플래그 ON + 로그인 시). null 이면 결정론 유지.
   if (user?.id) {
-    const caseSummaries = buildTodayCaseSummaries({ sajuData });
+    const caseSummaries = buildTodayCaseSummaries({ sajuData, options: { now } });
     const situation = summarizeUserSituation(
       persistedGrounding?.personalizationContext?.userSituation ?? null
     );

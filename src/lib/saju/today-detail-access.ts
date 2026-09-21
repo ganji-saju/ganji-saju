@@ -9,7 +9,7 @@
 // 반환 형태는 호출자가 truthy/falsy 만 확인하면 되도록 단순화.
 import {
   buildTodayDetailScopeKey,
-  hasTodayDetailEntitlementForDay,
+  hasTodayDetailEntitlementForSaju,
 } from '@/lib/product-entitlements';
 import {
   getKoreaAccessDay,
@@ -75,8 +75,8 @@ export async function checkTodayDetailAccess(slug: string): Promise<SajuTodayDet
   const reading = await resolveReading(slug);
   const readingKey = reading ? toSlug(reading.input) : null;
 
-  // 1) product_entitlements — 오늘(KST) 결제한 today-detail entitlement 만.
-  if (await hasTodayDetailEntitlementForDay(user.id, todayKey)) {
+  // 1) product_entitlements — 오늘(KST) **이 사주로** 결제한 today-detail entitlement 만(2026-09-14 사용자 결정).
+  if (await hasTodayDetailEntitlementForSaju(user.id, todayKey, { readingKey, slug })) {
     return { hasAccess: true, source: { kind: 'product-entitlement', via: 'same-day' } };
   }
 

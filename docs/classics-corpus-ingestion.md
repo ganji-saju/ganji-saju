@@ -52,18 +52,44 @@ After confirming dry-run counts, apply to Supabase with the service-role key fro
 npm run ingest:classics -- --source=wikisource --work=all --apply
 ```
 
-For an initial clean load, after confirming there are no reviewed Korean reading
-or translation rows yet, replace generated sections/passages for the target work:
-
-```bash
-npm run ingest:classics -- --source=wikisource --work=all --apply --replace
-```
+For a corrected source import, use a new `classic_work_versions` row rather than
+replacing production passages. Changed text at an existing section/passage
+position is rejected by the importer, and unchanged rows retain their original
+provenance and review decisions. Generated tags cannot overwrite existing tags.
 
 Then validate corpus counts:
 
 ```bash
 npm run validate:classics
 ```
+
+### Corrected 적천수 normalization (2026-09-18)
+
+The first normalizer discarded verses inside nested `color` / `+` formatting
+templates. Version 2 preserves those verses, joins adjacent indented commentary
+so applicability conditions stay with the quote, and removes `__TOC__` metadata.
+This changes the import representation, not the book or its review level.
+
+1. Back up the corpus tables and apply `089_classics_ditian_normalization_version.sql`.
+   It only inserts `source_work_ref = 'title=滴天髓&normalizer=2'` from the existing
+   Wikisource metadata. It does not modify or remove the original version.
+2. Run `npm run ingest:classics -- --source=wikisource --work=ditian-sui --dry-run`
+   and then the same command with `--apply`. The collector writes the new version
+   while preserving the existing `title=滴天髓` passages and all derived rows.
+3. Verify the new version's provenance and the three original anchors
+   `財官印綬分偏正，兼論食傷格局定。`, `官煞相混來問我，有可有不可。`, and
+   `傷官見官果難辨，可見不可見。`, including their following explanatory text.
+4. Only after those checks succeed, retain the original version as
+   `public_release_status = 'internal'`, `is_reference_only = true`. Preserve
+   its verification status and rows. This catalog switch is reversible.
+5. Run `npm run validate:classics`. Until the old version is private, the validator
+   and `/verification` deliberately report attention to prevent duplicate public
+   editions. The other eight held references remain blocked as before.
+
+The `--replace` option is reserved for a separately authorized clean reload. Its
+preflight rejects reviewed/suspect originals, reviewed/approved Korean readings,
+translations or commentaries (including section-only rows), and non-generated
+concept tags. It is not the refresh path above.
 
 To add the first unreviewed Korean UI summaries for concept-tagged passages:
 

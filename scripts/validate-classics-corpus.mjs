@@ -11,12 +11,13 @@ import {
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const EXPECTED_WIKISOURCE_REFS = [
-  'title=滴天髓',
+  'title=滴天髓&normalizer=2',
   'title=穷通宝鉴',
   'title=三命通會_(四庫全書本)',
 ];
 
 const EXPECTED_PUBLIC_HOLD_REFS = [
+  'title=滴天髓', // superseded normalization; retained privately, never deleted
   'title=三命通會',
   'title=淵海子平',
   'title=子平真詮',
@@ -64,6 +65,11 @@ async function main() {
   const tooFewUiSummaries = rows.filter((row) => row.ui_summary_count < minUiSummaries);
   const missingRequired = rows.filter((row) => row.required_field_missing_count > 0);
   const invalidHolds = holdRows.filter((row) => !row.valid_hold);
+  const invalidLive = rows.filter((row) => !row.valid_live);
+  if (invalidLive.length > 0) {
+    console.error(`Expected public, verified source versions: ${invalidLive.map((row) => row.source_work_ref).join(', ')}`);
+    process.exit(1);
+  }
   if (tooSmall.length > 0) {
     console.error(
       `Expected at least ${minPassages} passages for each work, but these were too small: ${tooSmall
@@ -143,7 +149,7 @@ function parseArgs(argv) {
 async function validateWorkVersion(supabase, sourceWorkRef) {
   const { data: version, error: versionError } = await supabase
     .from('classic_work_versions')
-    .select('work_version_id, source_work_ref, source_item_title, public_release_status, verification_status')
+    .select('work_version_id, source_work_ref, source_item_title, public_release_status, verification_status, is_reference_only, completeness_status')
     .eq('source_work_ref', sourceWorkRef)
     .single();
 
@@ -174,6 +180,9 @@ async function validateWorkVersion(supabase, sourceWorkRef) {
     title: version.source_item_title,
     release: version.public_release_status,
     verification: version.verification_status,
+    valid_live: version.public_release_status === 'live'
+      && ['reviewed', 'provisional'].includes(version.verification_status)
+      && version.is_reference_only === false && version.completeness_status === 'complete',
     section_count: sectionCount ?? 0,
     passage_count: passageCount ?? 0,
     concept_tag_count: await countConceptTagsForWorkVersion(
@@ -311,11 +320,13 @@ async function validatePublicHoldWorkVersions(supabase) {
       };
     }
 
-    const validHold =
-      row.public_release_status === 'hold' &&
-      row.is_reference_only === true &&
-      row.verification_status !== 'reviewed' &&
-      row.verification_status !== 'provisional';
+    const validHold = row.is_reference_only === true && (
+      sourceWorkRef === 'title=滴天髓'
+        ? ['hold', 'internal'].includes(row.public_release_status)
+        : row.public_release_status === 'hold' &&
+          row.verification_status !== 'reviewed' &&
+          row.verification_status !== 'provisional'
+    );
 
     return {
       source_work_ref: row.source_work_ref,

@@ -11,6 +11,250 @@
 - 검증: refund-service.test +2(동시 승인 → PG 1회 · revoke_pending 동시 재시도 → 회수 1회). 뮤테이션(선점 조건 제거) 2건 red. route.spec 가짜 DB 는 update 가 요청 행 1개를 바꾼 것으로.
   tsc 0 · npm test 1704 · test:spec 383 green.
 
+## 2026-09-18 — 기존 진행 기록 복구 및 비용 표현 정정
+
+- **복구**: 배포 작업 중 기존 RAG 검증 기록의 비용 문장을 직접 수정해 이력 보존 훅이 차단했다. 작업 시작 전 문장으로 복구하고, 정정은 이 새 섹션에만 남긴다.
+- **정정**: 아래 과거 기록의 오늘 유료 샘플이 “비용 없이” 폴백됐다는 표현은 부정확하다. 빈 응답으로 결정론 폴백됐으나 해당 요청의 사용량이 반환되지 않아 실제 청구 비용은 확인할 수 없다.
+- **이번 검사**: 훅이 보관한 시작 시점의 제목·본문 길이·SHA-256과 복구된 기존 본문이 일치함을 확인했다. `git diff --check`와 `npm run progress:html`을 실행해 통과했다. 이번 변경 파일은 `PROGRESS.md`뿐이며 애플리케이션 코드·DB를 수정하거나 기능 테스트를 다시 실행하지 않았다.
+- **배포 상태·남은 사항**: 직전 최종 커밋 `5ab73b75`의 운영 배포 `dpl_8XfhweFFXif8cVvpjEsptgxvwASD`가 READY이고 운영 도메인 HTTP 200임을 확인했다. 이 문서 정정도 커밋·push하여 main/staging을 동기화한다. 실제 청구 비용 확인과 해석의 전문 검수는 이번 기록 복구 범위에 포함하지 않는다.
+
+## 2026-09-18 — 명리 RAG 개선 #839 운영 반영 완료
+
+- **머지**: PR #839 HEAD `44c35887`의 CI 2건·CodeQL 분석 및 요약·Playwright E2E·Vercel 검사를 모두 통과한 뒤 squash 머지(`090acaa3`). 검증한 기능 커밋과 머지 결과의 파일 차이가 없음을 확인했다.
+- **운영**: production `dpl_4maHv11ghKfFkokNZcVLyc29QSaW` **READY**, `ganjisaju.kr`/www 연결과 실제 도메인 HTTP 200 확인. 운영 DB의 migration 088·089 및 검색 가능한 원문 2,232문단과 연결된다. 기존 고객 PDF 스냅샷은 보존한다.
+- **마무리**: 이 배포 기록을 커밋·push하고 main/staging을 같은 커밋으로 동기화하며 `PROGRESS.html`을 재생성한다. 상세 변경·검증·해석 검수의 한계는 아래 기록을 유지한다.
+
+## 2026-09-18 — 명리 RAG 실사용 연결·고전 원문 품질 게이트 보완
+
+- **감사 결과**: 기존 운영 DB는 고전 판본 메타데이터 11건만 있고 원문 문단은 0건이었다. 검색 함수는 있었지만 기본 총평·일반 풀이·오늘운세·평생·연간 생성 경로의 프롬프트에는 연결되지 않아, `evidenceJson.classics.cards`의 정적 규칙을 RAG 검색 결과로 오인할 수 있는 상태였다.
+- **원문 적재**: 출처와 라이선스가 확인된 위키문헌 적천수·궁통보감·삼명통회 사고전서본을 수집해 기존 판본 2,276문단을 적재했다. 적천수의 색상/강조 템플릿을 수집기가 버리던 누락을 발견해 원문 구절과 뒤따르는 조건 설명을 보존하도록 수정했다. 기존 적천수 174문단은 백업 후 삭제하지 않고 보존했으며, 복구 수집본 130문단을 별도 `normalizer=2` 판본으로 추가하고 9개 인용 앵커를 실제 DB에서 확인한 뒤 구판본만 `internal/reference-only`로 가역 전환했다. 최종 검색 가능 문단은 2,232건이다.
+- **검색·검수 게이트**: 새 migration 088은 live·provisional/reviewed 판본, 원문 provenance·라이선스, 문단 suspect/reference-only 상태를 확인하고, 검수 완료된 한국어 독음·직역·해설만 반환한다. provisional은 `원문 잠정 확인 · 전문 검수 전`으로 표시한다. migration 089는 구판본을 지우지 않고 보정 수집본 메타데이터만 추가한다. 변경 원문 덮어쓰기와 검수 해설·수동 태그 삭제를 수집기에서 차단했다.
+- **해석 연결**: 계산된 일간·월령·강약·십성 조건에 맞춰 최대 4개 원문 원칙을 선별하고, 원문·편집 해설·적용 한계·현실 적용을 별도 필드로 전달한다. 기본·오늘 무료/유료·평생·연간·일반 API가 공통 근거 DTO를 사용하며 평생 8개 장과 최종 풀이가 한 번 검색한 근거를 공유한다. 모든 관련 캐시에 근거 fingerprint를 넣어 자료가 바뀌면 오래된 풀이를 재사용하지 않는다. 한글 명리 원어는 보존하고 한자·확정적 사건·직업/재산/건강 단정은 계속 차단한다.
+- **검증**: 실제 DB 앵커 9/9 및 가상 명식 3종 모두 조건부 원문 연결을 확인했다. suspect·reference-only·blocked 판본과 미검수 해설이 검색에서 제외되는 트랜잭션 회귀도 통과했다. `npm test` 1,784건 + Node 193건, Vitest 66파일 497건, `typecheck`, production build, PDF layout, corpus validator, script 회귀와 `git diff --check`가 통과했다. 가상 인물로 실제 AI 기본 총평은 입력 5,944/출력 1,550 토큰, 평생은 30,178/2,182 토큰으로 생성·형식 검증했고, 오늘 유료 샘플은 빈 응답으로 비용 없이 결정론 폴백됐다.
+- **한계**: 고전 원문은 전통 문헌의 출처·조건 일치만 검증하며 미래 사건의 과학적 적중률을 보장하지 않는다. 이번 자동 검증은 근거가 생성 입력에 도달하고 출력 형식·금지 표현을 지키는지 확인한 것이며, 생성 문장이 원문 의미를 완전히 충실히 해석했는지에 대한 전문 역술 검수는 별도 작업이다. 기존 고객 PDF 스냅샷은 변경하지 않는다.
+
+## 2026-09-18 — 연도별 근거·반복 개선 #838 운영 반영 완료
+
+- **머지**: PR #838 HEAD `b8ddaad7`의 CI 2건·CodeQL 분석 및 요약·Playwright E2E·Vercel 검사 전부 통과 후 squash 머지(`0f9797b0`). 검증한 기능 커밋과 머지 결과 파일 차이 없음. 독립 코드·원고·페이지 분할 검수 완료.
+- **운영**: production `dpl_H79G3LFgDJCa8iKirQDDZca7cPWG` **READY**, `ganjisaju.kr`/www 연결과 실제 도메인 HTTP 200 확인. 고객·관리자 신규 PDF에 적용된다. 기존 저장본은 본문을 유지하므로 개선본은 새로 생성한다.
+- **마무리**: 비교 HTML·실제 PDF 발췌·검증 로그는 로컬 `.codex-run/`에 보관. 이 배포 기록도 커밋·push하고 main/staging을 동일 커밋으로 맞추며 `PROGRESS.html`을 재생성한다. 상세 원인·수정·측정 기준·검사 결과는 아래에 보존한다.
+
+## 2026-09-18 — 연도별 세 분야의 원국·세운·대운 연결과 반복 문장 개선
+
+- **확인한 원인**: 배움·활동과 생활·재물은 나이 접두문 및 세운 천간/지지 본기 십성의 고정 문장만 조합했다. 가족·관계도 합충 설명을 뒤에 붙였고, 대운은 개요와 실천에만 쓰였다. 기존 전체 문단 고유성 검사는 문장 조각의 반복을 놓쳤다. 가상 사주 3개×101년에서 관계의 연령 안내는 최장 46년 연속, 일부 핵심 실천은 17회 재등장했다.
+- **수정**: 공용 PDF 생성기에서 연간 십성별 질문·지지 본기의 점검 항목을 원국의 지지 충/육합/반복·천간 합/충과 연결해 세 분야의 선택 자체를 바꾼다. 같은 본기인 진/술·축/미도 실제 접점으로 구별하며, 확인된 모든 동시 접점은 개요에 보존한다. 지지 접점 우선은 생활 조언의 편집 기준임을 명시하고 다른 접점을 상쇄하거나 합화를 단정하지 않는다. 실제 대운 간지·진입/적응/마무리도 세 분야에 연결한다.
+- **문장·한계**: 공통 연령 접두문과 중복 어구를 줄이고 유아기의 실천 주체를 돌봄을 맡은 어른으로 명확히 했다. 생시 미상은 원본 또는 엔진 플래그 중 하나라도 미상이면 잔여 시주를 원국 근거에서 제외한다. 계산 근거와 생활 조언을 구분하며 없는 대운·완성 삼합·확정 사건을 만들지 않는다. 같은 근거에 따른 공통 관점은 유지한다.
+- **반복 확인**: 같은 303개 연도의 동일 문장 출현을 비교하면 배움 64.7–66.9%→0–3.6%, 관계 91.3–93.0%→11.1–15.5%, 재물 66.1–68.1%→0–3.6%다. 연속 연도에서 공유하는 동일 문장은 세 분야 모두 0건이다. 이는 공백을 정리한 완전 동일 문장의 첫 출현 이후 비율이며 의미 유사도나 사건 적중률 지표가 아니다. 별도로 원국 변경·대운 방향·30년 동일 본기·9가지 대운 단계/합충 조합의 실제 조언 차이 및 3년 연속 고정 문장 방지 회귀를 추가했다.
+- **출력**: 긴 연도는 한 쪽에, 보통 분량은 두 연도씩 배치한다. 실제 배치에 따라 10세 단위 찾아보기 쪽수를 계산한다. 가상 PDF 4종은 92/88/100/68쪽, 101개 연도와 찾아보기 11개 전부 일치, A4 넘침·본문 누락 없음, 중앙 10% 워터마크·동의 배너 제외 확인. 실제 PDF 발췌도 시각 검수했다.
+- **검증·적용**: Node 22 단위 1,773건 + Node runner 192건, Vitest 65파일 492건, 타입 검사·운영 빌드·diff 검사 통과. 독립 코드·원고·페이지 분할 검수 완료. 고객/관리자 공용 경로에 적용하며 LLM 추가 호출·DB/결제 변경·실제 고객 데이터 사용 없음. 과거 저장본의 본문은 유지하므로 개선본은 새로 생성해야 한다. 로컬 비교 HTML은 `.codex-run/annual-reading-comparison.html`, 발췌 PDF는 `.codex-run/pdf-verification/annual-samples.pdf`. PROGRESS HTML을 재생성하고 이 기록을 기능 PR에 함께 커밋한다.
+
+## 2026-09-18 — 질문형 풀이 개선 #837 운영 반영 완료
+
+- **머지**: PR #837 HEAD `e2bff22c`의 CI 2건·CodeQL 분석 및 요약·Playwright E2E·Vercel 검사 모두 통과 후 squash 머지(`f14e531e`). 검증본과 머지 결과의 파일 차이 없음. 독립 최종 원고 검수도 나이·미산정 대운·원국별 선택 차이·어린이 중복 제거를 확인했다.
+- **운영**: production `dpl_8JMN31Q8MYF2DkaXhnbQSXVg6spe` **READY**, 실제 `ganjisaju.kr`·www 연결과 루트 HTTP 200 확인. 기존 저장 PDF는 보존하고 일반·관리자 신규 생성에 개선본을 적용한다. 실제 고객 데이터나 유료 AI를 사용하지 않고 검증했다.
+- **산출물·정리**: 새 목차 및 가상 핵심 3장 원고를 문서로 커밋했고, 로컬 `.codex-run/reading-quality-samples.html`과 `.codex-run/pdf-verification/core-samples.pdf`를 생성했다. 이 배포 기록도 커밋·push하고 main/staging을 같은 커밋으로 동기화하며 `PROGRESS.html`을 재생성한다. 상세 변경과 검증 수치는 아래에 보존한다.
+
+## 2026-09-18 — 평생·기본·오늘 풀이의 질문형 구성과 근거 정합성 개선
+
+- **구성·샘플**: 월별 풀이는 추가하지 않는다. 평생 PDF를 핵심 요약→성향→돈·일·관계 질문→부담·회복→대운→0~100세 연표→구조 참고 순으로 배치했다. `docs/reading-quality-plan.md`에 목차·원고 기준, `docs/reading-quality-samples.md`에 가상 입력으로 실제 생성한 핵심 3장과 다른 원국의 답을 기록했다. 로컬 HTML과 3장 발췌 PDF도 생성했다.
+- **평생**: 기존 재물·직업·관계 필드를 원국의 십성 조합·격국·강약·합충·입력 상황에 따른 답·근거·생활 장면·선택 기준으로 교체했다. 다른 평생 장의 일일·월별 조언 재사용과 PDF 일일 점수·고정 분야 조언도 제거했다. 웹의 두 문장 잘림과 원어를 바꾸거나 문장을 삭제하던 신규 본문 치환을 없애고, 고유한 AI 해설은 PDF에 모두 보존한다. 짧은 종합 해설만 별도 페이지로 밀리지 않게 했다.
+- **기본·오늘**: 기본 사주를 4개 질문으로 정리하고 오행 5종 일반론·중복·색상/방향 처방을 줄였다. 오늘은 원국×선택 날짜를 설명에 연결하고, 같은 일간이어도 원국의 역할이 달라지면 실제 사례와 선택이 달라지게 했다. 어린이는 분야별 돌봄 장면을 사용한다. AI 입력과 프롬프트도 같은 형식·한글 원어와 짧은 설명을 따른다.
+- **정확성**: 균형 오행을 결핍으로 부르거나 없는 대운을 현재/전환기로 만들지 않는다. 평생 대운 나이를 PDF와 같은 연도 나이로 통일했다. 오늘 풀이의 오래된 연·월운 혼입, 생시 미상 잔여 시주, 자축합·자오충 누락, 일부 지지만으로 삼합·방합 완성을 단정하던 오류를 고쳤다. 과거 사건·직업·관계 상태를 입력 없이 만들지 않도록 지시했다.
+- **검증**: Node 22 단위 1,765건 + Node runner 192건, Vitest 65파일 492건, 타입 검사·프로덕션 빌드·diff 검사 통과. 독립 코드·실제 원고 리뷰 후 발견한 본문 손실·날짜·나이·중복 문제를 회귀 검사에 포함했다. 실제 Chromium PDF 4종은 78/78/91/68쪽으로 101개 연도·A4 넘침 없음·중앙 10% 워터마크·동의 배너 제외를 확인했다. 구형 PDF 모델의 쪽수·순서와 기존 구매 snapshot 재조회도 보존된다.
+- **적용·비용**: 일반 고객·관리자 신규 PDF와 기본/오늘 풀이에 적용된다. DB·결제·기존 구매 기록 변경, 실제 고객 데이터 사용, 유료 AI 호출은 하지 않았다. 호출 횟수는 유지하고 평생 최종 출력 상한만 2,600→4,800토큰으로 늘려 실제 출력량에 따라 비용은 증가할 수 있다. 관련 캐시 버전을 갱신했다. 과거 저장 PDF는 원문을 유지하므로 개선본은 새로 생성해야 한다. 이 기록을 기능 PR에 함께 커밋하고 CI·CodeQL 요약·E2E·Vercel 검사 후 운영 반영을 확인한다.
+
+## 2026-09-18 — 연도별 반복 풀이 개선 #836 운영 반영 완료
+
+- **머지**: PR #836 HEAD `c5ec6c32`의 CI 2건·CodeQL 분석/요약·Playwright E2E·Vercel 검사 모두 통과 후 squash 머지(`72124380`). 검증본과 머지 결과 파일 차이 없음.
+- **운영**: production `dpl_s9kMdn5m381STKzFYceimDtz7CLL` **READY**, `ganjisaju.kr` 연결 확인. 일반·관리자 새 PDF 생성에 적용되며 과거 저장 기록은 원본 보존. 실제 구매자 데이터나 유료 AI를 호출하지 않고 가상 PDF 4종으로 검증했다.
+- **마무리**: 이 배포 기록을 커밋·push하고 로컬/원격 main·staging 동기화, `PROGRESS.html` 재생성. 상세 변경·중복 수치·테스트 결과는 아래 섹션에 보존한다.
+
+## 2026-09-18 — 평생 PDF 연도별 반복 풀이 보완
+
+- **원인·수정**: 연간 천간 십성 10종과 연령대 문구에 편중된 공용 생성기를 보완했다. 기존 엔진의 지지 본기 십성·합충 규칙을 재사용해 학습·관계·자원·생활 리듬의 실행 방식을 구분하고, 전년 대비 주제 변화와 세운↔대운 관계를 종합 설명에 반영한다. 같은 십성이 겹치는 경우에는 같은 의미의 첫 문장을 반복하지 않고 보충 설명을 사용한다.
+- **대운·원국**: 진입·적응·확장·중간 점검·정착·인계 준비·마무리 단계가 연간 실천의 우선순위를 바꾼다. 원국의 충이 있으면 육합·동일 지지를 버리던 조기 반환을 제거해 동시에 존재하는 관계를 모두 설명하며, 생시 미상은 오래된 snapshot에 시주가 남아 있어도 해석에 사용하지 않는다.
+- **읽기 품질**: 영유아 조언의 주체를 보호자로 명시하고 연령별 활동·자원 범위를 적용했다. 매년 반복하던 건강·결과 보장 관련 공통 안내는 보고서 안내에 모았다. 세 가지 가상 차트(총 303개 연도)에서 생활 리듬의 인접 연도 완전 중복은 각 33건→0건, 학습·자원·실천 고유 문단은 각 59종→101종으로 개선됐다. 숫자·간지·십성 명칭을 제거해도 실제 조언이 달라지는 회귀 검증을 추가했다.
+- **검증**: 기존 구현에서 실패하는 신규 회귀 4개와 기존 타깃 9개 모두 통과. Node 22 단위 1736건 + Node runner 191건, Vitest 62파일 487건, 타입검사·프로덕션 빌드·diff 검사 통과. 독립 편집/코드 리뷰 후 조사·관계 문장 연결·보호자 주체를 교정했다. 실제 PDF 4종(일반·생시 미상 어린이·긴 본문·생시/성별 모두 미상) 74/74/88/63쪽에서 101개 연도, A4 넘침 없음, 중앙 10% 워터마크와 동의 배너 제외를 확인했다.
+- **적용 범위**: 일반 고객과 관리자 신규 PDF 모두 같은 생성기를 사용한다. 추가 LLM 호출·DB 변경·구매자 데이터 변경 없음. 저장된 PDF 기록의 재다운로드는 발행 당시 본문을 보존하므로 개선본이 필요하면 새로 생성해야 한다. `PROGRESS.html` 재생성 후 이 기록을 기능 PR에 함께 커밋하고 CI·CodeQL 요약·E2E·Vercel 확인 후 운영에 반영한다.
+
+## 2026-09-18 — 관리자 PDF 기록·좌표 검색 #835 운영 반영 완료
+
+- **머지·동기화**: PR #835 최종 HEAD `790ef1e7`의 CI 2건·CodeQL 분석/요약·Playwright E2E·Vercel 검사 모두 통과 후 squash 머지(`7037c113`). 검증본과 머지 파일 차이 없음, 로컬 main·원격 main/staging 동기화 완료.
+- **운영 확인**: production `dpl_8Hr1nJrWE5JVEmRzoC5m4m1dqk7n` **READY**, `ganjisaju.kr` 연결 확인. 운영 기록 목록·상세 미인증 HTTP 307(`/login?next=/admin`), 생성 API 401 확인. 로컬 실제 지역명 검색도 HTTP 200·검색 결과·유효 좌표 반환. 운영 DB 087 적용·접근제어·가상 저장/조회 rollback 검증은 아래 섹션에 보존.
+- **완료 보고**: 이 기록도 커밋·push하고 `PROGRESS.html` 재생성. 구매자 발송·실제 AI 생성은 실행하지 않았다. 새 생성 건부터 목록에 저장되며 과거 미저장 결과는 복구 대상이 아니다.
+
+## 2026-09-18 — 관리자 출생지 좌표 검색·외부 주문 PDF 생성 기록
+
+- **출생지**: 기존 `/api/geo/birth-location` 검색을 관리자 직접 입력에 연결. 지역명 입력 후 좌표 찾기/Enter → 검색 결과 선택 시 위도·경도 자동 반영. 지역명 수정·초기화·프리셋 변경·생성 시작 시 오래된 검색 응답을 취소한다.
+- **기록·재다운로드**: 외부 주문 PDF 생성 바로 아래 **PDF 생성 기록** 메뉴(`/admin/external-report/history`) 추가. 고객 이름·보고서 번호, 원본 양력/음력 생일, 성별·시각·시간 규칙, 출생지·좌표, KST 생성일을 최신순 20건씩 조회한다. 상세 페이지는 생성 당시 본문·발행일 snapshot으로 재출력하고 AI를 다시 호출하지 않는다. 새 생성 완료 화면에서도 기록으로 이동할 수 있다. 이전 미저장 보고서는 소급 복구하지 않는다.
+- **저장·권한**: 생성 API에서 최고 관리자 확인·입력 검증 후 `admin_external_reports`에 명시적으로 허용한 입력과 전체 보고서 저장. 저장 실패를 성공으로 안내하지 않으며 연결이 끊겼을 때 기록부터 확인하도록 안내. 목록·상세도 최고 관리자만 접근하고 snapshot은 목록 쿼리에서 제외. 감사 로그에는 구매자 정보 대신 기록 ID·보고서 번호·생성 출처만 남긴다.
+- **운영 DB**: CLI 기존 계정은 403이라 사용자 로그인 후 간지사주 프로젝트 `bgtzkjxihlbmxehmhtwg` SQL Editor에서 **087만 적용 완료**. RLS ON, anon/authenticated 조회 불가, service_role SELECT/INSERT만 허용(UPDATE/DELETE 불가) 실조회. service_role 가상 snapshot 저장·조회 트랜잭션 후 rollback 성공, 실제 REST 서버 조회 200·0건/익명 401·42501 확인. 기존 고객 데이터 변경·전체 db push·실제 AI 호출 없음.
+- **검증**: Node 22 타입검사·프로덕션 빌드·마이그레이션 번호 검사·diff 검사 통과. 기존 단위 테스트 1732건 + Node runner 191건, Vitest 62파일 487건 통과. 독립 보안/코드 리뷰 후 빈 분 입력을 00분으로 오표시하던 목록과 인쇄 대기 중 이동 시 제목 복원 문제 수정·회귀 확인. PDF 샘플 74/74/88쪽에서 워터마크·동의 배너 제외·A4 페이지 분할 유지 확인.
+- **배포 진행**: 기능·운영 가이드·이 기록을 함께 커밋하고 PR의 CI·CodeQL 요약·E2E·Vercel 검사 통과 후 main/staging 반영과 운영 배포 상태를 확인한다. `PROGRESS.html` 재생성.
+
+## 2026-09-18 — 워터마크·동의 배너 수정 #834 운영 반영 완료
+
+- **반영 완료**: PR #834 최종 HEAD `a91f864f`의 CI 2건·CodeQL 분석/요약·Playwright E2E·Vercel 미리보기 모두 통과 후 squash 머지(`738d5c01`). 로컬 main·원격 main/staging을 동일 커밋으로 동기화했고 검증본과 머지 결과 파일 차이가 없음을 확인했다.
+- **운영 확인**: Vercel production `dpl_8Ffmp5tWZHNfjncKMt3SoXGcFiWb` **READY**, `ganjisaju.kr` 연결 확인. 운영 사이트에서 실제 배포 CSS를 사용하는 임시 문서 요소로 각 페이지 `간지사주`·불투명도 `0.1`·A4 중앙 `561.26px` 확인. 동의 배너는 화면 표시→인쇄 숨김→화면 재표시 통과, 관리자 페이지 미인증 HTTP 307 확인. 로그인·유료 PDF 생성·운영 데이터 쓰기는 하지 않았다.
+- **보고서**: 상세 수정·236쪽 출력 검증은 바로 아래 섹션에 보존. 이 완료 기록도 커밋·push하고 `PROGRESS.html`을 재생성한다.
+
+## 2026-09-18 — PDF 전 페이지 중앙 워터마크·동의 배너 인쇄 제외
+
+- **요청·수정**: 표지에만 있던 한자 장식을 제거하고 공통 `.report-page::after`에 **간지사주** 워터마크 적용. 불투명도 **10%**, 실제 A4 용지 중앙(세로 148.5mm), 카드 위 장식 레이어로 표지·본편·대운·101개 연도·마지막 장까지 반복. 빈 대체 텍스트로 중복 낭독을 피하며 본문 흐름·페이지 수에는 영향을 주지 않는다.
+- **동의 화면**: 전역 `AnalyticsConsentBanner`가 body 최상단에 렌더돼 PDF에 포함되던 원인 해결. 공통 인쇄 제외 선택자에만 배너를 추가해 구매자·관리자 PDF에 함께 적용하고, 화면의 동의/거부 기능은 유지한다.
+- **모바일 인쇄**: 기존 모바일 보고서 재배치 미디어 조건을 `screen`으로 제한. 작은 뷰포트의 인쇄에도 A4 폭을 유지해 워터마크 위치와 페이지 분할이 달라지지 않는다.
+- **검증**: `typecheck`·`git diff --check` 통과, 독립 코드 리뷰 차단 사항 없음. 기존 PDF 회귀 스크립트에 화면 동의 배너 유지/인쇄 제외·각 페이지 워터마크 문구/10%/중앙 위치/카드 위 배치 검사 추가. 일반 **74쪽**, 모바일 뷰포트·생시 모름·배경 인쇄 OFF **74쪽**, 긴 본문 **88쪽** 모두 실제 출력·페이지 수·가로/세로 넘침 검사 통과.
+- **실제 PDF·앱 확인**: 3개 PDF **236쪽 전체**에서 워터마크 글자·중앙 좌표·PDF 투명도 값·관리자/동의 UI 미포함 확인. Poppler로 표지·연도별 풀이·마지막 장 렌더를 직접 검수. 로컬 실제 앱에서도 동의 배너가 화면에 보이고 인쇄에서만 숨겨지며 화면 복귀 후 다시 보임을 확인했다. 가상 인물 사용, 실제 유료 AI·운영 데이터 변경 없음.
+- **반영**: 이 기록과 수정 파일을 같은 PR로 커밋·push하며, CI·CodeQL 요약·E2E 통과 후 main/staging 및 운영 배포에 반영한다. 샘플·검수 이미지는 무시된 `.codex-run/pdf-verification/`에 보관한다.
+
+## 2026-09-18 — Codex 환경 설정·생애 PDF 관리자 기능 머지 및 운영 배포
+
+- **사용자 승인**: 커밋·push·머지·배포 요청에 따라 PR #832 → #833 순서로 squash 머지. #832 `465e967e`, #833 `a03643d7`. 관련 없는 #831·#822는 변경하지 않았다.
+- **머지 전 검증**: #832 최종 HEAD `1fa25b16`, #833 최종 HEAD `864a49a5`에서 CI 테스트·타입 검사·빌드, CodeQL 분석 및 별도 **CodeQL 요약 체크**, Playwright E2E, Vercel 미리보기 모두 통과. 독립 리뷰 완료. 새 워크트리 초기화 테스트 4건도 통과.
+- **병합 정합성**: #832 squash 후 공통 CI/작업 기록 충돌은 양쪽 기록·검증 단계를 보존해 해결. 해결 결과 전체 Git tree가 이미 검증한 PDF 코드와 동일함을 확인한 뒤 최종 HEAD 검사를 다시 완료했다. 운영 머지 결과도 최종 검증본과 차이가 없다.
+- **운영 배포**: `a03643d7`의 Vercel production `dpl_DbeqoGaM4igXdNSQXqmy3wTXXhXB` **READY**, GitHub Production deployment 성공 및 `ganjisaju.kr` alias 확인. 운영 홈 HTTP **200**, `/admin/external-report` HTTP **307**(로그인 이동), 미인증 `/api/admin/external-report` POST HTTP **401** 확인. 실제 유료 AI 생성·구매자 발송·운영 데이터 변경은 실행하지 않았다.
+- **관리자 사용 위치**: `https://ganjisaju.kr/admin/external-report` — 최고 관리자(`super_admin`) 로그인 후 운영 도구의 외부 주문 PDF 메뉴에서 사용. 구매자 정보를 입력해 생성 후 인쇄 창에서 PDF로 저장한다. 상세 사용법은 `docs/admin-external-report.md`.
+- **동기화·정리**: 기능 배포 커밋으로 로컬 main·원격 main/staging 동기화 완료. 이번 작업의 임시 `pr832-fix` 워크트리만 정리했고 기존 환경 파일·다른 Claude 워크트리는 보존했다. 이 기록은 별도 문서 커밋으로 push하고 `PROGRESS.html`을 다시 생성한다.
+
+## 2026-09-17 — PR #832 머지 전 보완: 새 워크트리 의존성 설치 옵션 통일
+
+- **수정**: `scripts/setup-codex.sh`의 신규 의존성 설치에 CI와 같은 `--legacy-peer-deps --engine-strict` 적용. Toss 하위 타입의 TypeScript 4 peer 제약과 프로젝트 TypeScript 5 충돌을 우회하는 기존 CI 정책을 따르면서 Node 엔진 조건은 강제한다. 기존 `node_modules`는 재설치하지 않는다.
+- **회귀 검증**: `scripts/setup-codex.test.mjs`의 임시 경로·Git/Node/npm 스텁으로 최초 설정·재실행·기존 의존성 보존·Node 버전 교체·설치 실패 전파를 4개 테스트로 확인. `package.json`의 `test:codex-setup` 및 CI 단계 추가.
+- **실행 결과**: 프로젝트 Node 22 실행기로 새 테스트 **4/4 통과**, `sh -n scripts/setup-codex.sh`·`git diff --check` 통과. 실제 의존성 설치·네트워크·운영 DB 호출은 하지 않았다.
+- **남은 작업**: PR #832 보완 커밋·push 후 변경된 HEAD의 필수 CI/CodeQL 확인과 머지는 상위 작업에서 진행한다.
+
+## 2026-09-17 — 생애 전체 연도별 PDF 확장 + 외부 주문 관리자 생성
+
+- **사용자 요청**: 깊은 사주풀이 PDF를 30쪽 이상으로 확장하고 생애 전체를 연도별로 분석. 대운 전환기를 더 깊게 다루며, 스마트스토어 구매자 정보를 최고 관리자가 입력해 사이트 결제·회원가입 없이 PDF를 저장할 수 있도록 구현.
+- **보고서 구성**: 출생연도~100세 **101개 연도**를 연도당 약 800자의 6개 영역(개요·배움/활동·가족/관계·생활/재물·생활 리듬·실천)으로 구성. 실제 세운·십성·원국 지지 관계·대운·생애 단계를 사용하며 임의 점수나 매년 AI 호출은 추가하지 않음. 대운별 심층 본문과 전년/진입/적응 분석, 연령대 찾아보기·목차 추가. 유료 AI 본편은 생략 없이 분량에 따라 페이지를 나눔.
+- **정확성·출력**: 출생연도=0세의 연도 나이로 통일, 입춘 전 세운/생시 모름/첫 대운 전/성별 미입력/마지막 대운의 100세 이후 경계를 명시. 100세는 분석 범위이며 수명 예측이 아님. 기존 PDF의 연도와 무관한 월별 고정 곡선과 대운 임의 점수 차트를 제거해 생애 안내·실제 대운 연표로 교체. 표지에 구매자 이름 표시, 워터마크가 본문을 밀던 위치 지정 수정.
+- **관리자 운영**: `/admin/external-report`와 `/api/admin/external-report`, 운영 도구 메뉴 추가. `super_admin` 페이지/API 이중 가드, 동일 출처 JSON·날짜·이름·성별·진태양시 좌표 검증. 기존 고객 PDF 소유권/이용권 검사는 그대로. 고객 계정·reading·이용권·프로필을 쓰지 않고 transient reading과 메모리 AI 캐시/텔레메트리 사용. 감사 로그는 관리자·무작위 보고서 번호·생성 출처만 기록. 입력 수정/초기화 시 이전 결과 폐기, 취소 신호는 OpenAI SDK까지 전달. 실패 시 기본 계산 풀이임을 관리자에게 안내.
+- **구조·사용법**: 서버 모델 `pdf-report-model.ts`와 공통 `ReportDocument`를 분리해 관리자 클라이언트의 서버 모듈 유입을 방지. PDF는 기존처럼 인쇄 창의 PDF 저장을 사용하며 관리자 메뉴/폼/추천 상품은 인쇄 제외. 음력은 평달 지원, 윤달은 양력 변환 후 입력. 입력·결과는 새로고침 시 사라짐. 운영 안내 `docs/admin-external-report.md`.
+- **검증**: Node 22 `typecheck`·프로덕션 `build` 통과. `npm test` **1731건 + Node runner 191건**, Vitest **60파일 459건** 통과. 인증/검증/고객 DB 무쓰기/취소/늦은 응답 폐기/부수 효과 격리·연도 경계 회귀 포함. CI에 Vitest 실행 추가. 정적 감사 5종 통과(기존 디자인 표식 경고는 비차단). 로컬 페이지 HTTP 307(로그인 필요), 비로그인 생성 HTTP 401 확인.
+- **실제 PDF**: `npm run test:pdf:layout`로 DB·AI 호출 없이 가상 인물 출력. 일반·생시 모름 **각 74쪽**, 긴 본문 스트레스 **88쪽**. A4 높이/가로 넘침 없음, 101개 연도 무누락, 물리 페이지와 목차 일치, 빈 페이지/관리자 UI 혼입 없음. Poppler/PyPDF로 실제 파일 검사 및 한글 렌더 확인. 산출물은 무시된 `.codex-run/pdf-verification/`에만 보관.
+- **범위**: 운영 DB 변경·실제 유료 AI 호출·배포·고객 발송 없음. 기존 설정 PR #832 위의 `codex/lifetime-pdf-admin` 브랜치에서 별도 검토하며, 중복 생성 제한은 서버 인스턴스 단위임.
+
+## 2026-09-17 — 작업 종료 자동 보고: PROGRESS 기록·커밋 확인 → HTML 생성
+
+- **사용자 요청**: 작업 종료 시 `PROGRESS.md` 기록과 HTML 생성을 자동화. `.codex/hooks.json`에 `UserPromptSubmit`·`Stop`을 연결하고 `scripts/codex-progress-hook.mjs` 추가.
+- **동작**: 작업 시작 시 저장소 상태 해시를 로컬 `.codex-run/progress-hooks/`에 저장 → 종료 시 실제 변경과 새 보고서 섹션 확인 → 기록 누락·기존 기록 훼손·보고서 미커밋이면 Codex에 한 번 보완 요청 → 보고서가 준비되면 HTML 생성. 자동 보완/중복 종료가 무한 반복되지 않으며, 미해결 문제는 명시적으로 경고한다.
+- **범위 보존**: 훅은 직접 stage·commit하거나 대화 전문·비밀값을 저장하지 않는다. 변경 없는 조회·기존 사용자 변경 그대로인 작업·서브에이전트 종료에는 새 기록을 강제하지 않는다. 다른 작업자의 변경은 자신의 성과로 기록하지 않도록 안내한다.
+- **활성화**: Codex 공식 `hooks/list`·`config/batchWrite` API로 이 프로젝트의 보고 훅 두 개만 신뢰 등록. 둘 다 `enabled=true`, `trustStatus=trusted` 재확인. Codex 앱에 수동 “보고서 HTML 생성” 액션도 추가.
+- **검증**: `npm run test:progress-hooks` **17건 통과**(임시 Git 저장소, DB/네트워크 사용 없음). 기록 누락·커밋 후 코드 변경·같은 크기 파일 수정·과거 기록 보존·재진입·렌더 실패·심링크·JSON 출력 검증. 독립 리뷰에서 발견한 Git `assume-unchanged`로 미커밋 보고서가 가려지는 문제는 HEAD 원문 해시 대조로 수정. 실제 저장소에서도 새 기록이 없을 때 보완 요청 확인(시작 스냅샷 약 0.7초).
+- **지속 검증**: `package.json`과 CI에 훅 테스트 명령 추가. `AGENTS.md`·`docs/codex-handoff.md`에 최종 답변 전 사실 기반 기록·본인 변경만 커밋·HTML 생성 규칙 반영. 제품 기능 코드는 변경하지 않았다.
+
+## 2026-09-17 — Claude Code → Codex 로컬 작업 환경 인계
+
+- **최신 상태 확인**: `git pull --ff-only origin main` 최신. 인계 기준 로컬·원격 main·staging 모두 `0d361e0e`(#830), 마지막 제품 코드 `2467140a`(#827). 같은 저장소 Claude 워크트리 31개 전부 미커밋 변경 없음. #829·#828·#827은 완료이며 옛 머지 대기 지시는 재실행하지 않는다.
+- **공통 파일 유지**: `/Users/kionya/ganji-saju`의 기존 `.env.local`·`.env.development.local`·`node_modules`·lockfile 그대로 사용. Claude 설정 원본·비밀값·다른 프로젝트·전역 Claude 대화/메모리는 변경하거나 가져오지 않았다.
+- **Codex 설정**: `AGENTS.md`에 어휘 정책 우선·최신 인계 확인·Node 22 실행·프로젝트 범위·CodeQL 요약 체크 규칙 추가. `.codex/config.toml`은 기존 Supabase 프로젝트 연결과 로컬 **비활성 상태**를 유지(토큰은 환경변수 이름만). `.codex/hooks.json`에 PROGRESS HTML 종료 훅 이관. 자동 변환기의 AGENTS↔CLAUDE 순환 링크는 적용하지 않고 기존 AGENTS를 보존했다.
+- **로컬 실행 환경**: `scripts/setup-codex.sh`·`scripts/with-node22.sh` 추가. 시스템 Node 24 대신 프로젝트의 무시된 `.codex-run/node22`에 **Node v22.23.2** 준비, 전역 Node 설정 무변경. 기존 의존성 재설치 없음. `.codex/environments/environment.toml`에 새 워크트리 초기 설정과 개발·검증 액션 추가.
+- **검증**: 설정 TOML 검증·실제 `codex mcp get supabase`(disabled)·hooks 기능 로딩 확인. Node 22에서 `typecheck` 0, `npm test`(1718 tests passed / Node runner 191 pass), `test:spec` 55파일·414건 통과. 개발 서버 `127.0.0.1:3000` Ready, 홈·로그인 HTTP 200. 초기 설정 재실행도 추가 설치 없이 통과.
+- **인계 문서**: `docs/codex-handoff.md`. GitHub 실조회 기준 #831(관리자 환불 동시 승인 선점)·#822(의존성 업데이트) OPEN. 기존 PR 머지·DB 변경·배포는 이번 설정에 포함하지 않았다. 새 종료 훅은 Codex `/hooks`에서 최초 신뢰 검토가 필요할 수 있으며 수동 HTML 생성 명령도 공통 지침에 남겼다.
+
+## 2026-09-15 — 세션: 인계 머지 3건 완료(#829·#828·#827 → staging) + 머지 전 리뷰 반영 + CodeQL 3건 오탐 처리
+
+아래 '세션 인계' 의 머지 대기 3건을 끝냈다. main = staging = `2467140a`(수동 마이그레이션 없음).
+- **머지**: #829 `fc1da3ed` · #828 `cc59d612`(main 병합 + 리뷰 하 1건) · #827 `2467140a`(main 병합 + 리뷰 차단 1건 + 수정 리뷰 하 1건). 각 반영 내역은 아래 두 섹션.
+- **머지 전 리뷰**(pr-reviewer 워크플로 — PR별 리뷰 3 + 차단급 반박 검증 2): #829 비차단 · #828 하 1 · #827 **차단 1(카드 결제 가족 이름이 계정 주인 이름으로 굳음 — 앞 커밋 수정이 주 경로에서 무효)**.
+- ⚠️ **실수: #829 를 CodeQL 요약 체크 fail 로 머지했다.** `gh run list` 의 CodeQL 워크플로 success(=Analyze 작업)만 보고, `pr checks` 의 `CodeQL` 줄(새 high 2건
+  `js/user-controlled-bypass` — 나이스 웹훅 route.ts:139 `if (!tid)` · :146 서명 있을 때만 대조)을 안 봤다(mergeStateStatus UNSTABLE). 사후: 독립 에이전트가 main 코드로 공격 스펙 12건
+  (남의 orderId·결제키 없는 주문·서명 유무·가짜 cancels tid·경로 조작 등) → 상태 변화 0 → **#65·#66 오탐 dismiss**(근거 코멘트). 서명은 설계상 흔적용이고 위조 차단은 재조회 대조가 전담.
+  ⚠️ 서명 불일치를 '거부'로 바꿀 땐 "서명 없음 통과" 조건도 같이 없앨 것(#66 이 가리키는 것). 교훈은 메모리 `feedback_codeql-summary-check-before-merge`.
+  (#829 는 원래 CodeQL 이 한 번도 안 돌았다 — 기준을 main 으로 옮기기 전에 푸시해 `branches:[main]` 필터에 걸림. 닫기→다시 열기로 트리거.)
+- **CodeQL #64**(#827, unlock-marker 폼 이름 localStorage) 오탐 dismiss — 걸린 건 키가 아니라 값, 오염은 birth-profile JSON 왕복 과대근사(인계 메모의 "키 해시" 로는 안 지워졌다).
+- 🆕 **#831 열어 둠(머지 대기 — 사용자 판단)**: 관리자 환불 동시 승인 시 PG 일부 취소 이중 전송 경합 → 승인 선점(`setStatus from`). #829 리뷰 발견(창 수십 ms, 원래 전 환불에도 있던 경합).
+
+### 후속 · 결정 대기(리뷰에서 나온 것)
+- **#829 결정**: 재조회 불일치(주문을 찾은 뒤의 `lookup_status:*`·`cancel_not_in_lookup`·`lookup_order_mismatch`)를 지금처럼 'OK'(재전송 끊고 사람이 콘솔 재전송) vs non-OK(나이스 1분×10 재전송으로 자동 복구).
+  위조엔 어느 쪽이든 재전송이 없어 방어 비용 0, 진짜 취소 직후 PG 조회 지연이면 non-OK 쪽이 저절로 복구된다.
+- #829 하: 일부 환불된 멤버십 주문은 status fulfilled 그대로라 결제내역(/my/billing)·관리자 LTV 가 전액(`sumCreditRefundedWon` 은 전 환불 감사만 셈 · `metadata.partialRefunds` 미사용).
+  테스트 빈칸: revoke_pending 재승인 멤버십 일부 환불 · partialRefunds 필터 쿼리(목이 `.not` 무시) · 비멤버 partialCancelled 라우트 수준.
+- 웹훅(하 3): 운영 메일 억제가 조회·기록 비원자(동시 N통) · 결제키 없는 주문 경로 억제 키 = 공격자 tid · `order_id_mismatch` 메일에 임의 orderId 문자열.
+  범위 밖(중 · ⚠️ 검증필요): 검증 **전에** 원문 payload 를 payment_webhook_events 에 넣어 무인증 요청이 행을 무제한 생성(저장 공간), 속도 제한 없음.
+- #828 결정: 드리프트 판정을 JS 재구현(µs 파서·페이지 읽기)으로 둘지 086 쿼리 RPC 로 옮길지. 크론 인증 `safeEqual·isCronAuthorized` 5번째 복사본.
+- #827 결정: 같은 사주 다음 날 재구매가 어제 이용권 행을 덮어씀(결제키 회수 대칭·관리자 이용권 기준 환불 화면) vs scope 에 KST 날짜. 테스트 빈칸: 재구매 뒤 어제/오늘 결제키 회수.
+- 머지 뒤 확인(인계 이월): staging QA 계정으로 가족 사주 3,300원(**막힌 화면에서**) → 가족 이름으로 열림 · 같은 날 다른 가족 재결제 요구 · super_admin `GET /api/admin/audits/membership-drift` → 0/0.
+- 정리: `.claude/worktrees/` 에 옛 워크플로 워크트리 30여 개(브랜치 물림 — #827 브랜치도 여기 걸려 있었다).
+
+## 2026-09-15 — 🔜 세션 인계: PR 머지 이어서(#826 완료 · #829 → #828 → #827 남음)
+
+### 2026-09-14 세션에서 끝난 것
+- #824 멤버십 결제별 기간 원장(086 적용 — legacy 4행·드리프트 0) · #825 오늘운세 무료 1회 재열람 계정 기준 · 나이스 취소 통보 확인(인계 1번, `docs/nicepay-v2-cancel-facts.md`)
+- **#826 머지(`39e7021e`) + staging 반영** — 웹훅 재전송 흡수 버그(재처리·전 회수 멱등). 운영에 미처리로 남은 나이스 통보 0건(과거 피해 없음).
+
+### 머지 대기 — 이 순서로 (사용자 "머지" 지시 받음: main squash + 끝나면 staging 밀기)
+1. **#829** 가짜 취소 알림 막기(재조회 검증) + 멤버십 일부 환불(연산 4)·관리자 금액 입력·지표 — 기준을 main 으로 옮겼다(`72e2e179`, main 병합 커밋 · 원래 #829 와 트리 동일 확인). **CI 재실행 결과 확인 후 머지.**
+2. **#828** 멤버십 드리프트 매일 확인(KST 10시·운영 메일) — 체크 통과. 앞 PR 머지 뒤 PROGRESS 충돌이면 main 을 브랜치에 병합 커밋으로 넣고 머지.
+3. **#827** 가족 사주 결제 버튼 + 오늘 자세히 산 사주만 + 다음 날 재구매 버그 — ❌ **CodeQL `js/clear-text-storage-of-sensitive-data`**:
+   `src/lib/today-fortune/unlock-marker.ts:45` 가 가족 이름 전달용 localStorage 키에 slug(출생 좌표 포함)를 평문으로 저장. → 키를 해시(또는 reading uuid)로 바꾸고 좌표를 저장하지 않게 수정 → CI → 머지.
+4. 마지막에 `git log origin/main..origin/staging` 이 비었는지 보고 `git push origin origin/main:staging`.
+- ⚠️ 강제 푸시는 가드가 막는다 — 기준 변경·충돌은 **main 병합 커밋**으로 해결(리베이스 금지). 각 PR 이 PROGRESS 맨 위에 섹션을 넣어 충돌이 나면 섹션을 모두 살린다.
+
+### 머지 뒤 확인
+- staging QA 계정(`ganjisaju12+nicepay-qa@gmail.com`, 샌드박스 결제키 `UT0033304m…`)으로 가족 사주 3,300원 결제 → 그 가족 상세가 가족 이름으로 열림 · 같은 날 다른 가족은 재결제 요구.
+- super_admin 으로 `GET /api/admin/audits/membership-drift` 1회 호출 → 0/0.
+
+### 후속(결정·확인 대기)
+- 나이스 서명식 운영 확인(되면 #829 의 서명 불일치를 '기록만' → '거부') · 부분취소 뒤 재조회 amount 운영 확인 · API 취소 통보 orderId(다음 운영 관리자 환불 뒤 이벤트 1줄).
+- 토스 웹훅에도 같은 재전송 흡수 패턴(토스 미사용이라 보류) · 원격 옛 브랜치 `feat/membership-period-ledger` 정리 가능.
+
+## 2026-09-15 — 카드로 산 가족 사주도 가족 이름으로(머지 전 리뷰 차단 1건) + CodeQL #64 판정
+
+브랜치 `fix/today-fortune-other-saju-checkout`(#827) — main(#829·#828) 병합 + 수정 1커밋.
+- 🔴 **정정: 아래 "[중] 가족 상세가 계정 주인 이름" 수정은 카드 결제(주 경로)에서 효과가 없었다.** 지급(`fulfillPaymentOrder` → `snapshotTodayDetailFulfillment`)이 착지보다 먼저
+  이름 없이 스냅샷을 만들고, 착지 unlock GET 은 같은 scope 스냅샷을 그대로 돌려줘 넘긴 `name` 이 한 번도 쓰이지 않았다(route.spec 은 스냅샷 조회를 null 로 고정해 못 잡음).
+  nameHint 가 먹던 건 지급이 없는 멤버 열기(POST)뿐. → 결제 화면(`toss-membership-checkout`)이 localStorage 폼 이름을 prepare 에 `subjectName` 으로 보내고,
+  prepare 가 **막힌 경로(from=*-limit)의 today-detail 주문에만** `metadata.subjectName`(20자) 저장, 지급 스냅샷이 `nameHint` 로 넘긴다. 마이그레이션 없음(metadata jsonb).
+- 수정 리뷰(비차단) 반영: 처음엔 모든 today-detail 결제에 실어, 같은 reading 으로 예전에 막힌 경로에서 남긴 이름("아빠")이 무료 결과에서 온 정상 결제의
+  run 이름("아버지")을 이겼다(nameHint 가 run 보다 앞). → 서버가 `-limit` 진입만 싣고, 상세 클라도 착지 `from=limit`(`fromLimit` prop)일 때만 이름을 보낸다(멤버 열기 포함).
+  `resolveNamedReadingInput` 주석 순서를 코드와 맞춤(③ nameHint → run), unlock-marker 주석의 "URL 안 씀" 을 사실대로(unlock GET 쿼리엔 폴백으로 실림).
+- 검증: `payments/fulfillment-today-detail-name.spec.ts`(주문 이름 → nameHint · 없으면 null) · **`payments/prepare/route.spec.ts` 5건**(-limit 만 · 무료 결과 결제 제외 · 20자·공백 ·
+  비 today-detail 제외 · 퍼널 로그에 이름 없음) · 상세 클라 +1(막힌 경로 아니면 이름 미전송) · nameHint vs run 순서 고정 +1. 뮤테이션 6종(nameHint:null · -limit 조건 ·
+  today-detail 조건 · 20자 · 퍼널 로그로 이동 · 상세 fromLimit 조건) 전부 red. prepare 본문 키 허용 목록에 `subjectName`(금액 무관). tsc 0 · npm test 1718 · test:spec 414 green.
+- **CodeQL #64(`js/clear-text-storage-of-sensitive-data`, unlock-marker.ts:45)** — 걸린 건 키가 아니라 **값(폼 이름)**. SARIF 경로상 오염은 `birth-profile-store.ts:139`
+  (프로필 전체 JSON 저장) → `:117`(다시 읽어 JSON.parse) 에서 객체 전체로 번진 과대근사로, 저장값은 이름뿐이다(메인·리뷰어 독립 판정 일치). 키가 DB 폴백 때 toSlug 인 것도
+  같은 브라우저에 birth-profile 이 이미 평문 저장하는 정보라 새 노출이 아니다. URL 로 옮기면 가족 이름이 기록·로그로 퍼져 더 나쁘다 → **코드 유지 + 오탐 처리(dismiss)**.
+- ⏳ 결정 대기(리뷰 THE CONVERSATION): 같은 사주 다음 날 재구매가 **어제 이용권 행을 이 결제로 덮어쓴다**(created_at·결제키). 어제 주문은 이용권 행 없는 결제가 되어
+  결제키 회수 대칭(#819)·관리자 이용권 기준 환불 화면에서 어제 구매가 안 보인다. 대안은 scope 에 KST 날짜(`today:<readingKey>:<YYYY-MM-DD>`) — 판정 함수 scope 파싱·레거시 공존 손봐야 함.
+- 남은 테스트 빈칸(리뷰): 재구매 갱신 뒤 어제/오늘 결제키 회수 단언 · prepare 가 `hasTodayDetailEntitlementForSaju` 에 넘기는 인자 단언. 키 누적(reading 마다 1개, 지우지 않음)은 표시 이름 하나라 유지.
+
+## 2026-09-14 — 다른 사람 사주 결제 경로 적대적 리뷰 반영(가족 이름 · 멤버 중복결제 · 돌아가기 · 테스트)
+
+브랜치 `fix/today-fortune-other-saju-checkout` 두 번째 커밋(PR·머지 전).
+- **[중] 가족 상세가 계정 주인 이름으로 불림**: 이 경로는 run 기록이 없어(만들면 #825 재열람이 가족 무료 결과를 내줌) 스냅샷 이름 해석이
+  ①원본 이름 없음 ②미등록 가족 ③run 없음 → ④계정 표시명으로 떨어졌다. 버튼(`prepareTodayDetailCheckout`)이 reading 별 폼 이름을
+  localStorage(`rememberTodayDetailName`, unlock-marker.ts)에 남기고, 상세가 unlock GET/POST 에 `name` 으로 넘겨 `resolveNamedReadingInput` 의
+  ③(nameHint, 20자 · 등록 가족 이름보다 뒤)로 쓴다. input.name 엔 넣지 않는다(toSlug 해시 → scope 흔들림). 한계: 결제를 다른 브라우저에서 열면 기존 폴백.
+- **[하] 로그아웃 멤버가 로그인 후 3,300원 재결제**: 결제 화면 today-detail 분기에서 프리미엄 멤버(`computeMemberFreeEligible`)면 결제창 대신
+  '멤버십으로 바로 열기'(`MemberTodayDetailOpenButton` — 열기 표식 후 상세 → POST unlock 이 멤버십 혜택으로 기록). 퍼널 blocked=active_membership.
+- **[하] 착지 '돌아가기' 막다른 길**: `-limit` 진입이면 착지 URL 에 `from=limit`(buildTasteProductHref · buildPurchasedProductHref) → 상세 backHref=/today-fortune.
+- **[하] 테스트 빈칸**: `/start` 분기 jsdom 3건(딥링크·선택화면·다른 오류) · checkout-reading 로그인 신규 reading 소유자 + `recordTodayFortuneRun` 0회 ·
+  unlock route.spec(GET/POST name → nameHint) · 상세 클라 jsdom(GET/POST 에 name) · 이름 해석 단위 3건 · from=limit 단위 · 멤버 버튼 jsdom + 결제 화면 배선 가드.
+  뮤테이션 12종(각 수정 되돌리기) 전부 red 확인. tsc 0 · npm test 1694 · test:spec 331 green.
+- **반려(사용자 결정 필요)**: "그날 아무 사주로든 오늘 자세히 1회 사면 가족 것도 열림"(`hasTodayDetailEntitlementForDay` 가 scope_key 를 안 봄) — 2026-06-05
+  일일 만료 정책의 기존 규칙. 좁히려면 checkout·prepare·unlock 세 곳을 같은 scope 함수로 동시에 바꿔야 해(어긋나면 결제하고 못 여는 사고) 이 PR 범위 밖.
+- **[사용자 결정 2026-09-14] 오늘 자세히는 산 사주만 열린다**(세 번째 커밋): `hasTodayDetailEntitlementForDay` → `hasTodayDetailEntitlementForSaju`(판정 `todayDetailRowsOpenSaju`) — 오늘(KST) 이용권 중 scope `today:<readingKey>` 가 #699 정체성(`readingKeyMatchesCurrentSaju`)으로 이 사주인 것만. 결제 화면·prepare·unlock GET/POST 동일 함수(가드 테스트). 레거시(scope 없음·옛 readingId·현재 사주 미해석)는 누구 것인지 몰라 전처럼 그날 넓게 연다. 남은 틈: unlock 의 coin-daily(전·멤버·쿠폰 당일 기록) 폴백은 여전히 사주 무관.
+- **리뷰 반영(네 번째 커밋)**: [상] unlock 4단계 coin-daily(그날 detail_report 행 아무거나 — 0원 후속질문 포함)로 가족 사주가 무료로 열림 → `hasTodayFortuneAccessForSaju`(판정 `detailReportRowsOpenSaju`): 열람 kind 3종 중 readingKey 가 #699 정체성으로 이 사주인 행만, `today_result_followup` 제외. [중] 같은 사주를 다음 날 재구매하면 UNIQUE(user,product,scope) 로 어제 행이 돌아와 결제하고 못 엶(가짜 DB 재현) → `grantProductEntitlement` 가 today-detail 의 지난 날 행을 이 결제로 갱신(created_at·결제키, 정확 scope 만 — 'global' 은 안 건드림). 마이그레이션 없음. [하] 현재 사주 미해석이면 넓히지 않음(정확일치만) + route.spec 인자 단언. [하] 멤버십 환불 잠금 근거는 날 단위로 남기고 주석만 사실대로(사주 단위로 좁히면 더 지우는 쪽). 수정 전 red·뮤테이션 7종 red.
+
+## 2026-09-14 — 하루 1회에 막힌 다른 사람 사주에 '오늘 자세히' 결제 경로(사용자 결정: "결제 경로를 줘")
+
+브랜치 `fix/today-fortune-other-saju-checkout`(PR·머지 전).
+- **왜**: 무료 1회를 쓴 뒤 가족 등 다른 사람 사주를 넣으면 429 안내만 뜨고 막다른 길이었다(/today-fortune · /start). 잠금 ON 때만 붙던
+  `/saju/new?product=today-detail` 링크는 입력을 다시 받고 사주 결과(/saju/{id})를 거쳐야 결제 카드가 나오는 우회였고, `submitSajuFromProfile` 이
+  수동 입력(=가족)을 **본인 프로필로 자동저장**하는 부작용도 탄다.
+- **방식**: 새 `POST /api/today-fortune/checkout-reading` — 오늘운세와 같은 파싱(`parseTodayPayload` export 재사용)·reading 규칙(로그인=`findReadingByInput` 재사용,
+  아니면 `createReading`, DB 없으면 toSlug 폴백)으로 **reading id 만** 돌려준다. 무료 결과 생성·무료 1회 판정/소비 없음.
+  클라 `prepareTodayDetailCheckout`(submit-today.ts) → `/membership/checkout?product=today-detail&slug=<reading>&scope=<고민>&from=today-fortune-limit|start-limit`.
+  버튼 `TodayDetailCheckoutButton`(가격 = `usePriceLabel('saju_entry')` 리졸버) 을 `free_daily_limit` **코드**일 때만 두 화면에 붙임 — 잠금 ON/OFF 같은 코드라 두 모드 동일. 잠금 전용 링크는 삭제.
+- **끝까지**: 비로그인 → 체크아웃 결제 버튼이 기존 `/login?next=…&returned=1` 로 같은 slug 복귀(reading 은 소유자 없음 — unlock 은 null 소유자 허용) · 이미 오늘 산 사람은
+  체크아웃 `checkTodayDetailAccess` 가 '이미 구매한 풀이 → 구매한 풀이 열기' · 결제 후 `buildTasteProductHref`(from 이 saju* 아님) → `/today-fortune/detail?paid=today-detail&sourceSessionId=<reading>`
+  → unlock **GET** 이 reading 만으로 연다(스냅샷 scope 가 readingKey 라 그 사람 것). 착지·unlock 은 무료 결과 세션이 필요 없어 무수정.
+- 검증: `checkout-reading/route.spec.ts` 4건(계정 재사용 · 익명 생성 · 무료 결과/1회 판정·소비 0 · 400) + `today-fortune-experience.test.tsx`(jsdom) 3건(코드일 때 카탈로그 가격 버튼 →
+  체크아웃 href · 실패 시 이동 없음 · 다른 오류엔 버튼 없음). 수정 전 red(라우트 없음·버튼 없음), 뮤테이션(재사용 삭제·코드 판정 삭제) red. tsc 0, npm test·test:spec 전부 green.
+- 남은 것: 같은 날 **아무 사주로든** 오늘 자세히를 산 계정은 다른 사람 것도 열린다(`hasTodayDetailEntitlementForDay` same-day 규칙, 기존 정책 — 무수정).
+  /start 화면 분기 테스트는 없음(같은 컴포넌트·같은 코드 판정).
+
 ## 2026-09-15 — 드리프트 메일: 구독 행 없음은 '무효 금지'로 따로 안내(머지 전 리뷰 반영)
 
 브랜치 `feat/membership-drift-daily-check`(#828) — main(#829) 병합 커밋 + 리뷰 1건(하).
