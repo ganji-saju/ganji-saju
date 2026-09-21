@@ -90,6 +90,7 @@ function makeDeps(opts: {
 }): { deps: RefundExecutionDeps; statuses: RefundStatus[]; tossArgs: unknown[] } {
   const statuses: RefundStatus[] = [];
   const tossArgs: unknown[] = [];
+  let current: RefundStatus = opts.status ?? 'requested';
   const deps: RefundExecutionDeps = {
     async loadRequest() {
       return {
@@ -109,8 +110,12 @@ function makeDeps(opts: {
         reason: '고객 변심',
       };
     },
-    async setStatus(_id, status) {
+    // DB 의 현재 상태를 흉내 낸다 — loadRequest 는 늘 opts.status(읽어 둔 스냅샷)라 동시 승인 경합을 재현한다.
+    async setStatus(_id, status, patch) {
+      if (patch?.from && patch.from !== current) return false;
+      current = status;
       statuses.push(status);
+      return true;
     },
     async tossCancel(paymentKey, options) {
       tossArgs.push({ paymentKey, ...options });
@@ -138,6 +143,31 @@ test('executeRefund: Toss 성공 + revoke 성공 → completed, 멱등키 전달
   assert.equal(result.status, 'completed');
   assert.deepEqual(statuses, ['processing', 'completed']);
   assert.equal((tossArgs[0] as { idempotencyKey: string }).idempotencyKey, 'idem-1');
+});
+
+// 🔴 2026-09-15 — 두 탭·두 관리자의 동시 승인. 둘 다 requested 를 읽어도 PG 취소는 한 번만(선점 실패 쪽은 PG 전에 멈춘다).
+test('executeRefund: 같은 요청 동시 승인 → PG 일부 취소 1회(이중 환불 방지)', async () => {
+  const { deps, tossArgs } = makeDeps({ amount: 24500, originalAmount: 49000, tossOk: true, revokeOk: true });
+  const [a, b] = await Promise.all([
+    executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps),
+    executeRefund({ requestId: 'req1', approvedBy: 'super2' }, deps),
+  ]);
+  assert.equal(tossArgs.length, 1);
+  assert.deepEqual([a.status, b.status].sort(), ['completed', 'requested']);
+  assert.match(String((a.error ?? '') + (b.error ?? '')), /다른 승인이 이미 처리 중/);
+});
+
+test('executeRefund: revoke_pending 재시도도 선점 — 동시 재시도가 회수를 두 번 돌리지 않는다', async () => {
+  const { deps, statuses } = makeDeps({ status: 'revoke_pending', revokeOk: true });
+  let revokes = 0;
+  const revoke = deps.revoke.bind(deps);
+  deps.revoke = async (...args) => ((revokes += 1), revoke(...args));
+  await Promise.all([
+    executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps),
+    executeRefund({ requestId: 'req1', approvedBy: 'super2' }, deps),
+  ]);
+  assert.equal(revokes, 1);
+  assert.equal(statuses.filter((s) => s === 'processing').length, 1);
 });
 
 test('executeRefund: 전 부분환불은 Toss cancelAmount 를 전달', async () => {
@@ -324,7 +354,9 @@ test('executeRefund: 일부 환불 재승인은 먼저 PG 재조회 — 이 요�
           credit_transaction_id: null, reason: '고객 요청', created_at: createdAt,
         };
       },
-      async setStatus() {},
+      async setStatus() {
+        return true;
+      },
       async tossCancel(paymentKey, options) {
         tossArgs.push({ paymentKey, ...options });
         return { ok: true, response: { status: 'partialCancelled' } };

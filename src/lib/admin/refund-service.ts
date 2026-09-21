@@ -182,11 +182,12 @@ export interface RefundRequestSnapshot {
 
 export interface RefundExecutionDeps {
   loadRequest(requestId: string): Promise<RefundRequestSnapshot | null>;
+  /** `from` 이 있으면 선점 — 그 상태일 때만 바꾸고, 바뀐 행이 없거나 오류면 false. 없으면 결과를 보지 않는다(true). */
   setStatus(
     requestId: string,
     status: RefundStatus,
-    patch?: { approvedBy?: string; tossResponse?: unknown; errorMessage?: string | null }
-  ): Promise<void>;
+    patch?: { approvedBy?: string; tossResponse?: unknown; errorMessage?: string | null; from?: RefundStatus }
+  ): Promise<boolean>;
   /** Toss 결제취소. idempotencyKey 로 재시도 이중취소 방지. */
   tossCancel(
     paymentKey: string,
@@ -282,8 +283,13 @@ export async function executeRefund(
   const req = await deps.loadRequest(params.requestId);
   if (!req) return { status: 'failed', error: '환불 요청을 찾을 수 없습니다.' };
 
+  // 🔴 2026-09-15 — 전이는 **선점**(읽어 둔 상태일 때만 processing). 두 탭·두 관리자가 동시에 승인하면 둘 다 requested 를 읽고
+  //   PG 취소를 한 번씩 보냈다 — 나이스 취소는 호출마다 새 orderId 라 일부 취소는 두 번째도 수락된다(이중 환불).
+  const claimed = () => deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy, from: req.status });
+  const lost = { status: req.status, error: '다른 승인이 이미 처리 중입니다. 새로고침해 상태를 확인하세요.' };
+
   if (req.status === 'revoke_pending') {
-    await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
+    if (!(await claimed())) return lost;
     return finishRefundWithRevoke(req, params, deps, undefined, false);
   }
 
@@ -296,7 +302,7 @@ export async function executeRefund(
     return { status: 'failed', error: 'paymentKey 없음' };
   }
 
-  await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
+  if (!(await claimed())) return lost;
 
   // 🔴 2026-08-27 — cancelAmt 를 실으면 나이스페이는 그 요청을 **부분취소**로 처리한다.
   //   전액 환불(990원 환불 ↔ 원결제 990원)에도 실어 보내고 있었고, 샌드박스는 부분취소를
