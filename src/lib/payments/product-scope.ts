@@ -61,6 +61,17 @@ export function buildTodayDetailScopeKey(sourceSessionId: string, dayKey?: strin
   return dayKey ? `today:${sourceSessionId}:${dayKey}` : `today:${sourceSessionId}`;
 }
 
+// scope(today:<readingKey>[:<KST 날짜>]) 에서 사주 키만 돌려준다 — 날짜는 결제 1건 = 1행을 위한 **구분자**이고
+//   "오늘 산 것인가" 의 정본은 이용권 행의 created_at 이다. 옛 행(날짜 없음)도 그대로 읽는다.
+//   readingKey(toSlug·reading id)엔 ':' 이 없어 마지막 ':YYYY-MM-DD' 만 떼면 된다(product-scope.test 가드).
+const TODAY_DETAIL_SCOPE_DAY_SUFFIX = /:\d{4}-\d{2}-\d{2}$/;
+
+export function parseTodayDetailScopeReadingKey(scopeKey: string | null | undefined): string {
+  if (!scopeKey?.startsWith('today:')) return '';
+  const rest = scopeKey.slice('today:'.length).trim();
+  return (rest.replace(TODAY_DETAIL_SCOPE_DAY_SUFFIX, '') || rest).trim();
+}
+
 export function buildMonthlyCalendarScopeKey(readingKey: string, year: number, month: number) {
   return `calendar:${readingKey}:${year}-${String(month).padStart(2, '0')}`;
 }

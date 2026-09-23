@@ -27,7 +27,6 @@ vi.mock('@/lib/credits/detail-report-access', () => ({
   unlockTodayFortunePremium: vi.fn(),
 }));
 vi.mock('@/lib/product-entitlements', () => ({
-  buildTodayDetailScopeKey: (k: string) => `today:${k}`,
   hasTodayDetailEntitlementForSaju: vi.fn(async () => true),
   getTasteProductEntitlement: vi.fn(async () => null),
 }));

@@ -13,10 +13,7 @@ import {
   unlockTodayFortunePremium,
 } from '@/lib/credits/detail-report-access';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
-import {
-  buildTodayDetailScopeKey,
-  hasTodayDetailEntitlementForSaju,
-} from '@/lib/product-entitlements';
+import { hasTodayDetailEntitlementForSaju } from '@/lib/product-entitlements';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import type { ConcernId } from '@/lib/today-fortune/types';
 import type { MoonlightCounselorId } from '@/lib/counselors';
@@ -145,7 +142,6 @@ export async function GET(req: NextRequest) {
     {
       sourceSessionId,
       readingKey,
-      scopeKey: buildTodayDetailScopeKey(sourceSessionId),
       todayKey,
       concern: concernId,
     },
@@ -244,7 +240,6 @@ export async function POST(req: NextRequest) {
     {
       sourceSessionId,
       readingKey,
-      scopeKey: buildTodayDetailScopeKey(sourceSessionId),
       todayKey,
       concern: concernId,
     },

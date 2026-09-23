@@ -1,5 +1,23 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-23 — 당일권 날짜 scope 사후 검증 반영(자정 재시도 2행 · 지급 이음매 테스트 · 보관함 유지)
+
+브랜치 `fix/today-detail-scope-followup`. #841 머지 **뒤** 독립 에이전트 검증에서 나온 것들(머지 전 리뷰는 사용량 한도로 죽어 사후에 돌렸다).
+- 🟠 **자정 넘긴 지급 재시도가 이용권 행을 2개 만들었다**(하루치 공짜). `fulfillment` 가 scope 를 `now=지금` 으로 다시 풀어, 정산 크론(매시 정각 = UTC 15:00 이 KST 자정)
+  재시도가 다음 날 scope 를 만들었다. `claimPaymentOrderFulfillment` 선점은 **동시 실행만** 막고 나중 재클레임(`fulfillment_failed`)은 허용한다.
+  → `orderScopeNow(order)` 로 scope 날짜를 **주문 시각(confirmedAt ?? createdAt)** 에 고정. 당일권·택일 day pass·달력/연 기본값이 모두 결제한 날 기준이 된다(재시도 멱등).
+  ⚠️ 변경 전에도 이 상황은 틀렸다(어제 행을 오늘로 덮어써 결제한 날을 빼앗음) — 새로 생긴 버그가 아니라 남은 버그였다. 환불 회수는 그때도 지금도 정상(결제키로 전부 삭제).
+- 🔴 **가장 중요한 불변식이 테스트에 안 잡혔다**: 지급 쪽에서 scope 의 날짜를 벗겨도 전 스위트가 green 이었다(리졸버 출력·regrant 스펙은 키를 스스로 만들어 넣는다).
+  → `fulfillment-today-detail-scope.spec.ts` — product-scope 를 **목으로 바꾸지 않고** 실제 리졸버 → grant 인자까지 태운다(날짜 scope 지급 · 자정 재시도 동일 scope). 뮤테이션 2종 red.
+- **보관함은 이전 화면 유지**: `paid_reading_snapshots` 는 (user, product, scope_key) dedup 이라 날짜가 들어가면 **구매일마다 카드가 쌓인다**(지난 날 카드는 당일권 만료로 열리지도 않음).
+  보관함은 이번 변경의 목적(이용권 장부·환불 대칭)이 아니므로 `snapshotScopeKey` 가 당일권 키에서 날짜를 떼 사주 1장으로 유지한다. 테스트 +2·뮤테이션 red.
+  ⚠️ 날짜별 카드를 **원한다면** 이 헬퍼만 지우면 된다(사용자 결정 대기).
+- 정리: 파서 `parseTodayDetailScopeReadingKey` 를 형식 정본인 `product-scope` 로 이동(계약 테스트도 함께) · 열기 판정의 죽은 `scopeKey` 인자 삭제(옛 형식 키를 넘겨 "조회 키" 오해를 남겼다)
+  · 낡은 주석 정정(product-entitlements 315·349, 삭제 함수 JSDoc 잔재, today-detail-access 머리말) · 회수 대칭 테스트를 프로덕션 형식(날짜 포함)으로 · 내가 잘못 단 인과 주석 정정.
+- 검증: tsc 0 · npm test 1789 · test:spec 500. 뮤테이션 4종(지급 날짜 벗김 · 주문시각 고정 제거 · 보관함 날짜 유지 · 앞 PR 3종 유지) red.
+- 남은 것: 관리자 환불 화면 `totalProductRefundableWon` 이 같은 결제의 두 행을 합산 표시할 수 있음(이번 수정으로 2행 자체가 안 생기지만, 과거 데이터엔 남을 수 있음 · ⚠️ 프로덕션 미확인)
+  · PROGRESS 이월(재구매 뒤 결제키 회수 실호출 단언 · prepare 인자 단언).
+
 ## 2026-09-23 — 오늘 자세히 이용권을 **날짜별로 따로 기록**(사용자 결정) — 어제 행 덮어쓰기 제거
 
 브랜치 `fix/today-detail-day-scoped-entitlement`. #827 머지 전 리뷰의 THE CONVERSATION(안 1 덮어쓰기 vs 안 2 날짜 scope) 중 **안 2 채택**.

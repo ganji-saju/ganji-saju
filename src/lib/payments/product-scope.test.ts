@@ -7,6 +7,7 @@ import {
   buildMonthlyCalendarScopeKey,
   buildPurchasedProductHref,
   buildTodayDetailScopeKey,
+  parseTodayDetailScopeReadingKey,
   buildYearCoreScopeKey,
   getKoreaYear,
   parseLifetimeReportReadingKey,
@@ -144,6 +145,21 @@ test('오늘 자세히 결제 scope 는 사주 + KST 날짜다', async () => {
   const kstNextDay = new Date('2026-09-23T15:00:00Z'); // KST 09-24 00:00
   const next = await resolvePaymentProductScope({ pkg, slug: 'reading-abc', scope: null, now: kstNextDay });
   assert.equal(next?.scopeKey, 'today:reading-abc:2026-09-24');
+});
+
+// 저장 형식의 계약 — 판정(product-entitlements)이 이 파서로 사주를 되찾는다.
+test('scope 파서: today:<사주>[:<KST 날짜>] 에서 사주만 — 날짜만 뗀다', () => {
+  const RK = '1975-6-11-14-male-loccustom-lat35p1796-lon129p0756-solarlongitude-keyaaaa1';
+  assert.equal(parseTodayDetailScopeReadingKey(buildTodayDetailScopeKey(RK, '2026-09-14')), RK);
+  assert.equal(parseTodayDetailScopeReadingKey(buildTodayDetailScopeKey(RK)), RK, '옛 형식(날짜 없음)은 그대로');
+  assert.equal(parseTodayDetailScopeReadingKey('today:rid-2:2026-09-14'), 'rid-2', '레거시 readingId scope 도 동일');
+  assert.equal(parseTodayDetailScopeReadingKey('global'), '', 'today 가 아닌 scope 는 사주 없음');
+  assert.equal(parseTodayDetailScopeReadingKey(null), '');
+  // 날짜만 남는 기형 키는 통째로 돌려준다(빈 사주로 오인해 레거시 전면 개방이 되지 않게).
+  assert.equal(parseTodayDetailScopeReadingKey('today:2026-09-14'), '2026-09-14');
+  assert.ok(!RK.includes(':'), "readingKey 에 ':' 이 생기면 이 파싱을 바꿔야 한다");
+  // ⚠️ 실측(2026-09-23): 파서를 빼도 판정 결과는 같다 — fromSlug 가 꼬리 토큰을 무시하고, 해석 실패 행은
+  //   레거시 규칙이 어차피 연다. 그래도 저장 형식의 계약이라 여기서 고정한다.
 });
 
 test('buildPurchasedProductHref: 택일 결제 후 복귀는 /taekil', () => {

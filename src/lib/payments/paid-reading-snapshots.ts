@@ -3,6 +3,8 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import {
+  buildTodayDetailScopeKey,
+  parseTodayDetailScopeReadingKey,
   normalizeEntitlementScopeKey,
   type PaidProductId,
   type PaymentProductScope,
@@ -173,6 +175,16 @@ export async function listPaidReadingSnapshotsForUser(
   return ((data as PaidReadingSnapshotRow[] | null) ?? []).map(mapRow);
 }
 
+// 2026-09-23 — 보관함(paid_reading_snapshots)은 (user, product, scope_key) 로 dedup 한다.
+//   이용권 scope 에 KST 날짜가 들어가면서(#841) 당일권은 **구매일마다 카드가 한 장씩** 쌓이게 됐다 —
+//   보관함은 그 변경의 목적(이용권 장부·환불 대칭)이 아니고, 지난 날 카드는 열리지도 않는다(당일권 만료).
+//   그래서 보관함 키는 날짜를 떼 사주 1장으로 유지한다(이전과 같은 화면).
+export function snapshotScopeKey(productId: PaidProductId, scopeKey: string | null) {
+  if (productId !== 'today-detail' || !scopeKey) return scopeKey;
+  const readingKey = parseTodayDetailScopeReadingKey(scopeKey);
+  return readingKey ? buildTodayDetailScopeKey(readingKey) : scopeKey;
+}
+
 export async function upsertPaidReadingSnapshot(input: {
   userId: string;
   productId: PaidProductId;
@@ -190,7 +202,7 @@ export async function upsertPaidReadingSnapshot(input: {
     entitlement_id: input.entitlement?.id ?? null,
     user_id: input.userId,
     product_id: input.productId,
-    scope_key: scopeKey,
+    scope_key: snapshotScopeKey(input.productId, scopeKey),
     reading_id: readingId,
     reading_key: input.scope?.readingKey ?? null,
     source_slug: input.sourceSlug ?? input.scope?.slug ?? null,
