@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { todayDetailRowsOpenSaju } from './product-entitlements';
+import { parseTodayDetailScopeReadingKey, todayDetailRowsOpenSaju } from './product-entitlements';
 import { detailReportRowsOpenSaju } from './credits/detail-report-access';
 
 declare const test: (name: string, fn: () => void) => void;
@@ -93,6 +93,54 @@ test('여러 건 중 하나라도 이 사주 것이면 열림 · 이용권 없�
     true
   );
   assert.equal(todayDetailRowsOpenSaju([], DAY, current), false);
+});
+
+// 2026-09-23 사용자 결정 — scope 에 KST 날짜(today:<readingKey>:<YYYY-MM-DD>). 결제 1건 = 이용권 1행.
+//   날짜는 **구분자**이고 "오늘 것인가" 의 정본은 행의 created_at 이다(어제 행은 어제 기준으로만 열린다).
+test('scope 파서: today:<사주>[:<KST 날짜>] 에서 사주만 — 날짜만 뗀다', () => {
+  assert.equal(parseTodayDetailScopeReadingKey(`today:${BOUGHT}:2026-09-14`), BOUGHT);
+  assert.equal(parseTodayDetailScopeReadingKey(`today:${BOUGHT}`), BOUGHT, '옛 형식(날짜 없음)은 그대로');
+  assert.equal(parseTodayDetailScopeReadingKey('today:rid-2:2026-09-14'), 'rid-2', '레거시 readingId scope 도 동일');
+  assert.equal(parseTodayDetailScopeReadingKey('global'), '', 'today 가 아닌 scope 는 사주 없음');
+  assert.equal(parseTodayDetailScopeReadingKey(null), '');
+  // 날짜만 남는 기형 키는 통째로 돌려준다(빈 사주로 오인해 레거시 전면 개방이 되지 않게).
+  assert.equal(parseTodayDetailScopeReadingKey('today:2026-09-14'), '2026-09-14');
+  // ⚠️ 실측(2026-09-23): 지금은 파서를 빼도 판정 결과가 같다 — fromSlug 가 꼬리 토큰을 무시하고,
+  //   해석 실패 행은 레거시 규칙이 어차피 연다. 그래도 저장 형식의 계약이라 여기서 고정한다.
+});
+
+test('날짜 붙은 scope 도 사주로 대조한다 — 같은 사주 열림 · 가족 닫힘 · 날짜를 사주로 착각하지 않음', () => {
+  const dayScoped = row(`today:${BOUGHT}:${DAY}`);
+  assert.equal(todayDetailRowsOpenSaju([dayScoped], DAY, { readingKey: BOUGHT, slug: 'rid-1' }), true);
+  // 출생지 경로만 다른 같은 사람(#699 정체성) — 열린다
+  assert.equal(todayDetailRowsOpenSaju([dayScoped], DAY, { readingKey: SAME_VIA_PRESET, slug: 'rid-9' }), true);
+  assert.equal(todayDetailRowsOpenSaju([dayScoped], DAY, { readingKey: FAMILY, slug: 'rid-2' }), false);
+  // 날짜만 떼고 사주를 본다 — 날짜 세그먼트가 readingKey 로 읽히면 해석 실패 → 레거시 규칙으로 가족까지 열렸을 것이다.
+  assert.equal(
+    todayDetailRowsOpenSaju([row(`today:${BOUGHT}:2026-01-02`)], DAY, { readingKey: FAMILY, slug: 'rid-2' }),
+    false
+  );
+});
+
+test('판정 정본은 created_at — scope 날짜가 어제여도 오늘 만든 행이면 오늘 열린다(재지급·시차)', () => {
+  assert.equal(
+    todayDetailRowsOpenSaju([row(`today:${BOUGHT}:2026-09-13`)], DAY, { readingKey: BOUGHT, slug: 'rid-1' }),
+    true
+  );
+  // 반대로 scope 날짜가 오늘이어도 어제 만든 행이면 오늘은 닫힌다.
+  assert.equal(
+    todayDetailRowsOpenSaju([row(`today:${BOUGHT}:${DAY}`, '2026-09-13T03:00:00+00:00')], DAY, {
+      readingKey: BOUGHT,
+      slug: 'rid-1',
+    }),
+    false
+  );
+});
+
+test('readingKey 에는 ":" 이 없다 — 마지막 ":날짜" 만 떼는 파싱의 전제', () => {
+  for (const key of [BOUGHT, SAME_VIA_PRESET, FAMILY, 'bc9963e5-eb00-4d97-8393-c5930273e7d4']) {
+    assert.ok(!key.includes(':'), `readingKey 에 ':' 이 생기면 scope 파싱을 바꿔야 한다: ${key}`);
+  }
 });
 
 // 열기(unlock) 4단계 — 전에는 그날 detail_report 행 아무거나(무료 후속질문 포함)면 'coin-daily' 로 가족 사주까지 열렸다.

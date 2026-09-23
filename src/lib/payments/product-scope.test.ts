@@ -17,12 +17,14 @@ import {
   buildDayPassScopeKey,
   resolvePaymentProductScope,
 } from './product-scope';
-import { getPackage } from './catalog';
+import { getPackage, getTasteProductPackage } from './catalog';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 test('payment scope keys isolate today detail, month, year, and lifetime products', () => {
   assert.equal(buildTodayDetailScopeKey('reading-abc'), 'today:reading-abc');
+  // 2026-09-23 — 저장 scope 는 날짜까지(결제 1건 = 이용권 1행). 날짜 없는 형식은 레거시 행 조회·표시용.
+  assert.equal(buildTodayDetailScopeKey('reading-abc', '2026-09-23'), 'today:reading-abc:2026-09-23');
   assert.equal(buildMonthlyCalendarScopeKey('reading-abc', 2026, 5), 'calendar:reading-abc:2026-05');
   assert.equal(buildMonthlyCalendarScopeKey('reading-abc', 2026, 6), 'calendar:reading-abc:2026-06');
   assert.equal(buildYearCoreScopeKey('reading-abc', 2026), 'year:reading-abc:2026');
@@ -124,6 +126,24 @@ test('택일은 당일권(KST 날짜 scope)으로 결제된다', async () => {
   assert.equal(scope.productId, 'taekil');
   assert.equal(scope.kind, 'day-pass', 'global 로 새면 3,300원에 영구권이 나간다');
   assert.equal(scope.scopeKey, buildDayPassScopeKey(now));
+});
+
+// 🔴 2026-09-23 사용자 결정 — 저장되는 당일권 scope 에 KST 날짜가 들어가야 결제 1건 = 이용권 1행이 된다.
+//   날짜가 빠지면 UNIQUE(user, product, scope_key) 때문에 다음 날 재구매가 어제 행을 덮어쓰던 옛 동작으로 돌아간다.
+test('오늘 자세히 결제 scope 는 사주 + KST 날짜다', async () => {
+  const pkg = getTasteProductPackage('today-detail');
+  assert.ok(pkg, 'today-detail 패키지가 있어야 함');
+
+  const now = new Date('2026-09-23T02:00:00Z'); // KST 11:00
+  const scope = await resolvePaymentProductScope({ pkg, slug: 'reading-abc', scope: null, now });
+  assert.ok(scope, 'scope 가 null 이면 권한이 안 생긴다');
+  assert.equal(scope.kind, 'today');
+  assert.equal(scope.scopeKey, 'today:reading-abc:2026-09-23');
+
+  // KST 자정 경계 — 같은 UTC 날짜라도 KST 로는 다음 날이면 다른 scope(그날 몫)여야 한다.
+  const kstNextDay = new Date('2026-09-23T15:00:00Z'); // KST 09-24 00:00
+  const next = await resolvePaymentProductScope({ pkg, slug: 'reading-abc', scope: null, now: kstNextDay });
+  assert.equal(next?.scopeKey, 'today:reading-abc:2026-09-24');
 });
 
 test('buildPurchasedProductHref: 택일 결제 후 복귀는 /taekil', () => {

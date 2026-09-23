@@ -18,7 +18,6 @@ import {
   readingKeyMatchesCurrentSaju,
   sajuIdentityFromReadingKey,
 } from '@/lib/saju/reading-identity';
-import { getKoreaAccessDay } from '@/lib/credits/detail-report-access';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export {
@@ -115,9 +114,6 @@ function buildEntitlementMetadata(
 }
 
 /** created_at 이 오늘(KST)보다 앞선 날인가 — 오늘 자세히 당일권의 재지급 판정. */
-function isEarlierKstDay(createdAt: string, now = new Date()) {
-  return getKoreaAccessDay(new Date(createdAt)) < getKoreaAccessDay(now);
-}
 
 async function getProductTableEntitlement(
   userId: string,
@@ -319,6 +315,16 @@ export async function listTasteProductEntitlementScopeKeys(
 //   사주 대조는 scope(today:<readingKey>)의 #699 사주 정체성 매칭 — 출생지 프리셋 vs 검색처럼
 //   입력 경로만 다른 같은 사주는 열린다. 날짜 경계는 KST 자정(이전과 같다).
 const TODAY_DETAIL_SCOPE_PREFIX = 'today:';
+//   2026-09-23 — scope 는 today:<readingKey>:<KST 날짜>(결제 1건 = 1행). 날짜는 **구분자일 뿐**이고
+//   "오늘 산 것인가" 의 정본은 여전히 행의 created_at 이다. 옛 행(today:<readingKey>, 날짜 없음)도 그대로 읽는다.
+//   readingKey(toSlug·uuid)엔 ':' 이 없어 마지막 ':YYYY-MM-DD' 만 떼면 된다(today-detail-saju-entitlement.test 가드).
+const TODAY_DETAIL_SCOPE_DAY_SUFFIX = /:\d{4}-\d{2}-\d{2}$/;
+
+export function parseTodayDetailScopeReadingKey(scopeKey: string | null | undefined): string {
+  if (!scopeKey?.startsWith(TODAY_DETAIL_SCOPE_PREFIX)) return '';
+  const rest = scopeKey.slice(TODAY_DETAIL_SCOPE_PREFIX.length).trim();
+  return (rest.replace(TODAY_DETAIL_SCOPE_DAY_SUFFIX, '') || rest).trim();
+}
 
 export interface TodayDetailSajuRef {
   readingKey?: string | null;
@@ -338,9 +344,7 @@ export function todayDetailRowsOpenSaju(
   return rows.some((row) => {
     const createdMs = Date.parse(row.created_at);
     if (!(createdMs >= startMs && createdMs < endMs)) return false;
-    const stored = row.scope_key?.startsWith(TODAY_DETAIL_SCOPE_PREFIX)
-      ? row.scope_key.slice(TODAY_DETAIL_SCOPE_PREFIX.length).trim()
-      : '';
+    const stored = parseTodayDetailScopeReadingKey(row.scope_key);
     // 레거시 — **저장된 쪽**이 사주로 특정되지 않으면(scope 없음·'global'·옛 readingId 키) 누구 것인지
     //   모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상 today:<readingKey> 라 이런 행은 해석 실패
     //   때만 생긴다 — 산 사람을 잠그는 쪽보다 넓게 둔다.
@@ -483,38 +487,15 @@ export async function grantProductEntitlement(
 ) {
   const scopeKey = options.scopeKey ?? null;
   const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
+  // 2026-09-23 — 당일권 scope 에 KST 날짜가 들어간다(buildTodayDetailScopeKey). 다음 날 재구매는 **다른 scope** 라
+  //   새 행이 들어가고 어제 행은 어제 결제 몫으로 남는다 — 전에는 어제 행을 이 결제로 덮어써서(created_at·결제키 교체)
+  //   결제키 회수 대칭(#819)·관리자 이용권 기준 환불 화면·환불 잠금 근거가 어긋났다.
+  //   같은 날 재지급(지급 재시도·번들 중복)만 기존 행을 그대로 돌려준다(멱등).
   const isDayPass = productId === 'today-detail';
   const existing = await getProductTableEntitlement(userId, productId, scopeKey, isDayPass);
-  if (existing && !(isDayPass && isEarlierKstDay(existing.createdAt))) return existing;
+  if (existing) return existing;
 
   const service = await createServiceClient();
-  if (existing) {
-    // 2026-09-14 — 오늘 자세히는 당일권(판정은 created_at 이 오늘인지). 같은 사주를 다음 날 다시 사면
-    //   UNIQUE(user, product, scope_key) 라 새 행을 못 넣고 어제 행이 그대로 돌아와, 결제는 됐는데 안 열렸다.
-    //   지난 날 행을 이 결제로 갱신한다(created_at=지금·결제키). 어제 결제 환불(결제키 회수)은 이 행을 안 지운다 — 오늘 몫이다.
-    //   조회는 정확 scope 만(isDayPass) — 옛 'global' 행을 갱신하면 레거시 규칙으로 그날 모든 사주가 열린다.
-    const nowIso = new Date().toISOString();
-    const { data, error } = await service
-      .from('product_entitlements')
-      .update({
-        created_at: nowIso,
-        updated_at: nowIso,
-        order_id: options.orderId ?? null,
-        payment_key: options.paymentKey ?? null,
-        package_id: options.packageId ?? null,
-        amount: options.amount ?? null,
-        metadata: buildEntitlementMetadata(productId, normalizedScopeKey, options),
-      })
-      .eq('id', existing.id)
-      .eq('user_id', userId)
-      .select('id, user_id, product_id, scope_key, order_id, payment_key, package_id, amount, created_at')
-      .single();
-    if (error || !data) {
-      throw new Error(error?.message ?? '상품 이용권을 갱신하지 못했습니다.');
-    }
-    return mapProductTableEntitlement(data as ProductEntitlementRow);
-  }
-
   const { data, error } = await service
     .from('product_entitlements')
     .insert({

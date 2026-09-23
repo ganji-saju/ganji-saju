@@ -51,8 +51,14 @@ export function parseReadingProductScopeKey(scopeKey: string | null | undefined)
   return trimmed.slice('reading:'.length) || null;
 }
 
-export function buildTodayDetailScopeKey(sourceSessionId: string) {
-  return `today:${sourceSessionId}`;
+// 2026-09-23 사용자 결정 — 당일권 scope 에 **KST 날짜**까지 넣는다(결제 1건 = 이용권 1행).
+//   전에는 today:<readingKey> 하나뿐이라 UNIQUE(user, product, scope_key) 때문에 같은 사주를 다음 날 다시 사면
+//   새 행을 못 넣고 어제 행을 이 결제로 덮어썼다 — 어제 주문이 이용권 없는 결제가 돼 결제키 회수 대칭(#819),
+//   관리자 이용권 기준 환불 화면, 멤버십 환불 잠금 근거(created_at)가 어긋났다.
+//   dayKey 를 안 주면 옛 형식이다(레거시 행 조회·표시용) — **저장**은 언제나 dayKey 와 함께 한다(resolvePaymentProductScope).
+//   판정의 정본은 여전히 행의 created_at 이다(parseTodayDetailScopeReadingKey 가 날짜를 떼고 사주만 대조).
+export function buildTodayDetailScopeKey(sourceSessionId: string, dayKey?: string | null) {
+  return dayKey ? `today:${sourceSessionId}:${dayKey}` : `today:${sourceSessionId}`;
 }
 
 export function buildMonthlyCalendarScopeKey(readingKey: string, year: number, month: number) {
@@ -278,7 +284,7 @@ export async function resolvePaymentProductScope({
     //   조회(checkTodayDetailAccess)는 readingKey + legacy readingId 를 함께 본다.
     return {
       productId,
-      scopeKey: buildTodayDetailScopeKey(readingIdentity.readingKey),
+      scopeKey: buildTodayDetailScopeKey(readingIdentity.readingKey, getKoreaAccessDay(now)),
       kind: 'today',
       ...readingIdentity,
       targetYear: null,
