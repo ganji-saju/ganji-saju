@@ -7,10 +7,7 @@
 //   2) product_entitlements 의 readingKey-기반 scope key (input-deterministic)
 //   3) credit_transactions 의 today-fortune 1전 unlock 기록
 // 반환 형태는 호출자가 truthy/falsy 만 확인하면 되도록 단순화.
-import {
-  buildTodayDetailScopeKey,
-  hasTodayDetailEntitlementForSaju,
-} from '@/lib/product-entitlements';
+import { hasTodayDetailEntitlementForSaju } from '@/lib/product-entitlements';
 import {
   getKoreaAccessDay,
   hasDetailReportAccess,
@@ -31,22 +28,6 @@ type TodayDetailAccess =
 export interface SajuTodayDetailAccessResult {
   hasAccess: boolean;
   source: TodayDetailAccess | null;
-}
-
-// 2026-05-24 — today-detail 결제 권한 조회 scope(우선순위) 단일 출처.
-//   readingKey(생년월일 결정적 = 안정)를 primary 로, slug(reading id = 불안정, legacy
-//   readingId 결제분)를 보조로 둔다. grant 도 product-scope 에서 readingKey 로 통일하므로
-//   재생성·경로 교차로 slug 가 바뀌어도 readingKey scope 로 인식 → 결제 무한반복 해소.
-export function todayDetailEntitlementScopeKeys(identity: {
-  slug: string | null;
-  readingKey: string | null;
-}): string[] {
-  const keys: string[] = [];
-  if (identity.readingKey) keys.push(buildTodayDetailScopeKey(identity.readingKey));
-  if (identity.slug && identity.slug !== identity.readingKey) {
-    keys.push(buildTodayDetailScopeKey(identity.slug));
-  }
-  return keys;
 }
 
 export async function getSajuTodayDetailEntitlement(slug: string) {
