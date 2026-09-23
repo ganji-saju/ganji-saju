@@ -178,7 +178,8 @@ export async function listPaidReadingSnapshotsForUser(
 // 2026-09-23 — 보관함(paid_reading_snapshots)은 (user, product, scope_key) 로 dedup 한다.
 //   이용권 scope 에 KST 날짜가 들어가면서(#841) 당일권은 **구매일마다 카드가 한 장씩** 쌓이게 됐다 —
 //   보관함은 그 변경의 목적(이용권 장부·환불 대칭)이 아니고, 지난 날 카드는 열리지도 않는다(당일권 만료).
-//   그래서 보관함 키는 날짜를 떼 사주 1장으로 유지한다(이전과 같은 화면).
+//   **2026-09-23 사용자 결정: 사주당 한 장 유지**(이전과 같은 화면) — 지난 날 카드는 열리지 않아 목록만 어지럽힌다.
+//   구매일마다 카드를 쌓으려면 이 헬퍼를 지우면 된다(그땐 만료 카드 표시 처리가 같이 필요하다).
 export function snapshotScopeKey(productId: PaidProductId, scopeKey: string | null) {
   if (productId !== 'today-detail' || !scopeKey) return scopeKey;
   const readingKey = parseTodayDetailScopeReadingKey(scopeKey);
