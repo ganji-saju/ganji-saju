@@ -227,11 +227,12 @@ test('revoke query falls back to kind-only when lifetime scope key is malformed'
 });
 
 test('revoke query targets taste grant by feature + kind + productId + scopeKey', () => {
-  const query = resolveEntitlementRevokeQuery('today-detail', buildTodayDetailScopeKey('reading-abc'));
+  // 프로덕션 저장 형식(날짜 포함)으로 — 날짜 없는 옛 형식으로 두면 형식 변경을 이 가드가 못 잡는다.
+  const query = resolveEntitlementRevokeQuery('today-detail', buildTodayDetailScopeKey('reading-abc', '2026-09-23'));
   assert.equal(query.legacyFeature, 'taste_product');
   assert.deepEqual(query.legacyMatch, {
     kind: 'taste_product',
     productId: 'today-detail',
-    scopeKey: 'today:reading-abc',
+    scopeKey: 'today:reading-abc:2026-09-23',
   });
 });

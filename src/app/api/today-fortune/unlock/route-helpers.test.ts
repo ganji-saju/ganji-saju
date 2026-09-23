@@ -6,7 +6,6 @@ declare const test: (name: string, fn: () => void) => void;
 const baseScope = {
   sourceSessionId: 'session-abc',
   readingKey: 'reading-key-abc',
-  scopeKey: 'today:session-abc',
   todayKey: '2026-05-17',
 };
 

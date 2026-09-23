@@ -49,6 +49,15 @@ async function attachOwnedReading(
   };
 }
 
+// 2026-09-23 — scope 의 날짜는 **주문 시각**에 고정한다(당일권 today:<사주>:<KST 날짜> · 택일 day pass · 달력/연 기본값).
+//   지급 재시도(정산 크론은 매시 정각 = UTC 15:00 이 KST 자정)가 now='지금' 으로 다른 날짜 scope 를 만들면
+//   같은 결제로 이용권 행이 2개 생겨 하루치가 공짜로 더 열렸다(사후 검증 실측). 시각을 못 읽으면 지금으로 둔다.
+function orderScopeNow(order: PaymentOrder): Date | undefined {
+  const raw = order.confirmedAt ?? order.createdAt;
+  const ms = raw ? Date.parse(raw) : NaN;
+  return Number.isNaN(ms) ? undefined : new Date(ms);
+}
+
 async function snapshotTodayDetailFulfillment(input: {
   userId: string;
   paymentScope: PaymentProductScope | null;
@@ -174,8 +183,9 @@ export async function fulfillPaymentOrder(input: {
   try {
     let totalCredits: number | null = null;
     const paymentKey = input.payment.paymentKey ?? claimed.paymentKey;
+    const scopeNow = orderScopeNow(claimed);
     const paymentScope = await attachOwnedReading(
-      await resolvePaymentProductScope({ pkg, slug: claimed.slug, scope: claimed.scope }),
+      await resolvePaymentProductScope({ pkg, slug: claimed.slug, scope: claimed.scope, now: scopeNow }),
       claimed.userId
     );
 
@@ -273,6 +283,7 @@ export async function fulfillPaymentOrder(input: {
               pkg: getTasteProductPackage('today-detail')!,
               slug: claimed.slug,
               scope: claimed.scope,
+              now: scopeNow,
             }),
             claimed.userId
           )

@@ -15,7 +15,6 @@
 export interface TodayFortuneUnlockScope {
   sourceSessionId: string;
   readingKey: string;
-  scopeKey: string;
   // 2026-05-17 — KST 'YYYY-MM-DD'. 같은 날 broadest fallback 용.
   todayKey: string;
   /** 2026-07-19 — 요청 주제(wealth/career/…). 주제 단품 접근 판정에만 쓴다. */
@@ -24,7 +23,9 @@ export interface TodayFortuneUnlockScope {
 
 export interface TodayFortuneUnlockDeps {
   // productId 는 'today-detail' 로 고정 — caller 가 closure 로 주입.
-  getTodayDetailEntitlement: (userId: string, scopeKey: string) => Promise<unknown>;
+  //   2026-09-23 — scopeKey 인자를 없앴다: 판정은 사주 + 오늘(KST created_at)로 하고(hasTodayDetailEntitlementForSaju)
+  //   저장 scope 는 today:<사주>:<날짜> 라 옛 형식 키를 여기로 넘기면 "이게 조회 키" 라는 오해만 남는다.
+  getTodayDetailEntitlement: (userId: string) => Promise<unknown>;
   /**
    * 2026-07-19 — 주제 단품(money-pattern=재물 / work-flow=일·직장) 보유 여부.
    *   두 상품은 global 스코프라 1회 구매로 전역 접근이며, **해당 주제일 때만** 연다.
@@ -61,7 +62,7 @@ export async function resolveTodayFortuneUnlockAccess(
   deps: TodayFortuneUnlockDeps,
 ): Promise<TodayFortuneAccessSource> {
   // 1) entitlement (taste product DB row — 9,900원 카드 직접 결제).
-  const entitlement = await deps.getTodayDetailEntitlement(userId, scope.scopeKey);
+  const entitlement = await deps.getTodayDetailEntitlement(userId);
   if (entitlement) return 'taste-product';
 
   // 1-b) 주제 단품(재물·일). 요청 주제와 일치할 때만 연다 — 재물을 샀는데 일 화면이 열리면 안 된다.

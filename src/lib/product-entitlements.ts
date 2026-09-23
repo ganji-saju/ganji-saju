@@ -9,6 +9,7 @@ import {
   buildReadingProductScopeKey,
   buildTodayDetailScopeKey,
   normalizeEntitlementScopeKey,
+  parseTodayDetailScopeReadingKey,
   parseLifetimeReportReadingKey,
   parseMonthlyCalendarScopeKey,
   parseYearCoreScopeKey,
@@ -112,8 +113,6 @@ function buildEntitlementMetadata(
     packageId: options.packageId ?? null,
   };
 }
-
-/** created_at 이 오늘(KST)보다 앞선 날인가 — 오늘 자세히 당일권의 재지급 판정. */
 
 async function getProductTableEntitlement(
   userId: string,
@@ -312,20 +311,8 @@ export async function listTasteProductEntitlementScopeKeys(
 //   전에는 (user, today-detail, 오늘 created_at) 만 봐서 그날 아무 사주로 1번 사면 가족 사주도
 //   결제 화면·결제 준비·열기에서 열렸다. 결제 화면(checkTodayDetailAccess)·결제 준비(prepare)·
 //   열기(unlock GET/POST)가 모두 이 판정 하나를 쓴다(today-detail-saju-entitlement.test 가드).
-//   사주 대조는 scope(today:<readingKey>)의 #699 사주 정체성 매칭 — 출생지 프리셋 vs 검색처럼
+//   사주 대조는 scope(today:<readingKey>:<KST 날짜>)의 #699 사주 정체성 매칭 — 출생지 프리셋 vs 검색처럼
 //   입력 경로만 다른 같은 사주는 열린다. 날짜 경계는 KST 자정(이전과 같다).
-const TODAY_DETAIL_SCOPE_PREFIX = 'today:';
-//   2026-09-23 — scope 는 today:<readingKey>:<KST 날짜>(결제 1건 = 1행). 날짜는 **구분자일 뿐**이고
-//   "오늘 산 것인가" 의 정본은 여전히 행의 created_at 이다. 옛 행(today:<readingKey>, 날짜 없음)도 그대로 읽는다.
-//   readingKey(toSlug·uuid)엔 ':' 이 없어 마지막 ':YYYY-MM-DD' 만 떼면 된다(today-detail-saju-entitlement.test 가드).
-const TODAY_DETAIL_SCOPE_DAY_SUFFIX = /:\d{4}-\d{2}-\d{2}$/;
-
-export function parseTodayDetailScopeReadingKey(scopeKey: string | null | undefined): string {
-  if (!scopeKey?.startsWith(TODAY_DETAIL_SCOPE_PREFIX)) return '';
-  const rest = scopeKey.slice(TODAY_DETAIL_SCOPE_PREFIX.length).trim();
-  return (rest.replace(TODAY_DETAIL_SCOPE_DAY_SUFFIX, '') || rest).trim();
-}
-
 export interface TodayDetailSajuRef {
   readingKey?: string | null;
   slug?: string | null;
@@ -346,7 +333,7 @@ export function todayDetailRowsOpenSaju(
     if (!(createdMs >= startMs && createdMs < endMs)) return false;
     const stored = parseTodayDetailScopeReadingKey(row.scope_key);
     // 레거시 — **저장된 쪽**이 사주로 특정되지 않으면(scope 없음·'global'·옛 readingId 키) 누구 것인지
-    //   모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상 today:<readingKey> 라 이런 행은 해석 실패
+    //   모르므로 이전처럼 그날 1건이면 연다. 지금 grant 는 항상 today:<readingKey>:<KST 날짜> 라 이런 행은 해석 실패
     //   때만 생긴다 — 산 사람을 잠그는 쪽보다 넓게 둔다.
     //   현재 사주가 미해석(readingKey null)이면 넓히지 않는다 — 정확일치(slug·readingKey)만. 호출부가 키를 빠뜨려도
     //   옛 '그날 아무 사주' 로 조용히 돌아가지 않게(리뷰 2026-09-14).
