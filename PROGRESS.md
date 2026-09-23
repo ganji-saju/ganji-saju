@@ -11,7 +11,7 @@
   → `fulfillment-today-detail-scope.spec.ts` — product-scope 를 **목으로 바꾸지 않고** 실제 리졸버 → grant 인자까지 태운다(날짜 scope 지급 · 자정 재시도 동일 scope). 뮤테이션 2종 red.
 - **보관함은 이전 화면 유지**: `paid_reading_snapshots` 는 (user, product, scope_key) dedup 이라 날짜가 들어가면 **구매일마다 카드가 쌓인다**(지난 날 카드는 당일권 만료로 열리지도 않음).
   보관함은 이번 변경의 목적(이용권 장부·환불 대칭)이 아니므로 `snapshotScopeKey` 가 당일권 키에서 날짜를 떼 사주 1장으로 유지한다. 테스트 +2·뮤테이션 red.
-  ⚠️ 날짜별 카드를 **원한다면** 이 헬퍼만 지우면 된다(사용자 결정 대기).
+  **2026-09-23 사용자 결정: 사주당 한 장 유지**(지난 날 카드는 만료라 안 열린다). 날짜별로 쌓으려면 이 헬퍼 삭제 + 만료 카드 표시 처리가 한 세트.
 - 정리: 파서 `parseTodayDetailScopeReadingKey` 를 형식 정본인 `product-scope` 로 이동(계약 테스트도 함께) · 열기 판정의 죽은 `scopeKey` 인자 삭제(옛 형식 키를 넘겨 "조회 키" 오해를 남겼다)
   · 낡은 주석 정정(product-entitlements 315·349, 삭제 함수 JSDoc 잔재, today-detail-access 머리말) · 회수 대칭 테스트를 프로덕션 형식(날짜 포함)으로 · 내가 잘못 단 인과 주석 정정.
 - 검증: tsc 0 · npm test 1789 · test:spec 500. 뮤테이션 4종(지급 날짜 벗김 · 주문시각 고정 제거 · 보관함 날짜 유지 · 앞 PR 3종 유지) red.
