@@ -33,3 +33,13 @@ test('staging 게이트: 잠금·canonical 보다 먼저 판정한다', () => {
   assert.ok(gateAt > 0 && lockAt > 0);
   assert.ok(gateAt < lockAt, '게이트가 뒤에 있으면 비인증 요청이 내부 경로를 밟는다');
 });
+
+// 2026-09-23 — 사용자 제보: staging 에서 앱 계정으로 로그인하려다 "로그인창 무한 루프"(= 브라우저 Basic 팝업 반복).
+//   팝업은 본문을 안 보여주지만 취소하면 이 본문이 남는다 — 무엇을 넣어야 하는지 여기서 말해야 사람이 빠져나온다.
+test('staging 게이트: 401 본문이 무엇을 입력해야 하는지 알려 준다(앱 계정 아님)', () => {
+  const fn = source.slice(source.indexOf('function stagingGateResponse'));
+  const body = fn.slice(0, fn.indexOf('\n}'));
+  assert.match(body, /staging 접근 비밀번호를 입력하세요/, '무엇을 넣어야 하는지 본문이 말해야 한다');
+  assert.match(body, /아이디 칸은 아무거나/, '아이디는 무시된다는 사실을 알려야 한다(비밀번호만 대조)');
+  assert.match(body, /앱 계정.*들어올 수 없습니다/, '앱 계정으로 시도하다 무한 팝업에 빠진 제보가 실제로 있었다');
+});

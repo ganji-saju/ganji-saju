@@ -107,15 +107,21 @@ function stagingGateResponse(req: NextRequest): NextResponse | null {
     }
   }
 
-  return new NextResponse('staging — 관리자 전용', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="ganjisaju staging", charset="UTF-8"',
-      // 401 이라도 색인 시도를 확실히 끊는다.
-      'X-Robots-Tag': 'noindex, nofollow',
-      'Cache-Control': 'no-store',
-    },
-  });
+  // 2026-09-23 — 브라우저는 이 본문을 팝업에 보여주지 않지만, 취소하면 이 화면이 남는다.
+  //   "앱 계정으로 로그인했는데 로그인창이 무한 반복" 제보가 실제로 있었다(팝업에 앱 이메일을 넣으면 영원히 401).
+  //   그래서 본문이 무엇을 넣어야 하는지 스스로 말하게 한다(문구는 staging-gate.test 가 고정).
+  return new NextResponse(
+    'staging — 관리자 전용\n\n브라우저 팝업에 staging 접근 비밀번호를 입력하세요(아이디 칸은 아무거나 좋습니다).\n앱 계정(이메일·비밀번호)으로는 들어올 수 없습니다.',
+    {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="ganjisaju staging", charset="UTF-8"',
+        // 401 이라도 색인 시도를 확실히 끊는다.
+        'X-Robots-Tag': 'noindex, nofollow',
+        'Cache-Control': 'no-store',
+      },
+    }
+  );
 }
 
 export async function proxy(req: NextRequest) {
