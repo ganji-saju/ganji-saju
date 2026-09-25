@@ -71,7 +71,10 @@ const SECTION_META = [
   { key: 'coreIdentity', label: '타고난 성향', tone: 'pink', chapterId: 1 },
   { key: 'wealthStyle', label: '돈을 벌고 남기는 방식', tone: 'amber', chapterId: 5 },
   { key: 'careerDirection', label: '잘하는 일과 오래할 수 있는 일', tone: 'indigo', chapterId: 6 },
+  { key: 'studyPath', label: '학업과 배움', tone: 'indigo', chapterId: null },
   { key: 'relationshipPattern', label: '연애와 가까운 관계', tone: 'coral', chapterId: 4 },
+  // 2026-09-26 — 가족·학업 장. 챕터 피드백(1~9)엔 대응 id 가 없어 카드를 그리지 않는다.
+  { key: 'familyPattern', label: '가족 관계', tone: 'coral', chapterId: null },
   { key: 'strengthBalance', label: '부담과 회복의 균형', tone: 'jade', chapterId: 2 },
   { key: 'patternAndYongsin', label: '내 선택을 돕는 기준', tone: 'amber', chapterId: 3 },
   { key: 'healthRhythm', label: '생활과 회복의 방식', tone: 'jade', chapterId: 7 },
@@ -183,8 +186,28 @@ function getLifetimeBasisLines(
       ...report.patternAndYongsin.detailLines,
     ]);
   }
-  const reportSection = report[sectionKey] as { basis?: string[] };
+  const reportSection = report[lifetimeReportSourceKey(sectionKey)] as { basis?: string[] };
   return uniqueLifetimeBasisLines(reportSection.basis ?? []);
+}
+
+// 2026-09-26 — 가족·학업 장은 계산 블록이 따로 없다. 근거는 관계·직업 블록에서 가져오고, 제목은 장 고유 문구를 쓴다
+//   (관계 장의 headline 을 그대로 쓰면 같은 제목이 두 번 나온다).
+const DERIVED_SECTION_SOURCE = { familyPattern: 'relationshipPattern', studyPath: 'careerDirection' } as const;
+const DERIVED_SECTION_HEADLINE: Record<keyof typeof DERIVED_SECTION_SOURCE, string> = {
+  familyPattern: '가족 안에서 반복되는 역할과 거리',
+  studyPath: '나에게 맞는 공부 방식과 배움의 때',
+};
+
+function lifetimeReportSourceKey(sectionKey: (typeof SECTION_META)[number]['key']) {
+  return sectionKey in DERIVED_SECTION_SOURCE
+    ? DERIVED_SECTION_SOURCE[sectionKey as keyof typeof DERIVED_SECTION_SOURCE]
+    : (sectionKey as Exclude<typeof sectionKey, keyof typeof DERIVED_SECTION_SOURCE>);
+}
+
+function lifetimeSectionHeadline(sectionKey: (typeof SECTION_META)[number]['key'], report: SajuLifetimeReport) {
+  return sectionKey in DERIVED_SECTION_HEADLINE
+    ? DERIVED_SECTION_HEADLINE[sectionKey as keyof typeof DERIVED_SECTION_HEADLINE]
+    : report[lifetimeReportSourceKey(sectionKey)].headline;
 }
 
 function getLifetimeSectionId(sectionKey: (typeof SECTION_META)[number]['key']) {
@@ -1119,7 +1142,6 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
       {/* §9개 챕터 */}
       {SECTION_META.map((section, index) => {
-        const reportSection = report[section.key];
         const basisLines = getLifetimeBasisLines(section.key, report);
         const palette = TONES[section.tone];
 
@@ -1153,7 +1175,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
                   className="mt-0.5 text-[21.8px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
-                  {reportSection.headline}
+                  {lifetimeSectionHeadline(section.key, report)}
                 </h3>
               </div>
             </div>
@@ -1178,11 +1200,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             />
             <BasisNotes items={basisLines} />
             {/* 2026-05-20 V2-5 PR R — 챕터별 피드백 카드 (별점 + Yes/No). */}
-            <ChapterFeedbackCard
-              readingId={slug}
-              chapterId={section.chapterId}
-              chapterTitle={section.label}
-            />
+            {section.chapterId !== null ? (
+              <ChapterFeedbackCard
+                readingId={slug}
+                chapterId={section.chapterId}
+                chapterTitle={section.label}
+              />
+            ) : null}
           </section>
         );
       })}

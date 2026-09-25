@@ -8,15 +8,18 @@ import {
 import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
-export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v2-questions';
+// 2026-09-26 v3 — 가족 관계·학업과 배움 두 장 추가(버전이 바뀌어 기존 구매자도 다음 열람에 새로 만든다).
+export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v3-family-study';
 
 export type SajuLifetimeAiSectionKey =
   | 'coreIdentity'
   | 'strengthBalance'
   | 'patternAndYongsin'
   | 'relationshipPattern'
+  | 'familyPattern'
   | 'wealthStyle'
   | 'careerDirection'
+  | 'studyPath'
   | 'healthRhythm'
   | 'majorLuckTimeline'
   | 'lifetimeStrategy';
@@ -41,8 +44,10 @@ const SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string }> = [
   { key: 'strengthBalance', label: '기운의 균형' },
   { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
   { key: 'relationshipPattern', label: '관계 패턴' },
+  { key: 'familyPattern', label: '가족 관계' },
   { key: 'wealthStyle', label: '재물 감각' },
   { key: 'careerDirection', label: '직업 방향' },
+  { key: 'studyPath', label: '학업과 배움' },
   { key: 'healthRhythm', label: '건강 리듬' },
   { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
@@ -241,6 +246,19 @@ function buildSectionFallback(
         report.careerDirection.independenceStyle,
         report.careerDirection.recognitionStyle,
       ].join(' ');
+    // 2026-09-26 — 가족·학업은 전용 계산 블록이 없어 관계·직업·대운 근거에서 조립한다(AI 가 실패했을 때만 쓰인다).
+    case 'familyPattern':
+      return joinDistinctSentences([
+        `가족 안에서는 ${report.relationshipPattern.distanceStyle}`,
+        report.relationshipPattern.conflictTriggers,
+        `오래 편안하려면 ${report.relationshipPattern.longevityGuide}`,
+      ]);
+    case 'studyPath':
+      return joinDistinctSentences([
+        `배움은 ${report.careerDirection.fitStructure}`,
+        report.coreIdentity.bestEnvironment,
+        `배움이 열리는 때는 ${report.majorLuckTimeline.currentMeaning}`,
+      ]);
     case 'healthRhythm':
       return [
         withOpener(report.healthRhythm.summary),
@@ -485,8 +503,10 @@ export function createLifetimeInterpretationPrompt(
       '    "strengthBalance": string,',
       '    "patternAndYongsin": string,',
       '    "relationshipPattern": string,',
+      '    "familyPattern": string,',
       '    "wealthStyle": string,',
       '    "careerDirection": string,',
+      '    "studyPath": string,',
       '    "healthRhythm": string,',
       '    "majorLuckTimeline": string,',
       '    "lifetimeStrategy": string',
@@ -496,6 +516,7 @@ export function createLifetimeInterpretationPrompt(
       '}',
       CLASSIC_READING_INSTRUCTIONS,
       '규칙:',
+      '- familyPattern 은 부모·배우자·자녀와 반복되는 역할과 거리감, 조율법을 쓴다. 가족 개인의 운명을 단정하지 않는다. studyPath 는 맞는 공부 방식과 배움이 열리는 대운 시기를 쓰고 합격을 단정하지 않는다.',
       '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',
       '- 명리 용어는 정관·편관·신강·신약·격국·용신처럼 정확한 한글 원어를 유지하고, 처음 등장할 때만 짧은 생활 언어 설명을 붙인다. 서로 다른 용어를 하나의 뜻으로 뭉개지 않는다. 한자와 factJson·evidenceJson 같은 구현 용어는 본문에 쓰지 않는다.',
       '- 계산 과정, 원칙 설명, 점수 설명을 반복하지 말고 결론, 조심할 패턴, 생활에서 적용할 선택을 먼저 쓴다.',

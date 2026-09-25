@@ -81,7 +81,7 @@ test('createLifetimeInterpretationPrompt keeps lifetime report prompt separate f
   const prompt = createLifetimeInterpretationPrompt(record, lifetimeReport, 'male');
   const grounding = JSON.parse(prompt.input) as Record<string, unknown>;
 
-  assert.equal(getLifetimeInterpretationPromptVersion('male'), 'saju-lifetime-interpret-v2-questions-male');
+  assert.equal(getLifetimeInterpretationPromptVersion('male'), 'saju-lifetime-interpret-v3-family-study-male');
   assert.match(prompt.instructions, /평생 사주풀이/);
   assert.match(prompt.instructions, /사주 공부 자료가 아니라/);
   assert.match(prompt.instructions, /남선생/);
@@ -143,4 +143,37 @@ test('lifetime normalization retains original ten-god and strength explanations'
   assert.ok(normalized.interpretation.sections.coreIdentity.includes(koreanizeGanzi(explanation)));
   assert.match(normalized.interpretation.sections.coreIdentity, /정관.*편관.*신강은.*임자/);
   assert.doesNotMatch(normalized.interpretation.sections.coreIdentity, /責|壬|子|책임·도전 역할/);
+});
+
+// 2026-09-26 — 평생운세에 '가족 관계'·'학업과 배움' 두 장 추가(신년운세 작업과 한 세트, 사용자 요청).
+test('평생 폴백에 가족 관계·학업과 배움 장이 있고 비지 않는다', () => {
+  const record = createReadingRecord();
+  const lifetimeReport = buildLifetimeReport(record.input, record.sajuData, 2027);
+  const fb = buildFallbackLifetimeInterpretation(lifetimeReport, 'female');
+  assert.ok(fb.sections.familyPattern.length > 40, fb.sections.familyPattern);
+  assert.ok(fb.sections.studyPath.length > 40, fb.sections.studyPath);
+  const rendered = renderLifetimeInterpretationReport(fb, lifetimeReport);
+  assert.ok(rendered.includes('## 가족 관계'));
+  assert.ok(rendered.includes('## 학업과 배움'));
+});
+
+test('평생 파서: familyPattern 이 빠진 응답은 실패한다', () => {
+  const record = createReadingRecord();
+  const lifetimeReport = buildLifetimeReport(record.input, record.sajuData, 2027);
+  const fb = buildFallbackLifetimeInterpretation(lifetimeReport, 'female');
+  const { familyPattern: _drop, ...rest } = fb.sections;
+  assert.equal(parseLifetimeInterpretationText(JSON.stringify({ ...fb, sections: rest }), fb).ok, false);
+});
+
+test('평생 프롬프트가 두 장을 요구하고, 화면·PDF 섹션 목록에도 들어 있다', () => {
+  const record = createReadingRecord();
+  const lifetimeReport = buildLifetimeReport(record.input, record.sajuData, 2027);
+  const prompt = createLifetimeInterpretationPrompt(record, lifetimeReport, 'female');
+  assert.match(prompt.instructions, /"familyPattern": string/);
+  assert.match(prompt.instructions, /"studyPath": string/);
+  const fs = require('node:fs') as typeof import('node:fs');
+  for (const file of ['src/components/ai/lifetime-report-panel.tsx', 'src/lib/saju/pdf-report-model.ts']) {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.ok(source.includes("key: 'familyPattern'") && source.includes("key: 'studyPath'"), file);
+  }
 });
