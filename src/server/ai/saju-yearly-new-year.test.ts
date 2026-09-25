@@ -67,3 +67,13 @@ test('new-year 프롬프트: 부가 필드만 요구하고 월·분야를 강제
   assert.match(prompt.instructions, /month\(1~12\)/);
   assert.doesNotMatch(prompt.instructions, /"monthlyFlows":\[\{"month":1,"summary"/);
 });
+
+test('new-year 파서: 분기는 멀쩡해도 월 없는 기대 항목만 오면 폴백(월·분야 필수)', () => {
+  const almost = JSON.stringify({
+    categories: { family: '가족 문단입니다.', study: '학업 문단입니다.' },
+    quarterlyFlows: [1, 2, 3, 4].map((q) => ({ quarter: q, summary: `${q}분기 요약입니다.` })),
+    expectations: [{ category: 'wealth', text: '월이 없다' }, { month: 13, category: 'wealth', text: '범위 밖' }, { month: 3, category: 'luck', text: '없는 분야' }],
+    cautions: [2, 7, 11].map((m) => ({ month: m, category: 'health', text: `${m}월 조심할 일` })),
+  });
+  assert.equal(parseNewYearExtrasText(almost, fallback).ok, false);
+});
