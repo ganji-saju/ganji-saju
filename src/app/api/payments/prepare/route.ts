@@ -409,9 +409,11 @@ export async function POST(req: NextRequest) {
 
   // 🔴 화면이 할인을 보여 줬으면 그 코드가 여기로 온다. 그 코드가 지금 적용되지 않으면
   //   **조용히 정가로 청구하지 않고 멈춘다**(클라이언트 금액 폴백을 지운 것과 같은 원칙).
-  const couponReason: CouponRejectReason | null = couponInput
-    ? (quote.reason ?? (quote.claim ? null : 'not_found'))
-    : null;
+  //   2026-09-26 — 멤버십 할인이 이겼으면(memberPercent>0) 쿠폰은 일부러 안 붙인 것이라 막지 않는다 — 청구는 멤버십가.
+  const couponReason: CouponRejectReason | null =
+    couponInput && quote.memberPercent === 0
+      ? (quote.reason ?? (quote.claim ? null : 'not_found'))
+      : null;
   if (couponReason) {
     return blockPrepare(
       `coupon_${couponReason}`,
@@ -451,6 +453,7 @@ export async function POST(req: NextRequest) {
     listAmount: quote.listAmount,
     // 귀속·검증을 마친 쿠폰. 요율은 DB(coupon_tiers / 귀속 스냅샷)에서 읽은 값뿐이다 — body 가 아니다.
     coupon,
+    memberPercent: coupon ? 0 : quote.memberPercent,
     slug,
     scope,
     product,

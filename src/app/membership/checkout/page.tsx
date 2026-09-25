@@ -553,7 +553,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {quote && quote.discountWon > 0 ? (
                 <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
                   <span className="text-[15px] text-[var(--app-copy)]">
-                    쿠폰 할인 ({quote.percent}%)
+                    {quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : '쿠폰 할인'} ({quote.percent}%)
                   </span>
                   <span className="text-[15.5px] font-bold text-[var(--app-pink-strong)]">
                     -{formatWon(quote.discountWon)}
@@ -616,6 +616,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {quote?.reason ? (
                 <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                   {couponRejectMessage(quote.reason)}
+                </p>
+              ) : null}
+              {/* 2026-09-26 — 쿠폰과 멤버십 할인은 겹치지 않는다. 넣은 쿠폰이 안 보이면 버그 신고가 되니 이유를 적는다. */}
+              {quote && quote.memberPercent > 0 && couponInput ? (
+                <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  멤버십 할인이 더 커서 쿠폰 대신 멤버십 할인을 적용했어요. 쿠폰은 그대로 남아 있어요.
                 </p>
               ) : null}
               <div
