@@ -82,6 +82,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'work-flow': 'tiger',
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
+  'new-year': 'horse',
   'score-factor': 'dragon',
   'score-total': 'dragon',
   'compat-reading': 'pig',
@@ -244,6 +245,17 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     notices: [
       '올해 핵심은 특정 사주 결과에 연결됩니다.',
       '전체 보관형 리포트와는 별도 상품입니다.',
+    ],
+  },
+  'new-year': {
+    title: '2027 신년운세',
+    reassurance:
+      '선택한 사주에 붙는 2027년 한 해 풀이입니다. 한 번 결제하면 계속 다시 보고 PDF로 저장할 수 있습니다.',
+    nextRange: '총운·분야별 8가지·분기·월별 흐름과 기대할 일/조심할 일을 봅니다.',
+    opens: ['2027 사주풀이 총론', '가족·학업·재물·연애·건강 등 8가지 운', '분기·월별 흐름과 PDF 저장'],
+    notices: [
+      '신년운세는 특정 사주 결과에 연결됩니다.',
+      '프리미엄 멤버십 회원은 50% 할인가로 결제됩니다.',
     ],
   },
 };

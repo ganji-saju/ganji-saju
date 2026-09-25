@@ -12,6 +12,7 @@ import {
   parseTodayDetailScopeReadingKey,
   parseLifetimeReportReadingKey,
   parseMonthlyCalendarScopeKey,
+  parseNewYearScopeKey,
   parseYearCoreScopeKey,
   type PaidProductId,
 } from '@/lib/payments/product-scope';
@@ -255,6 +256,26 @@ export async function hasYearCoreEntitlementForReading(
   const scopeKeys = await listTasteProductEntitlementScopeKeys(userId, 'year-core');
   return scopeKeys.some((scopeKey) => {
     const parsed = parseYearCoreScopeKey(scopeKey);
+    return (
+      parsed !== null &&
+      parsed.year === year &&
+      readingKeyMatchesCurrentSaju(parsed.readingKey, [readingKey], currentIdentity)
+    );
+  });
+}
+
+// 2026-09-26 — 신년운세 이용권을 사주 정체성으로 매칭(year-core 와 같은 드리프트 흡수).
+export async function hasNewYearEntitlementForReading(
+  userId: string | null | undefined,
+  readingKey: string | null | undefined,
+  year: number
+): Promise<boolean> {
+  if (!userId || !readingKey || !hasSupabaseServiceEnv) return false;
+
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
+  const scopeKeys = await listTasteProductEntitlementScopeKeys(userId, 'new-year');
+  return scopeKeys.some((scopeKey) => {
+    const parsed = parseNewYearScopeKey(scopeKey);
     return (
       parsed !== null &&
       parsed.year === year &&

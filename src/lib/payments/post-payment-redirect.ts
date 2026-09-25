@@ -7,6 +7,7 @@
 //   /saju/{coupleKey}/premium 으로 오라우팅되어 404("여긴 비어 있는 자리예요")가 나던
 //   버그(`COMPAT_PER_COUPLE_PRICING` 플래그 ON 시 노출)를 차단한다.
 import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
+import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 
 export function buildCompleteHref(plan: string, slug: string | null) {
   const params = new URLSearchParams({ plan, payment: 'confirmed' });
@@ -64,6 +65,9 @@ export function buildTasteProductHref(
   }
   if (slug && product === 'monthly-calendar') {
     return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#fortune-calendar`;
+  }
+  if (slug && product === 'new-year') {
+    return `/saju/${encodeURIComponent(slug)}/new-year/${NEW_YEAR_TARGET_YEAR}?payment=confirmed`;
   }
   if (slug && product === 'year-core') {
     return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#yearly-report`;

@@ -1,5 +1,8 @@
 import type { PlanSlug } from '@/content/moonlight';
 
+// 신년운세가 다루는 해. 결제 scope·화면·API 가 이 한 값을 공유한다.
+export const NEW_YEAR_TARGET_YEAR = 2027;
+
 export type PaymentPackageKind =
   | 'credits'
   | 'subscription'
@@ -31,7 +34,9 @@ export type TasteProductId =
   | 'dialogue-entry'
   // 2026-08-28 — 택일(좋은 날) 유료화. 990원 4종과 같은 **당일권** 모델이지만 값은 3,300원:
   //   하루치 운세가 아니라 '결혼·이사·계약 날짜를 고르는' 결정 도구라 단품 라인(3,300)에 붙인다.
-  | 'taekil';
+  | 'taekil'
+  // 2026-09-26 — 2027 신년운세(19,900원, 프리미엄 멤버십 50%). 사주당 연도별 영구권.
+  | 'new-year';
 
 // 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
 // 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
@@ -192,6 +197,15 @@ export const PAYMENT_PACKAGES = [
     compareAt: 9900,
   },
   {
+    id: 'taste_new_year_2027',
+    name: '2027 신년운세',
+    credits: 0,
+    price: 19900,
+    kind: 'taste_product',
+    tasteProductId: 'new-year',
+    requiresSlug: true,
+  },
+  {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
     //   2026-06-07 — score-total 로 통합되어 신규 노출 없음(grandfather 조회용 inert).
     id: 'taste_score_factor',
@@ -308,6 +322,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'dream-search': 'taste_dream_search',
   'dialogue-entry': 'taste_dialogue_entry',
   taekil: 'taste_taekil',
+  'new-year': 'taste_new_year_2027',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -325,7 +340,8 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'tarot-daily' ||
     value === 'dream-search' ||
     value === 'dialogue-entry' ||
-    value === 'taekil'
+    value === 'taekil' ||
+    value === 'new-year'
   );
 }
 

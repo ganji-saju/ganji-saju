@@ -1,3 +1,4 @@
+import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 import { redirect } from 'next/navigation';
 import {
   createClient,
@@ -141,6 +142,10 @@ function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
 
   if (snapshot.productId === 'year-core' && slug) {
     return `/saju/${encodeURIComponent(slug)}/premium#yearly-report`;
+  }
+
+  if (snapshot.productId === 'new-year' && slug) {
+    return `/saju/${encodeURIComponent(slug)}/new-year/${NEW_YEAR_TARGET_YEAR}`;
   }
 
   if (snapshot.productId === 'lifetime-report' && slug) {

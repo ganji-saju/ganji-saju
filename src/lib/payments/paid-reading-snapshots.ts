@@ -89,6 +89,8 @@ export function getPaidProductTitle(productId: PaidProductId) {
       return '월간 달력';
     case 'year-core':
       return '올해 핵심 3줄';
+    case 'new-year':
+      return '2027 신년운세';
     case 'lifetime-report':
       return '평생 소장 사주풀이';
     case 'love-question':

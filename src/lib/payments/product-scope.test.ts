@@ -16,6 +16,8 @@ import {
   parseYearMonthScope,
   parseYearScope,
   buildDayPassScopeKey,
+  buildNewYearScopeKey,
+  parseNewYearScopeKey,
   resolvePaymentProductScope,
 } from './product-scope';
 import { getPackage, getTasteProductPackage } from './catalog';
@@ -164,4 +166,22 @@ test('scope 파서: today:<사주>[:<KST 날짜>] 에서 사주만 — 날짜만
 
 test('buildPurchasedProductHref: 택일 결제 후 복귀는 /taekil', () => {
   assert.equal(buildPurchasedProductHref('taekil', null), '/taekil');
+});
+
+// 2026-09-26 — 2027 신년운세: 사주별 연도 영구권. year-core(year:) 와 접두어가 달라 섞이지 않는다.
+test('new-year scope 는 newyear:<readingKey>:<year> 이고 파서가 되돌린다', () => {
+  const key = buildNewYearScopeKey('1995-4-1-unknown_time-female-locsuwon-key1', 2027);
+  assert.equal(key, 'newyear:1995-4-1-unknown_time-female-locsuwon-key1:2027');
+  assert.deepEqual(parseNewYearScopeKey(key), { readingKey: '1995-4-1-unknown_time-female-locsuwon-key1', year: 2027 });
+  assert.equal(parseNewYearScopeKey('year:abc:2027'), null);
+});
+
+test('신년운세는 19,900원·slug 필수이고 scope 는 결제 시각과 무관하게 2027', async () => {
+  const pkg = getPackage('taste_new_year_2027');
+  assert.ok(pkg);
+  assert.equal(pkg.price, 19900);
+  assert.equal(pkg.requiresSlug, true);
+  const scope = await resolvePaymentProductScope({ pkg, slug: 'reading-abc', scope: null, now: new Date('2026-12-31T15:30:00Z') });
+  assert.equal(scope?.scopeKey, 'newyear:reading-abc:2027');
+  assert.equal(scope?.targetYear, 2027);
 });
