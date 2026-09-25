@@ -27,6 +27,7 @@ vi.mock('@/lib/payments/product-scope', () => ({
 vi.mock('@/lib/product-entitlements', () => ({
   getTasteProductEntitlement: vi.fn(async () => null),
   hasTodayDetailEntitlementForSaju: vi.fn(async () => false),
+  hasNewYearEntitlementForReading: vi.fn(async () => false),
 }));
 vi.mock('@/lib/report-entitlements', () => ({ getLifetimeReportEntitlement: vi.fn(async () => null) }));
 vi.mock('@/lib/credits/detail-report-access', () => ({
@@ -54,6 +55,8 @@ vi.mock('@/lib/payments/order-ledger', () => ({
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createPaymentOrder } from '@/lib/payments/order-ledger';
 import { bindCouponClaim, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
+import { getTasteProductEntitlement, hasNewYearEntitlementForReading } from '@/lib/product-entitlements';
+import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { POST } from './route';
 
 async function prepare(body: Record<string, unknown>) {
@@ -123,5 +126,30 @@ describe('prepare — 프리미엄 멤버십 할인(신년운세)', () => {
     const input = vi.mocked(createPaymentOrder).mock.calls[0][0];
     expect(input.memberPercent).toBe(50);
     expect(input.coupon).toBeNull();
+  });
+});
+
+// 2026-09-26 리뷰 — 신년운세 재결제 차단은 열람 판정과 같아야 한다: 사주 정체성 매칭(readingKey 드리프트 흡수) + 평생 이용권.
+describe('prepare — 신년운세 중복 결제 차단', () => {
+  beforeEach(() => vi.clearAllMocks());
+  const newYear = () =>
+    POST(new NextRequest('https://ganjisaju.kr/api/payments/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ packageId: 'taste_new_year_2027', product: 'new-year', slug: 'reading-dad' }),
+    }));
+
+  it('정확 scope 가 달라도 같은 사주의 신년운세 이용권이 있으면 막는다', async () => {
+    vi.mocked(getTasteProductEntitlement).mockResolvedValue(null);
+    vi.mocked(hasNewYearEntitlementForReading).mockResolvedValueOnce(true);
+    const body = await (await newYear()).json();
+    expect(body.alreadyPurchased).toBe(true);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+  });
+
+  it('평생 이용권 보유자는 이미 볼 수 있으니 막는다', async () => {
+    vi.mocked(getLifetimeReportEntitlement).mockResolvedValueOnce({ id: 'e' } as never);
+    const body = await (await newYear()).json();
+    expect(body.alreadyPurchased).toBe(true);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
   });
 });

@@ -34,7 +34,8 @@ import { submitCouponInput } from './coupon-action';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { getTasteProductEntitlement, hasNewYearEntitlementForReading } from '@/lib/product-entitlements';
+import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -353,9 +354,16 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       if (selectedProduct && isTasteProductPackage(paymentPackage)) {
         // today-detail 은 checkTodayDetailAccess(readingKey 안정 + legacy readingId + coin)로
         //   통일 — 사주 재생성·경로 교차로 slug 가 바뀌어도 인식해 재결제(무한반복)를 막는다.
+        // 2026-09-26 — 신년운세는 prepare·열람과 같은 기준(사주 정체성 + 평생 이용권)으로 "이미 볼 수 있음"을 판정한다.
         const purchased =
           selectedProduct === 'today-detail'
             ? (await checkTodayDetailAccess(slug ?? '')).hasAccess
+            : selectedProduct === 'new-year'
+            ? (await hasNewYearEntitlementForReading(user.id, paymentScope?.readingKey, NEW_YEAR_TARGET_YEAR)) ||
+              Boolean(
+                paymentScope?.readingKey &&
+                  (await getLifetimeReportEntitlement(user.id, paymentScope.readingKey, slug ? [slug] : []))
+              )
             : Boolean(
                 await getTasteProductEntitlement(
                   user.id,

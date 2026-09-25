@@ -128,6 +128,8 @@ export const NEW_YEAR_CATEGORY_LABEL: Record<NewYearHighlightCategory, string> =
   study: '학업·시험운',
 };
 
+const NEW_YEAR_FORBIDDEN_PATTERN = /반드시|무조건|100\s*%|틀림없이|큰\s*병|사고가\s*(?:난다|납니다|날\s*것)/;
+
 const QUARTER_MONTHS: Array<[number, number, number]> = [
   [1, 2, 3],
   [4, 5, 6],
@@ -428,6 +430,12 @@ export function parseNewYearExtrasText(
     const cautions = highlights(parsed.cautions);
     if (!family || !study || quarterlyFlows.some((q) => q === null) || expectations.length < 3 || cautions.length < 3) {
       return fail('New-year extras JSON is missing required sections.');
+    }
+    // 결제자 화면·PDF 에 그대로 나가는 문구다. 프롬프트가 금지한 단정·공포 표현만 좁게 본다
+    //   (넓은 부분일치 금지어는 멀쩡한 풀이까지 버려 재시도 비용만 태운다 — total_review 검증기 교훈).
+    const allText = [family, study, ...quarterlyFlows.map((q) => q!.summary), ...expectations.map((h) => h.text), ...cautions.map((h) => h.text)].join('\n');
+    if (NEW_YEAR_FORBIDDEN_PATTERN.test(allText)) {
+      return fail('New-year extras contain absolute or fear-inducing phrasing.');
     }
     return {
       ok: true,

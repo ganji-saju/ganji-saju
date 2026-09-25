@@ -77,3 +77,18 @@ test('new-year 파서: 분기는 멀쩡해도 월 없는 기대 항목만 오면
   });
   assert.equal(parseNewYearExtrasText(almost, fallback).ok, false);
 });
+
+// 2026-09-26 리뷰 — LLM 부가 문구에 단정·공포 표현이 있으면 폴백(버전 미기록 → 다음 열람에 재시도).
+test('new-year 파서: 단정·공포 표현이 들어간 응답은 폴백, 평범한 "조심" 은 통과', () => {
+  const base = {
+    categories: { family: '가족 문단입니다.', study: '학업 문단입니다.' },
+    quarterlyFlows: [1, 2, 3, 4].map((q) => ({ quarter: q, summary: `${q}분기 요약입니다.` })),
+    expectations: [3, 5, 9].map((m) => ({ month: m, category: 'wealth', text: `${m}월 기대할 일` })),
+    cautions: [2, 7, 11].map((m) => ({ month: m, category: 'health', text: `${m}월에는 수면 리듬을 조심하세요` })),
+  };
+  assert.equal(parseNewYearExtrasText(JSON.stringify(base), fallback).ok, true);
+  for (const bad of ['반드시 이혼하게 됩니다', '무조건 합격합니다', '100% 돈이 들어옵니다', '큰 병이 찾아옵니다']) {
+    const withBad = { ...base, cautions: [{ month: 4, category: 'health', text: bad }, ...base.cautions] };
+    assert.equal(parseNewYearExtrasText(JSON.stringify(withBad), fallback).ok, false, bad);
+  }
+});

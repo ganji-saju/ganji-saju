@@ -4,6 +4,7 @@ import {
   isBundlePackage,
   isSubscriptionPackage,
   isTasteProductPackage,
+  NEW_YEAR_TARGET_YEAR,
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
 import { buildPaymentOrigin } from '@/lib/payments/payment-origin';
@@ -18,6 +19,7 @@ import {
 import {
   getTasteProductEntitlement,
   hasTodayDetailEntitlementForSaju,
+  hasNewYearEntitlementForReading,
 } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -338,7 +340,17 @@ export async function POST(req: NextRequest) {
       const isTodayDetail =
         isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail';
 
-      const entitlement = isTodayDetail
+      // 2026-09-26 — 신년운세는 열람 판정(resolveNewYearAccess)과 같은 기준으로 막는다: 사주 정체성 매칭 + 평생 이용권.
+      //   정확 scope 만 보면 같은 사주를 다른 경로로 입력했을 때·평생 구매자가 볼 수 있는 걸 또 결제한다.
+      const isNewYear = isTasteProductPackage(pkg) && pkg.tasteProductId === 'new-year';
+      const entitlement = isNewYear
+        ? (await hasNewYearEntitlementForReading(user.id, paymentScope.readingKey, NEW_YEAR_TARGET_YEAR)) ||
+          (await getLifetimeReportEntitlement(
+            user.id,
+            paymentScope.readingKey ?? paymentScope.slug ?? '',
+            paymentScope.slug ? [paymentScope.slug] : []
+          ))
+        : isTodayDetail
         ? await hasTodayDetailEntitlementForSaju(user.id, todayKey, {
             readingKey: paymentScope.readingKey,
             slug: paymentScope.slug,
