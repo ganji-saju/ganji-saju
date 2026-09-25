@@ -218,7 +218,8 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       false
     );
     // 2026-08-25 재확정 — 유료 4(사주·궁합·타로·대화상담) + 무료 4(간단운세·꿈해몽·띠·별자리).
-    expect(open.GANGI_HOME_CARDS).toHaveLength(9);
+    // 2026-09-26 — 신년운세 추가로 10.
+    expect(open.GANGI_HOME_CARDS).toHaveLength(10);
     expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(4);
   });
 
