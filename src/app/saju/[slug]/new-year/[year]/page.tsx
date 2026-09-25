@@ -10,6 +10,7 @@ import { buildYearlyReport } from '@/domain/saju/report';
 import { formatWon, NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 import { resolveNewYearAccess } from '@/lib/new-year-access';
 import { resolveNewYearPreviewPrice } from '@/lib/new-year-preview-price';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const dynamic = 'force-dynamic';
@@ -76,13 +77,13 @@ export default async function NewYearPage({ params }: Props) {
           style={{ background: 'linear-gradient(180deg, #fdf6e7 0%, #fff 100%)', borderColor: 'rgba(184,122,20,0.22)' }}
         >
           <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[#b87a14]">
-            {report.annualContext.yearGanji}년 · {NEW_YEAR_TARGET_YEAR}
+            {koreanizeGanzi(report.annualContext.yearGanji)}년 · {NEW_YEAR_TARGET_YEAR}
           </div>
           <h1 className="mt-1 text-[24px] font-extrabold leading-snug text-[var(--app-ink)]">
             {NEW_YEAR_TARGET_YEAR} 신년운세
           </h1>
           <p className="mt-3 text-[17px] font-extrabold leading-[1.6] text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
-            {report.oneLineSummary}
+            {koreanizeGanzi(report.oneLineSummary)}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {report.coreKeywords.slice(0, 3).map((keyword) => (
@@ -91,7 +92,7 @@ export default async function NewYearPage({ params }: Props) {
                 className="rounded-[12px] border bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                {keyword.label}
+                {koreanizeGanzi(keyword.label)}
               </span>
             ))}
           </div>

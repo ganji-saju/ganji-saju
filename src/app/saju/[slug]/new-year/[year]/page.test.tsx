@@ -36,6 +36,9 @@ describe('신년운세 페이지', () => {
     expect(html).toContain('/membership/checkout?product=new-year&amp;slug=s1');
     expect(html).toContain('19,900원');
     expect(html).not.toContain('yearly-panel');
+    // 한자 간지는 한글로(정미) — 화면에 丁未 같은 한자를 남기지 않는다.
+    expect(html).toContain('정미년');
+    expect(html).not.toMatch(/[\u4e00-\u9fff]/);
   });
 
   it('이용권 있음 → 전체 패널 + PDF 저장 링크', async () => {

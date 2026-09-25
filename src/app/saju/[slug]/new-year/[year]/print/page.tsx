@@ -9,6 +9,7 @@ import { resolveNewYearAccess } from '@/lib/new-year-access';
 import { generateYearlyInterpretation } from '@/server/ai/saju-yearly-service';
 import type { NewYearHighlightCategory } from '@/server/ai/saju-yearly-interpretation';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 
 export const dynamic = 'force-dynamic';
 // 캐시가 없으면 연간 3단계를 병렬 생성한다(/api/interpret/yearly 와 같은 상한).
@@ -79,7 +80,7 @@ export default async function NewYearPrintPage({ params }: Props) {
         <article className="report-doc" aria-label={`${NEW_YEAR_TARGET_YEAR} 신년운세 PDF 미리보기`}>
           <Chapter no={1} total={total} title={`${NEW_YEAR_TARGET_YEAR} 한눈에`}>
             <p className="text-[15px] font-extrabold">{interpretation.oneLineSummary}</p>
-            <p>{report.annualContext.yearGanji}년의 흐름과 내 사주가 만나는 한 해입니다.</p>
+            <p>{koreanizeGanzi(report.annualContext.yearGanji)}년의 흐름과 내 사주가 만나는 한 해입니다.</p>
             <ul className="list-disc pl-5">
               {interpretation.keywords.map((k) => (
                 <li key={k}>{k}</li>
@@ -131,7 +132,10 @@ export default async function NewYearPrintPage({ params }: Props) {
             {interpretation.monthlyFlows.map((m) => (
               <div key={m.month}>
                 <h3 className="font-extrabold">
-                  {report.monthlyFlows.find((f) => f.month === m.month)?.label ?? `${m.month}월`}
+                  {m.month}월
+                  {report.monthlyFlows.find((f) => f.month === m.month)?.monthlyGanji
+                    ? ` · ${koreanizeGanzi(report.monthlyFlows.find((f) => f.month === m.month)!.monthlyGanji!)}월`
+                    : ''}
                 </h3>
                 <p>{m.summary}</p>
                 {m.caution ? <p>조심: {m.caution}</p> : null}
