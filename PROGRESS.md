@@ -1,5 +1,18 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-26 — 2027 신년운세(19,900원·멤버십 50%·PDF) + 카카오 친구추가 쿠폰 OFF
+
+- **카카오 친구추가 쿠폰 OFF**(사용자 결정 2026-09-25: 삭제 대신 끄기): Vercel `KAKAO_FRIEND_COUPON_ENABLED` 삭제 + 재배포, `ganjisaju.kr/api/coupons/kakao-friend/status` → `{"enabled":false}` 확인. 코드 유지(다시 켜려면 env=1 + 재배포).
+- **신년운세**(브랜치 `feat/new-year-2027`, 스펙 `docs/superpowers/specs/2026-09-26-new-year-2027-design.md`, 계획 `docs/superpowers/plans/2026-09-26-new-year-2027.md`):
+  - 상품 `taste_new_year_2027`(19,900) · scope `newyear:<readingKey>:2027`(만료 없음, 결제키 회수 대칭) · 멤버십 50%(9,950)는 `resolveChargeForUser`·`createPaymentOrder` 같은 함수 · 쿠폰과는 큰 쪽 하나.
+  - 연간 엔진 부가 단계 `newyear`(가족·학업·분기·기대/조심) — **신년운세·평생 구매자만**(`/api/interpret/yearly` tier full, 서버에서 잘라냄). basic 캐시 뒤 full 요청은 부가 단계만 추가. LLM 실패·금지 표현은 결정론 폴백(버전 미기록 → 재시도).
+  - 올해 핵심 3줄(year-core) **신규 판매 중단**(prepare 410) · 진입점 전부 신년운세로. ⚠️ `bundle_comprehensive` 구성품 year-core 는 유지(basic 티어만).
+  - 평생운세에 '가족 관계'·'학업과 배움' 2장(v3) — 기존 구매자 6명/10건 재생성 비용 $1 미만(읽기 전용 조회).
+  - 화면 `/saju/[slug]/new-year/2027`(결정론 미리보기 + 결제) · PDF `/…/print`(7장) · 인앱 브라우저 PDF 안내(평생 PDF 공통) · 홈 카드·메가메뉴·리포트 목록.
+- 검증: tsc 0 · npm test 2007 ok · test:spec 525 · build 성공 · test:pdf:layout 통과 · 로컬 dev 렌더(미리보기·체크아웃·홈 카드, 한자 잔존 발견→한글화). 2027 월간지(1월 辛丑·2월 壬寅…) 월건표 일치.
+  최종 리뷰(독립 에이전트) Important 3건 수정(평생 구매자 재결제·readingKey 드리프트 재결제·LLM 금지 표현).
+- 남은 것: staging 실결제로 전체 화면·PDF 확인 · ⚠️ 2027 입춘 정확 시각 미확인 · 홈 카드는 비주얼 변경이라 프로덕션 반영 전 사용자 확인 · 리뷰 minor 5건(PR 본문).
+
 ## 2026-09-25 — 관리자 환불 화면 중복 합산 여부 프로덕션 확인(읽기 전용)
 
 - 우려: `determineRefundEligibility`(src/lib/admin/user-detail.ts)는 금액 있는 이용권을 행마다 목록에 올려 합산한다 → 한 결제가 2행이면 환불 가능액이 두 배로 보인다(#842 이전 자정 재시도 잔재 가능성).

@@ -45,9 +45,9 @@
 풀이 원칙: "명확함" = 시기·분야를 구체적으로 짚는 것. 단정 예언·공포 표현 금지(기존 yearly 검증기 그대로), 건강운은 생활 습관 수준(진단·치료 권유 금지).
 
 데이터 변경:
-- `YearlyCategoryKey` 에 `family`·`study` 추가 → `YEARLY_CATEGORY_ORDER/LABEL`·`buildYearlyReport`·파서·검증기·패널 반영.
+- (구현 정정 2026-09-26) `YearlyCategoryKey` 는 넓히지 않고, 옵셔널 부가 필드 `interpretation.newYear.categories.{family,study}` 로 낸다 — 그 타입이 year-core·멤버십 경로 전체로 번지기 때문. 화면·PDF 결과는 같다.
 - `SajuYearlyAiInterpretation` 에 `quarterlyFlows[4]`, `expectations[]`, `cautions[]`(`{month, category, text}`) 추가.
-- prompt version `v8` 로 올림 → 캐시 키가 바뀌어 기존 캐시와 섞이지 않는다.
+- (구현 정정) 연간 prompt version 은 v7 유지, 부가 단계 전용 `saju-newyear-extras-v1` 을 캐시 행의 `newYear._version` 으로 관리 — 성공했을 때만 기록해 폴백이 굳지 않게 한다.
 - ⚠️ 검증필요: 2027 입춘·절기 날짜가 엔진 계산값과 천문 실제값이 일치하는지 대조.
 
 ### 3-1. 공개 범위(티어)
