@@ -1,19 +1,31 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Download, Printer } from 'lucide-react';
 import { trackMoonlightEvent } from '@/lib/analytics';
 
 interface ReportPrintActionsProps {
   slug: string;
   backHref: string;
+  /** 분석용 출처. 기본은 평생운세 인쇄 화면. */
+  from?: string;
 }
 
-export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) {
+// 2026-09-26 — 카카오톡·인스타그램·페이스북·라인 인앱 브라우저는 window.print 가 막혀 있거나 PDF 저장이 없다.
+//   유입 대부분이 인앱이라 안내가 없으면 "PDF 버튼이 안 눌린다" 신고가 된다.
+export const IN_APP_BROWSER_UA = /KAKAOTALK|Instagram|FBAN|FBAV|Line\//i;
+
+export function ReportPrintActions({ slug, backHref, from = 'lifetime_print_page' }: ReportPrintActionsProps) {
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => {
+    setInApp(IN_APP_BROWSER_UA.test(navigator.userAgent));
+  }, []);
+
   function handlePrint() {
     trackMoonlightEvent('report_pdf_click', {
       slug,
-      from: 'lifetime_print_page',
+      from,
       status: 'print_dialog_open',
     });
     window.print();
@@ -36,7 +48,9 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
       <div>
         <div className="app-caption font-bold text-[var(--app-pink-strong)]">PDF 저장</div>
         <p className="mt-0.5 text-[0.72rem] leading-snug text-[var(--app-copy-muted)] sm:mt-1 sm:text-base">
-          인쇄 창에서 “PDF로 저장”을 선택하세요.
+          {inApp
+            ? '앱 안의 브라우저에서는 저장이 안 될 수 있어요. 오른쪽 위 메뉴에서 “다른 브라우저로 열기” 후 저장하세요.'
+            : '인쇄 창에서 “PDF로 저장”을 선택하세요.'}
         </p>
       </div>
       <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2">
