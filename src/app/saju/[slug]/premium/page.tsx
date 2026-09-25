@@ -1,3 +1,4 @@
+import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 // Redesign 2026-05-14: 깊은 풀이 화면 ‘돋보이게’ 리디자인.
 // (이전 2026-05-13: pink-soft hero + ZodiacChip + 챕터 intro 의 골격은 유지)
 // 추가/강화:
@@ -82,8 +83,8 @@ function getTasteProductHref(productSlug: string, encodedSlug: string, targetYea
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
     return `/membership/checkout?product=monthly-calendar&slug=${encodedSlug}&scope=${targetYear}-${month}&from=saju-premium`;
   }
-  if (productSlug === 'year-core') {
-    return `/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium`;
+  if (productSlug === 'new-year') {
+    return `/saju/${encodedSlug}/new-year/${NEW_YEAR_TARGET_YEAR}?from=saju-premium`;
   }
   if (productSlug === 'money-pattern' || productSlug === 'work-flow') {
     return `/membership/checkout?product=${productSlug}&slug=${encodedSlug}&from=saju-premium`;
@@ -293,7 +294,7 @@ export default async function SajuPremiumPage({ params }: Props) {
   // 2026-07-07 Phase 2 — 프로즈에 섞인 가격을 리졸버(admin product_prices) 값으로 단일화.
   const priceMap = await getPriceDisplayMap();
   const monthlyLabel = priceLabelFromMap(priceMap, 'taste_monthly_calendar');
-  const yearCoreLabel = priceLabelFromMap(priceMap, 'taste_year_core');
+  const newYearLabel = priceLabelFromMap(priceMap, 'taste_new_year_2027');
   const lifetimeLabel = priceLabelFromMap(priceMap, 'lifetime_report');
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
@@ -723,7 +724,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 eyebrow={`2장 · ${targetYear} 올해 흐름 (잠금)`}
                 title={`${targetYear}년 어떤 선택이 가벼울지 먼저 봅니다`}
                 description="올해의 큰 주제와 분야별(일·돈·관계·생활) 선택 힌트를 정리합니다. 결제 후 본문이 열립니다."
-                aside={`${yearCoreLabel} 단독 또는 ${lifetimeLabel} 풀팩`}
+                aside={`신년운세 ${newYearLabel} 또는 ${lifetimeLabel} 풀팩`}
               />
               <section id="premium-locked-yearly" className="scroll-mt-28 px-1">
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
@@ -797,10 +798,10 @@ export default async function SajuPremiumPage({ params }: Props) {
                     1·2장 함께 열기 →
                   </Link>
                   <Link
-                    href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
+                    href={`/saju/${encodedSlug}/new-year/${NEW_YEAR_TARGET_YEAR}?from=saju-premium-monthly`}
                     className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                   >
-                    올해 핵심 3줄만 {yearCoreLabel}
+                    2027 신년운세만 {newYearLabel}
                   </Link>
                 </div>
               </article>

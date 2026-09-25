@@ -25,6 +25,7 @@ import { trackMoonlightEvent } from '@/lib/analytics';
 const CHECKOUT_PRODUCTS = new Set<TasteProductId>([
   'monthly-calendar',
   'year-core',
+  'new-year',
   'money-pattern',
   'work-flow',
 ]);

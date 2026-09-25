@@ -196,6 +196,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-09-26 올해 핵심 3줄(year-core) 판매 중단 — 2027 신년운세(19,900)가 같은 연간 풀이를 모두 담는다.
+  //   ⚠️ 기존 보유자의 열람은 그대로(interpret/yearly basic 티어). 막는 건 신규 결제뿐.
+  if (pkg.id === 'taste_year_core') {
+    const retiredClient = await createClient();
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_attempt',
+      packageId,
+      amount: pkg.price ?? null,
+      metadata: { product, plan, slug, scope, from },
+    });
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'year_core_retired',
+    });
+    return NextResponse.json(
+      { ok: false, error: '이 상품은 판매하지 않습니다. 2027 신년운세에서 한 해 흐름을 모두 볼 수 있습니다.' },
+      { status: 410 }
+    );
+  }
+
   if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {
     return NextResponse.json(
       { error: '이 상품은 먼저 풀이 결과를 만든 뒤 결제할 수 있습니다.' },

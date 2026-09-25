@@ -40,16 +40,12 @@ describe('buildSajuPostSubmitHref', () => {
     expect(url.searchParams.get('scope')).toBeTruthy();
   });
 
-  it('product=year-core → scope=연도 포함', () => {
-    const href = buildSajuPostSubmitHref('ID', {
-      focusTopic: 'today',
-      product: 'year-core',
-      plan: null,
-      from: 'saju-new',
-    });
-    const url = new URL(href, 'https://example.com');
-    expect(url.searchParams.get('product')).toBe('year-core');
-    expect(url.searchParams.get('scope')).toBeTruthy();
+  // 2026-09-26 — 올해 핵심(year-core) 판매 중단. 구 딥링크는 신년운세 미리보기로 보낸다.
+  it('product=year-core·new-year → 신년운세 미리보기(결제 전 내용을 먼저 본다)', () => {
+    for (const product of ['year-core', 'new-year'] as const) {
+      const href = buildSajuPostSubmitHref('ID', { focusTopic: 'today', product, plan: null, from: 'saju-new' });
+      expect(href).toBe('/saju/ID/new-year/2027?from=saju-new');
+    }
   });
 
   it('product=null, plan=null, from=saju-new → 일반 사주 결과 href', () => {
