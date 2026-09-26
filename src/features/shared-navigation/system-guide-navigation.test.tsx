@@ -149,6 +149,14 @@ describe('상단바 우선순위', () => {
     expect(labels[labels.length - 1]).toBe('사용방법');
   });
 
+  // 2026-09-26 — PC 상단바는 드롭다운이 없어서, 메가메뉴(모바일 시트)에만 넣었던 신년운세가 PC 에서 안 보였다(사용자 제보).
+  it('신년운세가 PC 상단바에 궁합 다음으로 있고, 신년운세 화면에서 활성화된다', () => {
+    const labels = MEGA_NAV_BAR.map((g) => g.label);
+    expect(labels.indexOf('신년운세')).toBe(labels.indexOf('궁합') + 1);
+    expect(MEGA_NAV_BAR.find((g) => g.label === '신년운세')?.href).toBe('/saju/new?product=new-year');
+    expect(resolveActiveGroup('/saju/1982-1-29-8-m45-male/new-year/2027')).toBe('신년운세');
+  });
+
   it('홈에서는 아무 메뉴도 강조하지 않는다', () => {
     // 홈은 어느 메뉴에도 속하지 않는다. 기본값으로 첫 그룹을 칠하면 거짓 강조가 된다.
     expect(resolveActiveGroup('/')).toBe('');
