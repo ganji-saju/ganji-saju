@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'ganjisaju.kr' }) }));
 vi.mock('next/navigation', () => ({ notFound: vi.fn(() => { throw new Error('NOT_FOUND'); }) }));
 vi.mock('@/lib/new-year-access', () => ({ resolveNewYearAccess: vi.fn() }));
-vi.mock('@/components/ai/yearly-report-panel', () => ({ default: () => <div data-testid="yearly-panel" /> }));
+vi.mock('@/components/ai/yearly-report-panel', () => ({ default: ({ mode }: { mode?: string }) => <div data-testid="yearly-panel" data-mode={mode} /> }));
 vi.mock('@/components/saju/entitlement-refresher', () => ({ EntitlementRefresher: () => null }));
 vi.mock('@/shared/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -45,6 +45,8 @@ describe('신년운세 페이지', () => {
     vi.mocked(resolveNewYearAccess).mockResolvedValueOnce({ reading, hasAccess: true, isOwner: true, loggedIn: true } as never);
     const html = await render();
     expect(html).toContain('yearly-panel');
+    // PDF 와 같은 풀이(상담사 고정·재생성 없음)를 쓰는 신년운세 모드로 연다.
+    expect(html).toContain('data-mode="new-year"');
     expect(html).toContain('/saju/s1/new-year/2027/print');
   });
 });

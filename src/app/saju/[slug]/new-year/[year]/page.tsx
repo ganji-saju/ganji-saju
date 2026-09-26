@@ -58,7 +58,7 @@ export default async function NewYearPage({ params }: Props) {
               PDF로 저장
             </Link>
           </header>
-          <YearlyReportPanel slug={slug} targetYear={NEW_YEAR_TARGET_YEAR} />
+          <YearlyReportPanel slug={slug} targetYear={NEW_YEAR_TARGET_YEAR} mode="new-year" />
         </AppPage>
       </AppShell>
     );

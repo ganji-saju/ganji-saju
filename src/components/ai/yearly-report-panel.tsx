@@ -38,10 +38,17 @@ import type {
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { NewYearExtrasSection } from '@/components/ai/new-year-extras-section';
+import { GangiLoadingOverlay } from '@/components/gangi/gangi-ui';
 
 interface Props {
   slug: string;
   targetYear: number;
+  /**
+   * 2026-09-27 — 'new-year': 신년운세 화면. PDF 와 **같은 풀이**를 보여야 한다(사용자: 볼 때마다 다르면 실망).
+   *   상담사 값을 보내지 않고(서버가 PDF 와 같은 규칙 — 프로필 저장값 → 기본값 — 으로 고른다),
+   *   재생성을 하지 않으며(다시 불러오기도 캐시만 읽음), 풀이를 만드는 수십 초 동안 진행 로딩을 띄운다.
+   */
+  mode?: 'default' | 'new-year';
 }
 
 interface YearlyInterpretationResponse {
@@ -1027,8 +1034,11 @@ function DeepReadingLinks({ slug }: { slug: string }) {
   );
 }
 
-export default function YearlyReportPanel({ slug, targetYear }: Props) {
-  const { counselorId } = usePreferredCounselor();
+export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }: Props) {
+  const fixedReading = mode === 'new-year';
+  const { counselorId: preferredCounselor } = usePreferredCounselor();
+  // 고정 모드는 상담사 값이 바뀌어도 다시 요청하지 않는다(처음엔 기본값→저장값으로 두 번 요청하던 것도 막는다).
+  const counselorId = fixedReading ? null : preferredCounselor;
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [data, setData] = useState<YearlyInterpretationResponse | null>(null);
   const [error, setError] = useState('');
@@ -1065,8 +1075,8 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           body: JSON.stringify({
             readingId: slug,
             targetYear,
-            counselorId,
-            regenerate: reloadToken > 0,
+            ...(counselorId ? { counselorId } : {}),
+            regenerate: !fixedReading && reloadToken > 0,
           }),
           signal: controller.signal,
         });
@@ -1100,6 +1110,18 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
     () => formatUpdatedAt(data?.updatedAt),
     [data?.updatedAt]
   );
+
+  if (state === 'loading' && fixedReading) {
+    return (
+      <GangiLoadingOverlay
+        title={`${targetYear} 신년운세를 풀고 있어요`}
+        description="처음 한 번만 30초 정도 걸려요. 한 번 만든 풀이는 저장돼 화면과 PDF 에 같은 내용으로 나옵니다."
+        steps={['사주팔자와 올해 간지 맞추기', '분야별 8가지 운 정리', '분기·월별 흐름 산출', '기대할 일·조심할 일 정리']}
+        estimateMs={35_000}
+        revealAfterMs={4_000}
+      />
+    );
+  }
 
   if (state === 'loading') {
     return (
@@ -1286,14 +1308,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
         <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[13.2px] text-[var(--app-copy-muted)]">
           {updatedAtLabel ? <span>최근 생성: {updatedAtLabel}</span> : null}
-          <button
+          {fixedReading ? null : <button
             type="button"
             onClick={() => setReloadToken((value) => value + 1)}
             className="inline-flex h-8 items-center gap-1 rounded-[8px] border bg-white px-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             ↻ 다시 생성
-          </button>
+          </button>}
         </div>
 
         {/* 챕터 tabs */}

@@ -90,7 +90,7 @@ export function createInMemoryYearlyCacheStore(): YearlyCacheStore {
   return {
     read: async (key, year, counselor, version) => rows.get(keyOf(key, year, counselor, version)) ?? null,
     write: async (input) => {
-      if (input.source !== 'openai') return;
+      if (input.source !== 'openai' && !input.keepFallback) return;
       rows.set(keyOf(input.key, input.targetYear, input.counselorId, input.promptVersion), {
         interpretation_json: input.interpretation,
         model: input.model,
@@ -218,9 +218,11 @@ async function writeCachedInterpretation(input: {
   source: AiGenerationSource;
   fallbackReason: AiFallbackReason | null;
   errorMessage: string | null;
+  /** 신년운세(full): 폴백이 섞여도 저장해 화면·PDF·재방문이 같은 글을 보게 한다. */
+  keepFallback?: boolean;
 }) {
   if (!hasSupabaseServiceEnv || input.key.cacheKeyType === 'unavailable') return;
-  if (input.source !== 'openai') return;
+  if (input.source !== 'openai' && !input.keepFallback) return;
 
   const promptVersion = input.promptVersion;
   const row = {
@@ -270,10 +272,9 @@ async function generateNewYearExtras(
     userId: reading.userId,
   });
   const parsed = parseNewYearExtrasText(result.text, fallback);
-  // 성공했을 때만 버전을 찍는다 — 폴백이 캐시에 굳으면 결제한 사람이 영원히 폴백을 본다(다음 열람에서 다시 시도).
-  return result.source === 'openai' && parsed.ok
-    ? { ...parsed.extras, _version: SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION }
-    : parsed.extras;
+  // 2026-09-27 사용자 결정 — 폴백이어도 버전을 찍어 고정한다. 다시 시도하면 볼 때마다 글이 바뀌고(화면≠PDF),
+  //   "볼 때마다 내용이 다르다"가 폴백 문장보다 더 큰 실망이다(이전 판단 뒤집음).
+  return { ...parsed.extras, _version: SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION };
 }
 
 export async function generateYearlyInterpretation(
@@ -329,6 +330,7 @@ export async function generateYearlyInterpretation(
           source: cached.source,
           fallbackReason: cached.fallback_reason,
           errorMessage: cached.error_message,
+          keepFallback: true,
         });
       }
       await recordLlmRun({ feature: 'yearly', source: 'cache', model: cached.model, userId: reading.userId });
@@ -482,6 +484,7 @@ export async function generateYearlyInterpretation(
     source,
     fallbackReason,
     errorMessage,
+    keepFallback: request.includeNewYear === true,
   });
 
   return {
