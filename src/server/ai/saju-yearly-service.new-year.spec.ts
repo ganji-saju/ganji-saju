@@ -91,24 +91,38 @@ describe('yearly service — newyear 부가 단계', () => {
   });
 });
 
-describe('yearly service — 부가 단계 폴백은 굳지 않는다', () => {
-  it('폴백으로 채운 newYear 는 버전이 없어 다음 full 요청이 다시 시도한다', async () => {
+// 2026-09-27 사용자 결정 — "볼 때마다 내용이 다르면 실망한다": 신년운세(full)는 처음 만든 풀이를 고정한다.
+//   AI 가 일부 실패해 폴백이 섞여도 캐시에 저장하고, 부가 단계도 다시 만들지 않는다(화면·PDF·재방문이 같은 글).
+describe('yearly service — 신년운세 풀이는 한 번 만들면 고정', () => {
+  it('부가 단계가 폴백이어도 저장되고, 다음 full 요청은 AI 를 다시 부르지 않고 같은 글을 준다', async () => {
     vi.clearAllMocks();
     vi.mocked(resolveReading).mockResolvedValue(buildTransientReading(input, 'fixture-identity'));
-    let failNewYear = true;
     vi.mocked(generateAiText).mockImplementation(async (request) => {
       const ny = isNewYearStage(request.instructions);
-      return ny && failNewYear
+      return ny
         ? { source: 'fallback', model: null, fallbackReason: 'openai_error', errorMessage: null, text: request.fallbackText }
-        : { source: 'openai', model: 'test-model', fallbackReason: null, errorMessage: null, text: ny ? JSON.stringify(goodExtras) : request.fallbackText };
+        : { source: 'openai', model: 'test-model', fallbackReason: null, errorMessage: null, text: request.fallbackText };
     });
     const store = createInMemoryYearlyCacheStore();
     const first = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, includeNewYear: true, cacheStore: store });
-    expect(first?.interpretation.newYear?._version).toBeUndefined();
-    failNewYear = false;
     vi.mocked(generateAiText).mockClear();
     const second = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, includeNewYear: true, cacheStore: store });
-    expect(vi.mocked(generateAiText).mock.calls).toHaveLength(1);
-    expect(second?.interpretation.newYear?.categories.family).toBe('가족 문단입니다.');
+    expect(vi.mocked(generateAiText).mock.calls).toHaveLength(0);
+    expect(second?.interpretation).toEqual(first?.interpretation);
+  });
+
+  it('본문 단계가 폴백이어도(full) 저장돼 다음 요청이 같은 글을 준다', async () => {
+    vi.clearAllMocks();
+    vi.mocked(resolveReading).mockResolvedValue(buildTransientReading(input, 'fixture-identity'));
+    vi.mocked(generateAiText).mockImplementation(async (request) => ({
+      source: 'fallback', model: null, fallbackReason: 'openai_error', errorMessage: null, text: request.fallbackText,
+    }));
+    const store = createInMemoryYearlyCacheStore();
+    const first = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, includeNewYear: true, cacheStore: store });
+    vi.mocked(generateAiText).mockClear();
+    const second = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, includeNewYear: true, cacheStore: store });
+    expect(vi.mocked(generateAiText).mock.calls).toHaveLength(0);
+    expect(second?.cached).toBe(true);
+    expect(second?.interpretation).toEqual(first?.interpretation);
   });
 });
