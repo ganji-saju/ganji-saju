@@ -75,6 +75,8 @@ export type GangiServiceCard = {
    *   2열 그리드에서 홀수 번째 카드가 남기는 빈 칸을 메우는 자리이기도 하다.
    */
   wide?: boolean;
+  /** 2026-09-26 — 홈 최상단 대표 카드(두 칸·큰 제목·CTA). 한 장만 쓴다(사용자 지시: 신년운세를 사주·궁합 위에 크게). */
+  featured?: boolean;
 };
 
 export type GangiHomeBanner = {
@@ -223,6 +225,22 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
 //   결과·구매 후 화면의 교차추천(paid-funnel-grid)과 /daewoon·/taekil 랜딩으로 계속 판다.
 //   홈 간판은 종합 리포트(사주 카드) 하나 + 대상이 다른 궁합만 남긴다.
 const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
+  // 2026-09-26 — 사용자 지시: 신년운세를 사주·궁합보다 위에, 두 칸짜리로 크고 눈에 띄게(featured).
+  // 2026-09-26 — 2027 신년운세(19,900원). 남은 띠 중 호랑이(寅 — 한 해의 첫 달).
+  {
+    id: 'new-year',
+    title: '신년운세',
+    desc: '2027 한 해 전체 · PDF',
+    price: '19,900원',
+    priceKey: 'taste_new_year_2027',
+    href: '/saju/new?product=new-year',
+    zodiac: 'tiger',
+    category: 'saju',
+    tag: 'NEW',
+    image: 'tiger',
+    tint: 'pink',
+    featured: true,
+  },
   {
     id: 'saju',
     title: '사주',
@@ -257,20 +275,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     image: 'sheep',
     tint: 'coral',
   },
-  // 2026-09-26 — 2027 신년운세(19,900원). 남은 띠 중 호랑이(寅 — 한 해의 첫 달).
-  {
-    id: 'new-year',
-    title: '신년운세',
-    desc: '2027 한 해 전체 · PDF',
-    price: '19,900원',
-    priceKey: 'taste_new_year_2027',
-    href: '/saju/new?product=new-year',
-    zodiac: 'tiger',
-    category: 'saju',
-    tag: 'NEW',
-    image: 'tiger',
-    tint: 'pink',
-  },
+
   // ── 2026-08-28 배치(사용자 지시): 택일·대화상담 / 간단운세·타로 / 꿈해몽·별자리 / 띠운세 ──
   // 2026-08-28 — 택일 홈 복귀(사용자 지시). 2026-08-24 Phase 1 에서 '단품 강등'으로
   //   내렸는데, 같은 날 3,300원 부분 유료(상위 3일 무료 → 나머지 잠금)로 상품이 바뀌면서

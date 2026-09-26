@@ -1,5 +1,11 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-26 — 홈 최상단 신년운세 대표 카드(두 칸·눈에 띄게)
+
+- 사용자 지시: 신년운세를 사주·궁합보다 위, 가로 두 칸으로 크고 눈에 띄게. `GangiServiceCard.featured`(한 장) + 인주→금 그라데이션·큰 제목·흰 가격 CTA·호랑이 수호신. 홈 카드 순서 신년운세 → 사주 → 궁합.
+- 함정 실측: 흰 배지·버튼이 투명으로 렌더 — `readability.css` 가 앱 안 흰 바탕(bg-white·인라인 #fff)을 전부 투명화한다(!important). `.keep-white` 로 해결(계산 스타일로 원인 확인).
+- 검증: Playwright 로 PC(1280)·모바일(390) 로컬 캡처 확인 · npm test·test:spec green · tsc 0 · 가드(new-year-entry: 첫 카드·featured 1장, paywall-lockdown 순서).
+
 ## 2026-09-26 — 신년운세가 PC 상단 메뉴에 안 보이던 문제
 
 - 사용자 제보(PC staging): 신년운세 메뉴가 없다. 원인 — PC 상단바(`MEGA_NAV_BAR`)는 2026-08-25 개편 이후 드롭다운 없는 링크 6개라, #848 에서 `MEGA_NAV`(모바일 햄버거 시트 전용)에 넣은 항목이 PC 에 안 나왔다. (배포는 staging·운영 모두 dcabbb85 로 정상이었음을 vercel inspect 로 확인)

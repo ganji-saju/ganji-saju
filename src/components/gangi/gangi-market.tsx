@@ -513,6 +513,71 @@ export function GangiServiceCardLink({
   };
   const tintBg = TINT[card.tint ?? 'pink'];
 
+  // ── 2026-09-26 대표 카드(두 칸, 최상단) — 사용자 지시: 신년운세를 사주·궁합 위에 크고 눈에 띄게. ──
+  //   파스텔 정사각·잉크 와이드와 겹치지 않게 인주(朱)→금 그라데이션 + 큰 제목 + 흰 CTA 로 한눈에 튄다.
+  if (card.featured) {
+    return (
+      <Link
+        href={card.href}
+        onClick={() => onTrack?.(card)}
+        data-free="false"
+        data-featured="true"
+        className="col-span-2 block no-underline transition-transform active:scale-[0.99]"
+      >
+        <span
+          className="relative flex min-h-[150px] items-stretch overflow-hidden rounded-[22px]"
+          style={{
+            background: 'linear-gradient(120deg, #b3372a 0%, #d2532f 45%, #e9a23b 100%)',
+            boxShadow: '0 18px 40px rgba(179,55,42,0.35)',
+          }}
+        >
+          <span className="relative z-[1] flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-4 pl-5 pr-2">
+            {/* keep-white — readability.css 가 앱 안 흰 바탕(bg-white·인라인 #fff)을 전부 투명화한다. 빼면 빨강 위 빨강 글씨. */}
+            <span
+              className="keep-white inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-black tracking-[0.04em]"
+              style={{ background: '#fff', color: '#b3372a' }}
+            >
+              {card.tag ?? 'NEW'} · 2027 정미년
+            </span>
+            <span className="block text-[27px] font-black leading-[1.15] tracking-[-0.04em] text-white" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.25)' }}>
+              2027 {card.title}
+            </span>
+            <span className="block text-[13px] font-bold leading-snug text-white/90" style={{ wordBreak: 'keep-all' }}>
+              총운·가족·재물·학업·연애·건강 · 월별·분기별 · PDF 저장
+            </span>
+            <span className="mt-1 flex flex-wrap items-center gap-2">
+              <span
+                className="keep-white inline-flex items-center rounded-[10px] px-3 py-1.5 text-[15px] font-black shadow-[0_6px_14px_rgba(0,0,0,0.18)]"
+                style={{ background: '#fff', color: '#b3372a' }}
+              >
+                {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price} · 지금 보기 ›
+              </span>
+            </span>
+          </span>
+          {/* 우측 수호신 — 호랑이(寅, 한 해의 첫 달). 좌측 글자 대비를 위해 왼쪽을 옅게 가린다. */}
+          <span className="relative block w-[38%] max-w-[190px] shrink-0">
+            {card.image ? (
+              <GuardianPortrait
+                id={card.image}
+                alt={card.title}
+                className="absolute inset-0 h-full w-full object-cover object-top"
+              />
+            ) : (
+              <span className="absolute inset-0 grid place-items-center">
+                <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
+              </span>
+            )}
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-3/4"
+              style={{ background: 'linear-gradient(90deg, #db6a33 0%, rgba(219,106,51,0.55) 45%, rgba(219,106,51,0) 100%)' }}
+            />
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
   // ── 2026-08-28 와이드 배너(두 칸) ────────────────────────────────────────────
   //   나머지 카드는 '정사각 초상 + 아래 가격'이라 세로가 길다. 대화상담만 가로로 눕히는
   //   건 장식이 아니라 **다른 상품이기 때문**이다 — 나머지는 읽는 풀이고 이건 주고받는
