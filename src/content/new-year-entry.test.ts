@@ -15,6 +15,10 @@ test('홈 카드·메가메뉴·리포트 목록에 신년운세가 있고 같�
   assert.ok(card, '홈 카드');
   assert.equal(card.href, HREF);
   assert.equal(card.priceKey, 'taste_new_year_2027');
+  // 2026-09-26 사용자 지시 — 사주·궁합보다 위, 두 칸 대표 카드.
+  assert.equal(GANGI_HOME_CARDS[0].id, 'new-year');
+  assert.equal(card.featured, true);
+  assert.equal(GANGI_HOME_CARDS.filter((c) => c.featured).length, 1, '대표 카드는 한 장');
   const navItems = MEGA_NAV.flatMap((g) => [...(g.c1?.items ?? []), ...(g.c2?.items ?? [])]);
   assert.ok(navItems.some((i) => i.href === HREF && i.tagPriceKey === 'taste_new_year_2027'), '메가메뉴');
   assert.ok(PRODUCT_REPORT_CATALOG.some((r) => r.href === HREF), '리포트 목록');

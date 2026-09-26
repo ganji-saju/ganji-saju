@@ -201,9 +201,9 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
     //   아니라 결제 CTA 랜딩이라 잠금 중에도 남는다.
     // 2026-09-26 — 2027 신년운세(19,900원 유료) 추가 — 사주 입력 뒤 미리보기라 잠금 중에도 남는다.
     expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual([
+      'new-year',
       'saju',
       'gunghap',
-      'new-year',
       'taekil',
       'consult',
     ]);
