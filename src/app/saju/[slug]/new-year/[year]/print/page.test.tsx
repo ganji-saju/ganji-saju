@@ -15,15 +15,15 @@ vi.mock('@/shared/layout/app-shell', () => ({
   AppPage: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }));
 
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { buildTransientReading } from '@/lib/saju/readings';
 import { buildYearlyReport } from '@/domain/saju/report';
 import { resolveNewYearAccess } from '@/lib/new-year-access';
 import { generateYearlyInterpretation } from '@/server/ai/saju-yearly-service';
 import { buildFallbackNewYearExtras, buildFallbackYearlyInterpretation } from '@/server/ai/saju-yearly-interpretation';
 import Page from './page';
 
-const input = { year: 1982, month: 1, day: 29, hour: 8, minute: 45, gender: 'male' as const };
-const reading = { userId: 'u1', input, sajuData: calculateSajuDataV1(input) };
+const input = { name: '검증용', year: 1982, month: 1, day: 29, hour: 8, minute: 45, gender: 'male' as const };
+const reading = buildTransientReading(input, 'fixture');
 const report = buildYearlyReport(input, reading.sajuData, 2027);
 const render = async () => renderToStaticMarkup(await Page({ params: Promise.resolve({ slug: 's1', year: '2027' }) }));
 
@@ -44,10 +44,12 @@ describe('신년운세 PDF 페이지', () => {
     } as never);
     const html = await render();
     expect(vi.mocked(generateYearlyInterpretation).mock.calls[0][0].includeNewYear).toBe(true);
-    const order = ['2027 한눈에', '총론', '분야별 운', '분기별 흐름', '월별 흐름', '기대할 일과 조심할 일', '올해의 행동 지침'];
-    const positions = order.map((title) => html.indexOf(`>${title}<`));
-    expect(positions.every((p) => p > 0)).toBe(true);
+    // 2026-09-27 사용자 피드백 — 사주팔자 명식·오행·십성이 표지와 사주 구조 쪽에 있어야 하고, 2027 흐름이 그 뒤로 이어진다.
+    const order = ['네 기둥과 여덟 글자', '오행 균형', '십성과 신살', '총론과 분야별 운', '분기·월별 흐름', '기대할 일과 조심할 일', '올해의 행동 지침'];
+    const positions = order.map((title) => html.indexOf(title));
+    expect(positions.every((p) => p > 0), JSON.stringify(positions)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+    expect(html).not.toMatch(/丁未/);
     expect(html).toContain('가족운');
   });
 });
