@@ -250,7 +250,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     // 2026-08-24 전면 개편 Phase 1 — 간판 상품(수정요청 PPT 7·8안). 17항목 종합 리포트.
-    //   구성 5종: 점수 언락(reading) + 오늘 상세(today) + 돈 패턴·일 흐름(global) + 올해 핵심(year).
+    //   구성 4종(2026-09-26 올해 핵심 제거): 점수 언락(reading) + 오늘 상세(today) + 돈 패턴·일 흐름(global).
     //   ⚠️ monthly-calendar 는 구성품 금지 — scope(연-월)가 정적으로 파생 불가라 미지정 시
     //     reading: scope 로 grant 되는데 조회측은 calendar: scope 만 인정 = 죽은 권한이 된다.
     //     달력은 리포트 열람 화면의 크로스셀(3,300 단품)로 판다.
@@ -269,7 +269,8 @@ export const PAYMENT_PACKAGES = [
       { tasteProductId: 'today-detail' },
       { tasteProductId: 'money-pattern' },
       { tasteProductId: 'work-flow' },
-      { tasteProductId: 'year-core' },
+      // 2026-09-26 — year-core(올해 핵심) 제거: 판매 중단한 상품을 묶음으로 새로 발급하지 않는다(2027 신년운세와 중복,
+      //   사용자 결정). 이미 받은 묶음 구매자의 year-core 행은 그대로(열람 유지). 목차·카피는 16항목.
     ],
   },
   {

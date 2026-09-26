@@ -808,7 +808,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
                   멤버십 깊은 사주풀이 열람은 본인·등록 가족 사주(최대 5명)에 적용돼요. 아래
                   종합 리포트는 멤버십에 포함되지 않는 별도 단품이며, 구성 항목 중 ‘오늘 자세히
-                  보기’와 ‘올해 핵심 3줄’은 멤버십 혜택과 겹칠 수 있어요.
+                  보기’는 멤버십 혜택과 겹칠 수 있어요.
                 </p>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/premium`}

@@ -24,8 +24,7 @@ export const COMPREHENSIVE_LOCKED_ITEMS: ReadonlyArray<{ title: string; desc: st
   { title: '오늘의 일진 상세', desc: '내 사주와 오늘이 만나는 지점' },
   { title: '영역별 오늘 풀이', desc: '재물·연애·일·관계' },
   { title: '오늘의 행운 패키지', desc: '색·방향·시간' },
-  // 단품 3종
+  // 단품 2종(2026-09-26 올해 핵심 제거 → 신년운세로 따로 판매)
   { title: '돈이 새는 패턴', desc: '돈이 빠져나가는 구멍' },
   { title: '일·직장 흐름', desc: '커리어의 방향' },
-  { title: '올해 핵심 흐름', desc: '올해 놓치면 안 될 3가지' },
 ] as const;
