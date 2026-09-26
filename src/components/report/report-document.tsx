@@ -22,7 +22,7 @@ function splitIntoParagraphs(text: string, perParagraph = 2): string[] {
   return out;
 }
 
-function DeepSection({ no, label, text }: { no: number; label: string; text: string }) {
+export function DeepSection({ no, label, text }: { no: number; label: string; text: string }) {
   const paragraphs = splitIntoParagraphs(text);
   if (paragraphs.length === 0) return null;
   // 첫 문단은 리드 — 눈이 들어올 자리를 만든다. 나머지는 본문 리듬.
@@ -48,7 +48,7 @@ function DeepSection({ no, label, text }: { no: number; label: string; text: str
 const FOOTER_COPY = '© 2026 푸꼬컴퍼니 · 간지사주';
 
 /** P2~P8 상단 running header (REPORT NO · 이름 + 干支). */
-function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectName: string }) {
+export function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectName: string }) {
   return (
     <div className="rp-runhead">
       <span>
@@ -60,7 +60,7 @@ function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectNam
 }
 
 /** 모든 페이지 하단 footer (© + PAGE n / 8). */
-function PageFooter({ page, total = 8 }: { page: number; total?: number }) {
+export function PageFooter({ page, total = 8 }: { page: number; total?: number }) {
   return (
     <div className="rp-foot">
       <span>{FOOTER_COPY}</span>
@@ -72,7 +72,7 @@ function PageFooter({ page, total = 8 }: { page: number; total?: number }) {
 }
 
 /** 챕터 헤더 (CHAPTER 0n + 2줄 제목 + 리드). */
-function ChapterHead({
+export function ChapterHead({
   no,
   titleLines,
   lead,
