@@ -37,6 +37,7 @@ import type {
 } from '@/server/ai/saju-yearly-interpretation';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { InkIcon } from '@/components/gangi/ink-icons';
+import { NewYearExtrasSection } from '@/components/ai/new-year-extras-section';
 
 interface Props {
   slug: string;
@@ -1447,11 +1448,18 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
               basis={data.report.categories.move.basis}
             />
           </div>
+          {/* 2026-09-26 — 신년운세·평생 구매자에게만 서버가 newYear 를 보낸다(가족·학업·기대/조심). */}
+          {interpretation.newYear ? (
+            <NewYearExtrasSection extras={interpretation.newYear} part="areas" year={data.targetYear} />
+          ) : null}
         </>
       ) : null}
 
       {chapter === 2 ? (
         <>
+          {interpretation.newYear ? (
+            <NewYearExtrasSection extras={interpretation.newYear} part="quarters" year={data.targetYear} />
+          ) : null}
           <YearlyMonthlySection report={data.report} interpretation={interpretation} />
 
           {/* 2026-05-15 — 사용자 피드백: "좋은 시기 활용법 / 조심해야 할 시기 / 행동 조언"

@@ -34,7 +34,8 @@ import { submitCouponInput } from './coupon-action';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { getTasteProductEntitlement, hasNewYearEntitlementForReading } from '@/lib/product-entitlements';
+import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -82,6 +83,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'work-flow': 'tiger',
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
+  'new-year': 'horse',
   'score-factor': 'dragon',
   'score-total': 'dragon',
   'compat-reading': 'pig',
@@ -246,6 +248,17 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
       '전체 보관형 리포트와는 별도 상품입니다.',
     ],
   },
+  'new-year': {
+    title: '2027 신년운세',
+    reassurance:
+      '선택한 사주에 붙는 2027년 한 해 풀이입니다. 한 번 결제하면 계속 다시 보고 PDF로 저장할 수 있습니다.',
+    nextRange: '총운·분야별 8가지·분기·월별 흐름과 기대할 일/조심할 일을 봅니다.',
+    opens: ['2027 사주풀이 총론', '가족·학업·재물·연애·건강 등 8가지 운', '분기·월별 흐름과 PDF 저장'],
+    notices: [
+      '신년운세는 특정 사주 결과에 연결됩니다.',
+      '프리미엄 멤버십 회원은 50% 할인가로 결제됩니다.',
+    ],
+  },
 };
 
 // 묶음(bundle) 상품 안내. packageId 키. TASTE_PRODUCT_GUIDE 는 단일 TasteProductId 만
@@ -255,9 +268,9 @@ const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
   bundle_comprehensive: {
     title: '종합사주 리포트',
     reassurance:
-      '출시 기념가 9,900원(정가 33,000원). 사주 종합점수와 5요소 풀이, 오늘의 상세 리포트, 돈 패턴, 일·직장 흐름, 올해 핵심까지 17항목을 한 번에 엽니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
+      '출시 기념가 9,900원(정가 33,000원). 사주 종합점수와 5요소 풀이, 오늘의 상세 리포트, 돈 패턴, 일·직장 흐름까지 16항목을 한 번에 엽니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
     nextRange: '결제 즉시 사주 결과 화면에서 잠긴 항목이 전부 열립니다.',
-    opens: ['사주 종합점수 + 5요소 풀이', '오늘의 상세 리포트', '돈이 새는 패턴 · 일/직장 흐름 · 올해 핵심'],
+    opens: ['사주 종합점수 + 5요소 풀이', '오늘의 상세 리포트', '돈이 새는 패턴 · 일/직장 흐름'],
     notices: [
       '이 리포트는 현재 사주 결과에 연결됩니다.',
       '이미 구매한 항목은 중복 결제하지 않습니다.',
@@ -341,9 +354,16 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       if (selectedProduct && isTasteProductPackage(paymentPackage)) {
         // today-detail 은 checkTodayDetailAccess(readingKey 안정 + legacy readingId + coin)로
         //   통일 — 사주 재생성·경로 교차로 slug 가 바뀌어도 인식해 재결제(무한반복)를 막는다.
+        // 2026-09-26 — 신년운세는 prepare·열람과 같은 기준(사주 정체성 + 평생 이용권)으로 "이미 볼 수 있음"을 판정한다.
         const purchased =
           selectedProduct === 'today-detail'
             ? (await checkTodayDetailAccess(slug ?? '')).hasAccess
+            : selectedProduct === 'new-year'
+            ? (await hasNewYearEntitlementForReading(user.id, paymentScope?.readingKey, NEW_YEAR_TARGET_YEAR)) ||
+              Boolean(
+                paymentScope?.readingKey &&
+                  (await getLifetimeReportEntitlement(user.id, paymentScope.readingKey, slug ? [slug] : []))
+              )
             : Boolean(
                 await getTasteProductEntitlement(
                   user.id,
@@ -541,7 +561,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {quote && quote.discountWon > 0 ? (
                 <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
                   <span className="text-[15px] text-[var(--app-copy)]">
-                    쿠폰 할인 ({quote.percent}%)
+                    {quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : '쿠폰 할인'} ({quote.percent}%)
                   </span>
                   <span className="text-[15.5px] font-bold text-[var(--app-pink-strong)]">
                     -{formatWon(quote.discountWon)}
@@ -606,6 +626,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   {couponRejectMessage(quote.reason)}
                 </p>
               ) : null}
+              {/* 2026-09-26 — 쿠폰과 멤버십 할인은 겹치지 않는다. 넣은 쿠폰이 안 보이면 버그 신고가 되니 이유를 적는다. */}
+              {quote && quote.memberPercent > 0 && couponInput ? (
+                <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  멤버십 할인이 더 커서 쿠폰 대신 멤버십 할인을 적용했어요. 쿠폰은 그대로 남아 있어요.
+                </p>
+              ) : null}
               <div
                 className="mt-2 flex items-center justify-between pt-3"
                 style={{ borderTop: '1px solid var(--app-ink)' }}
@@ -643,7 +669,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               <strong className="font-extrabold text-[var(--app-gold-text)]">멤버십 이용 중이에요.</strong>{' '}
               멤버십으로 깊은 사주풀이(본인·등록 가족 사주 최대 5명)와 오늘 자세히 보기가 이미
               열려 있어요. 이 종합 리포트에서 멤버십에 없는 것은 사주 종합점수·5요소 풀이,
-              돈 패턴, 일·직장 흐름입니다. 구성 중 ‘오늘 자세히 보기’·‘올해 핵심 3줄’은
+              돈 패턴, 일·직장 흐름입니다. 구성 중 ‘오늘 자세히 보기’는
               멤버십 혜택과 겹칠 수 있으니 확인 후 결제해 주세요.
             </p>
           ) : null}

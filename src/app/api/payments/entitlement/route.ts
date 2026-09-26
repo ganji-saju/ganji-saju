@@ -17,6 +17,7 @@ import {
   getTasteProductEntitlement,
   hasMonthlyCalendarForReading,
   hasYearCoreEntitlementForReading,
+  hasNewYearEntitlementForReading,
 } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription, getMemberTier } from '@/lib/subscription';
@@ -24,6 +25,7 @@ import {
   buildPurchasedProductHref,
   parseMonthlyCalendarScopeKey,
   parseYearCoreScopeKey,
+  parseNewYearScopeKey,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
@@ -170,6 +172,13 @@ export async function GET(req: NextRequest) {
           paymentScope.readingKey,
           parsedScope.year
         ))
+    );
+  } else if (productId === 'new-year') {
+    const parsedScope = parseNewYearScopeKey(paymentScope?.scopeKey);
+    has = Boolean(
+      paymentScope?.readingKey &&
+        parsedScope &&
+        (await hasNewYearEntitlementForReading(user.id, paymentScope.readingKey, parsedScope.year))
     );
   } else {
     const entitlement = await getTasteProductEntitlement(

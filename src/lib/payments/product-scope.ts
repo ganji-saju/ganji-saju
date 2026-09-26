@@ -1,5 +1,6 @@
 import {
   isTasteProductPackage,
+  NEW_YEAR_TARGET_YEAR,
   type PaymentPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
@@ -78,6 +79,10 @@ export function buildMonthlyCalendarScopeKey(readingKey: string, year: number, m
 
 export function buildYearCoreScopeKey(readingKey: string, year: number) {
   return `year:${readingKey}:${year}`;
+}
+
+export function buildNewYearScopeKey(readingKey: string, year: number) {
+  return `newyear:${readingKey}:${year}`;
 }
 
 export function buildLifetimeReportScopeKey(readingKey: string) {
@@ -162,6 +167,19 @@ export function parseYearScope(scope: string | null | undefined) {
 // 합성 스코프 키에서 readingKey 를 뽑는다. readingKey(toSlug)는 '-' 구분이라 ':' 를 포함하지 않으므로
 // split(':') 의 가운데가 readingKey, 마지막이 기간이다. 이름 해시 드리프트 보정(사주 정체성 매칭)에 필요.
 // year:{readingKey}:{year} → { readingKey, year }
+export function parseNewYearScopeKey(
+  scopeKey: string | null | undefined
+): { readingKey: string; year: number } | null {
+  const trimmed = scopeKey?.trim() ?? '';
+  if (!trimmed.startsWith('newyear:')) return null;
+  const parts = trimmed.split(':');
+  if (parts.length < 3) return null;
+  const year = parseYearScope(parts[parts.length - 1]);
+  if (year === null) return null;
+  const readingKey = parts.slice(1, -1).join(':');
+  return readingKey ? { readingKey, year } : null;
+}
+
 export function parseYearCoreScopeKey(
   scopeKey: string | null | undefined
 ): { readingKey: string; year: number } | null {
@@ -342,6 +360,18 @@ export async function resolvePaymentProductScope({
     };
   }
 
+  // 2026-09-26 — 신년운세는 해가 상품에 박혀 있다(결제 시각·scope 인자와 무관).
+  if (productId === 'new-year') {
+    return {
+      productId,
+      scopeKey: buildNewYearScopeKey(readingIdentity.readingKey, NEW_YEAR_TARGET_YEAR),
+      kind: 'year',
+      ...readingIdentity,
+      targetYear: NEW_YEAR_TARGET_YEAR,
+      targetMonth: null,
+    };
+  }
+
   if (productId === 'score-factor') {
     const factorId = parseFactorScope(scope);
     return {
@@ -412,6 +442,10 @@ export function buildPurchasedProductHref(
 
   if (productId === 'year-core' && normalizedSlug) {
     return `/saju/${encodeURIComponent(normalizedSlug)}/premium#yearly-report`;
+  }
+
+  if (productId === 'new-year' && normalizedSlug) {
+    return `/saju/${encodeURIComponent(normalizedSlug)}/new-year/${NEW_YEAR_TARGET_YEAR}`;
   }
 
   if (productId === 'lifetime-report' && normalizedSlug) {

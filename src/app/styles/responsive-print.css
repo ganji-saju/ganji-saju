@@ -2914,7 +2914,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .rp-cover-questions p { margin: 12px 0 0; font-size: 11px; line-height: 1.7; word-break: keep-all; }
 .rp-cover-questions strong { margin-right: 8px; color: var(--rp-pink); }
 .rp-question-edition .rp-guide-contents { display: grid; grid-template-columns: 1fr 1fr; column-gap: 22px; }
-.rp-question-edition .rp-guide-contents > div { padding: 9px 0; font-size: 11px; }
+.rp-question-edition .rp-guide-contents > div { padding: 7px 0; font-size: 11px; }
 .rp-question-edition .rp-year-finder { grid-template-columns: repeat(3, 1fr); }
 .rp-year-finder { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 22px 0; }
 .rp-year-finder > div { display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--rp-line); }

@@ -33,7 +33,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     title: '세운 선생',
     specialty: '올해·월별 전략',
     description: '대운 위에서 올해의 촉발점과 월별 리듬을 봅니다.',
-    href: '/saju/new?product=yearly-2026',
+    href: '/saju/new?product=new-year',
     statusLabel: '리포트에서 먼저 보기',
     ctaLabel: '연간 전략서 시작하기',
     mode: 'ai-report',

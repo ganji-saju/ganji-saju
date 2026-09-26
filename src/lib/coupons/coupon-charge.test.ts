@@ -733,3 +733,54 @@ test('S2 — COUPON_POOL_* 가 빈 값·공백이면 기본값, 0 을 명시할 
     else process.env.COUPON_POOL_OPEN = saved;
   }
 });
+
+// 2026-09-26 — 신년운세 프리미엄 멤버십 50%. 쿠폰과는 겹치지 않고 할인액 큰 쪽 하나(동률은 멤버십 — 쿠폰을 태우지 않는다).
+const NEW_YEAR = getPackage('taste_new_year_2027')!; // 19,900
+const memberOpts = (db: FakeDb, isPremiumMember: (id: string) => Promise<boolean>) => ({ ...opts(db), isPremiumMember });
+const yes = async () => true;
+const no = async () => false;
+
+test('member-discount — 프리미엄 회원은 신년운세 9,950원, 화면 = order.amount', async () => {
+  const db = fakeDb();
+  const quote = await resolveChargeForUser(NEW_YEAR, { id: 'u1' }, null, memberOpts(db, yes));
+  assert.equal(quote.chargeAmount, 9950);
+  assert.equal(quote.memberPercent, 50);
+  assert.equal(quote.claim, null);
+  await createPaymentOrder(
+    { userId: 'u1', pkg: NEW_YEAR, listAmount: quote.listAmount, coupon: null, memberPercent: quote.memberPercent, acceptedKinds: [], recordedPolicyVersionIds: [] },
+    db.client
+  );
+  const inserted = db.inserted.at(-1)!;
+  assert.equal(inserted.amount, 9950);
+  assert.equal(inserted.discount_won, 9950);
+  assert.equal(inserted.coupon_code, null);
+});
+
+test('member-discount — 비회원·다른 상품·판정 오류는 정가', async () => {
+  const db = fakeDb();
+  assert.equal((await resolveChargeForUser(NEW_YEAR, { id: 'u1' }, null, memberOpts(db, no))).chargeAmount, 19900);
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, { id: 'u1' }, null, memberOpts(db, yes))).chargeAmount, 3300);
+  const boom = async () => { throw new Error('subscription read failed'); };
+  const failed = await resolveChargeForUser(NEW_YEAR, { id: 'u1' }, null, memberOpts(db, boom));
+  assert.equal(failed.chargeAmount, 19900, '판정 오류는 할인 과다 지급 대신 정가');
+  assert.equal(failed.memberPercent, 0);
+});
+
+test('member-discount — 쿠폰(30%·50%)을 넣어도 멤버십이 크거나 같으면 멤버십, 쿠폰은 귀속하지 않는다', async () => {
+  for (const tier of ['30', '50']) {
+    const db = fakeDb({ coupons: [coupon(`ganji${tier}0001`)] });
+    const quote = await resolveChargeForUser(NEW_YEAR, { id: 'u1' }, `ganji-${tier}-0001`, memberOpts(db, yes));
+    assert.equal(quote.chargeAmount, 9950, tier);
+    assert.equal(quote.claim, null, `${tier}% 쿠폰을 태우지 않는다`);
+    assert.equal(quote.reason, null, tier);
+    assert.equal(quote.memberPercent, 50, tier);
+  }
+});
+
+test('member-discount — 비회원은 쿠폰 그대로', async () => {
+  const db = fakeDb({ coupons: [coupon('ganji300001')] });
+  const quote = await resolveChargeForUser(NEW_YEAR, { id: 'u1' }, 'ganji-30-0001', memberOpts(db, no));
+  assert.equal(quote.chargeAmount, 13930);
+  assert.equal(quote.memberPercent, 0);
+  assert.ok(quote.claim);
+});

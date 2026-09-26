@@ -198,6 +198,8 @@ export async function createPaymentOrder(
      * ⚠️ 클라이언트가 보낸 값을 그대로 넘기면 안 된다 — percent 는 반드시 DB(coupon_tiers)에서 읽은 값.
      */
     coupon?: { code: string; percent: number; maxDiscountWon?: number | null } | null;
+    /** 2026-09-26 — 멤버십 할인율(서버 판정값 ChargeQuote.memberPercent 만). coupon 과 동시에 오지 않는다. */
+    memberPercent?: number;
     slug?: string | null;
     scope?: string | null;
     product?: string | null;
@@ -221,7 +223,9 @@ export async function createPaymentOrder(
   //   호출부가 할인을 계산해 넘기는 구조였다면 경로마다 어긋났을 것이다.
   const pricing = input.coupon
     ? applyCouponDiscount(input.listAmount, input.coupon.percent, input.coupon.maxDiscountWon)
-    : { percent: 0, discountWon: 0, chargeAmount: input.listAmount };
+    : input.memberPercent
+      ? applyCouponDiscount(input.listAmount, input.memberPercent, null)
+      : { percent: 0, discountWon: 0, chargeAmount: input.listAmount };
   const { data, error } = await client
     .from('payment_orders')
     .insert({

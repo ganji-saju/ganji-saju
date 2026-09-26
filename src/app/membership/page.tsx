@@ -51,13 +51,13 @@ const COLLECTIBLE_REPORTS: ReadonlyArray<{
     zodiac: 'dragon',
   },
   {
-    slug: 'yearly-2026',
-    title: '올해 흐름 리포트',
+    slug: 'new-year-2027',
+    title: '2027 신년운세',
     price: '',
-    summary: '진행하기 좋은 달, 확인할 달, 쉬어갈 달을 먼저 봅니다.',
-    href: '/saju/new?focus=year',
+    priceKey: 'taste_new_year_2027',
+    summary: '총운과 분야별·월별 흐름, 기대할 일과 조심할 일을 정리합니다. 멤버십은 50% 할인.',
+    href: '/saju/new?product=new-year',
     zodiac: 'tiger',
-    comingSoon: true,
   },
   {
     slug: 'relationship-standard',

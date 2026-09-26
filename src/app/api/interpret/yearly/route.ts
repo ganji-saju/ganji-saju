@@ -10,7 +10,7 @@ import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
-import { hasYearCoreEntitlementForReading } from '@/lib/product-entitlements';
+import { hasNewYearEntitlementForReading, hasYearCoreEntitlementForReading } from '@/lib/product-entitlements';
 
 export const runtime = 'nodejs';
 export const maxDuration = 75;
@@ -104,16 +104,21 @@ export async function POST(req: NextRequest) {
 
   const readingKey = toSlug(reading.input);
   const targetYear = parsed.targetYear ?? getCurrentKoreaYear();
-  const [lifetime, subscription, yearCore] = await Promise.all([
+  const [lifetime, subscription, yearCore, newYear] = await Promise.all([
     getLifetimeReportEntitlement(user.id, readingKey, [parsed.readingId]),
     getManagedSubscription(user.id),
     hasYearCoreEntitlementForReading(user.id, readingKey, targetYear),
+    hasNewYearEntitlementForReading(user.id, readingKey, targetYear),
   ]);
   const subscriptionUnlocks =
     subscription != null &&
     isEntitledStatus(subscription.status) &&
     (subscription.plan === 'plus_monthly' || subscription.plan === 'premium_monthly');
-  const hasYearlyAccess = Boolean(lifetime) || Boolean(subscriptionUnlocks) || Boolean(yearCore);
+  const hasYearlyAccess =
+    Boolean(lifetime) || Boolean(subscriptionUnlocks) || Boolean(yearCore) || newYear;
+  // 2026-09-26 — 가족·학업·분기·기대/조심(newYear)은 신년운세·평생 구매자만. 올해 핵심·멤버십은 기존 연간 내용만(basic).
+  //   클라이언트에서 숨기지 않고 서버에서 잘라 보낸다.
+  const tier: 'basic' | 'full' = newYear || lifetime ? 'full' : 'basic';
   if (!hasYearlyAccess) {
     return NextResponse.json(
       { ok: false, error: '올해 흐름 풀이 이용권이 필요합니다.' },
@@ -126,6 +131,7 @@ export async function POST(req: NextRequest) {
     targetYear,
     regenerate: parsed.regenerate,
     counselorId: parsed.counselorId,
+    includeNewYear: tier === 'full',
   });
 
   if (!response) {
@@ -135,5 +141,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json(response);
+  if (tier === 'full') return NextResponse.json({ ...response, tier });
+  const { newYear: _omitted, ...basicInterpretation } = response.interpretation;
+  return NextResponse.json({ ...response, tier, interpretation: basicInterpretation });
 }

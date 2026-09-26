@@ -51,7 +51,7 @@ export function ReportKeepsakeSection({
   pdfHref = null,
   resultsHref = '/my/results',
   dialogueHref = '/dialogue',
-  updatesHref = '/saju/new?product=yearly-2026',
+  updatesHref = '/saju/new?product=new-year',
   actions,
 }: ReportKeepsakeSectionProps) {
   const items = [

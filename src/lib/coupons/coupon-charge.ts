@@ -10,6 +10,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
+import { MEMBER_DISCOUNT_PERCENT_BY_PACKAGE, pickBetterDiscount } from '@/lib/payments/member-discount';
+import { isPremiumMember } from '@/lib/subscription';
 import { after } from 'next/server';
 import { readPaymentOrigin, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
 import { dailyPeriodKey } from '@/lib/credits/member-benefits';
@@ -190,6 +192,8 @@ export interface ChargeQuote {
   /** 입력한 코드(또는 등록된 쿠폰)가 적용되지 않은 이유. 없으면 null. */
   reason: CouponRejectReason | null;
   claim: CouponClaim | null;
+  /** 2026-09-26 — 적용된 프리미엄 멤버십 할인율(0 = 없음). 쿠폰과 동시에 붙지 않는다. prepare 는 이 값을 createPaymentOrder 로 넘긴다. */
+  memberPercent: number;
 }
 
 /**
@@ -248,7 +252,13 @@ export async function resolveChargeForUser(
   /** 🔴 체크아웃·prepare 가 **같은 `getUser()` 결과**를 넘긴다 — 등급(예산 풀)이 갈리면 화면·청구가 어긋난다. */
   viewer: CouponViewer | null,
   couponInput: string | null | undefined,
-  opts: { env: CouponEnv; service?: SupabaseClient; now?: Date }
+  opts: {
+    env: CouponEnv;
+    service?: SupabaseClient;
+    now?: Date;
+    /** 테스트 주입용. 기본은 구독 테이블을 읽는 isPremiumMember. */
+    isPremiumMember?: (userId: string) => Promise<boolean>;
+  }
 ): Promise<ChargeQuote> {
   const listAmount = await resolvePackagePrice(pkg.id);
   const noDiscount = (reason: CouponRejectReason | null): ChargeQuote => ({
@@ -259,12 +269,30 @@ export async function resolveChargeForUser(
     couponCode: null,
     reason,
     claim: null,
+    memberPercent: 0,
   });
 
   // 쿠폰은 로그인 계정에 붙는다(B 결정). 비로그인은 조회 자체를 하지 않는다 — 익명 추측 창구를 열지 않는다.
   //   Supabase 익명 로그인(is_anonymous)도 같다 — 지금은 꺼져 있지만 켜지는 순간 무료 계정 공장이 된다.
   if (!viewer || viewer.is_anonymous) return noDiscount(null);
   const userId = viewer.id;
+
+  // 멤버십 할인(신년운세 50%) — 판정 오류는 정가(할인 과다 지급보다 안전, 스펙 §6).
+  const memberRate = MEMBER_DISCOUNT_PERCENT_BY_PACKAGE[pkg.id] ?? 0;
+  const memberPercent =
+    memberRate > 0
+      ? await (opts.isPremiumMember ?? isPremiumMember)(userId).then(
+          (ok) => (ok ? memberRate : 0),
+          () => 0
+        )
+      : 0;
+  const memberQuote = (reason: CouponRejectReason | null): ChargeQuote => {
+    const d = applyCouponDiscount(listAmount, memberPercent, null);
+    return { listAmount, discountWon: d.discountWon, chargeAmount: d.chargeAmount, percent: d.percent, couponCode: null, reason, claim: null, memberPercent };
+  };
+  // 쿠폰이 안 붙는 모든 경로에서 멤버십이 있으면 멤버십가로 — 사유(reason)는 그대로 보여 준다.
+  const fallback = (reason: CouponRejectReason | null): ChargeQuote =>
+    memberPercent > 0 ? memberQuote(reason) : noDiscount(reason);
 
   const raw = couponInput?.trim() ? couponInput : null;
   const parsed = raw ? parseCouponCode(raw) : null;
@@ -275,7 +303,7 @@ export async function resolveChargeForUser(
 
   // 전(재화)이 전달물인 상품은 할인하지 않는다(§7). 등록된 쿠폰이 있거나 코드를 넣었으면 이유를 보여 준다
   //   — 할인이 안 붙는 이유가 안 보이면 버그 신고가 된다.
-  if (!isCouponEligiblePackage(pkg)) return noDiscount(raw || bound ? 'not_eligible' : null);
+  if (!isCouponEligiblePackage(pkg)) return fallback(raw || bound ? 'not_eligible' : null);
 
   // 등록된 쿠폰이 죽었고 이 환경이 그 행을 건드려도 되면 자리를 비워 줄 수 있다(동시에 1개) — canReleaseCoupon 주석.
   const releasable = bound && canReleaseCoupon(bound, now, opts.env) ? bound : null;
@@ -287,17 +315,17 @@ export async function resolveChargeForUser(
     reason = 'account_has_other';
   } else if (parsed && (!bound || parsed.code !== bound.code)) {
     // 새 코드 = 오라클 입구(미리보기·prepare 둘 다 여기를 지난다). 환경을 모르면 어떤 쿠폰도 안 되므로 조회하지 않는다.
-    if (!opts.env) return noDiscount('env_mismatch');
+    if (!opts.env) return fallback('env_mismatch');
     const blocked = await spendLookupBudget(service, viewer, parsed.code, opts.env, now);
-    if (blocked) return noDiscount(blocked);
+    if (blocked) return fallback(blocked);
     row = await selectCoupon(service, 'code', parsed.code);
     // 환경이 안 맞는 행(staging 에서 본 실물 코드 등)은 **없는 코드와 같은 답**으로 끝낸다 — 평가·보유자 조회까지 가면
     //   만료 문구·응답 시간으로 존재가 샌다(리뷰 발견 2026-09-11: staging 예산은 프로덕션 풀과 따로라 우회 채널이 된다).
     if (!row || (opts.env === 'production') === (row.batch === STAGING_TEST_BATCH)) {
-      return noDiscount('not_found');
+      return fallback('not_found');
     }
   }
-  if (!row) return noDiscount(reason);
+  if (!row) return fallback(reason);
 
   const holder = row.bound_user_id && row.bound_user_id !== userId ? row.bound_user_id : null;
   const evaluation = evaluateCouponRow({
@@ -307,7 +335,9 @@ export async function resolveChargeForUser(
     env: opts.env,
     holderHasLiveOrder: holder ? await holderHasLiveOrder(service, row.code, holder, now) : false,
   });
-  if (!evaluation.ok) return noDiscount(reason ?? evaluation.reason);
+  if (!evaluation.ok) return fallback(reason ?? evaluation.reason);
+
+  if (pickBetterDiscount(listAmount, memberPercent, evaluation) === 'member') return memberQuote(null);
 
   // createPaymentOrder 와 **같은 함수·같은 입력**으로 계산한다 → 화면 금액 = order.amount.
   const discount = applyCouponDiscount(listAmount, evaluation.percent, evaluation.maxDiscountWon);
@@ -327,6 +357,7 @@ export async function resolveChargeForUser(
       // claim 이 나오는 건 "살아 있는 등록 쿠폰(self)" 이거나 "새 코드" 뿐이라, releasable 은 후자에서만 채워진다.
       releaseCode: releasable?.code ?? null,
     },
+    memberPercent: 0,
   };
 }
 

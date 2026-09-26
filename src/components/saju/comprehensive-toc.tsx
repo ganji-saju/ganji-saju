@@ -44,7 +44,7 @@ export function ComprehensiveToc({ slug, hookLine, priceLabel, compareLabel, cla
         종합사주 리포트
       </p>
       <h2 className="mt-1 text-[20.7px] font-extrabold leading-snug text-[var(--app-ink)]">
-        무료 분석에서 보신 건 17항목 중 4개예요
+        무료 분석에서 보신 건 16항목 중 4개예요
       </h2>
 
       <ul className="m-0 mt-4 grid list-none gap-1.5 p-0">

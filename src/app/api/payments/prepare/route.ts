@@ -4,6 +4,7 @@ import {
   isBundlePackage,
   isSubscriptionPackage,
   isTasteProductPackage,
+  NEW_YEAR_TARGET_YEAR,
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
 import { buildPaymentOrigin } from '@/lib/payments/payment-origin';
@@ -18,6 +19,7 @@ import {
 import {
   getTasteProductEntitlement,
   hasTodayDetailEntitlementForSaju,
+  hasNewYearEntitlementForReading,
 } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -196,6 +198,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-09-26 올해 핵심 3줄(year-core) 판매 중단 — 2027 신년운세(19,900)가 같은 연간 풀이를 모두 담는다.
+  //   ⚠️ 기존 보유자의 열람은 그대로(interpret/yearly basic 티어). 막는 건 신규 결제뿐.
+  if (pkg.id === 'taste_year_core') {
+    const retiredClient = await createClient();
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_attempt',
+      packageId,
+      amount: pkg.price ?? null,
+      metadata: { product, plan, slug, scope, from },
+    });
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'year_core_retired',
+    });
+    return NextResponse.json(
+      { ok: false, error: '이 상품은 판매하지 않습니다. 2027 신년운세에서 한 해 흐름을 모두 볼 수 있습니다.' },
+      { status: 410 }
+    );
+  }
+
   if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {
     return NextResponse.json(
       { error: '이 상품은 먼저 풀이 결과를 만든 뒤 결제할 수 있습니다.' },
@@ -316,7 +340,17 @@ export async function POST(req: NextRequest) {
       const isTodayDetail =
         isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail';
 
-      const entitlement = isTodayDetail
+      // 2026-09-26 — 신년운세는 열람 판정(resolveNewYearAccess)과 같은 기준으로 막는다: 사주 정체성 매칭 + 평생 이용권.
+      //   정확 scope 만 보면 같은 사주를 다른 경로로 입력했을 때·평생 구매자가 볼 수 있는 걸 또 결제한다.
+      const isNewYear = isTasteProductPackage(pkg) && pkg.tasteProductId === 'new-year';
+      const entitlement = isNewYear
+        ? (await hasNewYearEntitlementForReading(user.id, paymentScope.readingKey, NEW_YEAR_TARGET_YEAR)) ||
+          (await getLifetimeReportEntitlement(
+            user.id,
+            paymentScope.readingKey ?? paymentScope.slug ?? '',
+            paymentScope.slug ? [paymentScope.slug] : []
+          ))
+        : isTodayDetail
         ? await hasTodayDetailEntitlementForSaju(user.id, todayKey, {
             readingKey: paymentScope.readingKey,
             slug: paymentScope.slug,
@@ -409,9 +443,11 @@ export async function POST(req: NextRequest) {
 
   // 🔴 화면이 할인을 보여 줬으면 그 코드가 여기로 온다. 그 코드가 지금 적용되지 않으면
   //   **조용히 정가로 청구하지 않고 멈춘다**(클라이언트 금액 폴백을 지운 것과 같은 원칙).
-  const couponReason: CouponRejectReason | null = couponInput
-    ? (quote.reason ?? (quote.claim ? null : 'not_found'))
-    : null;
+  //   2026-09-26 — 멤버십 할인이 이겼으면(memberPercent>0) 쿠폰은 일부러 안 붙인 것이라 막지 않는다 — 청구는 멤버십가.
+  const couponReason: CouponRejectReason | null =
+    couponInput && quote.memberPercent === 0
+      ? (quote.reason ?? (quote.claim ? null : 'not_found'))
+      : null;
   if (couponReason) {
     return blockPrepare(
       `coupon_${couponReason}`,
@@ -451,6 +487,7 @@ export async function POST(req: NextRequest) {
     listAmount: quote.listAmount,
     // 귀속·검증을 마친 쿠폰. 요율은 DB(coupon_tiers / 귀속 스냅샷)에서 읽은 값뿐이다 — body 가 아니다.
     coupon,
+    memberPercent: coupon ? 0 : quote.memberPercent,
     slug,
     scope,
     product,

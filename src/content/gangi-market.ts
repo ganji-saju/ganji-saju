@@ -119,7 +119,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     // PPT 6안 신뢰 카피 — "왜 여기서 봐야 하나"에 첫 화면에서 답한다.
     id: 'trust-creds',
     kicker: '왜 간지사주인가',
-    title: '자격을 갖춘 17가지 항목 분석',
+    title: '자격을 갖춘 16가지 항목 분석',
     description:
       '명리심리상담사 1급 등 전문 자격 5종 보유. 용어 나열이 아니라 "앞으로 어떻게"를 알려드립니다.',
     cta: '풀이 방식 보기',
@@ -229,7 +229,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     // 2026-08-24 Phase 1 — 간판 상품 전환: 오늘상세(3,300) 직행 → 무료 맛보기 → 종합 리포트
     //   (bundle_comprehensive, 출시 기념가 9,900·compareAt 33,000). 2026-07-18 "중간맛보기
     //   필요없음" 지시는 이번 개편 결정(무료 맛보기 재개방, 수정요청 PPT 1차)으로 뒤집혔다.
-    desc: '17항목 종합 리포트',
+    desc: '16항목 종합 리포트',
     price: '9,900원',
     priceKey: 'bundle_comprehensive',
     href: '/saju/new',
@@ -256,6 +256,20 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     tag: '추천',
     image: 'sheep',
     tint: 'coral',
+  },
+  // 2026-09-26 — 2027 신년운세(19,900원). 남은 띠 중 호랑이(寅 — 한 해의 첫 달).
+  {
+    id: 'new-year',
+    title: '신년운세',
+    desc: '2027 한 해 전체 · PDF',
+    price: '19,900원',
+    priceKey: 'taste_new_year_2027',
+    href: '/saju/new?product=new-year',
+    zodiac: 'tiger',
+    category: 'saju',
+    tag: 'NEW',
+    image: 'tiger',
+    tint: 'pink',
   },
   // ── 2026-08-28 배치(사용자 지시): 택일·대화상담 / 간단운세·타로 / 꿈해몽·별자리 / 띠운세 ──
   // 2026-08-28 — 택일 홈 복귀(사용자 지시). 2026-08-24 Phase 1 에서 '단품 강등'으로

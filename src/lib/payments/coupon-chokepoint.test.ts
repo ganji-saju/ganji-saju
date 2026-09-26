@@ -288,10 +288,13 @@ test('정가·할인 스냅샷(list_amount·discount_won·coupon_percent)을 읽
       'src/app/admin/coupons/coupon-admin-client.tsx',
       'src/app/api/payments/prepare/route.ts',
       'src/app/membership/checkout/page.tsx',
+      'src/app/saju/[slug]/new-year/[year]/page.tsx',
       'src/lib/coupons/coupon-admin.ts',
       'src/lib/coupons/coupon-charge.ts',
       'src/lib/coupons/discount-coupon.ts',
+      'src/lib/new-year-preview-price.ts',
       'src/lib/payments/coupon-order-guard.ts',
+      'src/lib/payments/member-discount.ts',
       'src/lib/payments/order-ledger.ts',
     ],
     '새 파일이 정가 필드를 읽는다 — 환불·집계·결제내역이면 order.amount 를 써라'

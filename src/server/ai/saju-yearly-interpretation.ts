@@ -35,6 +35,34 @@ export interface SajuYearlyAiMonthlyFlow {
   action?: string;
 }
 
+// 2026-09-26 — 2027 신년운세 부가 필드. YearlyCategoryKey 를 넓히지 않고 옵셔널로 붙인다 —
+//   그 타입은 buildYearlyReport·패널·year-core 경로 전체로 번지고, 부가 필드는 신년운세·평생 구매자에게만 나가야 한다(route 티어).
+export const SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION = 'saju-newyear-extras-v1';
+export type NewYearExtraCategory = 'family' | 'study';
+export type NewYearHighlightCategory = YearlyCategoryKey | NewYearExtraCategory;
+
+export interface NewYearQuarterFlow {
+  quarter: 1 | 2 | 3 | 4;
+  months: [number, number, number];
+  summary: string;
+  focusCategory: NewYearHighlightCategory;
+}
+
+export interface NewYearHighlight {
+  month: number;
+  category: NewYearHighlightCategory;
+  text: string;
+}
+
+export interface SajuNewYearExtras {
+  categories: Record<NewYearExtraCategory, string>;
+  quarterlyFlows: NewYearQuarterFlow[];
+  expectations: NewYearHighlight[];
+  cautions: NewYearHighlight[];
+  /** 캐시 행에 붙는 생성 버전 — 올라가면 부가 단계만 다시 만든다(서비스). */
+  _version?: string;
+}
+
 export interface SajuYearlyAiInterpretation {
   opening: string;
   keywords: string[];
@@ -46,9 +74,10 @@ export interface SajuYearlyAiInterpretation {
   cautionPeriods: string[];
   actionAdvice: string[];
   oneLineSummary: string;
+  newYear?: SajuNewYearExtras;
 }
 
-export type SajuYearlyInterpretationPromptSection = 'full' | 'narrative' | 'monthly';
+export type SajuYearlyInterpretationPromptSection = 'full' | 'narrative' | 'monthly' | 'newyear';
 
 export interface SajuYearlyAiNarrativeInterpretation {
   opening: string;
@@ -90,6 +119,23 @@ const MAX_PERIOD_LENGTH = 260;
 const MAX_ACTION_LENGTH = 240;
 const MAX_SUMMARY_LENGTH = 220;
 const MIN_MONTHS = 12;
+
+const NEW_YEAR_HIGHLIGHT_CATEGORIES: NewYearHighlightCategory[] = [...YEARLY_CATEGORY_ORDER, 'family', 'study'];
+
+export const NEW_YEAR_CATEGORY_LABEL: Record<NewYearHighlightCategory, string> = {
+  ...YEARLY_CATEGORY_LABEL,
+  family: '가족운',
+  study: '학업·시험운',
+};
+
+const NEW_YEAR_FORBIDDEN_PATTERN = /반드시|무조건|100\s*%|틀림없이|큰\s*병|사고가\s*(?:난다|납니다|날\s*것)/;
+
+const QUARTER_MONTHS: Array<[number, number, number]> = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [10, 11, 12],
+];
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
@@ -264,6 +310,146 @@ function buildCategoryFallback(
     `다만 ${section.caution}`,
     `올해는 ${section.action}`,
   ].join(' '), 3, 260);
+}
+
+function windowHighlights(
+  report: SajuYearlyReport,
+  windows: SajuYearlyReport['goodPeriods'],
+  category: NewYearHighlightCategory
+): NewYearHighlight[] {
+  return windows.flatMap((w) =>
+    w.months.slice(0, 1).map((month) => ({
+      month,
+      // 그 달 흐름이 가리키는 분야가 있으면 그걸 쓴다 — 돈 이야기에 '일' 라벨이 붙지 않게.
+      category: report.monthlyFlows.find((f) => f.month === month)?.relatedAreas[0] ?? category,
+      text: tightenLine(w.strategy || w.reason, 1, 90),
+    }))
+  );
+}
+
+// 창(window)에서 3개가 안 나오면 해당 흐름(rise/caution)인 달로 채운다 — 빈 목록을 보여 주지 않는다.
+function padHighlights(
+  list: NewYearHighlight[],
+  report: SajuYearlyReport,
+  momentum: 'rise' | 'caution'
+): NewYearHighlight[] {
+  const out = list
+    .filter((h, i) => list.findIndex((o) => o.month === h.month || o.text === h.text) === i)
+    .slice(0, 6);
+  const pool = [
+    ...report.monthlyFlows.filter((f) => f.momentum === momentum),
+    ...report.monthlyFlows.filter((f) => f.momentum === 'steady'),
+    ...report.monthlyFlows,
+  ];
+  for (const flow of pool) {
+    if (out.length >= 3) break;
+    if (out.some((h) => h.month === flow.month)) continue;
+    const area = flow.relatedAreas[0] ?? (momentum === 'rise' ? 'work' : 'health');
+    const text = tightenLine(momentum === 'rise' ? flow.opportunity : flow.caution, 1, 90);
+    if (!text || out.some((h) => h.text === text)) continue;
+    out.push({ month: flow.month, category: area, text });
+  }
+  return out.sort((a, b) => a.month - b.month);
+}
+
+export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYearExtras {
+  const byMonth = new Map(report.monthlyFlows.map((f) => [f.month, f]));
+  const quarterlyFlows = QUARTER_MONTHS.map((months, i) => {
+    const flows = months.map((m) => byMonth.get(m)).filter((f): f is NonNullable<typeof f> => Boolean(f));
+    const rising = flows.filter((f) => f.momentum === 'rise').length;
+    const caution = flows.filter((f) => f.momentum === 'caution').length;
+    const tone =
+      rising > caution ? '힘이 붙는 분기입니다' : caution > rising ? '속도를 조절할 분기입니다' : '흐름을 다지는 분기입니다';
+    const lead = flows.find((f) => f.momentum === (rising >= caution ? 'rise' : 'caution')) ?? flows[0];
+    return {
+      quarter: (i + 1) as 1 | 2 | 3 | 4,
+      months,
+      summary: tightenLine(`${months[0]}~${months[2]}월은 ${tone}. ${lead?.summary ?? ''}`, 2, 160),
+      focusCategory: (lead?.relatedAreas[0] ?? (rising >= caution ? 'work' : 'health')) as NewYearHighlightCategory,
+    };
+  });
+  const rel = report.categories.relationship;
+  const work = report.categories.work;
+  const move = report.categories.move;
+  return {
+    categories: {
+      family: tightenLine(`집안과 가까운 사람 사이에서는 ${rel.summary} ${rel.action}`, 3, 260),
+      study: tightenLine(
+        // 업무 문단엔 '오늘은…' 같은 하루 단위 조언이 섞여 있어 첫 문장만 쓴다.
+        `공부와 자격 준비는 ${tightenLine(work.opportunity, 1, 120)} ${report.actionGuide.useWhenStrong[0] ?? move.opportunity}`,
+        3,
+        260
+      ),
+    },
+    quarterlyFlows,
+    expectations: padHighlights(windowHighlights(report, report.goodPeriods, 'work'), report, 'rise'),
+    cautions: padHighlights(windowHighlights(report, report.cautionPeriods, 'health'), report, 'caution'),
+  };
+}
+
+export function parseNewYearExtrasText(
+  text: string,
+  fallback: SajuNewYearExtras
+): { ok: boolean; extras: SajuNewYearExtras; errorMessage: string | null } {
+  const fail = (errorMessage: string) => ({ ok: false, extras: fallback, errorMessage });
+  try {
+    const parsed = JSON.parse(extractJsonCandidate(text)) as Record<string, unknown>;
+    const cats = (parsed.categories ?? {}) as Record<string, unknown>;
+    const family = cleanText(cats.family, MAX_CATEGORY_LENGTH);
+    const study = cleanText(cats.study, MAX_CATEGORY_LENGTH);
+    const isCategory = (v: unknown): v is NewYearHighlightCategory =>
+      NEW_YEAR_HIGHLIGHT_CATEGORIES.includes(v as NewYearHighlightCategory);
+    const quarters = Array.isArray(parsed.quarterlyFlows) ? parsed.quarterlyFlows : [];
+    const quarterlyFlows = QUARTER_MONTHS.map((months, i) => {
+      const row = quarters.find(
+        (q) => Number((q as { quarter?: unknown } | null)?.quarter) === i + 1
+      ) as Record<string, unknown> | undefined;
+      const summary = cleanText(row?.summary, MAX_PERIOD_LENGTH);
+      if (!summary) return null;
+      const focus = row?.focusCategory;
+      return {
+        quarter: (i + 1) as 1 | 2 | 3 | 4,
+        months,
+        summary,
+        focusCategory: isCategory(focus) ? focus : ('work' as NewYearHighlightCategory),
+      };
+    });
+    const highlights = (value: unknown) =>
+      (Array.isArray(value) ? value : [])
+        .map((item) => {
+          const row = (item ?? {}) as Record<string, unknown>;
+          const month = typeof row.month === 'number' ? row.month : Number.parseInt(String(row.month), 10);
+          const textValue = cleanText(row.text, MAX_PERIOD_LENGTH);
+          return Number.isInteger(month) && month >= 1 && month <= 12 && isCategory(row.category) && textValue
+            ? { month, category: row.category, text: textValue }
+            : null;
+        })
+        .filter((h): h is NewYearHighlight => h !== null)
+        .slice(0, 6);
+    const expectations = highlights(parsed.expectations);
+    const cautions = highlights(parsed.cautions);
+    if (!family || !study || quarterlyFlows.some((q) => q === null) || expectations.length < 3 || cautions.length < 3) {
+      return fail('New-year extras JSON is missing required sections.');
+    }
+    // 결제자 화면·PDF 에 그대로 나가는 문구다. 프롬프트가 금지한 단정·공포 표현만 좁게 본다
+    //   (넓은 부분일치 금지어는 멀쩡한 풀이까지 버려 재시도 비용만 태운다 — total_review 검증기 교훈).
+    const allText = [family, study, ...quarterlyFlows.map((q) => q!.summary), ...expectations.map((h) => h.text), ...cautions.map((h) => h.text)].join('\n');
+    if (NEW_YEAR_FORBIDDEN_PATTERN.test(allText)) {
+      return fail('New-year extras contain absolute or fear-inducing phrasing.');
+    }
+    return {
+      ok: true,
+      extras: {
+        categories: { family, study },
+        quarterlyFlows: quarterlyFlows as NewYearQuarterFlow[],
+        expectations,
+        cautions,
+      },
+      errorMessage: null,
+    };
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : 'New-year extras JSON could not be parsed.');
+  }
 }
 
 export function getYearlyInterpretationPromptVersion(
@@ -618,6 +804,11 @@ export function createYearlyInterpretationPrompt(
   const grounding =
     section === 'monthly'
       ? createMonthlyGrounding(record, report, counselorId)
+      : section === 'newyear'
+        ? (() => {
+            const narrative = createNarrativeGrounding(record, report, counselorId);
+            return { ...narrative, yearlyEvidence: { ...narrative.yearlyEvidence, monthlyFlows: report.monthlyFlows } };
+          })()
       : section === 'narrative'
         ? createNarrativeGrounding(record, report, counselorId)
         : {
@@ -647,14 +838,25 @@ export function createYearlyInterpretationPrompt(
   };
 
   const schemaLine =
-    section === 'monthly'
+    section === 'newyear'
+      ? '{"categories":{"family":"가족운 2~3문장","study":"학업·시험운 2~3문장"},"quarterlyFlows":[{"quarter":1,"summary":"1~3월 요약","focusCategory":"wealth"},{"quarter":2,"summary":"4~6월 요약","focusCategory":"work"},{"quarter":3,"summary":"7~9월 요약","focusCategory":"love"},{"quarter":4,"summary":"10~12월 요약","focusCategory":"family"}],"expectations":[{"month":5,"category":"wealth","text":"기대할 일 한 문장"},"...3~6개"],"cautions":[{"month":8,"category":"health","text":"조심할 일 한 문장"},"...3~6개"]}'
+      : section === 'monthly'
       ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}]}'
       : section === 'narrative'
         ? '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}'
         : '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}],"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}';
 
   const sectionSpecificInstructions =
-    section === 'monthly'
+    section === 'newyear'
+      ? [
+          '이번 응답에서는 categories(family, study), quarterlyFlows, expectations, cautions 만 작성합니다. 다른 키는 출력하지 않습니다.',
+          'family 는 본인 사주로 본 부모·배우자·자녀·집안 관계의 올해 흐름입니다. 가족의 생년월일은 없으므로 가족 개인의 운을 단정하지 않습니다.',
+          'study 는 공부·자격증·시험·배움의 올해 흐름입니다. 합격이나 불합격을 단정하지 않습니다.',
+          'quarterlyFlows 는 1~4분기를 모두 채우고, 월별 흐름의 momentum 을 근거로 분기의 성격과 가장 먼저 볼 분야(focusCategory)를 고릅니다.',
+          'expectations 와 cautions 는 각각 3~6개이며 모두 month(1~12)와 category(work, wealth, love, relationship, health, move, family, study 중 하나)를 붙입니다. "언제, 어느 분야에서, 무엇을" 이 한 문장에 보이게 씁니다.',
+          '건강은 생활 습관과 컨디션 관리 수준으로만 말하고 질병 진단이나 치료 권유를 하지 않습니다.',
+        ]
+      : section === 'monthly'
       ? [
           '이번 응답에서는 monthlyFlows만 작성합니다.',
           'monthlyFlows 외의 키는 출력하지 않습니다.',

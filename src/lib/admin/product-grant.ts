@@ -6,7 +6,7 @@
 //   🔴 이 파일의 존재 이유는 목록이 아니라 **scope** 다.
 //      product_entitlements 는 상품마다 scope_key 형식이 다르고, **게이트마다 매칭 방식이 다르다.**
 //      형식이 어긋나면 행은 멀쩡히 생기는데 화면은 계속 잠긴다 — 에러도 안 난다.
-//      예) year-core 게이트는 'year:{readingKey}:{연도}' 를 파싱한다. 'global' 을 넣으면
+//      예) year-core 게이트는 'year:{readingKey}:{연도}', 신년운세는 'newyear:{readingKey}:{연도}' 를 파싱한다. 'global' 을 넣으면
 //          파싱 실패 → 조용히 미인식. 부여는 "성공" 이라고 뜬다.
 //      그래서 부여 경로는 결제와 **같은 함수**(resolvePaymentProductScope)로 scope 를 만든다.
 //      여기서는 그 함수가 필요로 하는 입력(need)만 선언한다.

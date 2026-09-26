@@ -90,6 +90,15 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
           tag: '3,300원',
           tagPriceKey: 'taste_taekil',
         },
+        {
+          // 2026-09-26 — 2027 신년운세(19,900원, 멤버십 50%). 사주 입력 뒤 미리보기로 간다.
+          label: '2027 신년운세',
+          desc: '한 해 전체 풀이 · PDF',
+          href: '/saju/new?product=new-year',
+          icon: 'saju',
+          tag: '19,900원',
+          tagPriceKey: 'taste_new_year_2027',
+        },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', icon: 'cross' },
       ],
     },

@@ -27,6 +27,7 @@ vi.mock('@/lib/payments/product-scope', () => ({
 vi.mock('@/lib/product-entitlements', () => ({
   getTasteProductEntitlement: vi.fn(async () => null),
   hasTodayDetailEntitlementForSaju: vi.fn(async () => false),
+  hasNewYearEntitlementForReading: vi.fn(async () => false),
 }));
 vi.mock('@/lib/report-entitlements', () => ({ getLifetimeReportEntitlement: vi.fn(async () => null) }));
 vi.mock('@/lib/credits/detail-report-access', () => ({
@@ -44,7 +45,7 @@ vi.mock('@/lib/payments/consent', () => ({
 vi.mock('@/lib/coupons/coupon-charge', () => ({
   bindCouponClaim: vi.fn(),
   couponEnvForHost: () => 'production',
-  resolveChargeForUser: vi.fn(async () => ({ listAmount: 3300, chargeAmount: 3300, claim: null, reason: null })),
+  resolveChargeForUser: vi.fn(async () => ({ listAmount: 3300, chargeAmount: 3300, claim: null, reason: null, memberPercent: 0 })),
 }));
 vi.mock('@/lib/payments/order-ledger', () => ({
   createPaymentOrder: vi.fn(async () => ({ orderId: 'order-1', amount: 3300 })),
@@ -53,6 +54,9 @@ vi.mock('@/lib/payments/order-ledger', () => ({
 
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createPaymentOrder } from '@/lib/payments/order-ledger';
+import { bindCouponClaim, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
+import { getTasteProductEntitlement, hasNewYearEntitlementForReading } from '@/lib/product-entitlements';
+import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { POST } from './route';
 
 async function prepare(body: Record<string, unknown>) {
@@ -105,5 +109,47 @@ describe('prepare — today-detail 주문의 폼 이름(subjectName)', () => {
   it('이름은 주문에만 — 퍼널 로그에는 남기지 않는다', async () => {
     await prepare({ from: 'today-fortune-limit', subjectName: '아버지' });
     expect(JSON.stringify(vi.mocked(logPaymentFunnelEvent).mock.calls)).not.toContain('아버지');
+  });
+});
+
+// 2026-09-26 — 멤버십 할인이 쿠폰보다 커서 이긴 경우: 쿠폰 코드가 함께 와도 막지 않고, 멤버십 요율을 주문에 넘긴다.
+describe('prepare — 프리미엄 멤버십 할인(신년운세)', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('쿠폰 코드를 넣었어도 멤버십가로 진행하고 쿠폰은 귀속하지 않는다', async () => {
+    vi.mocked(resolveChargeForUser).mockResolvedValueOnce({
+      listAmount: 19900, chargeAmount: 9950, discountWon: 9950, percent: 50,
+      couponCode: null, reason: null, claim: null, memberPercent: 50,
+    });
+    await prepare({ couponCode: 'GANJI-30-0001', expectedAmount: 9950 });
+    expect(bindCouponClaim).not.toHaveBeenCalled();
+    const input = vi.mocked(createPaymentOrder).mock.calls[0][0];
+    expect(input.memberPercent).toBe(50);
+    expect(input.coupon).toBeNull();
+  });
+});
+
+// 2026-09-26 리뷰 — 신년운세 재결제 차단은 열람 판정과 같아야 한다: 사주 정체성 매칭(readingKey 드리프트 흡수) + 평생 이용권.
+describe('prepare — 신년운세 중복 결제 차단', () => {
+  beforeEach(() => vi.clearAllMocks());
+  const newYear = () =>
+    POST(new NextRequest('https://ganjisaju.kr/api/payments/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ packageId: 'taste_new_year_2027', product: 'new-year', slug: 'reading-dad' }),
+    }));
+
+  it('정확 scope 가 달라도 같은 사주의 신년운세 이용권이 있으면 막는다', async () => {
+    vi.mocked(getTasteProductEntitlement).mockResolvedValue(null);
+    vi.mocked(hasNewYearEntitlementForReading).mockResolvedValueOnce(true);
+    const body = await (await newYear()).json();
+    expect(body.alreadyPurchased).toBe(true);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+  });
+
+  it('평생 이용권 보유자는 이미 볼 수 있으니 막는다', async () => {
+    vi.mocked(getLifetimeReportEntitlement).mockResolvedValueOnce({ id: 'e' } as never);
+    const body = await (await newYear()).json();
+    expect(body.alreadyPurchased).toBe(true);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
   });
 });

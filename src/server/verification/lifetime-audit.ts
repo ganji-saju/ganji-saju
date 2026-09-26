@@ -82,6 +82,8 @@ export async function getLifetimeVerificationAudit({
           Boolean(result.interpretation.sections.strengthBalance) &&
           Boolean(result.interpretation.sections.patternAndYongsin) &&
           Boolean(result.interpretation.sections.relationshipPattern) &&
+          Boolean(result.interpretation.sections.familyPattern) &&
+          Boolean(result.interpretation.sections.studyPath) &&
           Boolean(result.interpretation.sections.wealthStyle) &&
           Boolean(result.interpretation.sections.careerDirection) &&
           Boolean(result.interpretation.sections.healthRhythm) &&

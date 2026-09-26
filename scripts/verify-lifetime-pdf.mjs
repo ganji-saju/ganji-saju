@@ -67,7 +67,7 @@ try {
     }
     if (index === 2) {
       const text = data.deepReading.sections.map((section) => section.text).join(' ');
-      assert.equal((text.match(/기존 풀이가 길어져도/g) ?? []).length, 9 * 40, 'Unique paid prose must not be lost');
+      assert.equal((text.match(/기존 풀이가 길어져도/g) ?? []).length, Object.keys(interpretation.sections).length * 40, 'Unique paid prose must not be lost');
       assert.ok(text.includes('정재격은 예전에 저장된 유료 해설의 고유한 문장입니다.'), 'Existing paid technical prose must remain intact');
     }
     if (index === 0) fs.writeFileSync(path.join(outputDir, 'core-chapters.json'), JSON.stringify(data.deepReading.sections.filter((section) => ['돈을 벌고 남기는 방식', '잘하는 일과 오래할 수 있는 일', '연애와 가까운 관계'].includes(section.chapter)), null, 2));
