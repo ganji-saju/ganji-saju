@@ -7,7 +7,13 @@ export interface PdfNarrativeSection {
 }
 
 /** Keep every character while bounding the amount of prose on one A4 page. */
-export function paginatePdfNarrative(sections: PdfNarrativeSection[]): PdfNarrativeSection[][] {
+//   limits — 2026-09-27 신년운세 PDF 는 글자가 작고 섹션이 짧아 기본 한도로는 쪽이 절반만 찼다(사용자: 여백이 많다).
+//   기본값은 평생 PDF 가 A4 로 검증한 값이라 바꾸지 않는다.
+export function paginatePdfNarrative(
+  sections: PdfNarrativeSection[],
+  limits: { maxWeight?: number; maxItems?: number } = {}
+): PdfNarrativeSection[][] {
+  const maxWeight = limits.maxWeight ?? 1600;
   const pages: PdfNarrativeSection[][] = [];
   let page: PdfNarrativeSection[] = [];
   let weight = 0;
@@ -29,7 +35,7 @@ export function paginatePdfNarrative(sections: PdfNarrativeSection[]): PdfNarrat
       const text = remaining.slice(0, end).trim();
       const item = { ...section, label: `${section.label}${continuation ? ' · 계속' : ''}`, text };
       const itemWeight = text.length + 160;
-      if (page.length && (weight + itemWeight > 1600 || page.length >= (section.chapter ? 4 : 3))) {
+      if (page.length && (weight + itemWeight > maxWeight || page.length >= (limits.maxItems ?? (section.chapter ? 4 : 3)))) {
         pages.push(page);
         page = [];
         weight = 0;
