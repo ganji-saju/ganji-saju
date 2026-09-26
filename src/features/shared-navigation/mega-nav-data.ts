@@ -251,6 +251,8 @@ export const MEGA_NAV: MegaNavGroup[] = applyLockdown(byMenuOrder(ALL_MEGA_NAV))
 export const MEGA_NAV_BAR: MegaNavGroup[] = applyLockdown([
   { label: '사주', simple: true, href: '/saju/new' },
   { label: '궁합', simple: true, href: '/compatibility' },
+  // 2026-09-26 — 2027 신년운세. 이 바는 드롭다운이 없어 MEGA_NAV(모바일 시트)에만 넣으면 PC 에서 안 보인다(사용자 제보).
+  { label: '신년운세', simple: true, href: '/saju/new?product=new-year' },
   { label: '대화', simple: true, href: '/dialogue' },
   { label: '운세', simple: true, href: '/free' },
   { label: '멤버십', simple: true, href: '/membership' },
@@ -273,6 +275,10 @@ export function resolveActiveGroup(pathname: string): string {
   // 2026-08-28 — 궁합이 독립 메뉴가 됐다. 단 MEGA_NAV(모바일 시트)에는 '궁합' 그룹이
   //   없으므로, 없으면 '사주'로 떨어뜨린다('운세' 잠금 폴백과 같은 방식) — 안 그러면
   //   모바일 시트에서 아무 것도 활성화되지 않는다.
+  // 신년운세 화면(/saju/<slug>/new-year/…)은 PC 상단바의 '신년운세'. 모바일 시트엔 그룹이 없어 '사주'로 떨어진다.
+  if (/^\/saju\/[^/]+\/new-year(\/|$)/.test(pathname)) {
+    return MEGA_NAV_BAR.some((group) => group.label === '신년운세') ? '신년운세' : '사주';
+  }
   if (pathname.startsWith('/compatibility')) {
     const hasCompat =
       MEGA_NAV_BAR.some((group) => group.label === '궁합') ||

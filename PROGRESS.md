@@ -1,5 +1,11 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-26 — 신년운세가 PC 상단 메뉴에 안 보이던 문제
+
+- 사용자 제보(PC staging): 신년운세 메뉴가 없다. 원인 — PC 상단바(`MEGA_NAV_BAR`)는 2026-08-25 개편 이후 드롭다운 없는 링크 6개라, #848 에서 `MEGA_NAV`(모바일 햄버거 시트 전용)에 넣은 항목이 PC 에 안 나왔다. (배포는 staging·운영 모두 dcabbb85 로 정상이었음을 vercel inspect 로 확인)
+- 수정: 상단바 궁합 다음에 「신년운세」(`/saju/new?product=new-year`) 추가 · `/saju/<slug>/new-year/…` 에서 활성화. 가드 테스트 추가(system-guide-navigation.test).
+- 검증: npm test·test:spec green, tsc 0.
+
 ## 2026-09-26 — 2027 신년운세(19,900원·멤버십 50%·PDF) + 카카오 친구추가 쿠폰 OFF
 
 - **카카오 친구추가 쿠폰 OFF**(사용자 결정 2026-09-25: 삭제 대신 끄기): Vercel `KAKAO_FRIEND_COUPON_ENABLED` 삭제 + 재배포, `ganjisaju.kr/api/coupons/kakao-friend/status` → `{"enabled":false}` 확인. 코드 유지(다시 켜려면 env=1 + 재배포).
