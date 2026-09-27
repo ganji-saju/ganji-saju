@@ -31,10 +31,23 @@ const products: Record<string, (p: (typeof people)[number]) => unknown> = {
   '평생 폴백': (p) => buildFallbackLifetimeInterpretation(buildLifetimeReport(p, normalizeToSajuDataV1(p, null), 2026)),
 };
 
+// 2026-09-27 — 화면(렌더)에 그리지 않는 칸은 뺀다. 데이터 객체 전체를 세면 AI 입력·공유 문구·검증 페이지 전용 칸의
+//   겹침까지 '반복'으로 잡혀 실제 화면보다 크게 나왔다(근거: 각 칸을 그리는 컴포넌트 grep).
+const HIDDEN_FIELDS: Record<string, string[]> = {
+  '오늘운세 무료': ['answer', 'headline'], // 카드는 같은 문장인 summary 로 한 번만 그림 · oneLine.headline 은 공유 문구·메모 전용
+  '오늘운세 상세': ['groundingSummary'], // 무료 화면(SajuReasonSnippet) 전용 — 상세 패널은 evidenceLines 만 그림
+  '사주 기본 리포트': ['insights', 'summaryHighlights', 'technicalSummary', 'dayMasterSummary', 'scores'], // AI 입력·검증 페이지 전용 · 점수 문장은 화면에서 짧은 표어로 바뀜
+};
+function omitFields(value: unknown, keys: string[]): unknown {
+  if (Array.isArray(value)) return value.map((v) => omitFields(v, keys));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([k]) => !keys.includes(k)).map(([k, v]) => [k, omitFields(v, keys)]));
+  return value;
+}
+
 const rows: string[] = ['| 풀이 | 한 풀이 문장 수(평균) | 절반 이상에게 똑같이 나오는 문장 비율 | 한 풀이 안 반복 문장(평균) |', '|---|---|---|---|'];
 const tops: string[] = [];
 for (const [name, build] of Object.entries(products)) {
-  const readings = people.map((p) => sentences(build(p)));
+  const readings = people.map((p) => sentences(omitFields(build(p), HIDDEN_FIELDS[name] ?? [])));
   const freq = new Map<string, number>();
   for (const r of readings) for (const s of new Set(r)) freq.set(s, (freq.get(s) ?? 0) + 1);
   const half = people.length / 2;
