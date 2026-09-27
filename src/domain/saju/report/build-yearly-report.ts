@@ -659,6 +659,22 @@ function getMonthlyMomentum(
   return 'steady';
 }
 
+// 2026-09-27 — 월별 첫 문장이 달마다 고정이라 같은 해엔 누구에게나 똑같았다(연간 기본 풀이 공통 문장 65%).
+//   그 달 천간 오행과 태어난 날 오행의 관계(같음·내가 낳음·내가 다룸·나를 다잡음·나를 도움)로 첫 문장을 가른다.
+const ELEMENT_CYCLE: Element[] = ['목', '화', '토', '금', '수'];
+
+function monthRelationLead(month: number, dayElement: Element | undefined, monthElement: Element | undefined, areas: string) {
+  if (!dayElement || !monthElement) return null;
+  const step = (ELEMENT_CYCLE.indexOf(monthElement) - ELEMENT_CYCLE.indexOf(dayElement) + 5) % 5;
+  return [
+    `${month}월은 나와 같은 기운이 들어와 ${areas}에서 내 뜻대로 밀고 싶어지는 달입니다.`,
+    `${month}월은 내 기운이 밖으로 흘러 ${areas}에서 생각을 말과 결과로 꺼내기 쉬운 달입니다.`,
+    `${month}월은 내가 다루는 기운이 들어와 ${areas}에서 손에 잡히는 결과를 챙기기 좋은 달입니다.`,
+    `${month}월은 나를 다잡는 기운이 들어와 ${areas}에서 책임과 평가가 먼저 다가오는 달입니다.`,
+    `${month}월은 나를 돕는 기운이 들어와 ${areas}에서 배우고 도움을 받기 좋은 달입니다.`,
+  ][step];
+}
+
 function createMonthlyFlow(
   monthly: MonthlyEvidenceBundle
 ): YearlyMonthFlow {
@@ -677,12 +693,19 @@ function createMonthlyFlow(
       ? `${monthlyGanji} 월운이 ${plan.theme}`
       : plan.theme;
 
+  const lead =
+    monthRelationLead(
+      monthly.month,
+      monthly.data.dayMaster.element,
+      monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined,
+      focusLabel
+    ) ?? guide.summaryLead;
   const summary =
     momentum === 'rise'
-      ? `${guide.summaryLead} ${focusLabel}에서는 준비한 결정을 밖으로 꺼내기 좋습니다.`
+      ? `${lead} 준비해 둔 결정은 이때 꺼내도 좋습니다.`
       : momentum === 'caution'
-        ? `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 확정보다 확인을 먼저 두는 편이 좋습니다.`
-        : `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 새 일을 늘리기보다 원칙을 정리할 때입니다.`;
+        ? `${lead} 확정보다 확인을 먼저 두세요.`
+        : `${lead} 새 일을 늘리기보다 원칙을 정리할 때입니다.`;
 
   return {
     month: monthly.month,

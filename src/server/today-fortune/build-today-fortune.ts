@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
 import { getFeatureCost } from '@/lib/credits/costs';
 import {
@@ -1814,7 +1815,9 @@ function buildTodayQuestionReading(
       ? `${evidence}${natalMeaning ? ` 원국에서 두드러진 ${profile.tenGod}(${natalMeaning})도 함께 고려합니다.` : ''}${personal.branchNote ? ` ${personal.branchNote}` : ''}`
       : `태어난 날의 중심과 오늘 ${toKoreanGanzi(todayPillar.ganzi)}의 관계(${personal.relation})를 ${TOPIC_SCENE_LABEL[key]}에 적용했습니다.`,
     example: needsCaregiver ? `${child.example}${key === 'overall' ? ` ${CHILD_ROLE_GUIDANCE[personal.relation]}` : ''}`
-      : `${natalTone ? `평소 ${natalTone.body} ` : ''}${example}`,
+      // 같은 성향 문장이 6개 카드에 똑같이 붙어 한 풀이에서 반복됐다 — 성향 설명은 '오늘 전체' 카드에만,
+      //   분야 카드는 그 장면에 맞춘 성향 주의 한 줄로 쓴다(원국 성향에 따라 장면이 달라지는 개인화 유지).
+      : `${natalTone ? key === 'overall' ? `평소 ${natalTone.body} ` : `${TOPIC_SCENE_LABEL[key]}에서는 ${natalTone.caution} ` : ''}${example}`,
     choice: needsCaregiver ? `${child.choice}${key === 'overall' && natalMeaning && natalRole !== personal.relation ? ` ${CHILD_ROLE_GUIDANCE[natalRole]}` : ''}`
       : `${natalAdvice ? `${natalAdvice} ` : ''}${topic.choice}${input.unknownTime ? ' 태어난 시간을 몰라 특정 시간대의 결과는 단정하지 않습니다.' : ''}`,
   };
@@ -3159,18 +3162,20 @@ export function buildTodayFortuneFreeResult(
       usesLocation: Boolean(input.birthLocation),
       lifeStage: getTodayLifeStage(input, todayPillar.dateKey),
     },
-    oneLine: {
+    // 제목(관심 분야 카드 답)과 본문이 같은 문장을 한 번 더 싣지 않게 한다.
+    oneLine: dedupeSentencesDeep({
       eyebrow: `${concern.prompt} · ${concern.hanja}`,
       headline: focusReading?.answer ?? sanitizeUserFacingCopy(buildPublicTodayHeadline(options.concernId, profile)),
       // 직접 작성한 한글 설명은 그대로 보존한다. 전역 치환은 십성을 다른 이름으로 바꾼다.
-      body: focusReading ? [focusReading.answer, focusReading.evidence, focusReading.example, focusReading.choice].join(' ') : sanitizeUserFacingCopy(
+      // 관심 분야 카드 네 칸을 그대로 이어 붙이면 바로 아래 카드와 같은 문장이 화면에 두 번 나온다(2026-09-27 측정).
+      body: sanitizeUserFacingCopy(
         buildPublicTodayBody(
           options.concernId,
           profile,
           Boolean(input.unknownTime)
         )
       ),
-    },
+    }),
     scores,
     // PR #149 (Part C) — UI 가 chip strip + perspective 한 줄에 사용.
     userSituation,
