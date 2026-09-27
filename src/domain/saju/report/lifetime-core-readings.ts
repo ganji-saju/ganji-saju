@@ -1,3 +1,6 @@
+import {
+  CAREER_VIEW, INDEPENDENCE_CHECK, RELATIONSHIP_LONGEVITY, RELATIONSHIP_OPEN_ADVICE, WEALTH_PROPOSAL, WEALTH_VIEW,
+} from './lifetime-personal-copy';
 import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput, UserSituation } from '@/lib/saju/types';
@@ -126,7 +129,7 @@ export function buildLifetimeCoreReadings(
       ? '현재 직장 생활에서는 급여의 크기뿐 아니라 추가로 맡는 시간과 책임을 함께 비교하세요. 보상이 늘어도 회복할 시간을 계속 잃는다면 오래 유지할 조건인지 따져봐야 합니다. 부수적인 수입을 검토한다면 기존 약속과 충돌하지 않는지 먼저 확인하세요.'
       : situation?.occupation === 'student' || situation?.occupation === 'job-seeking'
         ? '현재 배움이나 구직 과정에서는 앞으로 들어올 수입을 이미 확보한 돈처럼 쓰지 않는 기준이 필요합니다. 준비에 필요한 비용과 오래 기다려야 할 경우의 생활 조건을 나눠보세요. 어떤 준비가 실제 지원이나 결과물로 이어졌는지 확인하며 다음 선택을 정하세요.'
-        : '새로운 제안을 받는다면 얻을 수 있는 것, 먼저 내야 하는 것, 도중에 멈출 조건을 따로 적어보세요. 직장·독립·가족 생활 중 어떤 상황에 있든 실제 계약과 형편을 확인한 뒤 결정해야 합니다. 사주 해석만으로 매수·매도 시점이나 자산 종류를 정하지 않습니다.';
+        : `${WEALTH_PROPOSAL[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]} 어떤 상황에 있든 실제 계약과 형편을 확인한 뒤 결정해야 하며, 사주 해석만으로 매수·매도 시점이나 자산 종류를 정하지 않습니다.`;
 
   const fit = `${roleBasis} ${profile ? `일의 이름보다 ${profile.work}에 주목해 보세요. ${profile.scene}에서 집중이 이어지는지 확인하는 방식입니다.` : '하고 있는 일에서 집중이 이어지는 과정과 반복해서 소진되는 과정을 나눠보세요. 익숙한 직업명보다 실제로 맡는 업무의 조건을 비교하는 편이 낫습니다.'}`;
   const workTension = output > 0 && authority > 0
@@ -136,7 +139,7 @@ export function buildLifetimeCoreReadings(
       : peer > authority
         ? '자기 기준을 세우는 비겁이 관성보다 많이 확인되어, 간섭이 적을 때의 집중과 공동 기준이 필요할 때의 반응을 비교해 볼 수 있습니다. 혼자 잘하는 것과 협업이 편한 것은 별개입니다. 결과의 기준은 함께 정하되 과정에서 자율권을 얻을 수 있는 환경인지 살펴보세요.'
         : '맡은 일을 잘 끝내는 능력과 그 일을 계속하고 싶은 마음은 따로 살펴야 합니다. 결과를 인정받아도 역할이 끝없이 늘거나 질문할 사람이 없다면 오래 이어가기 어렵습니다. 반복해서 맡는 일 중 실력이 쌓이는 부분과 단순히 버티는 부분을 구분해 보세요.';
-  const independence = `${capacity} ${authority > peer ? '관성이 비겁보다 많이 확인되어 역할과 기준이 분명한 구조에서 시작하는 선택을 검토할 수 있습니다.' : output > 0 && wealth > 0 ? '식상과 재성을 함께 쓰는 방식이라면 결과물을 만들고 운영하는 과정까지 직접 해보는 경험이 판단 자료가 됩니다.' : '독립 여부를 성격 하나로 결정하지 말고 혼자 정할 수 있는 범위와 외부의 지원이 필요한 범위를 나눠보세요.'} 독립을 생각한다면 이름만 바꾸는 것보다 실제로 필요한 수요·운영·지원 조건을 작은 범위에서 확인하세요.`;
+  const independence = `${capacity} ${authority > peer ? '관성이 비겁보다 많이 확인되어 역할과 기준이 분명한 구조에서 시작하는 선택을 검토할 수 있습니다.' : output > 0 && wealth > 0 ? '식상과 재성을 함께 쓰는 방식이라면 결과물을 만들고 운영하는 과정까지 직접 해보는 경험이 판단 자료가 됩니다.' : '독립 여부를 성격 하나로 결정하지 말고 혼자 정할 수 있는 범위와 외부의 지원이 필요한 범위를 나눠보세요.'} ${INDEPENDENCE_CHECK[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`;
   const recognition = output > 0
     ? '식상의 표현이 확인되어 결과를 보여주는 과정이 실력을 설명하는 통로가 됩니다. 단순히 많이 했다는 말보다 바꾸기 전후의 차이, 상대가 다시 묻는 부분, 남겨둔 결과물을 모아보세요. 새로운 제안을 할 때도 상대가 평가할 수 있는 기준을 먼저 제시하면 의견 차이를 다루기 수월합니다.'
     : authority > 0
@@ -169,10 +172,10 @@ export function buildLifetimeCoreReadings(
         ? '현재 만나는 사람이 없다면 인연의 시점이나 상대의 외모를 정하기보다, 어떤 사람과 있을 때 본인다운 선택이 가능한지 기준을 세워보세요. 호감이 생겼을 때도 말과 행동이 이어지는지, 작은 거절을 존중하는지 천천히 확인하는 과정이 필요합니다.'
         : status === 'separated'
           ? '현재 관계를 정리하는 과정이라면 감정이 바뀌는 속도와 생활의 합의를 따로 다뤄보세요. 다시 가까워질 가능성을 사주로 확정하기보다 필요한 연락의 범위와 혼자 결정하지 않을 사안을 구분하세요. 실제 상황을 아는 사람의 도움을 받아 판단할 여유를 지키는 편이 좋습니다.'
-          : '관계 상태가 입력되지 않았으므로 특정 배우자나 가족 상황을 전제하지 않습니다. 가까운 사람이 있다면 서로 편한 연락과 역할을 확인하고, 새 인연을 알아간다면 말과 행동이 이어지는지 살펴보세요. 부모·친구·동료 사이에서도 친밀함과 모든 요청을 받아주는 것은 구분할 수 있습니다.';
+          : `${RELATIONSHIP_OPEN_ADVICE[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]} 관계 상태가 입력되지 않았으므로 특정 배우자나 가족 상황을 전제하지 않습니다.`;
   return {
-    wealthStyle: { headline: '돈을 버는 방식과 남기는 기준', summary: `${roleBasis} 돈의 크기를 예언하기보다 실력이 대가로 연결되는 과정, 관리 부담, 반복 지출을 나누어 읽습니다.`, earningStyle: earning, keepingStyle: keeping, spendingMistakes: leak, operatingStyle: operating, basis: [roleBasis, distribution, capacity, ...hourNote] },
-    careerDirection: { headline: '실력이 드러나는 일과 오래할 수 있는 환경', summary: `${profile ? `${profile.work}을 먼저 살펴볼 만합니다.` : '적합한 일은 직업명보다 맡는 과정과 책임의 조건으로 비교합니다.'} 잘할 수 있는 일과 오래 이어갈 수 있는 일의 차이를 아래에서 확인해 보세요.`, fitStructure: fit, endureVsShine: workTension, independenceStyle: independence, recognitionStyle: recognition, basis: [roleBasis, distribution, capacity, ...hourNote] },
-    relationshipPattern: { headline: '가까워지는 방식과 반복 갈등의 이유', summary: `${profile ? `${profile.bond}에 주목해 보세요.` : '편안한 거리와 필요한 표현을 함께 살펴봅니다.'} 관계를 오래 이어가는 힘은 상대의 마음을 맞히는 것보다 서로 다른 필요를 말할 수 있는 조건에 있습니다.`, distanceStyle: distance, expressionStyle: expression, conflictTriggers: conflict, longevityGuide: longevity, basis: [roleBasis, distribution, relationBasis, ...hourNote] },
+    wealthStyle: { headline: '돈을 버는 방식과 남기는 기준', summary: `${roleBasis} ${WEALTH_VIEW[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, earningStyle: earning, keepingStyle: keeping, spendingMistakes: leak, operatingStyle: operating, basis: [roleBasis, distribution, capacity, ...hourNote] },
+    careerDirection: { headline: '실력이 드러나는 일과 오래할 수 있는 환경', summary: `${profile ? `${profile.work}을 먼저 살펴볼 만합니다.` : '적합한 일은 직업명보다 맡는 과정과 책임의 조건으로 비교합니다.'} ${CAREER_VIEW[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, fitStructure: fit, endureVsShine: workTension, independenceStyle: independence, recognitionStyle: recognition, basis: [roleBasis, distribution, capacity, ...hourNote] },
+    relationshipPattern: { headline: '가까워지는 방식과 반복 갈등의 이유', summary: `${profile ? `${profile.bond}에 주목해 보세요.` : '편안한 거리와 필요한 표현을 함께 살펴봅니다.'} ${RELATIONSHIP_LONGEVITY[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, distanceStyle: distance, expressionStyle: expression, conflictTriggers: conflict, longevityGuide: longevity, basis: [roleBasis, distribution, relationBasis, ...hourNote] },
   };
 }

@@ -1,4 +1,7 @@
 import {
+  CORE_PRINCIPLE, DAY_EXPRESSION, ENVIRONMENT_CHECK, LIFE_RULES, RECOVERY_TIP, STRONG_OVERUSE, SUPPORT_CHECK, WEAK_PATTERN_REASON,
+} from './lifetime-personal-copy';
+import {
   CYCLE_SIPSIN_ACTION_ELDER, CYCLE_SIPSIN_ACTION_YOUTH, MENTAL_ELDER_BY_SIPSIN, MENTAL_YOUTH_BY_SIPSIN,
   RELATIONSHIP_ELDER_BY_SIPSIN, RELATIONSHIP_YOUTH_BY_SIPSIN, WEALTH_ELDER_BY_SIPSIN, WEALTH_YOUTH_BY_SIPSIN,
 } from './lifetime-sipsin-youth-copy';
@@ -329,7 +332,7 @@ function buildKeywords(input: {
     },
     {
       label: `약한 축 ${input.weakest}`,
-      reason: '무너지기 쉬운 패턴은 대개 약한 축을 방치할 때 드러납니다. 보완 루틴을 먼저 잡아야 합니다.',
+      reason: WEAK_PATTERN_REASON[input.weakest as keyof typeof WEAK_PATTERN_REASON] ?? '무너지기 쉬운 패턴은 대개 약한 축을 방치할 때 드러납니다. 보완 루틴을 먼저 잡아야 합니다.',
     },
     {
       label: input.currentMajorLuck ? `현재 ${input.currentMajorLuck} 대운` : '현재 대운',
@@ -1394,7 +1397,7 @@ export function buildLifetimeReport(
     : sajuData.strength?.level === '신약'
       ? '주변의 기대에 맞추느라 본인에게 필요한 시간과 지원을 줄이고 있지는 않은지 살펴보세요. 부탁의 크기보다 여러 부탁이 겹칠 때의 부담을 먼저 확인하는 편이 좋습니다.'
       : '상황마다 적응하느라 기준을 계속 바꾸는지 살펴보세요. 모두에게 맞추는 선택과 본인이 유지할 수 있는 선택이 다를 때에는 우선순위를 다시 정할 수 있습니다.';
-  const supportPractice = `${supportLabels} 보완 방향은 생활에서 '${supportAction.what}'처럼 시험할 수 있습니다. 도움이 되는지는 사주 설명보다 실제로 이어가기 편한지 확인해 보세요.`;
+  const supportPractice = `${supportLabels} 보완 방향은 생활에서 '${supportAction.what}'처럼 시험할 수 있습니다. ${SUPPORT_CHECK[(supportElementKeys[0] ?? sajuData.fiveElements.weakest) as keyof typeof SUPPORT_CHECK]}`;
   // 2026-05-15 PR 6: 12운성 + 원진 metadata 부착용 engineContext.
   const engineContext = {
     dayMasterStem: sajuData.dayMaster.stem,
@@ -1430,7 +1433,7 @@ export function buildLifetimeReport(
     `강한 ${dominant} 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.`,
     `${supportLabels} 기운을 생활 루틴으로 만들수록 명식의 장점이 안정적으로 살아납니다.`,
     `익숙한 ${dominant} 기운의 방식만 반복한다면 '${adjustAction.what}'도 선택지로 두세요.`,
-    '관계와 일에서 서운함이나 조급함을 결론처럼 말하기보다, 사실과 원칙을 먼저 정리해야 합니다.',
+    CORE_PRINCIPLE[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)],
     currentMajorLuck
       ? `${toKoreanGanzi(currentMajorLuck.ganzi)} 대운의 주제는 장기 선택의 참고로 두고, 실제로 감당할 수 있는 조건을 함께 확인하세요.`
       : '현재 대운이 확인되지 않은 자료에서는 시기를 단정하지 말고 원국의 강점과 실제 생활 조건부터 살펴보세요.',
@@ -1460,9 +1463,9 @@ export function buildLifetimeReport(
     },
     coreIdentity: {
       headline: '원국의 본질',
-      summary: `${dayPillarLabel}의 기본 성향은 ${personality} 같은 일주라도 강약과 주변 기운에 따라 그 성향을 드러내는 방식은 달라집니다.`,
+      summary: `${dayPillarLabel}의 기본 성향은 ${personality} ${DAY_EXPRESSION[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)]}`,
       reactionStyle,
-      bestEnvironment: `${supportPractice} ${isMinor ? '아이에게 성향을 요구하기보다 놀이와 배움에서 자연스럽게 관심이 이어지는 조건을 관찰하세요.' : '집중할 수 있는 시간, 질문할 수 있는 사람, 결정할 수 있는 범위가 갖춰졌을 때와 없을 때를 비교하면 환경의 차이가 보입니다.'}`,
+      bestEnvironment: `${supportPractice} ${isMinor ? '아이에게 성향을 요구하기보다 놀이와 배움에서 자연스럽게 관심이 이어지는 조건을 관찰하세요.' : ENVIRONMENT_CHECK[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)]}`,
       weakPattern: strainPattern,
       basis: compactStrings([
         `${dayPillarLabel} · ${formatElementLabel(sajuData.dayMaster.element)} 일간`,
@@ -1476,7 +1479,7 @@ export function buildLifetimeReport(
       summary:
         strength?.body ??
         `${dominant} 기운이 앞에 서고 ${weakest} 기운은 의식적으로 보완해야 하는 구조입니다.`,
-      strongAxis: `${dominant} 기운은 ${ELEMENT_INFO[sajuData.fiveElements.dominant].traits.slice(0, 2).join('·')}의 관점으로 읽습니다. 이 방향이 실제로 도움이 된 상황과 지나치게 사용해 부담이 된 상황을 함께 살펴야 강점의 쓰임이 보입니다.`,
+      strongAxis: `${dominant} 기운은 ${ELEMENT_INFO[sajuData.fiveElements.dominant].traits.slice(0, 2).join('·')}의 관점으로 읽습니다. ${STRONG_OVERUSE[sajuData.fiveElements.dominant as keyof typeof STRONG_OVERUSE]}`,
       weakAxis: `${weakest} 기운은 원국의 분포에서 상대적으로 적게 보이는 축입니다. 적다는 이유만으로 능력이나 건강의 문제를 정하지 않습니다. 보완이 필요한 장면은 실제 경험을 통해 확인하세요.`,
       energyDrain: `${dominant} 기운이 상대적으로 두드러진다는 것과 과하다는 것은 다릅니다. 익숙한 방식만 고집해 선택지가 줄어들 때 '${adjustAction.what}'을 시도해 보세요.`,
       recovery: supportPractice,
@@ -1496,7 +1499,7 @@ export function buildLifetimeReport(
       // 2026-05-23: summary 와 yongsinDirection 이 둘 다 yongsin?.body 로 폴백되어
       //   동일 문장이 두 번 노출되던 버그(반복) 수정 — summary 는 격국·용신 역할을
       //   한 줄로 짚는 고유 framing 으로 분리.
-      summary: `이 사주는 타고난 역할 구조(격국) 위에서 보완 기운(용신)을 어떻게 들이느냐가 평생 선택의 큰 줄기입니다.`,
+      summary: `이 사주는 ${sajuData.pattern?.name ? `${toKoreanGanzi(sajuData.pattern.name)}이라는 ` : ''}타고난 역할 구조(격국) 위에서 ${supportLabels} 보완 기운(용신)을 어떻게 들이느냐가 평생 선택의 큰 줄기입니다.`,
       patternRole:
         pattern?.body ??
         '격국은 이 사람이 어떤 역할 구조에서 실력이 붙는지, 어디에서 책임과 반응이 반복되는지를 읽는 정보입니다.',
@@ -1531,7 +1534,7 @@ export function buildLifetimeReport(
       headline: '건강 리듬',
       summary: `이 장에서는 ${dominant} 기운을 쓰는 방식과 ${supportLabels} 보완 방향을 생활의 부담과 휴식에 연결해 읽습니다. 오행 분포로 질병이나 신체 상태를 진단하지 않습니다.`,
       warningSignals: `${strainPattern} 수면이나 식사, 평소 즐기던 활동의 변화는 실제 생활을 기준으로 살펴보고, 불편함이 지속되면 그 상태에 맞는 도움을 받으세요.`,
-      recoveryRoutine: `${supportPractice} ${isMinor ? '보호자가 아이의 활동 뒤 반응을 살피고 쉬어도 되는 환경을 마련하는 것이 먼저입니다.' : '회복에 도움이 된 활동과 오히려 할 일을 늘린 활동을 구분해 보세요. 잘 쉬는 방법도 본인의 생활 조건에 맞게 바꿀 수 있습니다.'}`,
+      recoveryRoutine: `${supportPractice} ${isMinor ? '보호자가 아이의 활동 뒤 반응을 살피고 쉬어도 되는 환경을 마련하는 것이 먼저입니다.' : RECOVERY_TIP[sajuData.fiveElements.weakest as keyof typeof RECOVERY_TIP]}`,
       habitPoints: [
         '활동 뒤 쉬는 시간을 함께 마련하기',
         '부담이 늘어나는 상황과 편안한 상황을 구분하기',
@@ -1568,13 +1571,13 @@ export function buildLifetimeReport(
       summary: `${formatElementLabel(sajuData.fiveElements.dominant)}이 중심인 이 사주는 성향 해설보다 사용법이 더 중요합니다. ${supportLabels} 기운을 언제 살리고, ${formatElementLabel(sajuData.fiveElements.weakest)}이 흔들릴 때 무엇을 먼저 지킬지 아는 사람이 결국 흐름을 안정적으로 씁니다.`,
       useWhenStrong: compactStrings([
         `보완 방향을 활용하는 방법으로 '${supportAction.what}'을 한 가지 활동에서 시험해 보세요.`,
-        isMinor ? '관심이 생긴 활동은 보호자와 함께 다시 해볼 방법을 고르고 아이의 반응을 확인하세요.' : '새 기회를 고를 때는 할 수 있다는 자신감과 끝까지 유지할 조건을 따로 확인하세요.',
-        '잘된 결과만 기록하기보다 어떤 환경과 도움이 있었는지 남겨두면 다음 선택에 활용할 수 있습니다.',
+        isMinor ? '관심이 생긴 활동은 보호자와 함께 다시 해볼 방법을 고르고 아이의 반응을 확인하세요.' : LIFE_RULES[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)][0],
+        LIFE_RULES[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)][1],
       ]).slice(0, 4),
       defendWhenShaken: compactStrings([
         `${dominant} 기운의 익숙한 반응이 반복될 때는 '${adjustAction.what}'을 먼저 시도해 보세요.`,
-        '서운함이나 조급함이 커졌다면 확인한 사실과 예상한 일을 나누고, 혼자 정할 수 없는 조건은 상대에게 물어보세요.',
-        isMinor ? '어려운 활동은 멈추고 보호자에게 도움을 구할 수 있다는 약속을 먼저 지켜주세요.' : '부담이 커진 약속은 계속 버티기보다 범위와 마감을 다시 합의할 수 있습니다.',
+        LIFE_RULES[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)][2],
+        isMinor ? '어려운 활동은 멈추고 보호자에게 도움을 구할 수 있다는 약속을 먼저 지켜주세요.' : LIFE_RULES[(sajuData.dayMaster.element as keyof typeof DAY_EXPRESSION)][3],
       ]).slice(0, 4),
       rememberRules,
       basis: compactStrings([
