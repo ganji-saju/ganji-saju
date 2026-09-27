@@ -26,6 +26,8 @@ jobs:
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
+      # E2E 호출이 운영 LLM 원장(ai_llm_runs)에 폴백으로 찍혀 지표를 오염시켰다(2026-09-27).
+      LLM_TELEMETRY_DISABLED: 1
       # Phase 2A (smoke.spec.ts) — 인증 필요 없는 public 페이지.
       # Phase 2B (saju.spec.ts) — 인증 fixture 가 E2E_TEST_USER_EMAIL/PASSWORD 로
       # 로그인 후 storage state 재사용. credentials 미설정 시 자동 skip.

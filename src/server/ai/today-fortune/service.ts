@@ -132,7 +132,6 @@ export async function generateTodayFortuneNarrative(args: {
       fallbackText: buildTodayFortuneFallbackText(fallback.headline, fallback.body),
       model: getOpenAIInterpretationModel(),
       maxOutputTokens: 500,
-      temperature: 0.8,
       responseFormat: { type: 'text' },
       feature: 'today_fortune',
       userId,
