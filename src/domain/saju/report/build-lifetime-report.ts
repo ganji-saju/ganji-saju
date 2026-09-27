@@ -1,3 +1,7 @@
+import {
+  CYCLE_SIPSIN_ACTION_ELDER, CYCLE_SIPSIN_ACTION_YOUTH, MENTAL_ELDER_BY_SIPSIN, MENTAL_YOUTH_BY_SIPSIN,
+  RELATIONSHIP_ELDER_BY_SIPSIN, RELATIONSHIP_YOUTH_BY_SIPSIN, WEALTH_ELDER_BY_SIPSIN, WEALTH_YOUTH_BY_SIPSIN,
+} from './lifetime-sipsin-youth-copy';
 import { CYCLE_SIPSIN_ACTION_LATER, MENTAL_LATER_BY_SIPSIN, RELATIONSHIP_LATER_BY_SIPSIN, WEALTH_LATER_BY_SIPSIN } from './lifetime-sipsin-later-copy';
 import type {
   FiveElementState,
@@ -464,6 +468,16 @@ const MENTAL_NUANCE_BY_SIPSIN: Partial<Record<TenGodCode, string>> = {
 };
 
 // 40세 이후 대운은 같은 십성이라도 그 나이의 문단(lifetime-sipsin-later-copy.ts)을 쓴다.
+// 20세 미만 대운은 학교·가족·친구의 언어로 쓴다(lifetime-sipsin-youth-copy.ts).
+function isYouthCycle(cycle: SajuMajorLuckCycle) {
+  return (cycle.startAge ?? 99) < 20;
+}
+
+// 60세 이후 대운 — 은퇴·건강·가족의 언어.
+function isElderCycle(cycle: SajuMajorLuckCycle) {
+  return (cycle.startAge ?? 0) >= 60;
+}
+
 function isLaterCycle(cycle: SajuMajorLuckCycle) {
   return (cycle.startAge ?? 0) >= 40;
 }
@@ -505,7 +519,7 @@ function buildMentalText(
   const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
   // 2026-05-19 PR-B Task 6 — cycle 십성 nuance.
   const sipsinNuance = cycleSipsin
-    ? (isLaterCycle(cycle) ? MENTAL_LATER_BY_SIPSIN[cycleSipsin] : MENTAL_NUANCE_BY_SIPSIN[cycleSipsin]) ?? null
+    ? (isYouthCycle(cycle) ? MENTAL_YOUTH_BY_SIPSIN[cycleSipsin] : isElderCycle(cycle) ? MENTAL_ELDER_BY_SIPSIN[cycleSipsin] : isLaterCycle(cycle) ? MENTAL_LATER_BY_SIPSIN[cycleSipsin] : MENTAL_NUANCE_BY_SIPSIN[cycleSipsin]) ?? null
     : null;
   return compactStrings([base, stageNuance, sipsinNuance]).join(' ');
 }
@@ -560,7 +574,7 @@ function buildRelationshipText(
 ): string {
   const status = userSituation?.relationshipStatus;
   const baseLine = cycleSipsin
-    ? (isLaterCycle(cycle) ? RELATIONSHIP_LATER_BY_SIPSIN : RELATIONSHIP_BASELINE_BY_SIPSIN)[cycleSipsin]
+    ? (isYouthCycle(cycle) ? RELATIONSHIP_YOUTH_BY_SIPSIN : isElderCycle(cycle) ? RELATIONSHIP_ELDER_BY_SIPSIN : isLaterCycle(cycle) ? RELATIONSHIP_LATER_BY_SIPSIN : RELATIONSHIP_BASELINE_BY_SIPSIN)[cycleSipsin]
     : RELATIONSHIP_BASELINE_DEFAULT;
 
   let statusBody: string;
@@ -609,7 +623,7 @@ function buildWealthCareerText(
   const occupation = userSituation?.occupation;
   const concern = userSituation?.currentConcern;
   const base = cycleSipsin
-    ? (isLaterCycle(cycle) ? WEALTH_LATER_BY_SIPSIN : WEALTH_BASELINE_BY_SIPSIN)[cycleSipsin]
+    ? (isYouthCycle(cycle) ? WEALTH_YOUTH_BY_SIPSIN : isElderCycle(cycle) ? WEALTH_ELDER_BY_SIPSIN : isLaterCycle(cycle) ? WEALTH_LATER_BY_SIPSIN : WEALTH_BASELINE_BY_SIPSIN)[cycleSipsin]
     : WEALTH_BASELINE_DEFAULT;
 
   if (occupation === 'self-employed' || concern === 'business') {
@@ -870,7 +884,7 @@ function buildPracticalActions(
   const cycleElement = stem ?? branch ?? context.weakest;
 
   const cycleAction = buildCycleElementAction(cycleElement, context);
-  const cycleSipsinAction = cycleSipsin ? ((cycle.startAge ?? 0) >= 40 ? CYCLE_SIPSIN_ACTION_LATER : CYCLE_SIPSIN_ACTION_DICT)[cycleSipsin] : null;
+  const cycleSipsinAction = cycleSipsin ? (isYouthCycle(cycle) ? CYCLE_SIPSIN_ACTION_YOUTH : isElderCycle(cycle) ? CYCLE_SIPSIN_ACTION_ELDER : isLaterCycle(cycle) ? CYCLE_SIPSIN_ACTION_LATER : CYCLE_SIPSIN_ACTION_DICT)[cycleSipsin] : null;
   const shortageAction = SHORTAGE_ACTION_DICT[context.weakest] ?? SHORTAGE_ACTION_DICT['토'];
   const sajuTenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
   const excessAction = EXCESS_ACTION_DICT[context.dominant] ?? EXCESS_ACTION_DICT['목'];
