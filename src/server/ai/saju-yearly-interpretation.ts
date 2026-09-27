@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuYearlyReport, YearlyCategoryKey } from '@/domain/saju/report/yearly-types';
 import {
@@ -371,7 +372,7 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
   const rel = report.categories.relationship;
   const work = report.categories.work;
   const move = report.categories.move;
-  return {
+  return dedupeSentencesDeep({
     categories: {
       family: tightenLine(`집안과 가까운 사람 사이에서는 ${rel.summary} ${rel.action}`, 3, 260),
       study: tightenLine(
@@ -384,7 +385,7 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
     quarterlyFlows,
     expectations: padHighlights(windowHighlights(report, report.goodPeriods, 'work'), report, 'rise'),
     cautions: padHighlights(windowHighlights(report, report.cautionPeriods, 'health'), report, 'caution'),
-  };
+  });
 }
 
 export function parseNewYearExtrasText(
@@ -485,7 +486,7 @@ export function buildFallbackYearlyInterpretation(
     ...report.actionGuide.defendWhenWeak,
   ].slice(0, 6);
 
-  return {
+  return dedupeSentencesDeep({
     opening: [
       introPrefix,
       report.overview.summary,
@@ -505,7 +506,7 @@ export function buildFallbackYearlyInterpretation(
     cautionPeriods: formatTimingWindowEntries(report, 'cautionPeriods'),
     actionAdvice,
     oneLineSummary: report.oneLineSummary,
-  };
+  });
 }
 
 export function buildFallbackYearlyNarrativeInterpretation(
