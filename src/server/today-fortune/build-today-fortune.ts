@@ -1,3 +1,4 @@
+import { PREMIUM_RELATION_COPY, todayRelationStep } from './premium-relation-copy';
 import { DAILY_TOPIC_SCENES, type DailySceneRelation } from './daily-topic-scenes';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
@@ -2591,12 +2592,16 @@ function buildTimeWindowBody(
   item: TodayTimeBlockEvaluation,
   type: 'favorable' | 'caution',
   dailyContext?: DailyContext | null,
-  windowIndex: number = 0
+  windowIndex: number = 0,
+  relationStep: number | null = null
 ) {
   const branchCopy = TIME_BRANCH_WINDOW_COPY[item.branch];
   const concernCopy = CONCERN_EASY_TIME_COPY[concernId];
   const branchBody = type === 'favorable' ? branchCopy.favorableBody : branchCopy.cautionBody;
-  const concernBody = type === 'favorable' ? concernCopy.favorable : concernCopy.caution;
+  const relationCopy = relationStep === null ? null : PREMIUM_RELATION_COPY[relationStep];
+  const concernBody = concernId === 'general' && relationCopy
+    ? type === 'favorable' ? relationCopy.favorable : relationCopy.caution
+    : type === 'favorable' ? concernCopy.favorable : concernCopy.caution;
   const scoreBody =
     type === 'favorable'
       ? item.score >= 78
@@ -2612,7 +2617,7 @@ function buildTimeWindowBody(
   // 매일 일진이 바뀌면 이 줄이 통째로 다른 ganzi 로 교체됨.
   const dailyMarker =
     dailyContext && windowIndex === 0 && dailyContext.todayPillar.ganzi
-      ? `오늘 일진 ${dailyContext.todayPillar.ganzi} 흐름으로 본 시간대입니다.`
+      ? `오늘 일진 ${toKoreanGanzi(dailyContext.todayPillar.ganzi)} 흐름으로 본 시간대입니다.`
       : null;
 
   return limitEasyTimeSentences(
@@ -2678,7 +2683,7 @@ function buildTimeWindows(
     range: item.range,
     mood: type,
     title: buildTimeWindowTitle(item, type),
-    body: buildTimeWindowBody(concernId, item, type, dailyContext, index),
+    body: buildTimeWindowBody(concernId, item, type, dailyContext, index, todayRelationStep(sajuData.dayMaster.element, dailyContext?.todayPillar.stemElement)),
   }));
 }
 
@@ -2688,7 +2693,13 @@ function buildScenarioComparison(
   sajuData: SajuDataV1 | SajuDataV2,
   dailyContext?: DailyContext | null
 ) {
-  const concernCopy = CONCERN_WINDOW_COPY[concernId];
+  const baseConcernCopy = CONCERN_WINDOW_COPY[concernId];
+  const step = todayRelationStep(sajuData.dayMaster.element, dailyContext?.todayPillar.stemElement);
+  const relationCopy = step === null ? null : PREMIUM_RELATION_COPY[step];
+  // 관심사 문구 뒤에 붙는 꼬리말을 오늘의 관계로 가른다(모두에게 같던 문장).
+  const concernCopy = relationCopy && concernId === 'general'
+    ? { ...baseConcernCopy, actNowTail: relationCopy.actNowTail, waitTail: relationCopy.waitTail }
+    : baseConcernCopy;
   const evidenceSnippet = getTodayEvidenceSnippet(report);
   const leadHints = getEvidenceActionHints(report, 'lead', 2);
   const cautionHints = getEvidenceActionHints(report, 'caution', 2);
@@ -2729,7 +2740,7 @@ function buildScenarioComparison(
         secondaryCautionHint
           ? `${withKoreanParticle(`"${secondaryCautionHint}"`, '을', '를')} 미루기만 하면 같은 빈틈이 뒤에서 다시 커질 수 있습니다.`
           : null,
-        '우선순위 없이 미루기만 하면 좋은 흐름도 손에서 미끄러질 수 있습니다.',
+        relationCopy?.waitWatch ?? '우선순위 없이 미루기만 하면 좋은 흐름도 손에서 미끄러질 수 있습니다.',
       ]),
     },
   ];

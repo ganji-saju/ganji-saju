@@ -728,41 +728,58 @@ const TEN_GOD_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
 };
 
 // (4) cycle element vs 사주 구조 — 보완 축/과다 축/약점 축 분기.
+// 2026-09-27 — 오행과 상관없이 4종류 문구뿐이라 대운 카드마다 같은 행동이 반복됐다. 오행 5 × 역할 4 = 20가지로 가른다.
+type ElementActionRole = 'support' | 'dominant' | 'weakest' | 'neutral';
+const ELEMENT_ACTION_COPY: Record<ElementActionRole, Record<Element, { what: string; how: string }>> = {
+  support: {
+    목: { what: '새로 시작하는 일을 루틴으로 만들기', how: '매주 한 번 새 일·새 사람·새 공부 중 하나를 시작하고 짧게 기록하기.' },
+    화: { what: '말하고 드러내는 기회를 루틴으로 만들기', how: '달마다 발표·글·모임처럼 내 생각을 밖으로 꺼내는 자리를 하나 만들기.' },
+    토: { what: '정리와 저축을 루틴으로 만들기', how: '주 1회 일정·서류·지출을 정리하는 시간을 고정하기.' },
+    금: { what: '결단과 마무리를 루틴으로 만들기', how: '미뤄 둔 결정 하나를 매달 끝내고, 필요 없는 것은 과감히 줄이기.' },
+    수: { what: '배우고 쉬는 시간을 루틴으로 만들기', how: '하루 20분 읽기·듣기와 충분한 잠을 먼저 고정하기.' },
+  },
+  dominant: {
+    목: { what: '벌여 놓은 일 줄이기', how: '새로 시작하기 전에 진행 중인 일을 세 개 이하로 줄이기.' },
+    화: { what: '말과 속도 낮추기', how: '중요한 말은 하루 두고 다시 읽은 뒤 보내기.' },
+    토: { what: '고집과 쌓아두기 풀기', how: '안 쓰는 물건·약속을 달마다 하나씩 정리하기.' },
+    금: { what: '날카로운 판단 누그러뜨리기', how: '결정 전에 반대 의견 하나를 일부러 들어보기.' },
+    수: { what: '생각만 길어지는 것 끊기', how: '고민은 30분 안에 적고, 오늘 할 일 하나로 바꾸기.' },
+  },
+  weakest: {
+    목: { what: '시작을 함께할 사람 만들기', how: '새 일은 같이 시작할 사람 한 명을 먼저 정하고 출발하기.' },
+    화: { what: '표현을 도와줄 통로 만들기', how: '말이 막힐 때 쓸 메모 문장과 대신 전해 줄 사람을 미리 정해두기.' },
+    토: { what: '생활 기반을 받쳐 줄 장치 만들기', how: '자동이체·달력 알림으로 잊기 쉬운 일을 대신 챙기게 하기.' },
+    금: { what: '결정을 도와줄 기준 만들기', how: '선택 기준 세 줄을 미리 적어두고 그 기준으로만 고르기.' },
+    수: { what: '쉬고 배울 틈을 일부러 만들기', how: '주 1회는 일정 없이 쉬는 반나절을 달력에 먼저 넣기.' },
+  },
+  neutral: {
+    목: { what: '익숙한 방식 옆에 새 시작 하나 두기', how: '분기마다 안 해본 활동 하나를 작게 시도하기.' },
+    화: { what: '평소보다 한 번 더 표현하기', how: '고마운 사람에게 달마다 한 번 먼저 연락하기.' },
+    토: { what: '흔들리는 일정 다시 묶기', how: '주간 계획을 일요일 밤 10분 안에 적어두기.' },
+    금: { what: '미뤄 둔 정리 끝내기', how: '달마다 계약·구독·약속 하나를 점검하고 정리하기.' },
+    수: { what: '흐름을 돌아보는 시간 갖기', how: '한 달에 한 번 지난 한 달을 돌아보는 글 쓰기.' },
+  },
+};
+
 function buildCycleElementAction(
   cycleElement: Element,
   context: { supportElements: Element[]; dominant: Element; weakest: Element }
 ): PracticalAction {
   const cycleLabel = formatElementName(cycleElement);
-  const isSupport = context.supportElements.includes(cycleElement);
-  const isDominant = cycleElement === context.dominant;
-  const isWeakest = cycleElement === context.weakest;
-
-  if (isSupport) {
-    return {
-      reason: `대운에 ${cycleLabel} 기운이 들어와 평소 부족한 축을 채워주는 시기`,
-      what: `${cycleLabel} 기운을 생활 루틴으로 받아들이기`,
-      how: `매일 5분이라도 ${cycleLabel} 기운의 행동(목=시작/화=말/토=정리/금=결단/수=학습) 한 가지 고정.`,
-    };
-  }
-  if (isDominant) {
-    return {
-      reason: `이미 강한 ${cycleLabel} 축이 더 커지는 흐름`,
-      what: '과속을 의식적으로 줄이기',
-      how: '큰 결정 전 1주일 보류. 결정 사유 한 줄 적고 한 번 더 비교 후 진행.',
-    };
-  }
-  if (isWeakest) {
-    return {
-      reason: `약한 ${cycleLabel} 축이 표면으로 드러나는 흐름`,
-      what: '주변 받침대(사람·시스템) 미리 만들기',
-      how: '새 정보 채널 1개 + 도움 줄 사람 1명 미리 등록. 혼자 버티지 않기.',
-    };
-  }
-  return {
-    reason: `${cycleLabel} 기운이 일상의 결정 방식을 흔드는 시기`,
-    what: '익숙한 패턴 옆에 새 시도 1개 두기',
-    how: '월 1회 안 해본 행동 한 가지(이동/대화/취미). 변화를 작게라도 받아들이기.',
-  };
+  const role: ElementActionRole = context.supportElements.includes(cycleElement)
+    ? 'support'
+    : cycleElement === context.dominant
+      ? 'dominant'
+      : cycleElement === context.weakest
+        ? 'weakest'
+        : 'neutral';
+  const reason = {
+    support: `대운에 ${cycleLabel} 기운이 들어와 평소 부족한 축을 채워주는 시기`,
+    dominant: `이미 강한 ${cycleLabel} 축이 더 커지는 흐름`,
+    weakest: `약한 ${cycleLabel} 축이 표면으로 드러나는 흐름`,
+    neutral: `${cycleLabel} 기운이 일상의 결정 방식을 흔드는 시기`,
+  }[role];
+  return { reason, ...ELEMENT_ACTION_COPY[role][cycleElement] };
 }
 
 // 2026-05-19 PR-B Task 7: cycle 십성 기반 PracticalAction 사전.
@@ -774,47 +791,47 @@ const CYCLE_SIPSIN_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
     how: '월 1회 "내가 잘하는 것 3가지" 갱신. 비교 대신 차별점에 집중.',
   },
   겁재: {
-    reason: '가까운 사람과의 자금·기회 갈등 신호 cycle',
+    reason: '가까운 사람과의 자금·기회 갈등 신호 10년',
     what: '금전·동업 결정은 글로 남기고 시작',
     how: '구두 약속 → 메모 → 계약서 3단계. 친한 사이일수록 더 또렷이.',
   },
   식신: {
-    reason: '꾸준한 전달·결과물이 수익으로 이어지는 cycle',
+    reason: '꾸준한 전달·결과물이 수익으로 이어지는 10년',
     what: '반복할 수 있는 콘텐츠·서비스 1개 정착',
     how: '주 1회 같은 형식으로 출력. 새 시도보다 반복을 우선.',
   },
   상관: {
-    reason: '재능과 비판이 동시에 강해지는 cycle',
+    reason: '재능과 비판이 동시에 강해지는 10년',
     what: '말하기 전 한 박자, 한 줄 메모하기',
     how: '주요 회의·중요한 대화 직전 30초 침묵 + 핵심 한 줄 적기.',
   },
   편재: {
-    reason: '큰 돈·기회가 드나드는 cycle (흩어지기 쉬움)',
+    reason: '큰 돈·기회가 드나드는 10년 (흩어지기 쉬움)',
     what: '들어온 돈의 30% 즉시 분리 보관',
     how: '수입 → 메인 계좌 → 자동이체로 분리 계좌. "안 보는 게" 보호.',
   },
   정재: {
-    reason: '안정 자산 축적이 강해지는 cycle',
+    reason: '안정 자산 축적이 강해지는 10년',
     what: '기존 자산 구조 (적금·연금) 정기 점검',
     how: '분기 1회 자산 1줄 정리. 새 투자보다 기존 점검 우선.',
   },
   편관: {
-    reason: '책임·압박이 큰 자리가 들어오는 cycle (번아웃 주의)',
+    reason: '책임·압박이 큰 자리가 들어오는 10년 (번아웃 주의)',
     what: '일 외 회복 루틴 1개 고정',
     how: '주 3회 30분 운동·산책. 일·관계와 분리된 회복 통로 필수.',
   },
   정관: {
-    reason: '자리·인정의 기운이 강해지는 cycle',
+    reason: '자리·인정의 기운이 강해지는 10년',
     what: '평가받을 수 있는 기회 적극 잡기',
     how: '본인 강점 한 줄 → 그 한 줄로 평가받는 자리 (발표·제안·면담) 분기 1회 이상.',
   },
   편인: {
-    reason: '남다른 시각·깊이가 돈이 되는 cycle',
+    reason: '남다른 시각·깊이가 돈이 되는 10년',
     what: '메인 직무 외 사이드 수입원 1개 시도',
     how: '월 1회 부업·강의·콘텐츠 시도. 시작 비용 5만 원 이내로 작게.',
   },
   정인: {
-    reason: '배움·후원의 인연이 강해지는 cycle',
+    reason: '배움·후원의 인연이 강해지는 10년',
     what: '학습·자격증 1개 등록',
     how: '월 1만 원 이내 강의·책·온라인 강좌. 누적이 1년 후 큰 자산.',
   },
@@ -826,7 +843,10 @@ function buildPracticalActions(
   // 2026-05-15 PR 4: 사주 원국의 dominant/weakest tenGod 도 받아 사전 매핑.
   primaryTenGod: TenGodCode | null = null,
   // 2026-05-19 PR-B Task 7: cycle 십성 기반 action 분기.
-  cycleSipsin: TenGodCode | null = null
+  cycleSipsin: TenGodCode | null = null,
+  // 2026-09-27 — 타고난 값(부족 오행·원국 십성) 카드는 첫 대운·지금 대운에만. 나머지는 대운 후반 기운·나이대 할 일로.
+  showNatal = true,
+  ageLabel = ''
 ): PracticalAction[] {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const cycleElement = stem ?? branch ?? context.weakest;
@@ -840,6 +860,16 @@ function buildPracticalActions(
   // 2026-05-19 PR-B Task 7 — 4 슬롯 재조정:
   //   [cycle 오행 action, cycle 십성 action, 사주 weakest, 사주 십성 (or excess fallback)]
   //   cycle 기반 2 슬롯 + 사주 원국 기반 2 슬롯 — 9 cycle distinct 강화.
+  if (!showNatal) {
+    const branchElement = branch ?? cycleElement;
+    const branchAction = branchElement === cycleElement ? shortageAction : buildCycleElementAction(branchElement, context);
+    return [
+      cycleAction,
+      cycleSipsinAction ?? shortageAction,
+      { ...branchAction, reason: `후반 5년 · ${branchAction.reason}` },
+      { ...DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((cycle.startAge ?? 30) / 10)))], reason: `${ageLabel} · ${DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((cycle.startAge ?? 30) / 10)))].reason}` },
+    ];
+  }
   return [
     cycleAction,
     cycleSipsinAction ?? shortageAction,
@@ -847,6 +877,21 @@ function buildPracticalActions(
     sajuTenGodAction ?? excessAction,
   ];
 }
+
+// 나이대(10년 단위) 할 일 — 60세 이후 대운이 여럿이라 4단계로는 같은 카드가 겹쳤다.
+const DECADE_ACTION: PracticalAction[] = [
+  { reason: '어린 시절의 할 일', what: '좋아하는 것을 마음껏 해보기', how: '보호자와 함께 여러 활동을 경험하고, 오래 즐긴 것을 기억해두기.' },
+  { reason: '10대의 할 일', what: '공부 습관과 친구 관계의 기본 다지기', how: '하루 공부 시간과 쉬는 시간을 정해두고, 고민은 믿을 만한 어른과 나누기.' },
+  { reason: '20대의 할 일', what: '여러 일을 해보며 맞는 분야 찾기', how: '1년에 한 번 해본 일과 맞았던 점·힘들었던 점을 정리해 다음 선택의 기준으로 삼기.' },
+  { reason: '30대의 할 일', what: '전문 분야와 저축 습관의 뼈대 세우기', how: '수입의 일정 비율 자동 저축 + 분야 공부 한 가지를 분기마다 점검하기.' },
+  { reason: '40대의 할 일', what: '쌓은 경험을 성과와 자리로 연결하기', how: '내 강점을 한 줄로 정리하고, 그 강점이 보이는 역할을 한 해에 하나씩 맡기.' },
+  { reason: '50대의 할 일', what: '가진 자산과 자리를 점검하고 지키기', how: '반년에 한 번 자산·보험·계약을 한 장에 정리하고 새는 곳부터 막기.' },
+  { reason: '60대의 할 일', what: '일의 속도를 조절하고 생활 리듬 새로 짜기', how: '일과 쉼의 비율을 다시 정하고, 매일 걷기처럼 몸을 쓰는 습관 하나를 고정하기.' },
+  { reason: '70대의 할 일', what: '건강과 생활비의 균형 잡기', how: '정기 검진 일정과 한 달 생활비를 먼저 고정하고, 무리한 지출은 가족과 상의하기.' },
+  { reason: '80대의 할 일', what: '곁의 사람과 자주 연결되기', how: '가족·이웃과 정해진 요일에 안부를 나누고, 도움받을 연락처를 한곳에 적어두기.' },
+  { reason: '90대 이후의 할 일', what: '편안함과 존중을 먼저 챙기기', how: '원하는 생활 방식과 돌봄 계획을 가족과 미리 나눠두기.' },
+];
+
 
 // 2026-05-15 PR 3 — 사주아이 reference 10 패턴 챕터명 빌더.
 // 동일 패턴이라도 매번 같은 문장이 나오면 다시 generic 으로 느껴지므로
@@ -1091,7 +1136,7 @@ function buildMajorLuckCycles(
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) return [];
 
-  return cycles.slice(0, 10).map((cycle, index) => {
+  return varyRepeatedSipsinCycles(cycles.slice(0, 10).map((cycle, index) => {
     const isCurrent = currentMajorLuckGanzi === cycle.ganzi;
     const isFirstCycle = index === 0;
     const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 10년 흐름입니다.';
@@ -1127,12 +1172,92 @@ function buildMajorLuckCycles(
       mental: buildMentalText(cycle, context, twelveStage, cycleSipsin),
       relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith, cycleSipsin),
       wealthCareer: buildWealthCareerText(cycle, context, userSituation, cycleSipsin),
-      practicalActions: buildPracticalActions(cycle, context, primaryTenGod, cycleSipsin),
+      practicalActions: buildPracticalActions(cycle, context, primaryTenGod, cycleSipsin, isFirstCycle || isCurrent, formatLuckRange(cycle)),
       closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage, transitionPhase),
       twelveStage,
       wonjinWith,
       transitionPhase,
+      cycleSipsin,
+      startAge: cycle.startAge,
     };
+  }));
+}
+
+// 2026-09-27 — 대운 8~10개 중 같은 십성이 다시 오면 십성 문구표가 문단째 반복됐다(결과 화면 측정: 한 화면 반복 130문장).
+//   다시 온 대운은 앞 대운과 이어 읽는 연결 문장을 두고, 앞에서 이미 나온 문단은 그 나이대(생애 단계)에 맞는 설명으로 바꾼다.
+type LifeStage = 'growth' | 'build' | 'harvest' | 'mature';
+const LIFE_STAGE_LABEL: Record<LifeStage, string> = { growth: '자라며 배우는 시기', build: '기반을 세우는 시기', harvest: '결실을 거두는 시기', mature: '정리하고 나누는 시기' };
+const LIFE_STAGE_COPY: Record<LifeStage, { mental: string; relationship: string; wealthCareer: string; closingNote: string }> = {
+  growth: {
+    mental: '이 나이에는 같은 기운도 호기심과 흔들림으로 먼저 나타납니다. 잘하는 것과 좋아하는 것을 구분해 보는 경험이 마음을 단단하게 합니다.',
+    relationship: '친구와 선생님처럼 곁에 있는 사람의 영향이 큰 때라, 누구와 어울리는지가 이 흐름의 방향을 정합니다.',
+    wealthCareer: '돈보다 배우는 습관과 공부 방식이 나중의 밑천이 됩니다. 한 가지를 꾸준히 해본 경험을 남겨두세요.',
+    closingNote: '서둘러 답을 정하지 않아도 됩니다. 여러 번 해보고 맞는 것을 고르는 시기입니다.',
+  },
+  build: {
+    mental: '일과 관계를 동시에 세우는 때라 같은 기운이라도 책임감과 조급함으로 나타나기 쉽습니다. 한 번에 다 이루려 하기보다 순서를 정하면 마음이 편해집니다.',
+    relationship: '동료·연인·가족처럼 오래 갈 관계가 자리 잡는 때입니다. 약속과 역할을 말로 분명히 해두면 이 흐름이 관계를 단단하게 만듭니다.',
+    wealthCareer: '경력과 자산의 뼈대를 세우는 때라, 이 흐름을 한 분야의 전문성과 저축 습관으로 연결하면 이후 10년이 가벼워집니다.',
+    closingNote: '지금 세운 기준이 다음 10년의 출발점이 됩니다. 크게보다 오래 갈 방식을 고르세요.',
+  },
+  harvest: {
+    mental: '그동안 쌓은 경험이 판단을 받쳐 주는 때라, 같은 기운도 한결 여유 있게 다룰 수 있습니다. 해온 방식을 믿되 새 방식 하나는 열어두세요.',
+    relationship: '이끌고 챙기는 자리에 서는 일이 많아집니다. 내가 먼저 경험을 나누면 이 흐름이 존중과 신뢰로 돌아옵니다.',
+    wealthCareer: '성과를 거두고 지키는 것이 중요한 때입니다. 새로 벌이기보다 이미 가진 자산과 자리를 점검하고 정리하는 쪽이 이득입니다.',
+    closingNote: '거둔 것을 지키는 것도 실력입니다. 무리한 확장보다 균형을 챙기세요.',
+  },
+  mature: {
+    mental: '속도보다 의미를 찾게 되는 때라, 같은 기운도 깊이와 여유로 나타납니다. 하고 싶었던 공부나 취미를 다시 꺼내 보기 좋습니다.',
+    relationship: '가족과 오래된 인연이 다시 중요해집니다. 먼저 안부를 건네는 작은 습관이 이 흐름을 따뜻하게 만듭니다.',
+    wealthCareer: '모은 것을 안전하게 쓰고 물려줄 방법을 정리하는 때입니다. 큰 투자보다 건강과 생활비의 균형을 먼저 보세요.',
+    closingNote: '해온 일을 정리하고 나누는 것이 이 시기의 가장 큰 결실입니다.',
+  },
+};
+
+function lifeStageOf(startAge: number | null | undefined): LifeStage {
+  const age = startAge ?? 30;
+  return age < 20 ? 'growth' : age < 40 ? 'build' : age < 60 ? 'harvest' : 'mature';
+}
+
+function dropSeenSentences(text: string | undefined, seen: Set<string>) {
+  if (!text) return text;
+  const kept = text.split(/(?<=[.!?])\s+/).filter((part) => {
+    const key = part.trim();
+    if (key.length < 15) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return kept.join(' ').trim();
+}
+
+function varyRepeatedSipsinCycles<T extends LifetimeMajorLuckCycleRow & { cycleSipsin?: TenGodCode | null; startAge?: number | null }>(rows: T[]) {
+  const seen = new Set<string>();
+  const firstBySipsin = new Map<string, T>();
+  return rows.map((row) => {
+    const stage = lifeStageOf(row.startAge);
+    const first = row.cycleSipsin ? firstBySipsin.get(row.cycleSipsin) : undefined;
+    if (row.cycleSipsin && !first) firstBySipsin.set(row.cycleSipsin, row);
+    const out = { ...row };
+    for (const key of ['chapterBody', 'mental', 'relationship', 'wealthCareer', 'closingNote'] as const) {
+      const kept = dropSeenSentences(row[key], seen);
+      out[key] = kept || (key === 'chapterBody' ? row[key] : LIFE_STAGE_COPY[stage][key]);
+    }
+    // 같은 행동 카드가 앞 대운에 이미 나왔으면 이 나이대에 맞춘 방식으로 바꾼다.
+    if (row.practicalActions) {
+      const decade = DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((row.startAge ?? 30) / 10)))];
+      out.practicalActions = row.practicalActions.map((action) => {
+        if (!seen.has(`action:${action.what}`)) {
+          seen.add(`action:${action.what}`);
+          return action;
+        }
+        return { reason: `${row.ageLabel} · ${action.reason}`, what: `${action.what}(${decade.reason.replace('의 할 일', '')}에 맞게)`, how: `${row.ageLabel}에는 ${action.how.split(/(?<=[.!?])\s+/)[0]}` };
+      });
+    }
+    if (first) {
+      out.chapterBody = `${row.ageLabel}에는 앞선 ${first.ageLabel} 대운과 같은 결의 흐름이 다시 들어옵니다. 이번에는 ${LIFE_STAGE_LABEL[stage]}라, 같은 기운이 다른 모습으로 나타납니다. ${out.chapterBody ?? ''}`.trim();
+    }
+    return out;
   });
 }
 

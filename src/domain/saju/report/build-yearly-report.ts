@@ -1,3 +1,4 @@
+import { YEARLY_CATEGORY_COPY } from './yearly-category-copy';
 import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { Solar } from 'lunar-typescript';
 import {
@@ -411,6 +412,7 @@ function createYearlyContext(
     supportElements,
     cautionElements,
     yearTheme: yearRelationTheme(targetData.dayMaster.element, getYearGanji(targetYear, targetData)),
+    yearStep: yearRelationStep(targetData.dayMaster.element, getYearGanji(targetYear, targetData)),
   };
 }
 
@@ -422,6 +424,11 @@ const YEAR_RELATION_THEME = [
   '나를 다잡는 기운이 들어와 책임과 평가가 커지고 자리를 굳히는 해',
   '나를 돕는 기운이 들어와 배우고 준비하며 주변의 도움을 받기 좋은 해',
 ];
+
+function yearRelationStep(dayElement: Element | undefined, yearGanji: string | null) {
+  const yearElement = yearGanji ? STEM_ELEMENT_MAP[Array.from(yearGanji)[0] as Stem] : undefined;
+  return monthRelationStep(dayElement, yearElement) as 0 | 1 | 2 | 3 | 4 | null;
+}
 
 function yearRelationTheme(dayElement: Element | undefined, yearGanji: string | null) {
   const yearElement = yearGanji ? STEM_ELEMENT_MAP[Array.from(yearGanji)[0] as Stem] : undefined;
@@ -623,7 +630,7 @@ function createCategorySections(
   targetData: SajuDataV1 | SajuDataV2,
   context: YearlyFlowContext
 ): Record<YearlyCategoryKey, YearlyCategorySection> {
-  return {
+  const sections: Record<YearlyCategoryKey, YearlyCategorySection> = {
     work: createCategorySectionFromReport('work', reports.career),
     wealth: createCategorySectionFromReport('wealth', reports.wealth),
     love: createCategorySectionFromReport('love', reports.love),
@@ -631,6 +638,13 @@ function createCategorySections(
     health: createHealthSection(reports, targetData, context),
     move: createMoveSection(reports, context),
   };
+  // 분야별 '기회'·'실천'은 한 해 단위 문장으로(오늘운세용 '오늘은 …' 문장이 섞이던 것 교체).
+  const step = context.yearStep;
+  if (step === null || step === undefined) return sections;
+  for (const key of YEARLY_CATEGORY_ORDER) {
+    sections[key] = { ...sections[key], ...YEARLY_CATEGORY_COPY[step][key] };
+  }
+  return sections;
 }
 
 function getMonthlyMomentum(
@@ -696,6 +710,14 @@ const MONTH_RELATION_ACTION: Array<(month: number, areas: string) => string> = [
   (m, a) => `${m}월엔 ${a}에 관해 배운 것 하나를 실제로 써보세요.`,
 ];
 
+const MONTH_RELATION_QUESTION: Array<(month: number, areas: string) => string> = [
+  (m, a) => `${m}월 ${a}에서 내 뜻을 어디까지 밀고, 어디서 손을 잡아야 할까?`,
+  (m, a) => `${m}월 ${a}에서 무엇을 먼저 꺼내 보여주면 좋을까?`,
+  (m, a) => `${m}월 ${a}에서 무엇을 거두고 무엇을 아껴야 할까?`,
+  (m, a) => `${m}월 ${a}에서 맡을 책임은 어디까지일까?`,
+  (m, a) => `${m}월 ${a}에서 누구에게 배우고 무엇을 준비할까?`,
+];
+
 function monthRelationStep(dayElement: Element | undefined, monthElement: Element | undefined) {
   if (!dayElement || !monthElement) return null;
   return (ELEMENT_CYCLE.indexOf(monthElement) - ELEMENT_CYCLE.indexOf(dayElement) + 5) % 5;
@@ -753,7 +775,7 @@ function createMonthlyFlow(
     monthlyGanji,
     momentum,
     theme,
-    focusQuestion: guide.question,
+    focusQuestion: step === null ? guide.question : MONTH_RELATION_QUESTION[step](monthly.month, focusLabel),
     summary: tightenCardCopy(summary, { maxSentences: 2, maxLength: 112 }),
     opportunity: tightenCardCopy(`${guide.opportunityLead} ${primary.action}`, {
       maxSentences: 2,

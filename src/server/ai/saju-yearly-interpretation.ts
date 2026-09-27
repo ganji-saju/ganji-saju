@@ -378,8 +378,13 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
     const flows = months.map((m) => byMonth.get(m)).filter((f): f is NonNullable<typeof f> => Boolean(f));
     const rising = flows.filter((f) => f.momentum === 'rise').length;
     const caution = flows.filter((f) => f.momentum === 'caution').length;
+    // 세 달 중 몇 달이 어떤지까지 말한다(같은 '힘이 붙는 분기' 문장이 거의 모두에게 나왔다).
     const tone =
-      rising > caution ? '힘이 붙는 분기입니다' : caution > rising ? '속도를 조절할 분기입니다' : '흐름을 다지는 분기입니다';
+      rising === 3 ? '세 달 내내 힘이 붙는 분기입니다'
+        : rising > caution ? `세 달 중 ${rising}달에 힘이 붙는 분기입니다`
+          : caution === 3 ? '세 달 내내 속도를 조절할 분기입니다'
+            : caution > rising ? `세 달 중 ${caution}달은 속도를 조절할 분기입니다`
+              : '오르내림이 섞여 흐름을 다지는 분기입니다';
     const lead = flows.find((f) => f.momentum === (rising >= caution ? 'rise' : 'caution')) ?? flows[0];
     return {
       quarter: (i + 1) as 1 | 2 | 3 | 4,

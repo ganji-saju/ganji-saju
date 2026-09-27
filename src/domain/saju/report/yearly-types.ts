@@ -110,6 +110,8 @@ export interface YearlyFlowContext {
   cautionElements: Element[];
   /** 그해 천간 오행과 태어난 날 오행의 관계 한 구절('나를 돕는 기운이 들어와 …'). 사람마다 다른 첫머리용. */
   yearTheme?: string | null;
+  /** 위 관계의 번호(0~4). 분야별 연간 문장 선택용. */
+  yearStep?: 0 | 1 | 2 | 3 | 4 | null;
 }
 
 export interface YearlyReferenceReport {
