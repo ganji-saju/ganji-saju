@@ -1718,6 +1718,15 @@ const DAILY_TOPIC_ANSWERS: Record<PersonalDayRelation, Record<Exclude<TodayScore
   },
 };
 
+const TOPIC_SCENE_LABEL: Record<TodayScoreItem['key'], string> = {
+  overall: '하루 전체',
+  career: '일과 공부 장면',
+  wealth: '돈을 쓰고 지키는 장면',
+  love: '마음을 전하는 장면',
+  relationship: '가까운 사람과의 조율',
+  condition: '활동과 휴식의 균형',
+};
+
 const DAILY_TOPIC_QUESTIONS: Record<TodayScoreItem['key'], { question: string; example: string; choice: string }> = {
   overall: { question: '오늘 무엇부터 하면 좋을까요?', example: '할 일이 여러 개라 시작을 미루고 있다면, 오늘 안에 확인할 수 있는 일 하나를 골라보세요.', choice: '저녁에는 얼마나 많이 했는지보다 선택한 한 가지를 실제로 해봤는지 돌아보세요.' },
   career: { question: '오늘 맡은 일을 어떻게 풀어가면 좋을까요?', example: '업무나 공부에서 요청이 여러 개 겹친다면, 마감과 필요한 도움을 적어보세요.', choice: '자료와 시간이 갖춰진 일부터 진행하고, 빠진 조건은 확인한 뒤 다음 순서를 정하세요.' },
@@ -1799,7 +1808,11 @@ function buildTodayQuestionReading(
   return {
     question: underage && key === 'love' ? '친구와 가까운 사람에게 마음을 어떻게 전할까요?' : topic.question,
     answer: needsCaregiver ? child.answer : answer,
-    evidence: `${evidence}${natalMeaning ? ` 원국에서 두드러진 ${profile.tenGod}(${natalMeaning})도 함께 고려합니다.` : ''}${personal.branchNote ? ` ${personal.branchNote}` : ''}`,
+    // 2026-09-27 — 같은 근거 문장이 6개 카드에 똑같이 붙어 한 풀이에서 6번 반복됐다(측정: 반복 18건). 오늘과 나의 관계를
+    //   설명하는 긴 근거는 '오늘 전체' 카드에만 두고, 분야 카드는 그 분야에 적용한 짧은 근거로 쓴다.
+    evidence: key === 'overall'
+      ? `${evidence}${natalMeaning ? ` 원국에서 두드러진 ${profile.tenGod}(${natalMeaning})도 함께 고려합니다.` : ''}${personal.branchNote ? ` ${personal.branchNote}` : ''}`
+      : `태어난 날의 중심과 오늘 ${toKoreanGanzi(todayPillar.ganzi)}의 관계(${personal.relation})를 ${TOPIC_SCENE_LABEL[key]}에 적용했습니다.`,
     example: needsCaregiver ? `${child.example}${key === 'overall' ? ` ${CHILD_ROLE_GUIDANCE[personal.relation]}` : ''}`
       : `${natalTone ? `평소 ${natalTone.body} ` : ''}${example}`,
     choice: needsCaregiver ? `${child.choice}${key === 'overall' && natalMeaning && natalRole !== personal.relation ? ` ${CHILD_ROLE_GUIDANCE[natalRole]}` : ''}`
