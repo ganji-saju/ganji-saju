@@ -13,8 +13,8 @@ const dataFor = (input: BirthInput) => loadSajuDataV2(input, null, { now: '2026-
 
 test('lifetime core answers use different natal combinations rather than daily action copy', () => {
   const reports = inputs.map((input) => buildLifetimeCoreReadings(input, dataFor(input), 2026, null));
-  assert.match(reports[0].wealthStyle.earningStyle, /식상은 확인되지만 재성/);
-  assert.match(reports[1].wealthStyle.earningStyle, /식상과 재성이 함께/);
+  assert.match(reports[0].wealthStyle.earningStyle, /식상(\([목화토금수] 기운\))?은 확인되지만 재성/);
+  assert.match(reports[1].wealthStyle.earningStyle, /식상(\([목화토금수] 기운\))?과 재성(\([목화토금수] 기운\))?이 함께/);
   assert.notEqual(reports[0].careerDirection.fitStructure, reports[1].careerDirection.fitStructure);
   assert.notEqual(reports[0].wealthStyle.keepingStyle, reports[1].wealthStyle.keepingStyle);
   for (const report of reports) {
