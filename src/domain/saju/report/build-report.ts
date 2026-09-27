@@ -1,3 +1,4 @@
+import { TOPIC_SUPPORT_ACTION, TOPIC_WEAK_CAUTION } from './topic-element-actions';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 ﻿import type {
   SajuDataV1,
@@ -711,7 +712,7 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
       ? `격국 메모: ${pattern.name} · ${pattern.tenGod}`
       : `격국 메모: ${pattern.name}`,
     technicalSummary: '전문적으로는 월지의 주기운과 지장간을 일간 관점의 십신으로 환산해 격국명을 정합니다.',
-    practicalActions: EVIDENCE_ACTIONS.pattern,
+    practicalActions: [...new Set([...(PATTERN_TEN_GOD_ACTIONS[pattern.tenGod ?? ''] ?? []), ...EVIDENCE_ACTIONS.pattern])].slice(0, 3),
     explainers: CORE_TERM_EXPLAINERS.pattern,
     computed,
     source: getEvidenceSource(key),
@@ -793,6 +794,41 @@ function formatRelationEvidenceLine(relation: OrreryRelation) {
   return `${pair}: ${relation.label}${relation.detail ? ` · ${relation.detail}` : ''}`;
 }
 
+// 2026-09-27 — 합충 카드 행동 문구가 실제 합·충 종류와 상관없이 모두 같았다(오늘운세 상세 시나리오에 인용돼 30/30명 공통).
+//   명식에 실제로 있는 관계 종류로 고른다.
+const RELATION_LABEL_ACTIONS: Record<string, string> = {
+  충: '부딪히는 주제는 바로 결론내지 않기',
+  천간충: '생각이 엇갈릴 때 결정은 하루 두고 하기',
+  형: '서로 상처 주는 말투를 알아차리고 멈추기',
+  해: '가까운 사이의 작은 서운함을 그때그때 풀기',
+  파: '한번 정한 약속이 틀어지지 않게 다시 확인하기',
+  천간합: '마음이 맞는 사람과 목표를 함께 정하기',
+  육합: '가까운 인연과의 약속을 분명히 하기',
+  반합: '힘을 모을 사람을 한 명 먼저 정하기',
+  삼합: '여럿이 함께하는 일에서 역할 나누기',
+  방합: '같은 방향을 보는 사람들과 속도 맞추기',
+};
+
+// 2026-09-27 — 격국·공망 카드 행동 문구가 사람과 상관없이 같았다(오늘운세 상세 시나리오 인용으로 30/30명 공통).
+const PATTERN_TEN_GOD_ACTIONS: Record<string, string[]> = {
+  비견: ['내 몫과 남의 몫을 나눠 적기', '혼자 끌어안은 일 하나 나누기'],
+  겁재: ['돈과 역할의 경계를 먼저 말하기', '비교 대신 내 속도 지키기'],
+  식신: ['잘하는 일을 꾸준한 루틴으로 만들기', '결과물을 작게라도 자주 보여주기'],
+  상관: ['지적할 때 대안을 함께 말하기', '떠오른 아이디어를 기록으로 남기기'],
+  편재: ['들어온 기회를 하나만 골라 집중하기', '넓힌 관계를 정리할 날 정하기'],
+  정재: ['정해진 약속과 정산을 먼저 끝내기', '꾸준히 쌓는 일의 기록 남기기'],
+  편관: ['급한 책임은 순서를 정해 나누기', '압박이 클수록 회복 시간 먼저 두기'],
+  정관: ['맡은 역할의 기준을 문장으로 정리하기', '약속한 절차를 끝까지 지키기'],
+  편인: ['남다른 생각을 작은 실험으로 옮기기', '혼자 생각이 길어지면 한 사람에게 묻기'],
+  정인: ['배운 것을 하나씩 실제로 써보기', '받은 도움에 고마움 표현하기'],
+};
+const GONGMANG_SLOT_ACTIONS: Record<string, string> = {
+  year: '집안·어른과의 약속은 한 번 더 확인하기',
+  month: '일과 직장에서 기대만큼 채워지지 않는 부분 미리 점검하기',
+  day: '가까운 사람에게 바라는 것을 말로 분명히 하기',
+  hour: '먼 계획은 중간 점검 날짜를 함께 정하기',
+};
+
 function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const key = 'relations';
   const relations = getOrreryExtension(data)?.relations ?? [];
@@ -826,7 +862,7 @@ function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
       ? `합충 메모: ${labels.join(' · ')}`
       : '합충 메모: 확인된 흐름 없음',
     technicalSummary: '전문적으로는 천간합, 천간충, 육합, 삼합, 방합, 충·형·해·파를 분리해 봅니다.',
-    practicalActions: EVIDENCE_ACTIONS.relations,
+    practicalActions: [...new Set([...labels.map((label) => RELATION_LABEL_ACTIONS[label]).filter(Boolean), ...EVIDENCE_ACTIONS.relations])].slice(0, 3),
     explainers: CORE_TERM_EXPLAINERS.relations,
     computed,
     source: getEvidenceSource(key),
@@ -874,7 +910,7 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
       ? `공망 메모: ${branches} 공망`
       : '공망 메모: 확인된 흐름 없음',
     technicalSummary: '전문적으로는 일주 원칙 공망 글자를 잡고, 그 글자가 년·월·일·시 어느 자리에 닿는지 확인합니다.',
-    practicalActions: EVIDENCE_ACTIONS.gongmang,
+    practicalActions: [...new Set([...(gongmang?.pillarSlots ?? []).map((slot) => GONGMANG_SLOT_ACTIONS[slot]).filter(Boolean), ...EVIDENCE_ACTIONS.gongmang])].slice(0, 3),
     explainers: CORE_TERM_EXPLAINERS.gongmang,
     computed,
     source: getEvidenceSource(key),
@@ -1065,6 +1101,9 @@ function buildTopicActions(
   const profile = getReportProfile(data);
   const bestTone = getElementTone(supportElements[0] ?? data.fiveElements.dominant);
   const cautionTone = getElementTone(data.fiveElements.weakest);
+  // 분야별 대표 행동 문장을 도움 오행·약한 오행으로 고른다(topic-element-actions.ts).
+  const supportEl = (supportElements[0] ?? data.fiveElements.dominant) as keyof typeof TOPIC_SUPPORT_ACTION.love;
+  const weakEl = data.fiveElements.weakest as keyof typeof TOPIC_WEAK_CAUTION.love;
   const supportLabel = profile.support.label;
   const weaknessLabel = profile.weakest.label;
   const currentLuck = describeCurrentLuckHighlight(data.currentLuck);
@@ -1077,14 +1116,14 @@ function buildTopicActions(
           description: compactStrings([
             `${profile.role?.label ?? `${withParticle(supportLabel, '이', '가')} 필요한 흐름`}이라 연애에서는 말의 길이보다 온도가 먼저입니다.`,
             profile.support.love,
-            '오늘은 고백처럼 큰 결론보다 상대가 편하게 답할 수 있는 한 문장이 더 잘 맞습니다.',
+            TOPIC_SUPPORT_ACTION.love[supportEl],
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(weaknessLabel, '이', '가')} 비면 상대 반응을 내 마음대로 해석하기 쉽습니다.`,
-            '답을 재촉하거나 시험하는 말보다 약속 시간과 말의 온도를 부드럽게 맞추세요.',
+            TOPIC_WEAK_CAUTION.love[weakEl],
           ]).join(' '),
         },
       };
@@ -1094,7 +1133,7 @@ function buildTopicActions(
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(supportLabel, '이', '가')} 살아날수록 돈의 흐름이 안정됩니다.`,
-            '오늘은 새 투자보다 고정비, 미뤄둔 정산, 결제 예정 금액을 먼저 확인하세요.',
+            TOPIC_SUPPORT_ACTION.wealth[supportEl],
             `${profile.role?.caution ?? '급하게 넓히는 선택'}만 줄이면 손에 남는 돈이 달라집니다.`,
           ]).join(' '),
         },
@@ -1102,7 +1141,7 @@ function buildTopicActions(
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(weaknessLabel, '이', '가')} 약해질 때는 만족보다 피로가 남는 소비가 늘 수 있습니다.`,
-            '가격 비교 없이 결제하거나 지인 제안만 믿고 움직이는 선택은 오늘 한 번 더 보류하세요.',
+            TOPIC_WEAK_CAUTION.wealth[weakEl],
           ]).join(' '),
         },
       };
@@ -1112,7 +1151,7 @@ function buildTopicActions(
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(supportLabel, '을', '를')} 업무에 살리면 일의 순서가 또렷해집니다.`,
-            '오늘은 할 일을 세 단계로 나누고, 보고나 제안은 결론을 먼저 말한 뒤 근거를 붙이세요.',
+            TOPIC_SUPPORT_ACTION.career[supportEl],
             `${profile.role?.strength ?? '내가 잘하는 방식'}을 성과로 보이게 만드는 쪽이 좋습니다.`,
           ]).join(' '),
         },
@@ -1120,7 +1159,7 @@ function buildTopicActions(
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
             currentLuck || '오늘은 단기 반응보다 선택의 방향을 먼저 정리하는 편이 좋습니다.',
-            '여러 일을 동시에 넓히기보다 누가 무엇을 언제까지 맡는지 먼저 적어두세요.',
+            TOPIC_WEAK_CAUTION.career[weakEl],
           ]).join(' '),
         },
       };
@@ -1130,7 +1169,7 @@ function buildTopicActions(
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
             `관계는 ${withParticle(supportLabel, '을', '를')} 살린 짧은 확인이 좋습니다.`,
-            '가족, 친구, 동료에게는 큰 대화보다 안부, 감사, 일정 확인처럼 부담이 낮은 말이 먼저입니다.',
+            TOPIC_SUPPORT_ACTION.relationship[supportEl],
             '말의 순서와 확인을 맞추면 오해가 줄어듭니다.',
           ]).join(' '),
         },
@@ -1138,7 +1177,7 @@ function buildTopicActions(
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(weaknessLabel, '이', '가')} 흔들리면 말의 의도보다 감정의 잔상이 커질 수 있습니다.`,
-            '오늘은 “네가 항상” 같은 단정 대신 사실과 감정을 나눠 말하세요.',
+            TOPIC_WEAK_CAUTION.relationship[weakEl],
           ]).join(' '),
         },
       };

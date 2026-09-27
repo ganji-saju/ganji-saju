@@ -2598,8 +2598,8 @@ function buildTimeWindowBody(
   const branchCopy = TIME_BRANCH_WINDOW_COPY[item.branch];
   const concernCopy = CONCERN_EASY_TIME_COPY[concernId];
   const branchBody = type === 'favorable' ? branchCopy.favorableBody : branchCopy.cautionBody;
-  const relationCopy = relationStep === null ? null : PREMIUM_RELATION_COPY[relationStep];
-  const concernBody = concernId === 'general' && relationCopy
+  const relationCopy = relationStep === null ? null : PREMIUM_RELATION_COPY[concernId]?.[relationStep] ?? null;
+  const concernBody = relationCopy
     ? type === 'favorable' ? relationCopy.favorable : relationCopy.caution
     : type === 'favorable' ? concernCopy.favorable : concernCopy.caution;
   const scoreBody =
@@ -2695,9 +2695,9 @@ function buildScenarioComparison(
 ) {
   const baseConcernCopy = CONCERN_WINDOW_COPY[concernId];
   const step = todayRelationStep(sajuData.dayMaster.element, dailyContext?.todayPillar.stemElement);
-  const relationCopy = step === null ? null : PREMIUM_RELATION_COPY[step];
+  const relationCopy = step === null ? null : PREMIUM_RELATION_COPY[concernId]?.[step] ?? null;
   // 관심사 문구 뒤에 붙는 꼬리말을 오늘의 관계로 가른다(모두에게 같던 문장).
-  const concernCopy = relationCopy && concernId === 'general'
+  const concernCopy = relationCopy
     ? { ...baseConcernCopy, actNowTail: relationCopy.actNowTail, waitTail: relationCopy.waitTail }
     : baseConcernCopy;
   const evidenceSnippet = getTodayEvidenceSnippet(report);

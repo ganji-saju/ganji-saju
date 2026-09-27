@@ -1,3 +1,4 @@
+import { CYCLE_SIPSIN_ACTION_LATER, MENTAL_LATER_BY_SIPSIN, RELATIONSHIP_LATER_BY_SIPSIN, WEALTH_LATER_BY_SIPSIN } from './lifetime-sipsin-later-copy';
 import type {
   FiveElementState,
   SajuDataV1,
@@ -462,6 +463,19 @@ const MENTAL_NUANCE_BY_SIPSIN: Partial<Record<TenGodCode, string>> = {
   정인: '누군가의 돌봄·배움이 들어오는 흐름이라, 마음이 안정되는 시기예요. 자기계발에 투자하기 좋습니다.',
 };
 
+// 40세 이후 대운은 같은 십성이라도 그 나이의 문단(lifetime-sipsin-later-copy.ts)을 쓴다.
+function isLaterCycle(cycle: SajuMajorLuckCycle) {
+  return (cycle.startAge ?? 0) >= 40;
+}
+
+const MENTAL_ELEMENT_FEEL: Record<Element, { support: string; dominant: string; neutral: string }> = {
+  목: { support: '새로 시작하고 싶은 마음이 살아나, 미뤄 둔 계획을 꺼낼 용기가 생깁니다.', dominant: '다만 한꺼번에 여러 일을 벌이면 마음이 조급해지니, 시작한 일부터 매듭지으세요.', neutral: '새로운 시도가 마음을 들뜨게 하니, 작은 계획 하나로 방향을 잡아 두면 편해집니다.' },
+  화: { support: '표현하고 싶은 마음이 살아나, 속에 담아 둔 말을 꺼내기 쉬워집니다.', dominant: '다만 감정이 빨리 달아올라 말이 앞서기 쉬우니, 중요한 말은 하루 두고 하세요.', neutral: '감정의 온도가 오르내리기 쉬우니, 마음을 기록하는 습관이 균형을 잡아 줍니다.' },
+  토: { support: '마음에 중심이 생겨, 흔들리던 일도 차분하게 정리할 수 있는 시기입니다.', dominant: '다만 한번 정한 생각을 바꾸기 어려워지니, 다른 의견을 일부러 들어 보세요.', neutral: '생활의 틀을 다시 짜고 싶어지니, 일정과 공간을 정리하면 마음도 가벼워집니다.' },
+  금: { support: '결단력이 살아나, 오래 미뤄 둔 선택을 정리하기 좋은 시기입니다.', dominant: '다만 판단이 날카로워져 스스로와 남에게 엄격해지기 쉬우니, 여유를 조금 남겨 두세요.', neutral: '정리하고 끊어낼 것이 눈에 들어오니, 버릴 것 하나부터 정하면 마음이 편해집니다.' },
+  수: { support: '생각이 깊어지고 차분해져, 배우고 돌아보는 시간이 마음을 채워 줍니다.', dominant: '다만 생각이 길어져 결정을 미루기 쉬우니, 고민에 마감 시간을 정해 두세요.', neutral: '혼자 생각하는 시간이 늘어나니, 쉬는 시간과 사람 만나는 시간을 함께 챙기세요.' },
+};
+
 function buildMentalText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
@@ -477,38 +491,42 @@ function buildMentalText(
   //   기존 formatElementName 의 .split(' ')[0] 결과 "쇠의" 단독 노출 버그 해결.
   const elementLabel = formatElementLabel(element);
 
+  // 둘째 문장을 오행별로 가른다(3종 고정 문장이 모두에게 나왔다, 2026-09-27).
+  const feel = MENTAL_ELEMENT_FEEL[element];
   let base: string;
   if (isSupport) {
-    base = `이 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
+    base = `이 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. ${feel.support}`;
   } else if (isDominant) {
-    base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 원칙만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+    base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. ${feel.dominant}`;
   } else {
-    base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화를 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
+    base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. ${feel.neutral}`;
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
   const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
   // 2026-05-19 PR-B Task 6 — cycle 십성 nuance.
-  const sipsinNuance = cycleSipsin ? MENTAL_NUANCE_BY_SIPSIN[cycleSipsin] ?? null : null;
+  const sipsinNuance = cycleSipsin
+    ? (isLaterCycle(cycle) ? MENTAL_LATER_BY_SIPSIN[cycleSipsin] : MENTAL_NUANCE_BY_SIPSIN[cycleSipsin]) ?? null
+    : null;
   return compactStrings([base, stageNuance, sipsinNuance]).join(' ');
 }
 
 function buildMentalStageNuance(stage: string): string | null {
   switch (stage) {
     case '제왕':
-      return '심리적으로도 정점의 흐름이라자신감이 강해지지만, 과한 자신감은 가까운 사람을 떠나게 합니다.';
+      return '심리적으로도 정점의 흐름이라 자신감이 강해지지만, 과한 자신감은 가까운 사람을 떠나게 합니다.';
     case '목욕':
-      return '주목 받는 흐름이라비교·평가에 마음이 흔들릴 수 있으니 칭찬·비판 둘 다 가볍게 흘려보내세요.';
+      return '주목 받는 흐름이라 비교·평가에 마음이 흔들릴 수 있으니 칭찬·비판 둘 다 가볍게 흘려보내세요.';
     case '쇠':
     case '병':
       return '정점 이후의 가라앉음·약해짐이라 무리하지 말고 회복 우선의 마음가짐이 핵심입니다.';
     case '사':
     case '묘':
     case '절':
-      return '한 챕터가 닫히는 흐름이라비워내고 다음을 준비하는 마음이 자연스러워집니다.';
+      return '한 챕터가 닫히는 흐름이라 비워내고 다음을 준비하는 마음이 자연스러워집니다.';
     case '장생':
     case '관대':
     case '건록':
-      return '새로 자라나는 흐름이라마음의 방향을 한 줄로 정해두면 추진력이 분명해집니다.';
+      return '새로 자라나는 흐름이라 마음의 방향을 한 줄로 정해두면 추진력이 분명해집니다.';
     default:
       return null;
   }
@@ -519,7 +537,7 @@ function buildMentalStageNuance(stage: string): string | null {
 const RELATIONSHIP_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
   비견: '이 10년은 비슷한 성향의 동료·라이벌이 자주 등장해, 가까운 관계에서 비교와 자존심 신호가 늘어납니다.',
   겁재: '이 10년은 가까운 사람과 돈·기회를 나누는 일이 많아져, 작은 약속도 글로 적어두는 게 안전한 시기입니다.',
-  식신: '이 10년은 말과 즐거움이 늘어나는 흐름이라, 가까운 사람과 함께 만들어가는 활동 (음식·취미·결과물) 이 관계를 단단하게 합니다.',
+  식신: '이 10년은 말과 즐거움이 늘어나는 흐름이라 , 가까운 사람과 함께 만들어가는 활동 (음식·취미·결과물) 이 관계를 단단하게 합니다.',
   상관: '이 10년은 본인의 말이 강해지는 시기라, 좋은 의도로 한 말도 날카롭게 전해지기 쉬워요. 한 박자 늦춰 전달하면 오해가 줄어듭니다.',
   편재: '이 10년은 넓은 사람·기회가 들어오는 흐름이라, 새 만남이 빈번해집니다. 다만 깊이 있게 남기고 싶은 인연은 따로 의식적으로 챙겨야 흩어지지 않아요.',
   정재: '이 10년은 안정적인 인연·약속이 단단해지는 시기예요. 한 번 정한 관계 구조를 오래 끌고 가는 힘이 강해집니다.',
@@ -542,7 +560,7 @@ function buildRelationshipText(
 ): string {
   const status = userSituation?.relationshipStatus;
   const baseLine = cycleSipsin
-    ? RELATIONSHIP_BASELINE_BY_SIPSIN[cycleSipsin]
+    ? (isLaterCycle(cycle) ? RELATIONSHIP_LATER_BY_SIPSIN : RELATIONSHIP_BASELINE_BY_SIPSIN)[cycleSipsin]
     : RELATIONSHIP_BASELINE_DEFAULT;
 
   let statusBody: string;
@@ -591,7 +609,7 @@ function buildWealthCareerText(
   const occupation = userSituation?.occupation;
   const concern = userSituation?.currentConcern;
   const base = cycleSipsin
-    ? WEALTH_BASELINE_BY_SIPSIN[cycleSipsin]
+    ? (isLaterCycle(cycle) ? WEALTH_LATER_BY_SIPSIN : WEALTH_BASELINE_BY_SIPSIN)[cycleSipsin]
     : WEALTH_BASELINE_DEFAULT;
 
   if (occupation === 'self-employed' || concern === 'business') {
@@ -852,7 +870,7 @@ function buildPracticalActions(
   const cycleElement = stem ?? branch ?? context.weakest;
 
   const cycleAction = buildCycleElementAction(cycleElement, context);
-  const cycleSipsinAction = cycleSipsin ? CYCLE_SIPSIN_ACTION_DICT[cycleSipsin] : null;
+  const cycleSipsinAction = cycleSipsin ? ((cycle.startAge ?? 0) >= 40 ? CYCLE_SIPSIN_ACTION_LATER : CYCLE_SIPSIN_ACTION_DICT)[cycleSipsin] : null;
   const shortageAction = SHORTAGE_ACTION_DICT[context.weakest] ?? SHORTAGE_ACTION_DICT['토'];
   const sajuTenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
   const excessAction = EXCESS_ACTION_DICT[context.dominant] ?? EXCESS_ACTION_DICT['목'];
@@ -867,7 +885,7 @@ function buildPracticalActions(
       cycleAction,
       cycleSipsinAction ?? shortageAction,
       { ...branchAction, reason: `후반 5년 · ${branchAction.reason}` },
-      { ...DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((cycle.startAge ?? 30) / 10)))], reason: `${ageLabel} · ${DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((cycle.startAge ?? 30) / 10)))].reason}` },
+      { ...DECADE_ACTION[Math.min(9, Math.max(0, Math.floor(((cycle.startAge ?? 25) + 5) / 10)))], reason: `${ageLabel} · ${DECADE_ACTION[Math.min(9, Math.max(0, Math.floor(((cycle.startAge ?? 25) + 5) / 10)))].reason}` },
     ];
   }
   return [
@@ -1103,7 +1121,9 @@ function buildClosingNoteText(
   const stageEntry = twelveStage
     ? (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage]
     : null;
-  const stagePart = stageEntry ? ` 이 10년은 ${twelveStage}지(${stageEntry.plainCue})에 해당하는 흐름입니다.` : '';
+  // 본문이 이미 '이 대운은 ○○지(…)'를 말한다 — 마무리에서 같은 뜻을 되풀이하지 않는다(2026-09-27).
+  const stagePart = '';
+  void stageEntry;
   // 2026-05-15 PR 7 응답 3 — 교운기 체감 현상 cue. 흐름사주 reference 의 변동 신호.
   const transitionPart =
     transitionPhase === 'entering'
@@ -1245,13 +1265,12 @@ function varyRepeatedSipsinCycles<T extends LifetimeMajorLuckCycleRow & { cycleS
     }
     // 같은 행동 카드가 앞 대운에 이미 나왔으면 이 나이대에 맞춘 방식으로 바꾼다.
     if (row.practicalActions) {
-      const decade = DECADE_ACTION[Math.min(9, Math.max(0, Math.floor((row.startAge ?? 30) / 10)))];
       out.practicalActions = row.practicalActions.map((action) => {
         if (!seen.has(`action:${action.what}`)) {
           seen.add(`action:${action.what}`);
           return action;
         }
-        return { reason: `${row.ageLabel} · ${action.reason}`, what: `${action.what}(${decade.reason.replace('의 할 일', '')}에 맞게)`, how: `${row.ageLabel}에는 ${action.how.split(/(?<=[.!?])\s+/)[0]}` };
+        return { reason: `${row.ageLabel} · ${action.reason}`, what: `${action.what}(${row.ageLabel.trim()}에 맞게)`, how: `${row.ageLabel}에는 ${action.how.split(/(?<=[.!?])\s+/)[0]}` };
       });
     }
     if (first) {
