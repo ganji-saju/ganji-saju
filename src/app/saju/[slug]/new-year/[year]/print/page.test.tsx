@@ -49,7 +49,9 @@ describe('신년운세 PDF 페이지', () => {
     const positions = order.map((title) => html.indexOf(title));
     expect(positions.every((p) => p > 0), JSON.stringify(positions)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
-    expect(html).not.toMatch(/丁未/);
+    // 2026-09-27 한자 전면 금지(명식 포함) — 문서 전체에 한자 0.
+    const article = html.slice(html.indexOf('<article'));
+    expect(article.match(/[\u4e00-\u9fff]/g) ?? []).toEqual([]);
     expect(html).toContain('가족운');
   });
 });
