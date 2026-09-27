@@ -26,6 +26,11 @@ function sentences(value: unknown, out: string[] = []): string[] {
 const products: Record<string, (p: (typeof people)[number]) => unknown> = {
   '오늘운세 무료': (p) => buildTodayFortuneFreeResult(p, normalizeToSajuDataV1(p, null), { concernId: 'general', sourceSessionId: 'm', calendarType: 'solar', timeRule: 'standard', now } as never),
   '오늘운세 상세': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'general' as never, null, null, { now }),
+  '오늘운세 상세·연락': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'love_contact' as never, null, null, { now }),
+  '오늘운세 상세·지출': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'money_spend' as never, null, null, { now }),
+  '오늘운세 상세·일': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'work_meeting' as never, null, null, { now }),
+  '오늘운세 상세·관계': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'relationship_conflict' as never, null, null, { now }),
+  '오늘운세 상세·체력': (p) => buildTodayFortunePremiumResult(p, normalizeToSajuDataV1(p, null), 'energy_health' as never, null, null, { now }),
   '사주 기본 리포트': (p) => buildSajuReport(p, normalizeToSajuDataV1(p, null), 'today'),
   '연간·신년 폴백': (p) => { const r = buildYearlyReport(p, normalizeToSajuDataV1(p, null), 2027); return { a: buildFallbackYearlyInterpretation(r), b: buildFallbackNewYearExtras(r) }; },
   '평생 폴백': (p) => buildFallbackLifetimeInterpretation(buildLifetimeReport(p, normalizeToSajuDataV1(p, null), 2026)),
@@ -35,7 +40,8 @@ const products: Record<string, (p: (typeof people)[number]) => unknown> = {
 //   겹침까지 '반복'으로 잡혀 실제 화면보다 크게 나왔다(근거: 각 칸을 그리는 컴포넌트 grep).
 const HIDDEN_FIELDS: Record<string, string[]> = {
   '오늘운세 무료': ['answer', 'headline'], // 카드는 같은 문장인 summary 로 한 번만 그림 · oneLine.headline 은 공유 문구·메모 전용
-  '오늘운세 상세': ['groundingSummary'], // 무료 화면(SajuReasonSnippet) 전용 — 상세 패널은 evidenceLines 만 그림
+  '오늘운세 상세': ['groundingSummary'],
+  ...Object.fromEntries(['연락', '지출', '일', '관계', '체력'].map((k) => [`오늘운세 상세·${k}`, ['groundingSummary']])), // 무료 화면(SajuReasonSnippet) 전용 — 상세 패널은 evidenceLines 만 그림
   '사주 기본 리포트': ['insights', 'summaryHighlights', 'technicalSummary', 'dayMasterSummary', 'scores'], // AI 입력·검증 페이지 전용 · 점수 문장은 화면에서 짧은 표어로 바뀜
 };
 function omitFields(value: unknown, keys: string[]): unknown {
