@@ -1,3 +1,4 @@
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { NEW_YEAR_TARGET_YEAR } from '@/lib/payments/catalog';
 // Redesign 2026-05-14: 깊은 풀이 화면 ‘돋보이게’ 리디자인.
 // (이전 2026-05-13: pink-soft hero + ZodiacChip + 챕터 intro 의 골격은 유지)
@@ -490,7 +491,7 @@ export default async function SajuPremiumPage({ params }: Props) {
 
   const yearZodiac = getYearZodiac(sajuData);
   const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
-  const dayMasterPillar = `${sajuData.pillars.day.ganzi}일주`;
+  const dayMasterPillar = `${koreanizeGanzi(sajuData.pillars.day.ganzi)}일주`;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">

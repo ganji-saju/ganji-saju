@@ -1,3 +1,4 @@
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 // 2026-08-25 전면 개편 — 사주 결과 단일 페이지화(사용자 지시 "탭 없이 한 화면에").
 //   구 /saju/[slug]/overview(명식 탭)의 본문을 섹션으로 이동 — 도식·핵심 키·합충 카드.
 //   탭 페이지의 히어로/내비/업셀은 단일 페이지에서 불필요라 제외. 구 라우트는 앵커 리다이렉트.
@@ -37,7 +38,7 @@ export function MyeongsikSection({
       {/* 4 pillars 명식 도식 — 각 기둥의 의미와 한자 */}
       <section>
         <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-          四柱八字 · 네 기둥
+          사주팔자 · 네 기둥
         </div>
         <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">내 사주 도식</h2>
         {/* '천간·지지' 는 행 이름이라 칸마다 반복하지 않고 여기서 한 번만 알려준다. */}
@@ -72,18 +73,18 @@ export function MyeongsikSection({
                     className="text-[25.3px] font-bold leading-none"
                     style={{ fontFamily: 'var(--font-han)', color: stemColor }}
                   >
-                    {pillar?.stem ?? '-'}
+                    {pillar ? koreanizeGanzi(pillar.stem) : '-'}
                   </div>
-                  <div className="mt-0.5 text-[10.9px] text-[var(--app-copy-soft)]">{cell.stem}</div>
+                  <div className="mt-0.5 text-[10.9px] text-[var(--app-copy-soft)]">{cell.stem.split(' · ')[1] ?? cell.stem}</div>
                 </div>
                 <div className="pb-3 pt-1">
                   <div
                     className="text-[25.3px] font-bold leading-none"
                     style={{ fontFamily: 'var(--font-han)', color: branchColor }}
                   >
-                    {pillar?.branch ?? '-'}
+                    {pillar ? koreanizeGanzi(pillar.branch) : '-'}
                   </div>
-                  <div className="mt-0.5 text-[10.9px] text-[var(--app-copy-soft)]">{cell.branch}</div>
+                  <div className="mt-0.5 text-[10.9px] text-[var(--app-copy-soft)]">{cell.branch.split(' · ')[1] ?? cell.branch}</div>
                 </div>
                 <div className="border-t border-[var(--app-line)] py-1.5 text-[10.9px] font-extrabold text-[var(--app-copy-muted)]">
                   {PILLAR_MEANING[key]}

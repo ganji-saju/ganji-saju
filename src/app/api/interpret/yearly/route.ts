@@ -1,3 +1,4 @@
+import { hangulizeDeep } from '@/lib/saju/terminology';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   normalizeMoonlightCounselor,
@@ -141,7 +142,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (tier === 'full') return NextResponse.json({ ...response, tier });
+  // 2026-09-27 한자 전면 금지 — 화면으로 나가는 풀이 문장은 출구 한 곳에서 한글화(계산용 report 는 그대로).
+  if (tier === 'full') return NextResponse.json({ ...response, tier, interpretation: hangulizeDeep(response.interpretation) });
   const { newYear: _omitted, ...basicInterpretation } = response.interpretation;
-  return NextResponse.json({ ...response, tier, interpretation: basicInterpretation });
+  return NextResponse.json({ ...response, tier, interpretation: hangulizeDeep(basicInterpretation) });
 }

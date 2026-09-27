@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Children, isValidElement, type ReactNode } from 'react';
 import { Price } from '@/components/payments/price-provider';
-import { PDF_ELEMENT_COLORS, ELEMENT_HANJA } from '@/lib/saju/pdf-report-maps';
+import { PDF_ELEMENT_COLORS } from '@/lib/saju/pdf-report-maps';
+import { koreanizeGanzi, toHangulDisplay } from '@/lib/saju/terminology';
 import { ganziToKorean } from '@/lib/saju/terminology';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { chunkPdfYears, paginatePdfNarrative } from '@/lib/saju/pdf-report-pages';
@@ -51,11 +52,11 @@ const FOOTER_COPY = '© 2026 푸꼬컴퍼니 · 간지사주';
 export function RunningHeader({
   reportNo,
   subjectName,
-  mark = '干支',
+  mark = '간지',
 }: {
   reportNo: string;
   subjectName: string;
-  /** 2026-09-27 — 한자 금지 문서(신년운세)는 '간지'. 평생 PDF 는 아직 기존 표기(현황 목록에서 정리 예정). */
+  /** 2026-09-27 한자 전면 금지 — 기본 '간지'. */
   mark?: string;
 }) {
   return (
@@ -151,7 +152,7 @@ export function ReportDocument({
               <section className="report-page" data-page="1">
                 <header className="rp-cover-head">
                   <div className="rp-brand">
-                    <span className="rp-logo" aria-hidden="true">干</span>
+                    <span className="rp-logo" aria-hidden="true">간</span>
                     <span className="rp-brand-text">
                       <span className="rp-brand-title">간지사주</span>
                       <span className="rp-brand-sub">간지사주 · 사주 리포트</span>
@@ -192,10 +193,10 @@ export function ReportDocument({
                       <div key={p.label} className="rp-pillar">
                         <div className="rp-pillar-label">{p.label}</div>
                         <div className="rp-pillar-stem" style={{ color: p.color }}>
-                          {p.stem}
+                          {koreanizeGanzi(p.stem)}
                         </div>
                         <div className="rp-pillar-branch" style={{ color: p.branchColor }}>
-                          {p.branch}
+                          {koreanizeGanzi(p.branch)}
                         </div>
                         <div className="rp-pillar-god">{p.god}</div>
                       </div>
@@ -219,7 +220,7 @@ export function ReportDocument({
                           className="rp-donut-hole"
                           style={{ color: PDF_ELEMENT_COLORS[data.dominantElement] }}
                         >
-                          {ELEMENT_HANJA[data.dominantElement]}
+                          {data.dominantElement}
                         </span>
                       </div>
                       <ul className="rp-elem-legend">
@@ -227,7 +228,7 @@ export function ReportDocument({
                           <li key={e.element}>
                             <span className="rp-elem-dot" style={{ background: e.color }} />
                             <span className="rp-elem-name">
-                              {e.element}({ELEMENT_HANJA[e.element]})
+                              {e.element}
                             </span>
                             <strong className="rp-elem-pct">
                               {e.pct}
@@ -277,7 +278,7 @@ export function ReportDocument({
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
                   no={questionEdition ? '참고 01' : '02'}
-                  titleLines={['십성(十星)으로 보는', '기운의 분포']}
+                  titleLines={['십성으로 보는', '기운의 분포']}
                   lead="십성은 일간(나)을 바탕으로 다른 글자들과의 관계를 10가지로 분류한 것입니다. 나를 둘러싼 기운을 보는 가장 직관적인 방법이에요."
                 />
 
@@ -285,12 +286,12 @@ export function ReportDocument({
                   {data.tenGods.map((t) => (
                     <div key={t.name} className="rp-tengod-row">
                       <span className="rp-tengod-chip" style={{ background: t.color }}>
-                        {t.hanja}
+                        {t.name.slice(0, 1)}
                       </span>
                       <div className="rp-tengod-body">
                         <div className="rp-tengod-head">
                           <span className="rp-tengod-name">
-                            {t.name} <em>({t.hanja})</em>
+                            {t.name}
                           </span>
                           <strong style={{ color: t.color }}>
                             {t.pct}
@@ -334,12 +335,12 @@ export function ReportDocument({
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
                   no={questionEdition ? '02' : '03'}
-                  titleLines={['일주(日柱)', '당신을 보여주는 두 글자']}
+                  titleLines={['일주', '당신을 보여주는 두 글자']}
                   lead="일주는 사주에서 ‘나’를 의미합니다. 일간(나의 본질)과 일지(나의 환경)가 만나 만들어진 캐릭터예요."
                 />
 
                 <div className="rp-ilju-hero">
-                  <span className="rp-ilju-hero-glyph">{data.ilju.ganzi}</span>
+                  <span className="rp-ilju-hero-glyph">{toHangulDisplay(data.ilju.ganzi)}</span>
                   <div className="rp-ilju-hero-text">
                     <div className="rp-eyebrow rp-on-pink">ILJU · 일주</div>
                     <div className="rp-ilju-hero-name">{data.ilju.name}</div>
@@ -355,11 +356,11 @@ export function ReportDocument({
                         className="rp-ilju-chip"
                         style={{ background: data.ilju.stem.color }}
                       >
-                        {data.ilju.stem.hanja}
+                        {data.ilju.stem.korean}
                       </span>
                       <div>
                         <div className="rp-ilju-card-name">
-                          {data.ilju.stem.korean}({data.ilju.stem.hanja})
+                          {data.ilju.stem.korean}
                         </div>
                         <div className="rp-ilju-card-nature">{data.ilju.stem.natureLine}</div>
                       </div>
@@ -374,11 +375,11 @@ export function ReportDocument({
                         className="rp-ilju-chip"
                         style={{ background: data.ilju.branch.color }}
                       >
-                        {data.ilju.branch.hanja}
+                        {data.ilju.branch.korean}
                       </span>
                       <div>
                         <div className="rp-ilju-card-name">
-                          {data.ilju.branch.korean}({data.ilju.branch.hanja})
+                          {data.ilju.branch.korean}
                         </div>
                         <div className="rp-ilju-card-nature">{data.ilju.branch.natureLine}</div>
                       </div>
@@ -443,7 +444,7 @@ export function ReportDocument({
                     <div key={a.label} className="rp-area-card">
                       <div className="rp-area-head">
                         <span className="rp-area-icon" style={{ background: a.color }}>
-                          {a.hanja}
+                          {a.label.slice(0, 1)}
                         </span>
                         <div className="rp-area-title">
                           <div className="rp-area-name">{a.label}</div>
@@ -492,7 +493,7 @@ export function ReportDocument({
 
                 <div className="rp-gyeokguk-hero">
                   <div className="rp-eyebrow rp-on-pink">GYEOKGUK · 격국</div>
-                  <div className="rp-gyeokguk-name">{data.gyeokguk.name}</div>
+                  <div className="rp-gyeokguk-name">{toHangulDisplay(data.gyeokguk.name)}</div>
                   <p>{data.gyeokguk.desc}</p>
                 </div>
 
@@ -505,7 +506,7 @@ export function ReportDocument({
                         className={`rp-sinsal-lg${s.have ? '' : ' is-absent'}`}
                       >
                         <span className="rp-sinsal-hanja" style={{ color: s.color }}>
-                          {s.hanja}
+                          {s.label.slice(0, 1)}
                         </span>
                         <div className="rp-sinsal-lg-text">
                           <div className="rp-sinsal-lg-name">
@@ -521,11 +522,11 @@ export function ReportDocument({
 
                 <div className="rp-interp">
                   <div className="rp-eyebrow">종합 해석</div>
-                  <p>{data.gyeokguk.summary}</p>
+                  <p>{toHangulDisplay(data.gyeokguk.summary)}</p>
                 </div>
                 <div className="rp-tip">
                   <span aria-hidden="true"><InkIcon name="lantern" size={22} /></span>
-                  <p>{data.gyeokguk.tip}</p>
+                  <p>{toHangulDisplay(data.gyeokguk.tip)}</p>
                 </div>
 
                 <PageFooter page={patternPage} total={totalPages} />
@@ -621,7 +622,7 @@ export function ReportDocument({
                     <strong>{data.closing.highlight}</strong>, 그 작은 결정이 큰 흐름을 바꿉니다.
                   </p>
                   <div className="rp-sign">
-                    <span className="rp-sign-han">干支四柱</span>
+                    <span className="rp-sign-han">간지사주</span>
                     <span className="rp-sign-name">간지사주 드림</span>
                   </div>
                 </div>
@@ -658,7 +659,7 @@ export function ReportDocument({
                 <div className="rp-final-foot">
                   <div className="rp-final-brand">
                     <span className="rp-logo rp-logo-sm" aria-hidden="true">
-                      干
+                      간
                     </span>
                     <span className="rp-final-brand-text">
                       <span className="rp-final-brand-title">간지사주</span>

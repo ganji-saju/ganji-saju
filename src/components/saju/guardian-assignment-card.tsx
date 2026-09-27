@@ -34,7 +34,7 @@ export function GuardianAssignmentCard({
           {viewerName}님의 수호신
         </p>
         <p className="m-0 mt-0.5 text-[17.3px] font-extrabold leading-snug text-[var(--app-ink)]">
-          {guardian.han} · {guardian.animalKo} 수호신
+          {guardian.animalKo} 수호신
         </p>
         <p className="m-0 mt-1 text-[13.5px] leading-relaxed text-[var(--app-copy-soft)]">
           {guardian.persona}

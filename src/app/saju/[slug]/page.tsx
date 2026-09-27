@@ -751,14 +751,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                           color: stemColor,
                         }}
                       >
-                        {pillar?.stem ?? '-'}
-                        {pillar?.branch ?? ''}
-                      </div>
-                      {/* 2026-08-30 #713 — 한글 음. 위 주석은 처음부터 "한자 + 한국명" 이라고
-                          적혀 있었는데 렌더에서 빠져 있어 한자만 덩그러니 남아 있었다
-                          (사용자: "사주팔자 아래에도 한글음을 써줘"). */}
-                      <div className="mt-1 text-[11.5px] font-bold text-[var(--app-copy-soft)]">
-                        {pillar ? ganziToKorean(pillar.ganzi) : ''}
+                        {/* 2026-09-27 한자 전면 금지(명식 포함, 사용자 결정) — 큰 글자를 한글로, 아래 한글음 줄은 중복이라 제거. */}
+                        {pillar ? ganziToKorean(pillar.ganzi) || '-' : '-'}
                       </div>
                     </article>
                   );

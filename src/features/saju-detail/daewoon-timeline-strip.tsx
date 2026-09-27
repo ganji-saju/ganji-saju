@@ -72,13 +72,7 @@ export function DaewoonTimelineStrip({ cycles }: Props) {
               className="mt-1 text-[18.4px] font-bold leading-none"
               style={{ fontFamily: 'var(--font-han)' }}
             >
-              {cycle.ganzi}
-            </div>
-            <div
-              className="mt-1 text-[11.5px] font-bold"
-              style={{ opacity: cycle.isCurrent ? 0.95 : 0.7 }}
-            >
-              {ganziToKorean(cycle.ganzi)}
+              {ganziToKorean(cycle.ganzi) || cycle.ganzi}
             </div>
             <div
               className="mt-1 text-[10.9px] font-extrabold uppercase tracking-[0.04em]"

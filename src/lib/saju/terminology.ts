@@ -68,6 +68,26 @@ export function koreanizeGanzi(value: string | null | undefined): string {
     .replace(LONE_GANZI, (ch) => STEM_KOREAN[ch] ?? BRANCH_KOREAN[ch] ?? ch);
 }
 
+/**
+ * 2026-09-27 한자 전면 금지(사용자 결정, 명식 포함) — 화면·PDF 에 내보내는 문장용.
+ *   "편관격(偏官格)" 같은 한글(한자) 병기에서 괄호째 한자를 떼고, 남은 간지 한자는 한글로 바꾼다.
+ *   계산용 내부 값에는 쓰지 않는다(표시 직전에만).
+ */
+export function toHangulDisplay(value: string | null | undefined): string {
+  if (!value) return '';
+  return koreanizeGanzi(value.replace(/\s*\([\u4e00-\u9fff·\s]+\)/g, ''));
+}
+
+/** 객체 안 모든 문자열에 toHangulDisplay 를 적용한다(구조 유지). 화면·PDF 로 나가는 **출구 한 곳**에서 쓴다. */
+export function hangulizeDeep<T>(value: T): T {
+  if (typeof value === 'string') return toHangulDisplay(value) as T;
+  if (Array.isArray(value)) return value.map((item) => hangulizeDeep(item)) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, hangulizeDeep(v)])) as T;
+  }
+  return value;
+}
+
 export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string]> = [
   // §사주 구조 단위 (위계 큰 단어 먼저)
   [/팔자/gu, '내 사주'],

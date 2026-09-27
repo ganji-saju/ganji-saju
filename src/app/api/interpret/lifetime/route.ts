@@ -1,3 +1,4 @@
+import { hangulizeDeep } from '@/lib/saju/terminology';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   normalizeMoonlightCounselor,
@@ -117,5 +118,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json(response);
+  // 2026-09-27 한자 전면 금지 — 화면으로 나가는 풀이 문장은 출구 한 곳에서 한글화.
+  return NextResponse.json({ ...response, interpretation: hangulizeDeep(response.interpretation) });
 }
