@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 ﻿import type {
   SajuDataV1,
   SajuSymbolRef,
@@ -1361,6 +1362,8 @@ function buildMajorLuckReading(data: SajuDataV1 | SajuDataV2, topic: FocusTopic)
       `기회: ${mainGuide.chance}`,
       `주의: ${mainGuide.caution}`,
       `장기 실행: ${mainGuide.action}`,
+      // 이번 달과 같은 오행이면 기회·주의 문장이 타임라인에서 빠지므로 대운만의 정보를 둔다.
+      window ? `적용 구간: ${window} 동안 이어지는 긴 흐름입니다.` : null,
     ]),
   };
 }
@@ -1373,7 +1376,8 @@ function buildTimeline(data: SajuDataV1 | SajuDataV2, topic: FocusTopic): Report
   const monthlyLuck = buildMonthlyLuckReading(data, topic);
   const majorLuck = buildMajorLuckReading(data, topic);
 
-  return [
+  // 이번 달과 대운이 같은 오행이면 '기회:/주의:' 문장이 똑같이 나온다 — 앞 항목에 나온 문장은 뒤에서 뺀다.
+  return dedupeSentencesDeep([
     {
       label: '오늘',
       headline: `${withParticle(bestTone.cue, '을', '를')} 먼저 살리는 날`,
@@ -1395,7 +1399,7 @@ function buildTimeline(data: SajuDataV1 | SajuDataV2, topic: FocusTopic): Report
       body: majorLuck.body,
       points: majorLuck.points,
     },
-  ];
+  ]);
 }
 
 function toMonth(value: number) {

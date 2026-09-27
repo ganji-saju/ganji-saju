@@ -3145,7 +3145,7 @@ export function buildTodayFortuneFreeResult(
   const opportunity = buildPublicOpportunity(options.concernId, profile);
   const risk = buildPublicRisk(options.concernId, profile);
 
-  return {
+  const freeResult: TodayFortuneFreeResult = {
     sourceSessionId: options.sourceSessionId,
     // 2026-05-15: 클라이언트 sessionStorage 키에 사용 — 어제 캐시가 오늘 화면을 가리지 않게 분리.
     dateKey: todayPillar.dateKey,
@@ -3264,6 +3264,10 @@ export function buildTodayFortuneFreeResult(
       return { caseIds: picked.caseIds, messages: picked.messages };
     })(),
   };
+  // 기회·주의 카드가 위 요약·점수 카드 문장을 다시 싣지 않게 한다(두 카드만 대상 — 개인화 카드 문장은 건드리지 않음).
+  const seen = new Set<string>();
+  dedupeSentencesDeep([freeResult.oneLine, freeResult.scores.map((score) => score.summary)], seen);
+  return { ...freeResult, ...dedupeSentencesDeep({ opportunity: freeResult.opportunity, risk: freeResult.risk }, seen) };
 }
 
 // Task 4 — 오늘 일진 기준 신살 탐지 (free 의 buildSajuChartSnapshot 블록과 동일 로직을 재사용 가능하게 추출).
@@ -3444,11 +3448,15 @@ export function buildTodayFortunePremiumResult(
       focusReport,
       sajuData
     ),
-    favorableWindows: buildTimeWindows(concernId, focusReport, sajuData, 'favorable', dailyContext),
-    cautionWindows: buildTimeWindows(concernId, focusReport, sajuData, 'caution', dailyContext),
-    avoidActions: buildAvoidActions(concernId, focusReport, input, sajuData, dailyContext),
-    recommendedActions: buildRecommendedActions(concernId, focusReport, sajuData, dailyContext),
-    scenarios: buildScenarioComparison(concernId, focusReport, sajuData, dailyContext),
+    // 2026-09-27 — 시간대·행동·시나리오가 같은 근거 문장을 각자 붙여 한 화면에서 반복됐다(측정 평균 10.7).
+    //   화면에 그리는 순서(시간대 → 추천 → 피할 것 → 시나리오)대로 앞에 나온 문장을 뒤에서 뺀다.
+    ...dedupeSentencesDeep({
+      favorableWindows: buildTimeWindows(concernId, focusReport, sajuData, 'favorable', dailyContext),
+      cautionWindows: buildTimeWindows(concernId, focusReport, sajuData, 'caution', dailyContext),
+      recommendedActions: buildRecommendedActions(concernId, focusReport, sajuData, dailyContext),
+      avoidActions: buildAvoidActions(concernId, focusReport, input, sajuData, dailyContext),
+      scenarios: buildScenarioComparison(concernId, focusReport, sajuData, dailyContext),
+    }),
     evidenceLines: buildEvidenceLines(focusReport, todayReport, sajuData, Boolean(input.unknownTime)),
     followUpQuestions: concern.followUpQuestions,
     safetyNote:
