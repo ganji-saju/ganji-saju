@@ -108,6 +108,8 @@ export interface YearlyFlowContext {
   yongsinLabels: string[];
   supportElements: Element[];
   cautionElements: Element[];
+  /** 그해 천간 오행과 태어난 날 오행의 관계 한 구절('나를 돕는 기운이 들어와 …'). 사람마다 다른 첫머리용. */
+  yearTheme?: string | null;
 }
 
 export interface YearlyReferenceReport {

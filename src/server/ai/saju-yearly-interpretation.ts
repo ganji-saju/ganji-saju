@@ -484,10 +484,12 @@ export function buildFallbackYearlyInterpretation(
   report: SajuYearlyReport,
   counselorId: MoonlightCounselorId = 'female'
 ): SajuYearlyAiInterpretation {
+  // 그해와 나의 관계로 첫 문장을 가른다(고정 첫 문장은 모두에게 같았다).
+  const theme = report.annualContext.yearTheme;
   const introPrefix =
     counselorId === 'male'
-      ? `${report.year}년은 결론부터 보면 방향을 먼저 세우는 해입니다.`
-      : `${report.year}년은 한 해의 흐름이 서서히 드러나는 해입니다.`;
+      ? theme ? `${report.year}년은 결론부터 보면 ${theme}입니다.` : `${report.year}년은 결론부터 보면 방향을 먼저 세우는 해입니다.`
+      : theme ? `${report.year}년은 ${theme}입니다.` : `${report.year}년은 한 해의 흐름이 서서히 드러나는 해입니다.`;
   const keywords = report.coreKeywords
     .map((item) => `${item.label}: ${item.reason}`)
     .slice(0, 5);

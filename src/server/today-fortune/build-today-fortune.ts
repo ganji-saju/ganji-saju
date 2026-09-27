@@ -1,3 +1,4 @@
+import { DAILY_TOPIC_SCENES, type DailySceneRelation } from './daily-topic-scenes';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
 import { getFeatureCost } from '@/lib/credits/costs';
@@ -1803,8 +1804,13 @@ function buildTodayQuestionReading(
   const natalAdvice = natalMeaning && natalRole !== personal.relation
     ? key === 'overall' ? PERSONAL_DAY_COPY[natalRole].focus : DAILY_TOPIC_ANSWERS[natalRole][key]
     : '';
+  // 오늘의 관계(10가지)별 생활 장면·판단 기준 — 고정 문장 대신(daily-topic-scenes.ts).
+  const scene = DAILY_TOPIC_SCENES[personal.relation as DailySceneRelation]?.[key];
+  const sceneChoice = underage || !scene ? topic.choice
+    : key === 'condition' ? `${scene.choice} 불편함이 이어지면 필요한 도움을 받으세요.` : scene.choice;
   const example = underage && key === 'career' ? '공부나 함께 하는 활동에서 할 일이 겹친다면, 오늘 끝낼 부분과 물어볼 부분을 나눠보세요.'
-    : underage && key === 'wealth' ? '용돈이나 물건을 쓰고 싶다면, 필요한 이유를 적고 보호자와 사용 범위를 정해보세요.' : topic.example;
+    : underage && key === 'wealth' ? '용돈이나 물건을 쓰고 싶다면, 필요한 이유를 적고 보호자와 사용 범위를 정해보세요.'
+    : underage ? topic.example : scene?.example ?? topic.example;
   const child = CHILD_DAILY_TOPICS[key];
   return {
     question: underage && key === 'love' ? '친구와 가까운 사람에게 마음을 어떻게 전할까요?' : topic.question,
@@ -1817,9 +1823,9 @@ function buildTodayQuestionReading(
     example: needsCaregiver ? `${child.example}${key === 'overall' ? ` ${CHILD_ROLE_GUIDANCE[personal.relation]}` : ''}`
       // 같은 성향 문장이 6개 카드에 똑같이 붙어 한 풀이에서 반복됐다 — 성향 설명은 '오늘 전체' 카드에만,
       //   분야 카드는 그 장면에 맞춘 성향 주의 한 줄로 쓴다(원국 성향에 따라 장면이 달라지는 개인화 유지).
-      : `${natalTone ? key === 'overall' ? `평소 ${natalTone.body} ` : `${TOPIC_SCENE_LABEL[key]}에서는 ${natalTone.caution} ` : ''}${example}`,
+      : natalTone ? key === 'overall' ? `평소 ${natalTone.body} ${example}` : `${example} ${TOPIC_SCENE_LABEL[key]}에서는 ${natalTone.caution}` : example,
     choice: needsCaregiver ? `${child.choice}${key === 'overall' && natalMeaning && natalRole !== personal.relation ? ` ${CHILD_ROLE_GUIDANCE[natalRole]}` : ''}`
-      : `${natalAdvice ? `${natalAdvice} ` : ''}${topic.choice}${input.unknownTime ? ' 태어난 시간을 몰라 특정 시간대의 결과는 단정하지 않습니다.' : ''}`,
+      : `${natalAdvice ? `${natalAdvice} ` : ''}${sceneChoice}${input.unknownTime ? ' 태어난 시간을 몰라 특정 시간대의 결과는 단정하지 않습니다.' : ''}`,
   };
 }
 
