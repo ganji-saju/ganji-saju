@@ -48,13 +48,22 @@ export function DeepSection({ no, label, text }: { no: number; label: string; te
 const FOOTER_COPY = '© 2026 푸꼬컴퍼니 · 간지사주';
 
 /** P2~P8 상단 running header (REPORT NO · 이름 + 干支). */
-export function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectName: string }) {
+export function RunningHeader({
+  reportNo,
+  subjectName,
+  mark = '干支',
+}: {
+  reportNo: string;
+  subjectName: string;
+  /** 2026-09-27 — 한자 금지 문서(신년운세)는 '간지'. 평생 PDF 는 아직 기존 표기(현황 목록에서 정리 예정). */
+  mark?: string;
+}) {
   return (
     <div className="rp-runhead">
       <span>
         {reportNo} · {subjectName} 사주 리포트
       </span>
-      <span className="rp-runhead-mark">干支</span>
+      <span className="rp-runhead-mark">{mark}</span>
     </div>
   );
 }

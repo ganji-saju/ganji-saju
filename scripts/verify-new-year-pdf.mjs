@@ -66,14 +66,15 @@ try {
     await page.evaluate(() => document.fonts.ready);
     const metrics = await page.evaluate(() => ({
       pages: [...document.querySelectorAll('.report-page')].map((el) => ({ number: Number(el.getAttribute('data-page')), height: el.getBoundingClientRect().height })),
-      hanjaInBody: [...document.querySelectorAll('.rp-deep-sec, .rp-summary p, .rp-card p')].some((el) => /丁未/.test(el.textContent)),
+      // 2026-09-27 한자 전면 금지(명식 포함) — 문서 전체에서 한 글자도 없어야 한다.
+      hanjaInBody: (document.querySelector('.report-doc').textContent.match(/[\u4e00-\u9fff]/g) ?? []).join(''),
       horizontalOverflow: [...document.querySelectorAll('.report-page')].some((el) => el.scrollWidth > el.clientWidth + 1),
     }));
     assert.deepEqual(metrics.pages.map((p) => p.number), Array.from({ length: metrics.pages.length }, (_, i) => i + 1), 'page numbers must be sequential');
     const tooTall = metrics.pages.filter((p) => p.height > 1122.6);
     assert.deepEqual(tooTall, [], `A new-year sheet exceeds A4: ${JSON.stringify(tooTall)}`);
     assert.equal(metrics.horizontalOverflow, false, 'overflows horizontally');
-    assert.equal(metrics.hanjaInBody, false, 'year ganji hanja left in body copy');
+    assert.equal(metrics.hanjaInBody, '', `hanja left in the new-year PDF: ${metrics.hanjaInBody}`);
     const pdfBytes = await page.pdf({ path: path.join(outputDir, `sample-${index + 1}.pdf`), format: 'A4', printBackground: true, preferCSSPageSize: true });
     const physicalPages = (pdfBytes.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
     assert.equal(physicalPages, metrics.pages.length, 'physical PDF pages differ from report pages');
