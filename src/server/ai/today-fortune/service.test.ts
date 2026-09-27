@@ -90,3 +90,11 @@ test('플래그 OFF 일 때 generateTodayFortuneNarrative 는 null 반환', asyn
   assert.equal(result, null);
   delete process.env.OPENAI_TODAY_FORTUNE;
 });
+
+// 2026-09-27 — temperature: 0.8 이 남아 gpt-5.x 가 400 을 내고 오늘운세 AI 가 07-07 이후 전량 폴백이었다
+//   (ai_llm_runs: today_fortune openai 0건 · openai_error 전부). 운영 모델은 temperature 를 받지 않는다(#608).
+test('오늘운세 LLM 호출은 temperature 를 보내지 않는다', () => {
+  const fs = require('node:fs');
+  const source = fs.readFileSync(require('node:path').join(__dirname, 'service.ts'), 'utf8');
+  assert.equal(/temperature\s*:/.test(source), false);
+});

@@ -126,7 +126,8 @@ export function createInMemoryLlmTelemetryStore(): LlmTelemetryStore & { records
 export function createSupabaseLlmTelemetryStore(): LlmTelemetryStore {
   return {
     async insert(record) {
-      if (!hasSupabaseServiceEnv) return;
+      // CI E2E 는 운영 DB 키로 돌지만 OpenAI 키가 없어 ai_not_configured 폴백을 원장에 찍었다(2026-09-27 실측: 연간·평생 폴백 907건 전부).
+      if (!hasSupabaseServiceEnv || process.env.LLM_TELEMETRY_DISABLED === '1') return;
       try {
         const supabase = await createServiceClient();
         await supabase.from(TABLE).insert({
