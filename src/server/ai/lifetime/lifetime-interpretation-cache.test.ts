@@ -70,8 +70,10 @@ test('buildLifetimeCacheKey: reportHash(챕터) 다르면 → 다른 키 (누락
   );
 });
 
-test('buildLifetimeCacheKey: recentFeedbackSummary 다르면 → 다른 키 (누락 결정요인 #3)', () => {
-  assert.notEqual(
+// 2026-09-27 사용자 결정 — 결제한 보관형 리포트는 볼 때마다(화면·PDF·재방문) 같아야 한다. 피드백이 쌓였다고
+//   저장본이 바뀌면 "볼 때마다 내용이 다르다"가 된다 → 피드백은 처음 생성 때만 반영하고 키에서는 뺀다(이전 결정 #3 뒤집음).
+test('buildLifetimeCacheKey: recentFeedbackSummary 가 달라도 같은 키(풀이 고정)', () => {
+  assert.equal(
     buildLifetimeCacheKey(data, baseCtx),
     buildLifetimeCacheKey(data, { ...baseCtx, recentFeedbackSummary: '최근 피드백 있음' })
   );

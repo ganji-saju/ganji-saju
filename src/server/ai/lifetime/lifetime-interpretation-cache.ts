@@ -70,7 +70,7 @@ export function buildLifetimeCacheKey(
     counselorId: ctx.counselorId,
     targetYear: ctx.targetYear,
     reportHash: ctx.reportHash,
-    feedback: ctx.recentFeedbackSummary ?? null,
+    // 2026-09-27 — 피드백은 키에서 뺀다(사용자 결정: 보관형 리포트는 볼 때마다 같아야). 처음 생성 때 프롬프트에만 반영.
     promptVersion: ctx.promptVersion,
   });
   return createHash('sha256').update(payload).digest('hex');
