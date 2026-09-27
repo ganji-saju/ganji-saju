@@ -1,3 +1,4 @@
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { Solar } from 'lunar-typescript';
 import {
   loadSajuDataV2,
@@ -409,7 +410,23 @@ function createYearlyContext(
     yongsinLabels: [...new Set(yongsinLabels)],
     supportElements,
     cautionElements,
+    yearTheme: yearRelationTheme(targetData.dayMaster.element, getYearGanji(targetYear, targetData)),
   };
+}
+
+// 2026-09-27 — 연간 첫머리가 누구에게나 같았다. 그해 기운과 나의 관계로 한 해의 성격을 가른다.
+const YEAR_RELATION_THEME = [
+  '나와 같은 기운이 들어와 내 힘으로 밀고 나가기 좋은 해지만, 고집과 경쟁도 함께 커지는 해',
+  '내 기운이 밖으로 흘러 말과 결과물이 늘어나고 재능을 드러내기 좋은 해',
+  '내가 다루는 기운이 들어와 돈과 성과를 손에 쥐는 현실적인 움직임이 많아지는 해',
+  '나를 다잡는 기운이 들어와 책임과 평가가 커지고 자리를 굳히는 해',
+  '나를 돕는 기운이 들어와 배우고 준비하며 주변의 도움을 받기 좋은 해',
+];
+
+function yearRelationTheme(dayElement: Element | undefined, yearGanji: string | null) {
+  const yearElement = yearGanji ? STEM_ELEMENT_MAP[Array.from(yearGanji)[0] as Stem] : undefined;
+  const step = monthRelationStep(dayElement, yearElement);
+  return step === null ? null : YEAR_RELATION_THEME[step];
 }
 
 function createComputationMeta(
@@ -433,7 +450,7 @@ function createYearlyKeywords(
   const support = formatElementList(context.supportElements);
 
   return compactStrings([
-    context.yearGanji ? `${context.yearGanji}|해 전체를 읽는 가장 큰 바탕입니다.` : null,
+    context.yearGanji ? `${koreanizeGanzi(context.yearGanji)}|${context.yearTheme ? `${context.yearTheme}입니다.` : '해 전체를 읽는 가장 큰 바탕입니다.'}` : null,
     support ? `${support}|부족한 축을 살리고 기회를 넓히는 보완 포인트입니다.` : null,
     weakest ? `${weakest} 보완|과하거나 비어 있는 부분을 다듬어야 흐름이 오래 갑니다.` : null,
     context.pattern
@@ -663,6 +680,27 @@ function getMonthlyMomentum(
 //   그 달 천간 오행과 태어난 날 오행의 관계(같음·내가 낳음·내가 다룸·나를 다잡음·나를 도움)로 첫 문장을 가른다.
 const ELEMENT_CYCLE: Element[] = ['목', '화', '토', '금', '수'];
 
+// 같은 관계 5갈래로 '조심할 것'·'할 일' 첫머리도 가른다(달 고정 문장만 쓰면 같은 해엔 누구나 같았다).
+const MONTH_RELATION_CAUTION: Array<(month: number, areas: string) => string> = [
+  (m, a) => `${m}월 ${a}에서 내 방식만 고집하면 도와줄 사람이 한발 물러설 수 있습니다.`,
+  (m, a) => `${m}월 ${a}에서는 말이 앞서 준비가 덜 된 것까지 약속하기 쉽습니다.`,
+  (m, a) => `${m}월 ${a}에서 눈앞의 이득을 좇다 보면 체력과 시간이 먼저 새기 쉽습니다.`,
+  (m, a) => `${m}월 ${a}의 책임을 혼자 다 떠안으면 달 후반에 지치기 쉽습니다.`,
+  (m, a) => `${m}월 ${a}을 두고 생각만 길어지면 좋은 때를 흘려보내기 쉽습니다.`,
+];
+const MONTH_RELATION_ACTION: Array<(month: number, areas: string) => string> = [
+  (m, a) => `${m}월엔 ${a} 일 하나를 함께할 사람과 나눠 맡으세요.`,
+  (m, a) => `${m}월엔 ${a}에서 꺼낼 말이나 결과물 하나를 먼저 보여주세요.`,
+  (m, a) => `${m}월엔 ${a}에 드는 돈과 시간을 한 줄씩 적어두세요.`,
+  (m, a) => `${m}월엔 ${a}에서 맡을 범위와 마감을 먼저 정해두세요.`,
+  (m, a) => `${m}월엔 ${a}에 관해 배운 것 하나를 실제로 써보세요.`,
+];
+
+function monthRelationStep(dayElement: Element | undefined, monthElement: Element | undefined) {
+  if (!dayElement || !monthElement) return null;
+  return (ELEMENT_CYCLE.indexOf(monthElement) - ELEMENT_CYCLE.indexOf(dayElement) + 5) % 5;
+}
+
 function monthRelationLead(month: number, dayElement: Element | undefined, monthElement: Element | undefined, areas: string) {
   if (!dayElement || !monthElement) return null;
   const step = (ELEMENT_CYCLE.indexOf(monthElement) - ELEMENT_CYCLE.indexOf(dayElement) + 5) % 5;
@@ -693,6 +731,8 @@ function createMonthlyFlow(
       ? `${monthlyGanji} 월운이 ${plan.theme}`
       : plan.theme;
 
+  const monthStemElement = monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined;
+  const step = monthRelationStep(monthly.data.dayMaster.element, monthStemElement);
   const lead =
     monthRelationLead(
       monthly.month,
@@ -719,11 +759,11 @@ function createMonthlyFlow(
       maxSentences: 2,
       maxLength: 104,
     }),
-    caution: tightenCardCopy(`${guide.cautionLead} ${secondary.caution}`, {
+    caution: tightenCardCopy(`${step === null ? guide.cautionLead : MONTH_RELATION_CAUTION[step](monthly.month, focusLabel)} ${secondary.caution}`, {
       maxSentences: 2,
       maxLength: 104,
     }),
-    action: tightenCardCopy(guide.actionLead, {
+    action: tightenCardCopy(step === null ? guide.actionLead : MONTH_RELATION_ACTION[step](monthly.month, focusLabel), {
       maxSentences: 1,
       maxLength: 76,
     }),
@@ -884,7 +924,9 @@ function createOneLineSummary(
   // 2026-05-19 B04 fix: 기존 'X.headline 과 Y.headline 를 같이 조율해야' 패턴이 종결문 headline
   //   ('~챙기세요', '~핵심입니다') 에 조사를 직접 붙여 '챙기세요과', '핵심입니다를' 비문 생성.
   //   해결: 한 줄 안 두 headline 결합 대신 세 문장 분리 — 각자 자기 종결문 그대로 안전 출력.
-  const introLine = `${targetYear}년은 ${context.yearGanji}의 흐름 아래에서 일과 관계를 함께 보면 한 해가 안정적으로 풀립니다.`;
+  const introLine = context.yearTheme
+    ? `${targetYear}년은 ${context.yearTheme}입니다.`
+    : `${targetYear}년은 ${koreanizeGanzi(context.yearGanji)}의 흐름 아래에서 일과 관계를 함께 보면 한 해가 안정적으로 풀립니다.`;
   return compactStrings([
     introLine,
     categories.work.headline,

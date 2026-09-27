@@ -274,7 +274,7 @@ export function detectComprehensiveSinsals(
     }
     pushIf(positions.length > 0, {
       name: '양인살', category: '흉신', positions, scoreHint: -8,
-      hint: '극단적 추진력, 사고·수술·칼 조심',
+      hint: '밀어붙이는 힘이 강한 날, 서두르는 동작과 날카로운 도구는 천천히',
     });
   }
 
@@ -290,7 +290,7 @@ export function detectComprehensiveSinsals(
     }
     pushIf(positions.length > 0, {
       name: '백호살', category: '흉신', positions, scoreHint: -12,
-      hint: '갑작스러운 사고·충돌·혈광, 안전 운전 필수',
+      hint: '일이 갑자기 몰리기 쉬운 날, 이동과 운전은 여유 있게',
     });
   }
 
@@ -320,7 +320,7 @@ export function detectComprehensiveSinsals(
     if (options.iljin && gongmang.includes(options.iljin.branch)) positions.push('iljin');
     pushIf(positions.length > 0, {
       name: '공망살', category: '흉신', positions, scoreHint: -10,
-      hint: '노력 대비 결과 부족·헛수고, 비움과 정리에 집중',
+      hint: '결과가 늦게 보이는 날, 새로 벌이기보다 비우고 정리하기',
     });
   }
 
@@ -348,7 +348,7 @@ export function detectComprehensiveSinsals(
     }
     pushIf(positions.length > 0, {
       name: '원진살', category: '흉신', positions, scoreHint: -7,
-      hint: '이유 없는 짜증·미묘한 갈등, 입조심 필요',
+      hint: '마음이 쉽게 예민해지는 날, 말은 한 박자 늦게',
     });
   }
 
@@ -374,7 +374,7 @@ export function detectComprehensiveSinsals(
     }
     pushIf(positions.length > 0, {
       name: '귀문관살', category: '흉신', positions, scoreHint: -10,
-      hint: '정신적 예민함·신경과민, 명상·휴식 권장',
+      hint: '생각이 많아지는 날, 짧은 휴식과 산책으로 머리 식히기',
     });
   }
 
@@ -390,7 +390,7 @@ export function detectComprehensiveSinsals(
       if (options.iljin && options.iljin.branch === target) positions.push('iljin');
       pushIf(positions.length > 0, {
         name: '망신살', category: '흉신', positions, scoreHint: -8,
-        hint: '망신·도난·사기 위험, 보안 점검',
+        hint: '체면과 소지품을 챙길 날, 비밀번호와 지갑 한 번 더 확인',
       });
     }
   }
@@ -407,7 +407,7 @@ export function detectComprehensiveSinsals(
       if (options.iljin && options.iljin.branch === target) positions.push('iljin');
       pushIf(positions.length > 0, {
         name: '겁살', category: '흉신', positions, scoreHint: -8,
-        hint: '갑작스러운 손실·강탈, 큰 결정 자제',
+        hint: '예상 못 한 지출이 생기기 쉬운 날, 큰 결정은 하루 미루기',
       });
     }
   }
@@ -420,7 +420,7 @@ export function detectComprehensiveSinsals(
       const stages = ['들삼재', '눌삼재', '날삼재'];
       hits.push({
         name: `삼재 (${stages[idx]})`, category: '흉신', positions: [], scoreHint: -10,
-        hint: '3년 흉운 중 ' + stages[idx] + ' — 신중함이 최선',
+        hint: '3년 조심 구간 중 ' + stages[idx] + ' — 큰 변화보다 다지기',
       });
     }
   }
@@ -429,7 +429,7 @@ export function detectComprehensiveSinsals(
 
   // 도화·역마·화개 (사주 원국 + 일진과의 상호작용).
   for (const sinsal of [
-    { key: 'dohwa' as const, name: '도화살', score: 3, hint: '매력·이성운, 유혹과 함정 동시' },
+    { key: 'dohwa' as const, name: '도화살', score: 3, hint: '매력이 돋보이는 날, 호감은 천천히 확인하기' },
     { key: 'yeokma' as const, name: '역마살', score: 3, hint: '이동·출장·변화, 분주한 흐름' },
     { key: 'hwagae' as const, name: '화개살', score: 3, hint: '학문·예술·종교, 고독 속 통찰' },
   ]) {
