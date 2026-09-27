@@ -365,6 +365,13 @@ function padHighlights(
   return out.sort((a, b) => a.month - b.month);
 }
 
+function quarterLeadText(flow: SajuYearlyReport['monthlyFlows'][number]) {
+  const areas = flow.relatedAreas.map((area) => YEARLY_CATEGORY_LABEL[area]).join('과 ');
+  return flow.momentum === 'caution'
+    ? `${flow.month}월의 ${areas}은 서두르지 말고 한 번 더 확인하는 쪽으로 두세요.`
+    : `${flow.month}월에 ${areas} 쪽을 먼저 움직이면 분기 전체가 수월해집니다.`;
+}
+
 export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYearExtras {
   const byMonth = new Map(report.monthlyFlows.map((f) => [f.month, f]));
   const quarterlyFlows = QUARTER_MONTHS.map((months, i) => {
@@ -377,7 +384,8 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
     return {
       quarter: (i + 1) as 1 | 2 | 3 | 4,
       months,
-      summary: tightenLine(`${months[0]}~${months[2]}월은 ${tone}. ${lead?.summary ?? ''}`, 2, 160),
+      // 월별 요약 문장을 그대로 가져오면 한 풀이에서 두 번 나온다 — 분기는 이끄는 달과 분야로 자기 문장을 쓴다.
+      summary: tightenLine(`${months[0]}~${months[2]}월은 ${tone}. ${lead ? quarterLeadText(lead) : ''}`, 2, 160),
       focusCategory: (lead?.relatedAreas[0] ?? (rising >= caution ? 'work' : 'health')) as NewYearHighlightCategory,
     };
   });
@@ -389,7 +397,8 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
       family: tightenLine(`집안과 가까운 사람 사이에서는 ${rel.summary} ${rel.action}`, 3, 260),
       study: tightenLine(
         // 업무 문단엔 '오늘은…' 같은 하루 단위 조언이 섞여 있어 첫 문장만 쓴다.
-        `공부와 자격 준비는 ${tightenLine(work.opportunity, 1, 120)} ${report.actionGuide.useWhenStrong[0] ?? move.opportunity}`,
+        // 행동 조언(actionAdvice)이 useWhenStrong 을 통째로 싣기 때문에 여기서 다시 쓰면 반복이 된다.
+        `공부와 자격 준비는 ${tightenLine(work.opportunity, 1, 120)} ${move.opportunity}`,
         3,
         260
       ),
