@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -207,7 +208,8 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
     targetYear,
     readingRecord: reading,
   });
-  const interpretation = interpretationResult?.interpretation ?? null;
+  // 화면(API 출구)과 같은 규칙으로 한 풀이 안 반복 문장 제거 — 화면 = PDF.
+  const interpretation = interpretationResult?.interpretation ? dedupeSentencesDeep(interpretationResult.interpretation) : null;
   const data = buildPdfModel(reading, interpretationResult?.report ?? report, reportNo, targetYear, interpretation);
 
   return (

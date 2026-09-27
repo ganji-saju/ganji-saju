@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import { getLifetimeCalendarLuck } from '@/domain/saju/report/build-lifetime-report';
@@ -295,10 +296,11 @@ export function buildFallbackLifetimeInterpretation(
   counselorId: MoonlightCounselorId = 'female'
 ): SajuLifetimeAiInterpretation {
   const fallback = {
+    // 2026-09-27 — 첫 문단 끝에 한 줄 요약을 붙이면 요약 칸과 같은 문장이 두 번 나온다(반복 측정). 요약은 oneLineSummary 한 곳에.
     opening:
       counselorId === 'male'
-        ? `${report.targetYear}년 흐름을 곁에 두고 보더라도, 이 사주는 먼저 자기 원칙을 세우고 그 위에서 사람과 돈과 일을 조율할 때 가장 안정적입니다. ${report.cover.oneLineSummary}`
-        : `${report.targetYear}년의 흐름을 곁에 두고 읽어도, 이 사주의 큰 본질은 쉽게 바뀌지 않습니다. ${report.cover.oneLineSummary}`,
+        ? `${report.targetYear}년 흐름을 곁에 두고 보더라도, 이 사주는 먼저 자기 원칙을 세우고 그 위에서 사람과 돈과 일을 조율할 때 가장 안정적입니다.`
+        : `${report.targetYear}년의 흐름을 곁에 두고 읽어도, 이 사주의 큰 본질은 쉽게 바뀌지 않습니다.`,
     keywords: report.cover.keywords.map((item) => `${item.label}: ${item.reason}`).slice(0, 5),
     lifetimeRule: report.cover.lifetimeRule,
     sections: SECTION_ORDER.reduce((acc, entry) => {
@@ -309,7 +311,7 @@ export function buildFallbackLifetimeInterpretation(
     oneLineSummary: report.cover.oneLineSummary,
   };
 
-  return normalizeLifetimeInterpretation(fallback);
+  return dedupeSentencesDeep(normalizeLifetimeInterpretation(fallback));
 }
 
 function normalizeLifetimeInterpretation(

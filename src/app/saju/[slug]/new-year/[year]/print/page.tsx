@@ -1,3 +1,4 @@
+import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 // 2026-09-26 — 2027 신년운세 PDF. 이용권 확인 뒤 A4 문서(장마다 새 쪽)를 그리고 브라우저 "PDF로 저장"을 쓴다
 //   (평생운세 PDF 와 같은 방식 — 서버에서 PDF 파일을 만들지 않는다). 풀이는 화면과 같은 캐시를 쓴다.
 import { notFound, redirect } from 'next/navigation';
@@ -54,7 +55,9 @@ export default async function NewYearPrintPage({ params }: Props) {
   });
   if (!response) notFound();
 
-  const { report, interpretation } = response;
+  const { report } = response;
+  // 화면(API 출구)과 같은 규칙으로 한 풀이 안 반복 문장 제거 — 화면 = PDF.
+  const interpretation = dedupeSentencesDeep(response.interpretation);
   // 사주팔자 명식·오행·십성·신살은 평생 PDF 와 같은 모델에서 뽑는다(결정론 — LLM 비용 없음).
   const data = buildPdfModel(
     reading,
