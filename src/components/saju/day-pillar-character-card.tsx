@@ -3,6 +3,7 @@
 // 자리는 일주론(60갑자 캐릭터). 우리는 grounding.personalizationContext.sixtyGapja
 // 데이터가 이미 산출되는데 UI 노출이 약했음. 이 컴포넌트로 결과 페이지 상단에 고정.
 
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { SixtyGapjaCoreProfile } from '@/domain/saju/report/personalization-context';
 
 interface DayPillarCharacterCardProps {
@@ -56,7 +57,7 @@ export function DayPillarCharacterCard({
           }}
           aria-hidden="true"
         >
-          {dayGanziHanja}
+          {koreanizeGanzi(dayGanziHanja)}
         </div>
         <div className="min-w-0 flex-1">
           {profile ? (

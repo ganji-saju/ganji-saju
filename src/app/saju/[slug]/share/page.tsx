@@ -1,3 +1,4 @@
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 // Redesign 2026-05-13 (Claude Design / screens-f.jsx ScreenSajuShare):
 // 신규 /saju/[slug]/share — 인스타 1:1.3 비율 결과 카드 + 5 채널 공유 + 추천 전 안내.
 // 실제 공유는 Web Share API + 클립보드 fallback. QR 코드는 임시 picture-pattern.
@@ -66,7 +67,7 @@ export default async function SajuSharePage({ params }: Props) {
   const punch = buildPunchReading(report);
   const yearZodiac = getYearZodiac(sajuData);
   const zodiacLabel = ZODIAC_KOR[yearZodiac];
-  const dayMasterLabel = `${sajuData.pillars.day.ganzi}일주`;
+  const dayMasterLabel = `${koreanizeGanzi(sajuData.pillars.day.ganzi)}일주`;
 
   const verdict = simplifySajuCopy(punch.verdict);
   const overall = clampScore(report.scores.find((s) => s.key === 'overall')?.score ?? 70);

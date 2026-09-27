@@ -255,7 +255,7 @@ export function DaewoonSection({ cycles }: { cycles: LifetimeMajorLuckCycle[] })
       {/* 대운 timeline strip — client 측 mount 시 active 카드 중앙 정렬. */}
       <section>
         <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-          大運 · 대운 흐름
+          대운 흐름
         </div>
         <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
           내 인생의 10년 단위 챕터

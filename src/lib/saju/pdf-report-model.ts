@@ -1,3 +1,4 @@
+import { hangulizeDeep } from '@/lib/saju/terminology';
 // Server-side assembly; ReportDocument imports this module only as a type.
 import { buildLifetimePdfTimeline } from '@/lib/saju/lifetime-pdf-timeline';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
@@ -394,7 +395,9 @@ export function buildPdfModel(
     rememberRules: (fullReading.rememberRules ?? []).filter((r) => Boolean(r && r.trim())),
   };
 
-  return {
+  // 2026-09-27 한자 전면 금지(사용자 결정, 명식 포함) — PDF 로 나가는 모든 문장을 여기 한 곳에서 한글화한다.
+  //   필드마다 따로 부르면 새 필드·폴백 문장에서 또 빠진다(몇 달째 반복된 원인). 평생·신년 PDF 공용 출구.
+  return hangulizeDeep({
     readingEdition: 'questions-v1' as const,
     reportNo,
     targetYear,
@@ -427,7 +430,7 @@ export function buildPdfModel(
     nextProducts,
     deepReading,
     timeline,
-  };
+  });
 }
 
 // 격국명 → 한자 (흔한 격 일부만; 미상이면 빈 문자열).

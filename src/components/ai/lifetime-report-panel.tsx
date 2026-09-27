@@ -894,7 +894,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             }}
             aria-hidden="true"
           >
-            月
+            월
           </div>
           <div className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             깊은 사주풀이 생성 중
@@ -991,7 +991,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             }}
             aria-hidden="true"
           >
-            月
+            월
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">

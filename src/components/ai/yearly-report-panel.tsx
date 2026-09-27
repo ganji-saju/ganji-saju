@@ -1144,7 +1144,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
             }}
             aria-hidden="true"
           >
-            年
+            년
           </div>
           <div className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             올해 흐름 정리 중
@@ -1274,7 +1274,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
             }}
             aria-hidden="true"
           >
-            年
+            년
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -1399,7 +1399,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
                   style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
                   aria-hidden="true"
                 >
-                  上
+                  상
                 </span>
                 <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   상반기 먼저 볼 것
@@ -1417,7 +1417,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
                   style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
                   aria-hidden="true"
                 >
-                  下
+                  하
                 </span>
                 <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   하반기 먼저 볼 것

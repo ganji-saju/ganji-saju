@@ -8,9 +8,6 @@ import type { ReadingRecord } from '@/lib/saju/readings';
 
 const ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
 
-const ELEMENT_HAN: Record<Element, string> = {
-  목: '木', 화: '火', 토: '土', 금: '金', 수: '水',
-};
 
 const ELEMENT_SUPPORT_GUIDE: Record<
   Element,
@@ -83,7 +80,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
         <div className="flex items-baseline justify-between">
           <div>
             <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              五行 · 오행 균형
+              오행 균형
             </div>
             <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
               다섯 기운을 한눈에
@@ -111,7 +108,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
                     className="text-[29.9px] font-bold leading-none"
                     style={{ fontFamily: 'var(--font-han)', color: dominantTextColor }}
                   >
-                    {ELEMENT_HAN[dominant]}
+                    {dominant}
                   </div>
                   <div className="text-[11.5px] text-[var(--app-copy-soft)]">
                     {dominantPercent}%
@@ -133,7 +130,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
                       className="flex-1 text-[13.8px] font-bold text-[var(--app-copy)]"
                       style={{ fontFamily: 'var(--font-han)' }}
                     >
-                      {el}({ELEMENT_HAN[el]})
+                      {el}
                     </span>
                     <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">
                       {pct}%

@@ -114,6 +114,9 @@ try {
       assert.ok(Math.abs(watermark.width - watermark.pageWidth) < 1 && watermark.zIndex > 1, 'Watermark must span the page above opaque cards');
     }
     assert.equal(metrics.horizontalOverflow, false, 'Report overflows horizontally');
+    // 2026-09-27 한자 전면 금지(명식 포함, 사용자 결정) — 문서 전체에서 한 글자도 없어야 한다.
+    const hanja = await page.evaluate(() => (document.querySelector('.report-doc').textContent.match(/[\u4e00-\u9fff]/g) ?? []).join(''));
+    assert.equal(hanja, '', `hanja left in the lifetime PDF: ${hanja.slice(0, 80)}`);
     const tooTall = metrics.pages.filter((item) => item.height > 1122.6); // A4 at Chromium 96dpi.
     assert.deepEqual(tooTall, [], `A report sheet exceeds A4: ${JSON.stringify(tooTall)}`);
     const pdfPath = path.join(outputDir, `sample-${index + 1}.pdf`);
