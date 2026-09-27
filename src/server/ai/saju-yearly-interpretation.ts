@@ -313,17 +313,29 @@ function buildCategoryFallback(
   ].join(' '), 3, 260);
 }
 
+// 2026-09-27 — 기대/조심 목록이 좋은 시기·월별 주의 문장을 그대로 가져와 한 풀이에서 같은 문장이 두 번 나왔다(반복 측정).
+//   목록은 그 달의 주제(theme)와 분야로 **자기 문장**을 만든다 — 월별 카드·좋은 시기 문단과 겹치지 않는다.
+function highlightText(report: SajuYearlyReport, month: number, tone: 'rise' | 'caution'): string {
+  const flow = report.monthlyFlows.find((f) => f.month === month);
+  const area = NEW_YEAR_CATEGORY_LABEL[(flow?.relatedAreas[0] ?? (tone === 'rise' ? 'work' : 'health')) as NewYearHighlightCategory];
+  const theme = flow?.theme ? `${koreanizeGanzi(flow.theme).replace(/[.。]$/, '')}입니다. ` : '';
+  return tone === 'rise'
+    ? `${theme}${month}월에는 ${area} 쪽에서 미뤄 둔 일을 먼저 움직여 보기 좋습니다.`
+    : `${theme}${month}월에는 ${area} 쪽 결정을 한 번 더 확인하고 속도를 늦추는 편이 좋습니다.`;
+}
+
 function windowHighlights(
   report: SajuYearlyReport,
   windows: SajuYearlyReport['goodPeriods'],
-  category: NewYearHighlightCategory
+  category: NewYearHighlightCategory,
+  tone: 'rise' | 'caution' = 'rise'
 ): NewYearHighlight[] {
   return windows.flatMap((w) =>
     w.months.slice(0, 1).map((month) => ({
       month,
       // 그 달 흐름이 가리키는 분야가 있으면 그걸 쓴다 — 돈 이야기에 '일' 라벨이 붙지 않게.
       category: report.monthlyFlows.find((f) => f.month === month)?.relatedAreas[0] ?? category,
-      text: tightenLine(w.strategy || w.reason, 1, 90),
+      text: highlightText(report, month, tone),
     }))
   );
 }
@@ -346,7 +358,7 @@ function padHighlights(
     if (out.length >= 3) break;
     if (out.some((h) => h.month === flow.month)) continue;
     const area = flow.relatedAreas[0] ?? (momentum === 'rise' ? 'work' : 'health');
-    const text = tightenLine(momentum === 'rise' ? flow.opportunity : flow.caution, 1, 90);
+    const text = highlightText(report, flow.month, momentum);
     if (!text || out.some((h) => h.text === text)) continue;
     out.push({ month: flow.month, category: area, text });
   }
@@ -384,7 +396,7 @@ export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYea
     },
     quarterlyFlows,
     expectations: padHighlights(windowHighlights(report, report.goodPeriods, 'work'), report, 'rise'),
-    cautions: padHighlights(windowHighlights(report, report.cautionPeriods, 'health'), report, 'caution'),
+    cautions: padHighlights(windowHighlights(report, report.cautionPeriods, 'health', 'caution'), report, 'caution'),
   });
 }
 

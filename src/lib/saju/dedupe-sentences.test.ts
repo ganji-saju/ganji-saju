@@ -38,10 +38,9 @@ test('연간·신년·평생 기본 풀이: 한 풀이 안 반복 문장 0', () 
     assert.equal(dupCount(buildFallbackYearlyInterpretation(yr)), 0, 'yearly');
     assert.equal(dupCount(buildFallbackNewYearExtras(yr)), 0, 'new-year extras');
     // 합친 뒤(화면·PDF 출구)에도 0.
-    // 합친 뒤(화면·PDF 출구)에도 산문은 0. '기대할 일·조심할 일' 목록은 월별 문장을 가져온 **요약 색인**이라 예외(남은 과제: 목록 문장 따로 쓰기).
     const merged = dedupeSentencesDeep({ ...buildFallbackYearlyInterpretation(yr), newYear: buildFallbackNewYearExtras(yr) });
-    const { expectations: _e, cautions: _c, ...extrasProse } = merged.newYear!;
-    assert.equal(dupCount({ ...merged, newYear: extrasProse }), 0, 'merged');
+    // 2026-09-27 — 기대/조심 목록도 자기 문장을 쓰게 바꿔 예외 없이 0.
+    assert.equal(dupCount(merged), 0, 'merged');
     assert.equal(dupCount(buildFallbackLifetimeInterpretation(buildLifetimeReport(p, data, 2026))), 0, 'lifetime');
   }
 });
