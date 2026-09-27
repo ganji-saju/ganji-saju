@@ -23,7 +23,6 @@ import { GroundingKasiSummary } from '@/components/ai/grounding-kasi-summary';
 import { EngineMethodLinks } from '@/components/content/engine-method-links';
 import type { SajuInterpretationGrounding } from '@/domain/saju/report';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
-import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import type { MoonlightCounselorId } from '@/lib/counselors';
 import type { SajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
 import type { AiFallbackReason, AiGenerationSource } from '@/server/ai/openai-text';
@@ -821,7 +820,8 @@ function LifetimeSectionBody({
 }
 
 export default function LifetimeReportPanel({ slug, targetYear }: Props) {
-  const { counselorId } = usePreferredCounselor();
+  // 2026-09-27 — 화면 = PDF(사용자: 볼 때마다 내용이 다르면 실망). 상담사 값을 보내지 않아 서버가 PDF 와 같은 규칙
+  //   (프로필 저장값 → 기본값)으로 고르고, 재생성하지 않는다(다시 불러오기도 저장본만 읽음).
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [data, setData] = useState<LifetimeInterpretationResponse | null>(null);
   const [error, setError] = useState('');
@@ -841,8 +841,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           body: JSON.stringify({
             readingId: slug,
             targetYear,
-            counselorId,
-            regenerate: reloadToken > 0,
+            regenerate: false,
           }),
           signal: controller.signal,
         });
@@ -869,7 +868,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
     void load();
     return () => controller.abort();
-  }, [slug, targetYear, counselorId, reloadToken]);
+  }, [slug, targetYear, reloadToken]);
 
   // §Loading — pink-soft + 月 한자 배지 + 진행 단계
   if (state === 'loading') {
@@ -1025,15 +1024,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setReloadToken((value) => value + 1)}
-          className="relative mt-4 inline-flex h-9 items-center gap-1.5 rounded-[12px] border bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy-muted)]"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <RefreshCw className="h-3.5 w-3.5" />
-          다시 생성
-        </button>
+
 
         {/* 4기둥 */}
         <div className="relative mt-4 grid grid-cols-4 gap-2">
