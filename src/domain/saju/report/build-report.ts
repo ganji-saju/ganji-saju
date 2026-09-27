@@ -1,3 +1,4 @@
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { TOPIC_SUPPORT_ACTION, TOPIC_WEAK_CAUTION } from './topic-element-actions';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 ﻿import type {
@@ -312,6 +313,25 @@ const PUBLIC_TEN_GOD_TONES: Record<TenGodCode, { label: string; strength: string
   },
 };
 
+
+// 2026-09-27 — 용어 뜻풀이가 누구에게나 같은 문장이었다(사주 기본 리포트 공통 문장의 대부분, AI 입력으로 쓰임).
+//   뜻풀이 뒤에 '이 사주에서는 무엇인지'를 한 문장으로 붙여 개인화한다(값은 한글 표기).
+function personalizeExplainers(
+  explainers: ReadonlyArray<{ term: string; hanja?: string; meaning: string }>,
+  valueByTerm: Record<string, string | null | undefined>
+) {
+  return explainers.map((item) => {
+    const value = valueByTerm[item.term];
+    if (!value) return item;
+    const head = item.meaning.replace(/입니다\.$/, '');
+    return { ...item, meaning: `${head}이며, ${value}` };
+  });
+}
+
+function dayMasterHangul(data: SajuDataV1 | SajuDataV2) {
+  return `${koreanizeGanzi(data.dayMaster.stem)}${data.dayMaster.element}`;
+}
+
 const CORE_TERM_EXPLAINERS = {
   strength: [
     {
@@ -334,7 +354,7 @@ const CORE_TERM_EXPLAINERS = {
     {
       term: '월령',
       hanja: '月令',
-      meaning: '태어난 달의 계절 기운입니다. 사주 전체 분위기를 잡는 가장 큰 배경으로 봅니다.',
+      meaning: '태어난 달의 계절 기운으로, 사주 전체 분위기를 잡는 가장 큰 배경입니다.',
     },
     {
       term: '십신',
@@ -365,7 +385,7 @@ const CORE_TERM_EXPLAINERS = {
     {
       term: '신살',
       hanja: '神煞',
-      meaning: '원국을 보조적으로 읽는 표지입니다. 길흉을 단정하기보다 작용 방식과 속도를 살핍니다.',
+      meaning: '길흉을 단정하기보다 작용 방식과 속도를 살피려고 원국을 보조적으로 읽는 표지입니다.',
     },
   ],
 };
@@ -671,7 +691,10 @@ function buildStrengthEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     plainSummary: `강약 메모: ${strength.level} · ${strength.score}점`,
     technicalSummary: '전문적으로는 월령의 계절 보정, 일간을 돕는 오행, 일간을 소모시키는 오행, 지지의 뿌리를 함께 계산합니다.',
     practicalActions: EVIDENCE_ACTIONS.strength[strength.level],
-    explainers: CORE_TERM_EXPLAINERS.strength,
+    explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.strength, {
+      강약: `이 사주의 ${dayMasterHangul(data)} 일간은 ${strength.level}에 가깝습니다.`,
+      일간: `이 사주에서는 ${withParticle(dayMasterHangul(data), '이', '가')} 나를 대표합니다.`,
+    }),
     computed,
     source: getEvidenceSource(key),
     confidence: '확정',
@@ -703,7 +726,7 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     label: '격국',
     title: pattern.tenGod ? `${pattern.name} · ${pattern.tenGod}` : pattern.name,
     body: pattern.tenGod
-      ? `${pattern.tenGod}이 어떤 자리와 관계 패턴으로 나타나는지 해석의 첫 바탕으로 봅니다. 쉽게 말하면 삶에서 반복해서 맡게 되는 자리와 반응 방식을 보는 항목입니다.`
+      ? `이 사주는 ${withParticle(pattern.tenGod, '이', '가')} 해석의 첫 바탕입니다. 쉽게 말하면 삶에서 ${pattern.tenGod}의 자리를 반복해서 맡고, 그 방식으로 반응하기 쉽다는 뜻입니다.`
       : '월령의 성격을 바탕으로 사주의 큰 구조를 먼저 읽습니다.',
     details: pattern.rationale.length > 0
       ? pattern.rationale.slice(0, 3)
@@ -713,7 +736,11 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
       : `격국 메모: ${pattern.name}`,
     technicalSummary: '전문적으로는 월지의 주기운과 지장간을 일간 관점의 십신으로 환산해 격국명을 정합니다.',
     practicalActions: [...new Set([...(PATTERN_TEN_GOD_ACTIONS[pattern.tenGod ?? ''] ?? []), ...EVIDENCE_ACTIONS.pattern])].slice(0, 3),
-    explainers: CORE_TERM_EXPLAINERS.pattern,
+    explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.pattern, {
+      격국: `이 사주는 ${koreanizeGanzi(pattern.name)}으로 읽습니다.`,
+      월령: `이 사주는 ${koreanizeGanzi(Array.from(data.pillars.month.ganzi)[1] ?? '')}월 기운이 바탕을 잡습니다.`,
+      십신: pattern.tenGod ? `이 사주에서 중심 역할은 ${pattern.tenGod}입니다.` : null,
+    }),
     computed,
     source: getEvidenceSource(key),
     confidence: '확정',
@@ -758,18 +785,20 @@ function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     }`,
     details: [
       yongsin.technicalSummary ?? `${yongsin.method} 바탕으로 ${yongsinLabel}을 보완 축으로 봅니다.`,
-      `주의해서 볼 기운: ${kiyshinLabel}. 이 기운은 무조건 나쁘다는 뜻이 아니라, 이미 과하거나 균형을 흐릴 때 조절이 필요하다는 뜻입니다.`,
+      `주의해서 볼 기운은 ${kiyshinLabel}이며, 무조건 나쁘다는 뜻이 아니라 이미 과하거나 균형을 흐릴 때 조절이 필요하다는 뜻입니다.`,
       ...candidateDetails,
       ...yongsin.rationale.slice(0, 2),
     ].filter(Boolean),
     plainSummary: yongsin.plainSummary,
     technicalSummary: yongsin.technicalSummary,
     practicalActions: yongsin.practicalActions,
-    explainers: yongsin.terms?.map((term) => ({
-      term: term.term,
-      hanja: term.hanja,
-      meaning: term.meaning,
-    })),
+    explainers: yongsin.terms ? personalizeExplainers(yongsin.terms, {
+      용신: `이 사주에서는 ${formatSymbolList([yongsin.primary])}입니다.`,
+      희신: yongsin.secondary.length > 0 ? `이 사주에서는 ${formatSymbolList(yongsin.secondary)}입니다.` : null,
+      기신: yongsin.kiyshin.length > 0 ? `이 사주에서는 ${kiyshinLabel}입니다.` : null,
+      조후: yongsin.method === '조후용신' ? '이 사주는 이 판단을 먼저 적용했습니다.' : '이 사주는 이 판단보다 다른 기준을 앞에 두었습니다.',
+      억부: yongsin.method === '억부용신' ? '이 사주는 이 판단을 먼저 적용했습니다.' : '이 사주는 이 판단을 보조로 참고했습니다.',
+    }) : undefined,
     computed,
     source: getEvidenceSource(key),
     confidence: yongsin.method === 'legacy-placeholder' ? '참고' : mapYongsinConfidence(confidenceLabel),
@@ -853,7 +882,7 @@ function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     label: '합충',
     title: labels.length > 0 ? labels.join(' · ') : '합충 근거 없음',
     body: selected.length > 0
-      ? '합충은 명식 안에서 기운이 묶이거나 부딪히는 지점을 보는 근거입니다. 쉽게 말하면 관계, 이동, 결정의 압력이 어디서 생기는지 보는 항목입니다.'
+      ? `이 사주에는 ${labels.join('·')} 관계가 있습니다. 쉽게 말하면 관계, 이동, 결정의 압력이 이 ${labels.length}가지 지점에서 생기기 쉽다는 뜻입니다.`
       : '현재 명식에서 화면에 우선 표시할 합충 관계는 아직 확인되지 않았습니다.',
     details: selected.length > 0
       ? selected.map(formatRelationEvidenceLine)
@@ -863,7 +892,10 @@ function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
       : '합충 메모: 확인된 흐름 없음',
     technicalSummary: '전문적으로는 천간합, 천간충, 육합, 삼합, 방합, 충·형·해·파를 분리해 봅니다.',
     practicalActions: [...new Set([...labels.map((label) => RELATION_LABEL_ACTIONS[label]).filter(Boolean), ...EVIDENCE_ACTIONS.relations])].slice(0, 3),
-    explainers: CORE_TERM_EXPLAINERS.relations,
+    explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.relations, {
+      합: selected.some((r) => /합/.test(r.label)) ? `이 사주에는 묶이는 관계가 ${selected.filter((r) => /합/.test(r.label)).length}곳 있습니다.` : '이 사주에는 두드러지게 묶이는 관계가 없습니다.',
+      충: selected.some((r) => /충|형|해|파/.test(r.label)) ? `이 사주에는 부딪히는 관계가 ${selected.filter((r) => /충|형|해|파/.test(r.label)).length}곳 있습니다.` : '이 사주에는 두드러지게 부딪히는 관계가 없습니다.',
+    }),
     computed,
     source: getEvidenceSource(key),
     confidence: selected.length > 0 ? '보통' : '참고',
@@ -901,7 +933,7 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     label: '공망',
     title: branches ? `${branches} 공망` : '공망 근거 없음',
     body: branches
-      ? '공망은 비어 보이거나 지연되기 쉬운 축을 확인해 약속, 일정, 마무리 방식을 조정하는 근거입니다. 쉽게 말하면 기대가 바로 채워지지 않는 자리를 미리 확인하는 항목입니다.'
+      ? `이 사주의 빈자리는 ${koreanizeGanzi(branches)}${slots.length > 0 ? `(${slots.join('·')})` : ''}입니다. 쉽게 말하면 ${slots.length > 0 ? `${withParticle(slots.join('·'), '과', '와')} 이어진 일` : '이 자리와 이어진 일'}은 기대보다 늦게 채워지기 쉬우니 약속·일정·마무리를 미리 확인하라는 뜻입니다.`
       : '현재 저장본에서 공망 값은 아직 확인되지 않았습니다.',
     details: slots.length > 0
       ? [`작용 위치: ${slots.join(' · ')}`]
@@ -911,7 +943,9 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
       : '공망 메모: 확인된 흐름 없음',
     technicalSummary: '전문적으로는 일주 원칙 공망 글자를 잡고, 그 글자가 년·월·일·시 어느 자리에 닿는지 확인합니다.',
     practicalActions: [...new Set([...(gongmang?.pillarSlots ?? []).map((slot) => GONGMANG_SLOT_ACTIONS[slot]).filter(Boolean), ...EVIDENCE_ACTIONS.gongmang])].slice(0, 3),
-    explainers: CORE_TERM_EXPLAINERS.gongmang,
+    explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.gongmang, {
+      공망: branches ? `이 사주에서는 ${koreanizeGanzi(branches)} 자리가 여기에 해당합니다.` : null,
+    }),
     computed,
     source: getEvidenceSource(key),
     confidence: branches ? '보통' : '참고',
@@ -937,7 +971,7 @@ function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvid
     label: '신살',
     title: names.length > 0 ? names.slice(0, 5).join(' · ') : '주요 신살 없음',
     body: names.length > 0
-      ? '신살은 도움을 받는 통로와 주의해야 할 속도를 함께 보는 보조 근거입니다. 쉽게 말하면 이 명식에서 눈에 띄는 보너스 표지와 주의 표지를 나누어 보는 항목입니다.'
+      ? `이 사주에서 눈에 띄는 표지는 ${names.slice(0, 3).join('·')}입니다. 쉽게 말하면 ${supportive.length > 0 ? `${withParticle(supportive.slice(0, 2).join('·'), '은', '는')} 도움이 들어오는 통로로, ` : ''}${cautionary.length > 0 ? `${withParticle(cautionary.slice(0, 2).join('·'), '은', '는')} 속도를 조절할 신호로 봅니다.` : '주의 표지는 두드러지지 않습니다.'}`
       : '현재 명식에서 우선 표시할 주요 신살은 아직 확인되지 않았습니다.',
     details: details.length > 0 ? details : ['신살 데이터가 들어오면 도움/주의 흐름을 나누어 표시합니다.'],
     plainSummary: names.length > 0
@@ -945,7 +979,9 @@ function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvid
       : '신살 메모: 주요 표지 없음',
     technicalSummary: '전문적으로는 일간·일지·연지 등을 바탕으로 귀인, 도화, 양인, 백호 같은 보조 표지를 대조합니다.',
     practicalActions: EVIDENCE_ACTIONS.specialSals,
-    explainers: CORE_TERM_EXPLAINERS.specialSals,
+    explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.specialSals, {
+      신살: names.length > 0 ? `이 사주에서 눈에 띄는 것은 ${names.slice(0, 3).join(' · ')}입니다.` : '이 사주에는 두드러진 신살이 적습니다.',
+    }),
     computed,
     source: getEvidenceSource(key),
     confidence: '참고',
@@ -1345,21 +1381,37 @@ function buildMonthlyLuckReading(data: SajuDataV1 | SajuDataV2, topic: FocusTopi
   const mainElement = monthlyElements[0] ?? supportElements[0] ?? dominant;
   const mainGuide = LUCK_ELEMENT_GUIDE[mainElement];
   const supportLabel = supportMatch ? getPublicElementCue(supportMatch) : null;
+  // 2026-09-27 — 같은 달엔 누구에게나 같던 월운 문장을, 그 달 천간과 태어난 날의 관계(5갈래)로 가른다 · 간지는 한글.
+  const monthName = wolwoon?.ganzi ? koreanizeGanzi(wolwoon.ganzi) : null;
+  const monthStemElement = monthlyElements[0];
+  const cycle: Element[] = ['목', '화', '토', '금', '수'];
+  const step = monthStemElement
+    ? (cycle.indexOf(monthStemElement) - cycle.indexOf(data.dayMaster.element) + 5) % 5
+    : null;
+  const relation = step === null ? null : MONTH_RELATION_PHRASE[step];
 
   return {
-    headline: wolwoon?.ganzi
-      ? `${wolwoon.ganzi} 월운은 ${formatElementLabels(monthlyElements) || mainGuide.theme} 흐름을 건드립니다.`
+    headline: monthName
+      ? `${monthName} 월운은 ${relation ? `${relation.lead} 달로, ` : ''}${formatElementLabels(monthlyElements) || mainGuide.theme} 흐름을 건드립니다.`
       : `${getPublicElementCue(mainElement)} 중심 루틴을 만들면 흐름이 붙습니다.`,
-    body: wolwoon?.ganzi
-      ? `${wolwoon.ganzi} 월운은 ${withParticle(mainGuide.theme, '을', '를')} 현실에서 점검하게 합니다. ${supportLabel ? `특히 ${withParticle(supportLabel, '이', '가')} 필요 흐름과 맞아 이번 달은 약한 부분을 실제 습관으로 채우기 좋습니다.` : mainGuide.chance} ${describeTopicLuckFocus(topic)}`
+    body: monthName
+      ? `${monthName} 월운은 ${withParticle(mainGuide.theme, '을', '를')} ${relation ? relation.verb : '현실에서 점검하게 합니다.'} ${supportLabel ? `특히 ${withParticle(supportLabel, '이', '가')} 필요 흐름과 맞아 이번 달은 약한 부분을 실제 습관으로 채우기 좋습니다.` : mainGuide.chance} ${describeTopicLuckFocus(topic)}`
       : `이번 달은 ${withParticle(mainGuide.theme, '을', '를')} 정리하는 흐름으로 읽습니다. 중요한 선택은 한 번에 몰지 말고 주 단위로 나눠 확인하는 편이 안정적입니다.`,
     points: compactStrings([
-      `기회: ${mainGuide.chance}`,
-      `주의: ${mainGuide.caution}`,
+      relation ? `기회: ${relation.chance}` : `기회: ${mainGuide.chance}`,
+      relation ? `주의: ${relation.caution}` : `주의: ${mainGuide.caution}`,
       `이번 달 실행: ${mainGuide.action}`,
     ]),
   };
 }
+
+const MONTH_RELATION_PHRASE = [
+  { lead: '나와 같은 기운이 들어오는', verb: '내 방식대로 밀어붙이며 확인하게 합니다.', chance: '내 힘으로 끝낼 수 있는 일을 직접 마무리하기 좋습니다.', caution: '고집이 세지면 도와줄 사람이 물러설 수 있습니다.' },
+  { lead: '내 기운이 밖으로 흐르는', verb: '말과 결과물로 꺼내 보이게 합니다.', chance: '생각을 말과 결과물로 보여주면 반응이 빨리 옵니다.', caution: '말이 앞서면 준비가 덜 된 것까지 약속하기 쉽습니다.' },
+  { lead: '내가 다루는 기운이 들어오는', verb: '손에 잡히는 결과로 거두게 합니다.', chance: '정산·계약처럼 결과를 챙기는 일이 잘 풀립니다.', caution: '이득을 좇다 체력과 시간이 먼저 새기 쉽습니다.' },
+  { lead: '나를 다잡는 기운이 들어오는', verb: '책임과 평가 속에서 시험하게 합니다.', chance: '맡은 일을 제때 끝내면 신뢰가 크게 쌓입니다.', caution: '압박을 혼자 떠안으면 달 후반에 지치기 쉽습니다.' },
+  { lead: '나를 돕는 기운이 들어오는', verb: '배우고 준비하며 채우게 합니다.', chance: '배우고 묻는 일에서 도움을 받기 쉽습니다.', caution: '생각만 길어지면 좋은 때를 흘려보내기 쉽습니다.' },
+];
 
 function buildMajorLuckReading(data: SajuDataV1 | SajuDataV2, topic: FocusTopic) {
   const currentMajor = data.currentLuck?.currentMajorLuck;
