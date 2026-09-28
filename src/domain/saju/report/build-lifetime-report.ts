@@ -1,5 +1,5 @@
 import {
-  CORE_PRINCIPLE, DAY_EXPRESSION, ENVIRONMENT_CHECK, LIFE_RULES, RECOVERY_TIP, STRONG_OVERUSE, SUPPORT_CHECK, WEAK_PATTERN_REASON,
+  CORE_PRINCIPLE, DAY_EXPRESSION, HEALTH_HABITS, WEAK_AXIS_CHECK, ENVIRONMENT_CHECK, LIFE_RULES, RECOVERY_TIP, STRONG_OVERUSE, SUPPORT_CHECK, WEAK_PATTERN_REASON,
 } from './lifetime-personal-copy';
 import {
   CYCLE_SIPSIN_ACTION_ELDER, CYCLE_SIPSIN_ACTION_YOUTH, MENTAL_ELDER_BY_SIPSIN, MENTAL_YOUTH_BY_SIPSIN,
@@ -1514,7 +1514,7 @@ export function buildLifetimeReport(
         strength?.body ??
         `${dominant} 기운이 앞에 서고 ${weakest} 기운은 의식적으로 보완해야 하는 구조입니다.`,
       strongAxis: `${dominant} 기운은 ${ELEMENT_INFO[sajuData.fiveElements.dominant].traits.slice(0, 2).join('·')}의 관점으로 읽습니다. ${STRONG_OVERUSE[sajuData.fiveElements.dominant as keyof typeof STRONG_OVERUSE]}`,
-      weakAxis: `${weakest} 기운은 원국의 분포에서 상대적으로 적게 보이는 축입니다. 적다는 이유만으로 능력이나 건강의 문제를 정하지 않습니다. 보완이 필요한 장면은 실제 경험을 통해 확인하세요.`,
+      weakAxis: `${weakest} 기운은 원국의 분포에서 상대적으로 적게 보이는 축입니다. 적다는 이유만으로 능력이나 건강의 문제를 정하지 않습니다. ${WEAK_AXIS_CHECK[sajuData.fiveElements.weakest as keyof typeof WEAK_AXIS_CHECK]}`,
       energyDrain: `${dominant} 기운이 상대적으로 두드러진다는 것과 과하다는 것은 다릅니다. 익숙한 방식만 고집해 선택지가 줄어들 때 '${adjustAction.what}'을 시도해 보세요.`,
       recovery: supportPractice,
       balanceGuide: [
@@ -1569,11 +1569,9 @@ export function buildLifetimeReport(
       summary: `이 장에서는 ${dominant} 기운을 쓰는 방식과 ${supportLabels} 보완 방향을 생활의 부담과 휴식에 연결해 읽습니다. 오행 분포로 질병이나 신체 상태를 진단하지 않습니다.`,
       warningSignals: `${strainPattern} 수면이나 식사, 평소 즐기던 활동의 변화는 실제 생활을 기준으로 살펴보고, 불편함이 지속되면 그 상태에 맞는 도움을 받으세요.`,
       recoveryRoutine: `${supportPractice} ${isMinor ? '보호자가 아이의 활동 뒤 반응을 살피고 쉬어도 되는 환경을 마련하는 것이 먼저입니다.' : RECOVERY_TIP[sajuData.fiveElements.weakest as keyof typeof RECOVERY_TIP]}`,
-      habitPoints: [
-        '활동 뒤 쉬는 시간을 함께 마련하기',
-        '부담이 늘어나는 상황과 편안한 상황을 구분하기',
-        isMinor ? '보호자와 함께 생활의 변화를 살피기' : '불편함을 참는 것과 실제로 괜찮은 상태를 구분하기',
-      ],
+      habitPoints: isMinor
+        ? ['활동 뒤 쉬는 시간을 함께 마련하기', '부담이 늘어나는 상황과 편안한 상황을 구분하기', '보호자와 함께 생활의 변화를 살피기']
+        : [...HEALTH_HABITS[sajuData.fiveElements.weakest as keyof typeof HEALTH_HABITS]],
       basis: compactStrings([
         strength?.title ? `강약 단서: ${strength.title}` : null,
         `원국의 상대적인 분포: ${dominant} 기운이 많고 ${weakest} 기운이 적음`,
@@ -1583,7 +1581,7 @@ export function buildLifetimeReport(
     majorLuckTimeline: {
       headline: '대운 10년 흐름 지도',
       summary: majorLuckCycles.length
-        ? '대운은 10년 단위로 달라지는 주제와 원국의 관계를 읽는 장기 지도입니다. 이전 기간의 방식 중 유지할 것과 조정할 것을 비교하는 데 활용하세요.'
+        ? `대운은 10년 단위로 주제가 바뀌는 장기 지도입니다. 이 사주는 ${majorLuckCycles[0]?.ageLabel?.trim() ?? ''}부터 ${toKoreanGanzi(majorLuckCycles[0]?.ganzi ?? '')} 대운으로 시작해${firstCurrentCycle ? ` 지금은 ${toKoreanGanzi(firstCurrentCycle.ganzi)} 대운을 지나고 있으며` : ''}, 이전 10년의 방식 중 유지할 것과 조정할 것을 비교하는 데 활용하세요.`
         : '대운을 계산할 정보가 충분하지 않아 시작 시기와 단계는 해석하지 않습니다. 원국에서 확인한 성향을 실제 생활 조건과 비교하는 데 집중하세요.',
       currentMeaning: firstCurrentCycle
         ? `${firstCurrentCycle.ganzi} 대운은 지금 ${firstCurrentCycle.phase}의 과제가 커지는 구간입니다. ${firstCurrentCycle.summary}`

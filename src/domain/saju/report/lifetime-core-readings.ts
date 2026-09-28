@@ -1,5 +1,5 @@
 import {
-  AUTHORITY_ALIGN, CAREER_VIEW, INDEPENDENCE_CHECK, OUTPUT_SHOWCASE, RESOURCE_EXPRESS, WEALTH_EXAMPLE, annotateTenGodGroups, tenGodGroupElement, RELATIONSHIP_LONGEVITY, RELATIONSHIP_OPEN_ADVICE, WEALTH_PROPOSAL, WEALTH_VIEW,
+  AUTHORITY_ALIGN, CAREER_VIEW, ELEMENT_ADJ, ELEMENT_ENV, ELEMENT_WAY, HELP_BOUNDARY, OLD_TIE, SILENT_CARE, INDEPENDENCE_CHECK, OUTPUT_SHOWCASE, RESOURCE_EXPRESS, WEALTH_EXAMPLE, annotateTenGodGroups, tenGodGroupElement, RELATIONSHIP_LONGEVITY, RELATIONSHIP_OPEN_ADVICE, WEALTH_PROPOSAL, WEALTH_VIEW,
 } from './lifetime-personal-copy';
 import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
@@ -101,7 +101,7 @@ export function buildLifetimeCoreReadings(
   }
 
   const earning = output > 0 && wealth > 0
-    ? `식상과 재성이 함께 확인됩니다. 만들어 내는 능력과 자원을 관리하는 기준을 연결해 읽는 조합입니다. 결과물을 한 번 잘 만드는 데서 끝내기보다, 누가 어떤 필요로 다시 찾는지 확인하는 과정이 중요합니다. ${WEALTH_EXAMPLE[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '재성')]}`
+    ? `식상과 재성이 함께 확인됩니다. ${ELEMENT_ADJ[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '식상')]} 능력과 ${ELEMENT_ADJ[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '재성')]} 관리 기준을 연결해 읽는 조합입니다. ${ELEMENT_ADJ[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '식상')]} 결과물을 한 번 잘 만드는 데서 끝내기보다, 누가 어떤 필요로 다시 찾는지 확인하는 과정이 중요합니다. ${WEALTH_EXAMPLE[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '재성')]}`
     : output > 0
       ? '식상은 확인되지만 재성은 현재 분포에서 두드러지지 않습니다. 표현과 제작이 자연스러워도 그 결과를 조건과 대가로 연결하는 과정은 따로 살펴볼 필요가 있습니다. 결과물을 만든 뒤 사용 목적·범위·마감을 설명하는 단계까지 해보세요. 재성이 적다는 이유로 돈을 못 번다고 읽는 것은 아닙니다.'
       : wealth > 0
@@ -133,7 +133,7 @@ export function buildLifetimeCoreReadings(
 
   const fit = `${roleBasis} ${profile ? `일의 이름보다 ${profile.work}에 주목해 보세요. ${profile.scene}에서 집중이 이어지는지 확인하는 방식입니다.` : '하고 있는 일에서 집중이 이어지는 과정과 반복해서 소진되는 과정을 나눠보세요. 익숙한 직업명보다 실제로 맡는 업무의 조건을 비교하는 편이 낫습니다.'}`;
   const workTension = output > 0 && authority > 0
-    ? `식상의 새로운 표현과 관성의 기준이 함께 보여, 바꾸고 싶은 방식과 지켜야 하는 절차 사이의 조율이 중요합니다. 개선안을 내도 결정권이 없거나 평가 기준이 계속 바뀌는 환경이라면 능력과 별개로 지치기 쉽습니다. ${AUTHORITY_ALIGN[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '관성')]}`
+    ? `식상의 새로운 표현과 관성의 기준이 함께 보여, 바꾸고 싶은 방식과 지켜야 하는 절차 사이의 조율이 중요합니다. ${ELEMENT_ENV[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '관성')]} 환경이나 결정권이 없는 곳에서는 개선안을 내도 능력과 별개로 지치기 쉽습니다. ${AUTHORITY_ALIGN[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '관성')]}`
     : resource > output
       ? '준비하는 인성이 표현하는 식상보다 많이 확인되어, 충분히 알아야 시작할 수 있다는 기준이 작업을 늦추는지 살펴볼 수 있습니다. 조사한 내용을 곧바로 완성품으로 내기보다 초안을 먼저 보여주고 질문을 받는 과정이 도움이 됩니다. 더 배우는 일과 평가받는 일을 계속 바꾸어 미루지 않는지 확인하세요.'
       : peer > authority
@@ -141,7 +141,7 @@ export function buildLifetimeCoreReadings(
         : '맡은 일을 잘 끝내는 능력과 그 일을 계속하고 싶은 마음은 따로 살펴야 합니다. 결과를 인정받아도 역할이 끝없이 늘거나 질문할 사람이 없다면 오래 이어가기 어렵습니다. 반복해서 맡는 일 중 실력이 쌓이는 부분과 단순히 버티는 부분을 구분해 보세요.';
   const independence = `${capacity} ${authority > peer ? '관성이 비겁보다 많이 확인되어 역할과 기준이 분명한 구조에서 시작하는 선택을 검토할 수 있습니다.' : output > 0 && wealth > 0 ? '식상과 재성을 함께 쓰는 방식이라면 결과물을 만들고 운영하는 과정까지 직접 해보는 경험이 판단 자료가 됩니다.' : '독립 여부를 성격 하나로 결정하지 말고 혼자 정할 수 있는 범위와 외부의 지원이 필요한 범위를 나눠보세요.'} ${INDEPENDENCE_CHECK[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`;
   const recognition = output > 0
-    ? `식상의 표현이 확인되어 결과를 보여주는 과정이 실력을 설명하는 통로가 됩니다. ${OUTPUT_SHOWCASE[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '식상')]} 새로운 제안을 할 때도 상대가 평가할 수 있는 기준을 먼저 제시하면 의견 차이를 다루기 수월합니다.`
+    ? `식상의 표현이 확인되어 결과를 보여주는 과정이 실력을 설명하는 통로가 됩니다. ${OUTPUT_SHOWCASE[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '식상')]} 새로운 제안을 할 때도 ${ELEMENT_WAY[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '식상')]} 상대가 평가할 수 있는 기준을 먼저 제시하면 의견 차이를 다루기 수월합니다.`
     : authority > 0
       ? '관성이 확인되어 합의한 기준을 안정적으로 지키는 과정에서 신뢰를 쌓는 방식을 살펴봅니다. 맡은 책임을 조용히 끝내기만 하면 기여가 잘 보이지 않을 수 있습니다. 무엇을 예방했고 어떤 조건을 개선했는지 짧게 남기고, 다음 역할의 범위와 평가 기준을 함께 확인하세요.'
       : `${learningBridge} 설명할 때는 알고 있는 내용을 모두 나열하기보다 상대가 해결하려는 질문부터 확인하세요. 다른 사람이 이해하거나 활용한 변화가 보이면 자신의 강점을 구체적으로 설명할 수 있습니다.`;
@@ -156,13 +156,13 @@ export function buildLifetimeCoreReadings(
       : hasCombine
         ? '원국의 지지 사이에 육합이 확인됩니다. 접점을 찾는 관계를 살피는 관점이며, 모든 관계가 원만하다는 뜻은 아닙니다.'
         : '확인된 지지 사이에 직접적인 충·육합이 없다는 사실만으로 관계가 평탄하다고 정하지 않습니다. 표현과 기대가 실제로 어떻게 맞물리는지 살펴보세요.';
-  const distance = `${roleBasis} ${profile ? `${profile.bond}를 관계의 기준으로 검토해 보세요.` : '편안하게 연락하는 빈도와 혼자 쉬고 싶은 때를 구분해 보세요.'} ${peer > resource ? '서로 존중한다는 이유로 필요한 도움까지 혼자 처리하고 있지는 않은지 살펴보세요.' : resource > peer ? '상대에게 도움이 되는 것과 대신 결정해 주는 것을 구분하세요. 먼저 필요한 도움인지 물어보는 편이 좋습니다.' : '배려하는 마음이 있어도 같은 방식의 연락과 표현을 기대하는지는 직접 확인해야 합니다.'}`;
+  const distance = `${roleBasis} ${profile ? `${profile.bond}를 관계의 기준으로 검토해 보세요.` : '편안하게 연락하는 빈도와 혼자 쉬고 싶은 때를 구분해 보세요.'} ${peer > resource ? '서로 존중한다는 이유로 필요한 도움까지 혼자 처리하고 있지는 않은지 살펴보세요.' : resource > peer ? HELP_BOUNDARY[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '인성')] : '배려하는 마음이 있어도 같은 방식의 연락과 표현을 기대하는지는 직접 확인해야 합니다.'}`;
   const expression = output > resource
     ? '식상이 인성보다 많이 확인되어, 생각을 말하거나 행동으로 보여주는 방식에 먼저 주목합니다. 문제를 듣자마자 해결책을 말한다면 상대는 공감이 빠졌다고 느낄 수 있습니다. 조언을 원하는지 들어주길 원하는지 먼저 묻고, 본인의 뜻을 전한 뒤 상대가 어떻게 받아들였는지도 확인해 보세요.'
     : resource > output
-      ? `인성이 식상보다 많이 확인되어, 충분히 이해한 뒤 표현하려는 방식을 먼저 살펴봅니다. 속으로는 배려했어도 상대에게 설명하지 않았다면 침묵이나 거리감으로 전해질 수 있습니다. ${RESOURCE_EXPRESS[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '인성')]}`
+      ? `인성이 식상보다 많이 확인되어, 충분히 이해한 뒤 표현하려는 방식을 먼저 살펴봅니다. ${SILENT_CARE[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '인성')]} ${RESOURCE_EXPRESS[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '인성')]}`
       : '표현과 이해의 어느 한쪽이 항상 우선이라고 정할 근거는 크지 않습니다. 말하기 편한 주제에서는 빠르고 불편한 주제에서는 답을 미루는 차이가 있는지 살펴보세요. 사실, 느낀 점, 원하는 행동을 나눠 말하면 감정의 크기를 증명하지 않아도 서로의 필요를 확인할 수 있습니다.';
-  const conflict = `${relationBasis} ${hasClash ? '약속과 다른 일이 생겼을 때 곧바로 상대의 마음을 판단하기보다 달라진 조건부터 확인해 보세요.' : hasCombine ? '분위기를 지키려고 동의한 뒤 혼자 부담을 느끼는 장면이 있다면, 약속 전에 가능한 범위를 먼저 말해보세요.' : '다툼의 횟수보다 의견이 다를 때 다시 이야기할 수 있는 방법이 있는지 확인해 보세요.'} ${hasClash && hasCombine ? '가까움을 유지하려고 무조건 맞추거나 차이가 있다고 곧바로 멀어지는 양쪽 반응을 모두 살펴볼 필요가 있습니다.' : '오래된 인연이라는 이유만으로 같은 불편을 계속 감수해야 하는 것은 아닙니다.'}`;
+  const conflict = `${relationBasis} ${hasClash ? '약속과 다른 일이 생겼을 때 곧바로 상대의 마음을 판단하기보다 달라진 조건부터 확인해 보세요.' : hasCombine ? '분위기를 지키려고 동의한 뒤 혼자 부담을 느끼는 장면이 있다면, 약속 전에 가능한 범위를 먼저 말해보세요.' : '다툼의 횟수보다 의견이 다를 때 다시 이야기할 수 있는 방법이 있는지 확인해 보세요.'} ${hasClash && hasCombine ? '가까움을 유지하려고 무조건 맞추거나 차이가 있다고 곧바로 멀어지는 양쪽 반응을 모두 살펴볼 필요가 있습니다.' : OLD_TIE[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`;
   const status = situation?.relationshipStatus;
   const longevity = status === 'married'
     ? '현재 기혼 관계에서는 사랑의 크기를 추측하기보다 생활의 책임이 어떻게 나뉘는지 확인해 보세요. 눈에 보이는 일뿐 아니라 일정 기억과 연락을 챙기는 일도 서로 적어보면 기대 차이가 드러납니다. 역할이 바뀌는 때에는 이전 합의를 그대로 적용하지 말고 다시 나눌 수 있어야 합니다.'
