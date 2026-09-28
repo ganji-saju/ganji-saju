@@ -233,13 +233,23 @@ function slotLayers(i: CausalInput, ink: TermInk, seed: number): string | null {
   );
 }
 
+const SINSAL_YONGSIN_CUE = {
+  목: { good: '새로 시작하는 일에 들어오는 도움을 잡으면 하루가 한결 수월해요.', bad: '새 일은 벌이지 말고 하던 일 하나만 이어 가세요.' },
+  화: { good: '먼저 건넨 말에 좋은 반응이 돌아오기 쉬워요.', bad: '말은 한 번 삼키고 짧게 전하세요.' },
+  토: { good: '약속과 정리를 챙기면 도움이 자연스럽게 따라와요.', bad: '일정과 지출을 한 번 더 확인하며 속도를 늦추세요.' },
+  금: { good: '미뤄 둔 결정을 이때 정리하면 도움이 됩니다.', bad: '큰 결정은 하루 두고 기준부터 다시 보세요.' },
+  수: { good: '묻고 배우는 자리에서 도움을 받기 쉬워요.', bad: '잠깐 쉬고 생각을 정리한 뒤 움직이세요.' },
+} as const;
+
 // 슬롯 4 — 신살 색채
 function slotSinsal(i: CausalInput, ink: TermInk): string | null {
   if (!i.topSinsal) return null;
   const s = ink.sinsal(i.topSinsal.name);
+  // 2026-09-28 — 같은 날 일진 신살은 모두에게 같은 문장이었다. 보완 기운(용신)으로 대응을 가른다.
+  const cue = SINSAL_YONGSIN_CUE[i.yongsin as keyof typeof SINSAL_YONGSIN_CUE];
   return i.topSinsal.category === '길신'
-    ? `${josa(s, '이', '가')} 함께라 내미는 도움을 잘 잡으면 하루가 한결 수월해요.`
-    : `${josa(s, '이', '가')} 함께라 예민해지거나 서두르기 쉬우니 한 박자 쉬어 가세요.`;
+    ? `${josa(s, '이', '가')} 함께라 ${cue ? cue.good : '내미는 도움을 잘 잡으면 하루가 한결 수월해요.'}`
+    : `${josa(s, '이', '가')} 함께라 예민해지거나 서두르기 쉬우니 ${cue ? cue.bad : '한 박자 쉬어 가세요.'}`;
 }
 
 // 슬롯 5 — 조언(용신 + 십성 대응)
