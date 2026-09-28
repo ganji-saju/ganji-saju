@@ -1,5 +1,5 @@
 import { PREMIUM_RELATION_COPY, todayRelationStep } from './premium-relation-copy';
-import { DAILY_TOPIC_SCENES, type DailySceneRelation } from './daily-topic-scenes';
+import { DAILY_TOPIC_QUESTIONS_BY_RELATION, DAILY_TOPIC_SCENES, GENERAL_FOLLOW_UPS_BY_RELATION, type DailySceneRelation } from './daily-topic-scenes';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
 import { getFeatureCost } from '@/lib/credits/costs';
@@ -1814,7 +1814,9 @@ function buildTodayQuestionReading(
     : underage ? topic.example : scene?.example ?? topic.example;
   const child = CHILD_DAILY_TOPICS[key];
   return {
-    question: underage && key === 'love' ? '친구와 가까운 사람에게 마음을 어떻게 전할까요?' : topic.question,
+    question: underage && key === 'love' ? '친구와 가까운 사람에게 마음을 어떻게 전할까요?'
+      : underage ? topic.question
+      : DAILY_TOPIC_QUESTIONS_BY_RELATION[personal.relation as DailySceneRelation]?.[key] ?? topic.question,
     answer: needsCaregiver ? child.answer : answer,
     // 2026-09-27 — 같은 근거 문장이 6개 카드에 똑같이 붙어 한 풀이에서 6번 반복됐다(측정: 반복 18건). 오늘과 나의 관계를
     //   설명하는 긴 근거는 '오늘 전체' 카드에만 두고, 분야 카드는 그 분야에 적용한 짧은 근거로 쓴다.
@@ -3181,7 +3183,8 @@ export function buildTodayFortuneFreeResult(
     },
     // 제목(관심 분야 카드 답)과 본문이 같은 문장을 한 번 더 싣지 않게 한다.
     oneLine: dedupeSentencesDeep({
-      eyebrow: `${concern.prompt} · ${concern.hanja}`,
+      // concern.hanja 는 실제로 아이콘 이름(sparkle·love…)이라 붙이면 화면에 영어가 나갔다(2026-09-28).
+      eyebrow: concern.prompt,
       headline: focusReading?.answer ?? sanitizeUserFacingCopy(buildPublicTodayHeadline(options.concernId, profile)),
       // 직접 작성한 한글 설명은 그대로 보존한다. 전역 치환은 십성을 다른 이름으로 바꾼다.
       // 관심 분야 카드 네 칸을 그대로 이어 붙이면 바로 아래 카드와 같은 문장이 화면에 두 번 나온다(2026-09-27 측정).
@@ -3217,7 +3220,10 @@ export function buildTodayFortuneFreeResult(
       //   전 차감량도 따라 바뀌는데, 표시가 리터럴이면 다시 어긋난다).
       coinCost: getFeatureCost('detail_report'),
     },
-    followUpQuestions: concern.followUpQuestions,
+    // '전체' 관심사의 추천 질문은 오늘의 관계로 가른다(모두에게 같던 버튼 3개).
+    followUpQuestions: options.concernId === 'general' && profile.personalToday
+      ? GENERAL_FOLLOW_UPS_BY_RELATION[profile.personalToday.relation as DailySceneRelation] ?? concern.followUpQuestions
+      : concern.followUpQuestions,
     // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드 + 대운 CTA 데이터.
     sajuChart: buildSajuChartSnapshot(
       sajuData,
