@@ -21,7 +21,20 @@ const people = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 // 굵은 글씨 같은 인라인 태그는 문장을 자르지 않는다(한 문장이 조각으로 세이던 것).
-const text = (html: string) => html.replace(/<\/?(strong|b|em|span|i)\b[^>]*>/g, '').replace(/<[^>]+>/g, '\n').replace(/&[a-z#0-9]+;/g, ' ');
+//   정규식 치환 대신 글자를 읽으며 태그를 건너뛴다(CodeQL js/incomplete-multi-character-sanitization).
+const INLINE_TAGS = new Set(['strong', 'b', 'em', 'span', 'i']);
+function text(html: string) {
+  let out = '';
+  for (let i = 0; i < html.length; i += 1) {
+    if (html[i] !== '<') { out += html[i]; continue; }
+    const end = html.indexOf('>', i);
+    if (end < 0) break;
+    const name = html.slice(i + 1, end).replace(/^\//, '').split(/[\s/]/)[0].toLowerCase();
+    out += INLINE_TAGS.has(name) ? '' : '\n';
+    i = end;
+  }
+  return out.replace(/&[a-z#0-9]+;/g, ' ');
+}
 function sentences(t: string) {
   // 카드마다 붙는 UI 제목('실천 4단 · 왜 / 무엇을 / 어떻게')은 문장이 아니라 뺀다.
   return t.split(/\n+|(?<=[.!?。])\s+/).map((s) => s.trim()).filter((s) => s.length >= 15 && /[가-힣]/.test(s) && !s.startsWith('실천 4단'));
