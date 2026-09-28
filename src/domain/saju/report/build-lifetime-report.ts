@@ -280,10 +280,10 @@ function buildMajorLuckReading(
     ? `${formatElementName(primaryElement)} 기운에 ${formatElementName(secondaryElement)} 기운이 섞여`
     : `${formatElementName(primaryElement)} 기운이 중심이 되어`;
   const relationLine = isSupportFlow
-    ? '내 사주에서 보완이 되는 축이라 잘 쓰면 부족했던 부분을 채워 주는 흐름입니다.'
+    ? `${formatLuckRange(cycle).trim()}에 들어오는 ${formatElementName(primaryElement)} 기운은 내 사주에서 보완이 되는 축이라 잘 쓰면 부족했던 부분을 채워 주는 흐름입니다.`
     : isDominantFlow
-      ? '이미 강한 축이 더 커지는 흐름이라 장점은 빨리 드러나지만 과하면 피로와 고집도 함께 커질 수 있습니다.'
-      : '내 사주의 강한 축과 약한 축 사이를 이어 주는 흐름이라, 생활 방식과 관계 선택을 조정하는 일이 중요합니다.';
+      ? `${formatLuckRange(cycle).trim()}에는 이미 강한 ${formatElementName(primaryElement)} 기운이 더 커지는 흐름이라 장점은 빨리 드러나지만 과하면 피로와 고집도 함께 커질 수 있습니다.`
+      : `${formatLuckRange(cycle).trim()}의 ${formatElementName(primaryElement)} 기운이 내 사주의 강한 축과 약한 축 사이를 이어 주는 흐름이라, 생활 방식과 관계 선택을 조정하는 일이 중요합니다.`;
   const baseTask = isSupportFlow ? base.supportTask : isDominantFlow ? base.dominantTask : base.task;
   const branchHint = BRANCH_LUCK_HINT_BY_SYMBOL[branchSymbol] ?? '';
   const task = compactStrings([baseTask, branchHint]).join(' ');
@@ -395,10 +395,12 @@ function buildHookSentence(
 
 // 2026-05-15 PR 7 — cycle metadata 인용 helper.
 // 12운성 / 원진 cue 를 카피에 자연스럽게 끼워넣음.
-function buildTwelveStageCue(twelveStage: string | null | undefined): string | null {
+function buildTwelveStageCue(twelveStage: string | null | undefined, cycle?: SajuMajorLuckCycle): string | null {
   if (!twelveStage) return null;
   const entry = (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage];
   if (!entry) return null;
+  // 나이와 생애 단계를 함께 말한다(12운성 문장만으로는 누구에게나 같았다, 2026-09-28).
+  if (cycle) return `${formatLuckRange(cycle).trim()}의 이 대운은 ${twelveStage}지(${entry.plainCue})에 해당하고, ${LIFE_STAGE_LABEL[lifeStageOf(cycle.startAge)]}와 겹칩니다.`;
   return `이 대운은 ${twelveStage}지(${entry.plainCue})에 해당하는 흐름입니다.`;
 }
 
@@ -449,7 +451,7 @@ function buildChapterBodyText(
     head = `${head_open(cycle)} 흐름이 함께 작동합니다.`;
   }
   // 2026-05-15 PR 7 — 12운성 cue prepend (있으면).
-  const stageCue = buildTwelveStageCue(twelveStage);
+  const stageCue = buildTwelveStageCue(twelveStage, cycle);
   return compactStrings([head, stageCue, noteJoin || null, reading.summary]).join(' ');
 }
 
@@ -519,7 +521,8 @@ function buildMentalText(
     base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. ${feel.neutral}`;
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
-  const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
+  const stageNuanceBase = twelveStage ? buildMentalStageNuance(twelveStage) : null;
+  const stageNuance = stageNuanceBase ? `${LIFE_STAGE_LABEL[lifeStageOf(cycle.startAge)]}에 맞은 흐름으로, ${stageNuanceBase}` : null;
   // 2026-05-19 PR-B Task 6 — cycle 십성 nuance.
   const sipsinNuance = cycleSipsin
     ? (isYouthCycle(cycle) ? MENTAL_YOUTH_BY_SIPSIN[cycleSipsin] : isElderCycle(cycle) ? MENTAL_ELDER_BY_SIPSIN[cycleSipsin] : isLaterCycle(cycle) ? MENTAL_LATER_BY_SIPSIN[cycleSipsin] : MENTAL_NUANCE_BY_SIPSIN[cycleSipsin]) ?? null
@@ -881,7 +884,8 @@ function buildPracticalActions(
   cycleSipsin: TenGodCode | null = null,
   // 2026-09-27 — 타고난 값(부족 오행·원국 십성) 카드는 첫 대운·지금 대운에만. 나머지는 대운 후반 기운·나이대 할 일로.
   showNatal = true,
-  ageLabel = ''
+  ageLabel = '',
+  twelveStage: string | null = null
 ): PracticalAction[] {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const cycleElement = stem ?? branch ?? context.weakest;
@@ -902,7 +906,7 @@ function buildPracticalActions(
       cycleAction,
       cycleSipsinAction ?? shortageAction,
       { ...branchAction, reason: `후반 5년 · ${branchAction.reason}` },
-      { ...DECADE_ACTION[Math.min(9, Math.max(0, Math.floor(((cycle.startAge ?? 25) + 5) / 10)))], reason: `${ageLabel} · ${DECADE_ACTION[Math.min(9, Math.max(0, Math.floor(((cycle.startAge ?? 25) + 5) / 10)))].reason}` },
+      stageCard(cycle, ageLabel, twelveStage),
     ];
   }
   return [
@@ -914,6 +918,36 @@ function buildPracticalActions(
 }
 
 // 나이대(10년 단위) 할 일 — 60세 이후 대운이 여럿이라 4단계로는 같은 카드가 겹쳤다.
+// 12운성별 할 일 — 나이대 할 일 카드는 누구나 같은 나이를 지나 공통이었다(2026-09-28). 나이는 이유에 남긴다.
+const TWELVE_STAGE_ACTION: Record<string, PracticalAction> = {
+  장생: { reason: '새로 자라기 시작하는 10년', what: '새로 시작할 일 하나 정하기', how: '해보고 싶던 일을 석 달짜리 작은 계획으로 먼저 시작하기.' },
+  목욕: { reason: '주목받고 드러나는 10년', what: '보여줄 모습을 스스로 정하기', how: '칭찬과 비판을 모두 기록하고, 내가 지킬 기준 한 줄을 정해 두기.' },
+  관대: { reason: '처음 책임을 입어 보는 10년', what: '맡을 자리의 범위 정하기', how: '새 역할을 맡을 때 할 일과 하지 않을 일을 함께 적어 두기.' },
+  건록: { reason: '자기 자리가 단단해지는 10년', what: '쌓은 실력을 꾸준한 수입과 자리로 잇기', how: '한 분야의 전문성을 해마다 한 단계씩 올릴 계획 세우기.' },
+  제왕: { reason: '힘이 가장 강한 정점의 10년', what: '정점에서 무리하지 않기', how: '크게 벌이기 전에 믿는 사람 한 명에게 계획을 점검받기.' },
+  쇠: { reason: '힘이 가라앉기 시작하는 10년', what: '속도를 줄이고 정리하기', how: '해 오던 일 중 계속할 것과 내려놓을 것을 해마다 나눠 보기.' },
+  병: { reason: '몸과 마음을 돌봐야 하는 10년', what: '회복을 일정의 맨 앞에 두기', how: '정기 검진과 쉬는 날을 먼저 달력에 넣고 나머지 일정을 짜기.' },
+  사: { reason: '한 챕터가 닫히는 10년', what: '끝낼 것을 깔끔하게 마무리하기', how: '미뤄 둔 정리·계약·관계를 하나씩 매듭짓는 목록 만들기.' },
+  묘: { reason: '쌓아 둔 것을 갈무리하는 10년', what: '가진 것을 모으고 지키기', how: '자산과 기록을 한곳에 모아 정리하고, 새로 벌이는 일은 줄이기.' },
+  절: { reason: '흐름이 쉬어 가는 10년', what: '쉬면서 다음을 준비하기', how: '급하게 새 길을 찾기보다 배움과 휴식으로 다음 챕터를 준비하기.' },
+  태: { reason: '새 기획이 싹트는 10년', what: '떠오른 구상을 기록하기', how: '아이디어를 버리지 말고 모아 두었다가 가장 끌리는 하나를 골라 보기.' },
+  양: { reason: '천천히 키워 가는 10년', what: '서두르지 않고 기반 다지기', how: '작은 성과를 꾸준히 쌓는 습관 하나를 정해 오래 이어가기.' },
+};
+
+const ELEMENT_LIFE_AREA: Record<Element, string> = { 목: '새 배움과 도전', 화: '표현과 관계', 토: '생활과 저축', 금: '정리와 결단', 수: '공부와 휴식' };
+
+function stageCard(cycle: SajuMajorLuckCycle, ageLabel: string, twelveStage: string | null): PracticalAction {
+  const byStage = twelveStage ? TWELVE_STAGE_ACTION[twelveStage] : undefined;
+  const fallback = DECADE_ACTION[Math.min(9, Math.max(0, Math.floor(((cycle.startAge ?? 25) + 5) / 10)))];
+  const card = byStage ?? fallback;
+  // 그 대운 천간 오행의 생활 영역과 섞는다(12운성만으로는 누구나 대부분의 카드를 봤다).
+  const el = getGanziElements(cycle.ganzi).stem;
+  const area = el ? ELEMENT_LIFE_AREA[el] : null;
+  return area
+    ? { reason: `${ageLabel} · ${card.reason}`, what: `${area}에서 ${card.what}`, how: `${area} 쪽에서 ${card.how}` }
+    : { ...card, reason: `${ageLabel} · ${card.reason}` };
+}
+
 const DECADE_ACTION: PracticalAction[] = [
   { reason: '어린 시절의 할 일', what: '좋아하는 것을 마음껏 해보기', how: '보호자와 함께 여러 활동을 경험하고, 오래 즐긴 것을 기억해두기.' },
   { reason: '10대의 할 일', what: '공부 습관과 친구 관계의 기본 다지기', how: '하루 공부 시간과 쉬는 시간을 정해두고, 고민은 믿을 만한 어른과 나누기.' },
@@ -1209,7 +1243,7 @@ function buildMajorLuckCycles(
       mental: buildMentalText(cycle, context, twelveStage, cycleSipsin),
       relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith, cycleSipsin),
       wealthCareer: buildWealthCareerText(cycle, context, userSituation, cycleSipsin),
-      practicalActions: buildPracticalActions(cycle, context, primaryTenGod, cycleSipsin, isFirstCycle || isCurrent, formatLuckRange(cycle)),
+      practicalActions: buildPracticalActions(cycle, context, primaryTenGod, cycleSipsin, isFirstCycle || isCurrent, formatLuckRange(cycle), twelveStage),
       closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage, transitionPhase),
       twelveStage,
       wonjinWith,
