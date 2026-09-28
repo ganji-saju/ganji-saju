@@ -277,8 +277,8 @@ function buildMajorLuckReading(
     primaryElement === context.dominant || (secondaryElement ? secondaryElement === context.dominant : false);
   const phase = isCurrent ? '전환기' : base.phase;
   const elementLine = secondaryElement
-    ? `${formatElementName(primaryElement)} 기운에 ${formatElementName(secondaryElement)} 기운이 섞여`
-    : `${formatElementName(primaryElement)} 기운이 중심이 되어`;
+    ? `${formatLuckRange(cycle).trim()}에는 ${formatElementName(primaryElement)} 기운에 ${formatElementName(secondaryElement)} 기운이 섞여`
+    : `${formatLuckRange(cycle).trim()}에는 ${formatElementName(primaryElement)} 기운이 중심이 되어`;
   const relationLine = isSupportFlow
     ? `${formatLuckRange(cycle).trim()}에 들어오는 ${formatElementName(primaryElement)} 기운은 내 사주에서 보완이 되는 축이라 잘 쓰면 부족했던 부분을 채워 주는 흐름입니다.`
     : isDominantFlow
@@ -413,11 +413,11 @@ const WONJIN_SLOT_PLAIN: Record<string, string> = {
   시지: '마무리·말년', 時支: '마무리·말년',
 };
 
-function buildWonjinCue(wonjinWith: string[] | undefined): string | null {
+function buildWonjinCue(wonjinWith: string[] | undefined, ageLabel = ''): string | null {
   if (!wonjinWith || wonjinWith.length === 0) return null;
   const areas = wonjinWith.map((s) => WONJIN_SLOT_PLAIN[s]).filter(Boolean);
   const areaText = areas.length > 0 ? `${areas.join(' · ')} 자리` : '가까운 자리';
-  return `${areaText}와 미묘하게 어긋나기 쉬워, 가까운 사이일수록 작은 마찰이 천천히 쌓이기 쉬운 시기예요.`;
+  return `${ageLabel ? `${ageLabel}에는 ` : ''}${areaText}와 미묘하게 어긋나기 쉬워, 가까운 사이일수록 작은 마찰이 천천히 쌓이기 쉬운 시기예요.`;
 }
 
 function buildChapterBodyText(
@@ -514,7 +514,7 @@ function buildMentalText(
   const feel = MENTAL_ELEMENT_FEEL[element];
   let base: string;
   if (isSupport) {
-    base = `이 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. ${feel.support}`;
+    base = `${formatLuckRange(cycle).trim()} 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. ${feel.support}`;
   } else if (isDominant) {
     base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. ${feel.dominant}`;
   } else {
@@ -522,12 +522,12 @@ function buildMentalText(
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
   const stageNuanceBase = twelveStage ? buildMentalStageNuance(twelveStage) : null;
-  const stageNuance = stageNuanceBase ? `${LIFE_STAGE_LABEL[lifeStageOf(cycle.startAge)]}에 맞은 흐름으로, ${stageNuanceBase}` : null;
+  const stageNuance = stageNuanceBase ? `${formatLuckRange(cycle).trim()}에 맞은 흐름으로, ${stageNuanceBase}` : null;
   // 2026-05-19 PR-B Task 6 — cycle 십성 nuance.
   const sipsinNuance = cycleSipsin
     ? (isYouthCycle(cycle) ? MENTAL_YOUTH_BY_SIPSIN[cycleSipsin] : isElderCycle(cycle) ? MENTAL_ELDER_BY_SIPSIN[cycleSipsin] : isLaterCycle(cycle) ? MENTAL_LATER_BY_SIPSIN[cycleSipsin] : MENTAL_NUANCE_BY_SIPSIN[cycleSipsin]) ?? null
     : null;
-  return compactStrings([base, stageNuance, sipsinNuance]).join(' ');
+  return compactStrings([base, stageNuance, sipsinNuance ? `${formatLuckRange(cycle).trim()}에는 ${sipsinNuance}` : null]).join(' ');
 }
 
 function buildMentalStageNuance(stage: string): string | null {
@@ -597,8 +597,9 @@ function buildRelationshipText(
   }
 
   // 2026-05-15 PR 7 — 원진 cue 추가 (있으면).
-  const wonjinCue = buildWonjinCue(wonjinWith);
-  return compactStrings([baseLine, statusBody || null, wonjinCue]).join(' ');
+  const wonjinCue = buildWonjinCue(wonjinWith, formatLuckRange(cycle).trim());
+  // 같은 십성 문단이 사람마다 다른 나이에 온다 — 문장에 그 나이를 넣는다(2026-09-28).
+  return compactStrings([baseLine?.replace(/^이 10년은/, `${formatLuckRange(cycle).trim()}의 10년은`), statusBody || null, wonjinCue]).join(' ');
 }
 
 // 2026-05-19 PR-B Task 5: 십성별 돈/일 base 사전 — buildWealthCareerText 분기 input.
@@ -628,9 +629,10 @@ function buildWealthCareerText(
 ): string {
   const occupation = userSituation?.occupation;
   const concern = userSituation?.currentConcern;
-  const base = cycleSipsin
+  const baseRaw = cycleSipsin
     ? (isYouthCycle(cycle) ? WEALTH_YOUTH_BY_SIPSIN : isElderCycle(cycle) ? WEALTH_ELDER_BY_SIPSIN : isLaterCycle(cycle) ? WEALTH_LATER_BY_SIPSIN : WEALTH_BASELINE_BY_SIPSIN)[cycleSipsin]
     : WEALTH_BASELINE_DEFAULT;
+  const base = baseRaw.replace(/^이 10년은/, `${formatLuckRange(cycle).trim()}의 10년은`);
 
   if (occupation === 'self-employed' || concern === 'business') {
     return `${base} 자영업·프리랜서·새 사업 영역에서 흐름이 크게 흔들리는 시기입니다. 매출보다 단가·고정비·정산 주기를 먼저 점검하세요.`;
@@ -890,7 +892,10 @@ function buildPracticalActions(
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const cycleElement = stem ?? branch ?? context.weakest;
 
-  const cycleAction = buildCycleElementAction(cycleElement, context);
+  const baseCycleAction = buildCycleElementAction(cycleElement, context);
+  // 대운 오행 카드의 '어떻게'에 그 대운 나이를 넣는다(같은 오행 카드가 사람마다 다른 나이에 온다, 2026-09-28).
+  const age = formatLuckRange(cycle).trim();
+  const cycleAction = age ? { ...baseCycleAction, how: `${age}에는 ${baseCycleAction.how}` } : baseCycleAction;
   const cycleSipsinAction = cycleSipsin ? (isYouthCycle(cycle) ? CYCLE_SIPSIN_ACTION_YOUTH : isElderCycle(cycle) ? CYCLE_SIPSIN_ACTION_ELDER : isLaterCycle(cycle) ? CYCLE_SIPSIN_ACTION_LATER : CYCLE_SIPSIN_ACTION_DICT)[cycleSipsin] : null;
   const shortageAction = SHORTAGE_ACTION_DICT[context.weakest] ?? SHORTAGE_ACTION_DICT['토'];
   const sajuTenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
@@ -1321,7 +1326,7 @@ function varyRepeatedSipsinCycles<T extends LifetimeMajorLuckCycleRow & { cycleS
           seen.add(`action:${action.what}`);
           return action;
         }
-        return { reason: `${row.ageLabel} · ${action.reason}`, what: `${action.what}(${row.ageLabel.trim()}에 맞게)`, how: `${row.ageLabel}에는 ${action.how.split(/(?<=[.!?])\s+/)[0]}` };
+        return { reason: action.reason.startsWith(row.ageLabel.trim()) ? action.reason : `${row.ageLabel.trim()} · ${action.reason}`, what: `${action.what}(${row.ageLabel.trim()}에 맞게)`, how: `${row.ageLabel.trim()}에는 ${action.how.replace(/^\d+-\d+세에는 /, '').split(/(?<=[.!?])\s+/)[0]}` };
       });
     }
     if (first) {
