@@ -1865,17 +1865,47 @@ const CONCERN_BODY_VARIANTS: Record<ConcernId, string[]> = {
     '오늘은 맞고 틀림을 가르기보다 오해가 커지지 않게 말의 순서를 낮추는 편이 좋습니다.',
     '오늘은 누가 잘못했는지 따지기보다 어디서 신호가 어긋났는지 한 번 확인해보세요.',
     '오늘은 즉답보다 한 박자 늦은 답장이 관계를 더 부드럽게 만듭니다.',
+    '오늘은 상대의 말을 끝까지 들은 뒤 내 이야기를 꺼내는 편이 좋아요.',
+    '오늘은 서운한 마음을 결론 대신 바라는 것 한 가지로 바꿔 말해 보세요.',
+    '오늘은 고맙다는 말 한마디가 쌓인 오해를 풀어 줍니다.',
   ],
   energy_health: [
     '오늘은 몰아서 버티기보다 쉬는 구간을 먼저 잡아야 오래 갑니다.',
     '오늘은 일정 사이에 짧은 휴식 한 토막을 끼워 넣으면 컨디션이 무너지지 않아요.',
     '오늘은 무리한 운동·약속보다 수면·식사·물 한 잔의 기본 리듬을 챙기는 편이 좋아요.',
+    '오늘은 한 시간에 한 번 자리에서 일어나 몸을 푸는 것만으로도 충분합니다.',
+    '오늘은 늦은 밤 일정을 줄이고 잠드는 시간을 지키는 쪽이 이득이에요.',
+    '오늘은 가벼운 산책이나 스트레칭으로 굳은 몸을 먼저 풀어 주세요.',
   ],
   general: [
     '오늘은 큰 결정보다 지금 바로 정리할 수 있는 작은 일 하나가 하루를 바꿉니다.',
     '오늘은 큰 그림을 다시 그리기보다 책상·일정·메모 중 하나만 정돈해도 흐름이 풀립니다.',
     '오늘은 새로 시작하는 일보다 미뤄둔 한 가지를 마무리하는 쪽이 더 가볍게 끝나요.',
+    // 2026-09-28 — 후보가 3개뿐이라 한 문장이 절반 가까운 사람에게 겹쳤다. 후보를 늘린다.
+    '오늘은 해야 할 일 목록에서 가장 작은 것부터 지우면 나머지가 가벼워집니다.',
+    '오늘은 답장이 밀린 연락 하나를 먼저 정리하면 마음이 한결 편해져요.',
+    '오늘은 계획을 바꾸기보다 이미 정한 약속 하나를 제대로 지키는 쪽이 좋습니다.',
+    '오늘은 서두르던 일을 한 박자 늦추면 놓쳤던 부분이 눈에 들어옵니다.',
+    '오늘은 혼자 고민하던 일을 한 사람에게 털어놓으면 길이 보입니다.',
+    '오늘은 쓸 돈과 쓸 시간을 먼저 정해 두면 하루가 흔들리지 않아요.',
+    '오늘은 몸이 보내는 신호를 먼저 챙기면 다른 일도 수월하게 풀립니다.',
   ],
+};
+
+// 시간대 카드 꼬리말 — 강한 오행·약한 오행별(모두에게 같던 두 문장, 2026-09-28).
+const HOUR_ACTION_TAIL: Record<Element, string> = {
+  목: '새로 벌이기보다 시작한 일 하나를 이어 가 보세요.',
+  화: '말로 꺼내기 전에 한 줄로 먼저 정리해 보세요.',
+  토: '할 일 목록에서 하나만 골라 끝까지 해보세요.',
+  금: '미뤄 둔 결정 하나를 이때 정리해 보세요.',
+  수: '생각은 짧게 적고 바로 한 가지를 움직여 보세요.',
+};
+const HOUR_CAUTION_TAIL: Record<Element, string> = {
+  목: '시작할 힘이 약할 수 있으니 첫 단계만 정해 두세요.',
+  화: '마음을 표현하기 어려울 수 있으니 짧은 문장으로 먼저 전하세요.',
+  토: '중심이 흔들릴 수 있으니 일정과 지출을 한 번 확인하세요.',
+  금: '결정이 흐려질 수 있으니 기준 한 줄을 먼저 적어 두세요.',
+  수: '쉬는 틈이 부족할 수 있으니 짧은 휴식을 먼저 넣으세요.',
 };
 
 function pickConcernBodyVariant(concernId: ConcernId, seed: number): string {
@@ -2117,7 +2147,7 @@ function buildPublicOpportunity(
       },
       {
         title: `${profile.hourLabel}에 맞는 첫 행동`,
-        body: `${profile.hourAction}. 크게 바꾸기보다 이 한 가지를 먼저 해보세요.`,
+        body: `${profile.hourAction}. ${HOUR_ACTION_TAIL[profile.dominantElement]}`,
       },
       {
         title: `${withKoreanParticle(profile.dominantLabel, '을', '를')} 좋은 쪽으로 쓰기`,
@@ -2149,7 +2179,7 @@ function buildPublicRisk(
       },
       {
         title: `${profile.hourLabel}에서 조심할 점`,
-        body: `${profile.hourCaution}. 급히 정하기보다 한 번 확인하세요.`,
+        body: `${profile.hourCaution}. ${HOUR_CAUTION_TAIL[profile.weakestElement]}`,
       },
       {
         title: `${withKoreanParticle(profile.dominantLabel, '이', '가')} 과해질 때`,
@@ -3020,6 +3050,14 @@ function computeDayGanziIndex(dayStem: string, dayBranch: string): number {
   return 0;
 }
 
+const SINSAL_DAY_TIP: Record<Element, [string, string]> = {
+  목: ['새 시작에 힘을 보태 줍니다', '시작한 일을 욕심내 늘리지 마세요'],
+  화: ['표현과 관계에 힘을 보태 줍니다', '말의 속도를 한 번 늦추세요'],
+  토: ['생활의 중심을 받쳐 줍니다', '혼자 떠안지 말고 나눠 맡기세요'],
+  금: ['결단과 마무리를 도와줍니다', '날카로운 판단은 하루 두고 다시 보세요'],
+  수: ['배움과 휴식에 힘을 보태 줍니다', '생각만 길어지지 않게 하나만 움직이세요'],
+};
+
 function buildSajuChartSnapshot(
   sajuData: SajuDataV1 | SajuDataV2,
   todayGanzi: string | null,
@@ -3080,12 +3118,13 @@ function buildSajuChartSnapshot(
     // buildTodayFortunePremiumResult/buildCausalInput 배선과 로직 공유). 반환 필드(name/
     // category/positions/scoreHint/hint) 및 값 동일 — currentYearBranch 만 string | null →
     // string | undefined 로 좁혀 전달(둘 다 IljinBranch | undefined 로 캐스팅되어 동등).
+    // 신살 설명에 태어난 날 오행별 한마디를 붙인다(일진 신살은 같은 날 모두에게 같았다, 2026-09-28).
     detectedSinsals: detectTodaySinsals(
       sajuData,
       todayStem,
       todayBranch,
       currentYearBranch ?? undefined
-    ),
+    ).map((hit) => ({ ...hit, hint: hit.hint ? `${hit.hint} — ${SINSAL_DAY_TIP[sajuData.dayMaster.element][hit.category === '길신' ? 0 : 1]}` : hit.hint })),
   };
 }
 
