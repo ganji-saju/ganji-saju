@@ -555,12 +555,15 @@ export function GangiServiceCardLink({
             </span>
           </span>
           {/* 우측 수호신 — 호랑이(寅, 한 해의 첫 달). 좌측 글자 대비를 위해 왼쪽을 옅게 가린다. */}
-          <span className="relative block w-[38%] max-w-[190px] shrink-0">
+          {/* 2026-09-29 — 초상 파일 양옆 20px 에 밝은 띠가 있어 좁은 칸에서 세로 줄(점선처럼)로 보였다.
+              12% 확대해 양옆 띠를 칸 밖으로 밀어내고 칸에서 자른다. */}
+          <span className="relative block w-[38%] max-w-[190px] shrink-0 overflow-hidden">
             {card.image ? (
               <GuardianPortrait
                 id={card.image}
                 alt={card.title}
                 className="absolute inset-0 h-full w-full object-cover object-top"
+                style={{ transform: 'scale(1.12)', transformOrigin: 'center top' }}
               />
             ) : (
               <span className="absolute inset-0 grid place-items-center">
