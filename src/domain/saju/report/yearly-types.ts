@@ -84,6 +84,8 @@ export interface YearlyMonthFlow {
   action: string;
   relatedAreas: YearlyCategoryKey[];
   basis: string[];
+  /** 그 달 천간 오행과 태어난 날 오행의 관계(0 같음·1 내가 낳음·2 내가 다룸·3 나를 다잡음·4 나를 도움). 문장 가르기용. */
+  relationStep?: number | null;
   /** 2026-05-15 PR 5 — Peak/Pitfall 시각 강조. 1년 중 1 peak + 1 pitfall 까지만. */
   peakKind?: YearlyPeakKind;
 }

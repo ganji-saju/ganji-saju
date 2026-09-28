@@ -530,7 +530,8 @@ function createCategorySectionFromReport(
   return {
     key,
     headline: report.headline,
-    summary: tightenCardCopy(report.summaryHighlights[0] || report.summary, {
+    // 오늘운세용 리포트 문장이라 '오늘'이 섞여 연간 문맥이 어긋났다(2026-09-28) — 한 해 단위로 바꿔 쓴다.
+    summary: tightenCardCopy((report.summaryHighlights[0] || report.summary).replace(/오늘/g, '올해'), {
       maxSentences: 2,
       maxLength: 108,
     }),
@@ -718,6 +719,38 @@ const MONTH_RELATION_QUESTION: Array<(month: number, areas: string) => string> =
   (m, a) => `${m}월 ${a}에서 누구에게 배우고 무엇을 준비할까?`,
 ];
 
+// 2026-09-28 — 월·반기 문장을 관계(0~4)로 가른다(연간 공통 문장).
+const MONTH_MOMENTUM_TAIL: Record<number, Record<YearlyMomentum, string>> = {
+  0: { rise: '내 힘으로 끝낼 수 있는 일부터 밀어붙이면 성과가 빨리 보입니다.', caution: '혼자 결정하기 전에 한 사람의 의견을 꼭 들어 보세요.', steady: '내 방식은 지키되 함께하는 사람과 속도를 맞출 때입니다.' },
+  1: { rise: '미뤄 둔 제안이나 결과물을 이때 꺼내 보이면 반응이 좋습니다.', caution: '말이 앞서지 않게 약속 전에 준비 상태를 한 번 더 보세요.', steady: '아이디어를 기록해 두고 보여줄 때를 고르는 달입니다.' },
+  2: { rise: '정산·계약처럼 손에 잡히는 결과를 챙기기 좋습니다.', caution: '이득이 커 보여도 조건과 비용을 끝까지 확인하세요.', steady: '들어오고 나가는 돈과 시간을 정리해 둘 때입니다.' },
+  3: { rise: '맡은 책임을 제때 끝내면 평가와 신뢰가 따라옵니다.', caution: '급한 요청이 몰려도 우선순위를 먼저 정하고 도움을 청하세요.', steady: '역할과 규칙을 문장으로 정리해 두면 흔들림이 줄어듭니다.' },
+  4: { rise: '배우고 준비한 것을 실제로 써먹기 좋은 때입니다.', caution: '생각이 길어지면 결정 날짜를 먼저 정해 두세요.', steady: '필요한 정보를 모으고 조언을 구해 다음을 준비할 때입니다.' },
+};
+const MONTH_RELATION_SHORT = ['내 뜻을 밀어붙이는', '생각을 꺼내 보이는', '결과를 거두는', '책임을 시험받는', '배우고 채우는'];
+const MONTH_RELATION_OPPORTUNITY: Array<(areas: string) => string> = [
+  (a) => `${a}에서 내가 주도할 수 있는 일에 힘이 붙습니다.`,
+  (a) => `${a}에서 말과 결과물로 드러내는 움직임에 힘이 붙습니다.`,
+  (a) => `${a}에서 실속을 챙기고 정산하는 움직임에 힘이 붙습니다.`,
+  (a) => `${a}에서 책임을 맡고 약속을 지키는 움직임에 힘이 붙습니다.`,
+  (a) => `${a}에서 배우고 도움을 받는 움직임에 힘이 붙습니다.`,
+];
+const HALF_TAIL = [
+  '다만 혼자 다 끌고 가려 하지 않으면 훨씬 안정적으로 풀립니다.',
+  '다만 말과 약속의 속도만 조절하면 훨씬 안정적으로 풀립니다.',
+  '다만 이득을 서두르지만 않으면 훨씬 안정적으로 풀립니다.',
+  '다만 책임을 나눠 지면 훨씬 안정적으로 풀립니다.',
+  '다만 생각을 행동으로 옮기는 날짜만 정하면 훨씬 안정적으로 풀립니다.',
+  '다만 조급함만 줄이면 훨씬 안정적으로 풀립니다.',
+];
+/** 반기 문장용 — 월별 관계의 최빈값(없으면 5 = 기본 문장). */
+function yearStepOf(flows: YearlyMonthFlow[]) {
+  const counts = new Map<number, number>();
+  for (const f of flows) if (typeof f.relationStep === 'number') counts.set(f.relationStep, (counts.get(f.relationStep) ?? 0) + 1);
+  const top = [...counts].sort((a, b) => b[1] - a[1])[0];
+  return top ? top[0] : 5;
+}
+
 function monthRelationStep(dayElement: Element | undefined, monthElement: Element | undefined) {
   if (!dayElement || !monthElement) return null;
   return (ELEMENT_CYCLE.indexOf(monthElement) - ELEMENT_CYCLE.indexOf(dayElement) + 5) % 5;
@@ -744,17 +777,17 @@ function createMonthlyFlow(
   const primary = monthly.categories[plan.relatedAreas[0]];
   const secondary = monthly.categories[plan.relatedAreas[1]];
   const monthlyGanji = monthly.data.currentLuck?.wolwoon?.ganzi ?? null;
+  const monthStemElement = monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined;
+  const step = monthRelationStep(monthly.data.dayMaster.element, monthStemElement);
   const monthlyElements = getGanziElements(monthlyGanji);
   const monthlyElementLabel = formatElementList(monthlyElements);
   const yearlyGanji = monthly.data.currentLuck?.saewoon?.ganzi ?? monthly.context.yearGanji;
   const focusLabel = plan.relatedAreas.map((area) => YEARLY_CATEGORY_LABEL[area]).join(' · ');
   const theme =
     monthlyGanji && monthlyElementLabel
-      ? `${monthlyGanji} 월운이 ${plan.theme}`
+      ? `${koreanizeGanzi(monthlyGanji)} 월운이 ${plan.theme}${step === null ? '' : `이자, 나에게는 ${MONTH_RELATION_SHORT[step]} 달`}`
       : plan.theme;
 
-  const monthStemElement = monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined;
-  const step = monthRelationStep(monthly.data.dayMaster.element, monthStemElement);
   const lead =
     monthRelationLead(
       monthly.month,
@@ -762,12 +795,14 @@ function createMonthlyFlow(
       monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined,
       focusLabel
     ) ?? guide.summaryLead;
+  // 둘째 문장도 관계 × 흐름으로 가른다(3종 고정 문장이 모두에게 나왔다, 2026-09-28).
+  const tail = step === null ? null : MONTH_MOMENTUM_TAIL[step][momentum];
   const summary =
     momentum === 'rise'
-      ? `${lead} 준비해 둔 결정은 이때 꺼내도 좋습니다.`
+      ? `${lead} ${tail ?? '준비해 둔 결정은 이때 꺼내도 좋습니다.'}`
       : momentum === 'caution'
-        ? `${lead} 확정보다 확인을 먼저 두세요.`
-        : `${lead} 새 일을 늘리기보다 원칙을 정리할 때입니다.`;
+        ? `${lead} ${tail ?? '확정보다 확인을 먼저 두세요.'}`
+        : `${lead} ${tail ?? '새 일을 늘리기보다 원칙을 정리할 때입니다.'}`;
 
   return {
     month: monthly.month,
@@ -777,7 +812,7 @@ function createMonthlyFlow(
     theme,
     focusQuestion: step === null ? guide.question : MONTH_RELATION_QUESTION[step](monthly.month, focusLabel),
     summary: tightenCardCopy(summary, { maxSentences: 2, maxLength: 112 }),
-    opportunity: tightenCardCopy(`${guide.opportunityLead} ${primary.action}`, {
+    opportunity: tightenCardCopy(`${step === null ? guide.opportunityLead : MONTH_RELATION_OPPORTUNITY[step](focusLabel)} ${primary.action}`, {
       maxSentences: 2,
       maxLength: 104,
     }),
@@ -790,6 +825,7 @@ function createMonthlyFlow(
       maxLength: 76,
     }),
     relatedAreas: plan.relatedAreas,
+    relationStep: step,
     basis: compactStrings([
       monthlyGanji ? `월운: ${monthlyGanji}` : null,
       monthlyElementLabel ? `월운 오행: ${monthlyElementLabel}` : null,
@@ -896,7 +932,7 @@ function createHalfFlow(
         : `${section.headline.replace(/\.$/, '')} 흐름이 하반기 판단의 바탕이 됩니다.`,
     summary:
       riseCount >= cautionCount
-        ? `${section.summary} ${label === 'firstHalf' ? '상반기에는 준비해 온 것을 꺼내는 힘이 더 크고,' : '하반기에는 구조를 현실화하는 힘이 더 커지며,'} 다만 조급함만 줄이면 훨씬 안정적으로 풀립니다.`
+        ? `${section.summary} ${label === 'firstHalf' ? '상반기에는 준비해 온 것을 꺼내는 힘이 더 크고,' : '하반기에는 구조를 현실화하는 힘이 더 커지며,'} ${HALF_TAIL[yearStepOf(monthlyFlows)]}`
         : `${section.summary} ${label === 'firstHalf' ? '상반기에는 속도보다 원칙을 정하는 편이 좋고,' : '하반기에는 확정보다 조율이 먼저인 흐름이 강해,'} 경계선을 먼저 정하는 쪽이 유리합니다.`,
     opportunity: section.opportunity,
     caution: section.caution,
@@ -956,6 +992,15 @@ function createOneLineSummary(
   ]).join(' ');
 }
 
+// 2026-09-28 — 연간 리포트가 오늘운세용 리포트 문장을 재료로 써서 '오늘 선택에…', '오늘 결정할…'이 섞였다(30명 38곳).
+//   리포트를 내보내기 직전에 띄어쓰기로 이어지는 '오늘'을 '올해'로 바꾼다('오늘운세' 같은 합성어는 건드리지 않음).
+function toYearlyTense<T>(value: T): T {
+  if (typeof value === 'string') return value.replace(/오늘(?=\s)/g, '올해') as T;
+  if (Array.isArray(value)) return value.map(toYearlyTense) as T;
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, toYearlyTense(v)])) as T;
+  return value;
+}
+
 export function buildYearlyReport(
   input: BirthInput,
   data: SajuDataV1 | SajuDataV2,
@@ -1008,7 +1053,7 @@ export function buildYearlyReport(
     categories
   );
 
-  return {
+  return toYearlyTense({
     year: targetYear,
     yearLabel: `${targetYear}년 ${annualContext.yearGanji}`,
     computation: createComputationMeta(targetYear, timezone),
@@ -1027,5 +1072,5 @@ export function buildYearlyReport(
     evidenceCards: reports.today.evidenceCards,
     scores: reports.today.scores,
     referenceReports,
-  };
+  });
 }

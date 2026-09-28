@@ -315,10 +315,30 @@ function buildCategoryFallback(
 
 // 2026-09-27 — 기대/조심 목록이 좋은 시기·월별 주의 문장을 그대로 가져와 한 풀이에서 같은 문장이 두 번 나왔다(반복 측정).
 //   목록은 그 달의 주제(theme)와 분야로 **자기 문장**을 만든다 — 월별 카드·좋은 시기 문단과 겹치지 않는다.
+const HIGHLIGHT_RISE = [
+  '내가 직접 이끌 일을 먼저 시작해 보기 좋습니다.',
+  '준비한 생각을 말이나 결과물로 꺼내 보기 좋습니다.',
+  '손에 잡히는 결과를 챙기고 정산하기 좋습니다.',
+  '맡은 책임을 분명히 하고 성과를 보여주기 좋습니다.',
+  '배우고 조언을 구해 실력을 채우기 좋습니다.',
+];
+const HIGHLIGHT_CAUTION = [
+  '혼자 밀어붙이기 전에 다른 의견을 한 번 들어 보세요.',
+  '말이 앞서지 않게 약속 전에 한 번 더 확인하세요.',
+  '이득만 보고 서두르지 말고 조건을 끝까지 읽어 보세요.',
+  '책임이 몰리지 않게 할 일의 범위부터 정하세요.',
+  '생각만 길어지지 않게 결정할 날짜를 먼저 정하세요.',
+];
+
 function highlightText(report: SajuYearlyReport, month: number, tone: 'rise' | 'caution'): string {
   const flow = report.monthlyFlows.find((f) => f.month === month);
   const area = NEW_YEAR_CATEGORY_LABEL[(flow?.relatedAreas[0] ?? (tone === 'rise' ? 'work' : 'health')) as NewYearHighlightCategory];
   const theme = flow?.theme ? `${koreanizeGanzi(flow.theme).replace(/[.。]$/, '')}입니다. ` : '';
+  // 그 달과 나의 관계로 행동 문장을 가른다(모두에게 같던 두 문장, 2026-09-28).
+  const step = flow?.relationStep;
+  if (typeof step === 'number') {
+    return `${theme}${month}월에는 ${area} 쪽에서 ${(tone === 'rise' ? HIGHLIGHT_RISE : HIGHLIGHT_CAUTION)[step]}`;
+  }
   return tone === 'rise'
     ? `${theme}${month}월에는 ${area} 쪽에서 미뤄 둔 일을 먼저 움직여 보기 좋습니다.`
     : `${theme}${month}월에는 ${area} 쪽 결정을 한 번 더 확인하고 속도를 늦추는 편이 좋습니다.`;
@@ -365,11 +385,16 @@ function padHighlights(
   return out.sort((a, b) => a.month - b.month);
 }
 
+const QUARTER_VERB = ['내가 먼저 주도하면', '생각을 먼저 꺼내 보이면', '실속부터 챙기면', '책임을 먼저 정리하면', '먼저 배우고 준비하면'];
+
 function quarterLeadText(flow: SajuYearlyReport['monthlyFlows'][number]) {
   const areas = flow.relatedAreas.map((area) => YEARLY_CATEGORY_LABEL[area]).join('과 ');
+  const verb = typeof flow.relationStep === 'number' ? QUARTER_VERB[flow.relationStep] : null;
   return flow.momentum === 'caution'
     ? `${flow.month}월의 ${areas}은 서두르지 말고 한 번 더 확인하는 쪽으로 두세요.`
-    : `${flow.month}월에 ${areas} 쪽을 먼저 움직이면 분기 전체가 수월해집니다.`;
+    : verb
+      ? `${flow.month}월에 ${areas} 쪽에서 ${verb} 분기 전체가 수월해집니다.`
+      : `${flow.month}월에 ${areas} 쪽을 먼저 움직이면 분기 전체가 수월해집니다.`;
 }
 
 export function buildFallbackNewYearExtras(report: SajuYearlyReport): SajuNewYearExtras {
