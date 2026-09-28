@@ -98,3 +98,10 @@ test('오늘운세 LLM 호출은 temperature 를 보내지 않는다', () => {
   const source = fs.readFileSync(require('node:path').join(__dirname, 'service.ts'), 'utf8');
   assert.equal(/temperature\s*:/.test(source), false);
 });
+
+test('오늘운세 LLM 출력 상한은 추론형 모델이 빈 답을 내지 않을 만큼 둔다(1000 이상)', () => {
+  const fs = require('node:fs');
+  const source = fs.readFileSync(require('node:path').join(__dirname, 'service.ts'), 'utf8');
+  const m = source.match(/maxOutputTokens:\s*(\d[\d_]*)/);
+  assert.ok(m && Number(m[1].replace(/_/g, '')) >= 1000);
+});

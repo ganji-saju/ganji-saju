@@ -218,19 +218,7 @@ export function TodayFortuneDetailClient({
     };
   }, [concernId, counselorId, embedded, fromLimit, hasInitialResult, paidProduct, sourceSessionId]);
 
-  // 2026-05-16 — 로드 완료 + DOM 안정화 후 프리미엄 패널 위치로 스크롤.
-  // unlock 직후 사용자가 "방금 산 컨텐츠" 를 바로 볼 수 있도록 보장.
-  useEffect(() => {
-    if (loading || !result) return;
-    // stagger 모션이 끝나기 전에 스크롤하면 헛스크롤 — 다음 두 프레임 + 한 박자.
-    const timeout = window.setTimeout(() => {
-      premiumRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }, 220);
-    return () => window.clearTimeout(timeout);
-  }, [loading, result]);
+  // 2026-09-29 — 결제 후 상세 페이지가 AI 분석 패널로 자동 스크롤돼 위쪽의 풍부한 내용을 놓치게 했다(사용자 요청) → 제거, 맨 위부터 읽게 둔다.
 
   const defaultResultHref = sourceSessionId
     ? `/today-fortune/result?sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(freeResult?.concernId ?? concernId)}`
