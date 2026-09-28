@@ -108,31 +108,31 @@ export function buildSajuNarrative(
             : '';
   const questions: SajuNarrativeQuestion[] = [
     {
-      question: '어떤 성향이 반복해서 드러날까요?',
+      question: `${dayLabel} 사주에서 어떤 성향이 반복해서 드러날까요?`,
       answer: profile?.core ?? `${data.dayMaster.element} 기운을 중심으로 반응하는 성향을 살펴봅니다.`,
       evidence: `${dayLabel} 일주를 기본 성향의 출발점으로 봅니다. ${data.pattern ? `${data.pattern.name}은 반복되는 역할의 ${data.pattern.confidence === '낮음' ? '참고 후보' : '판단 근거'}로 함께 읽습니다.` : '격국은 정하지 않아 하나의 역할로 성향을 좁히지 않습니다.'}`,
       example: role?.example ?? '새로운 과제를 받았을 때 먼저 이해하려는지, 실행하며 확인하는지 실제 반응을 비교해보세요.',
-      choice: child ? `보호자는 아이의 반응을 성격으로 굳히지 말고 상황을 바꿨을 때도 같은 모습인지 관찰해주세요.` : `편한 상황과 부담스러운 상황에서 반응을 각각 비교해보세요. ${actionCue}`,
+      choice: child ? `보호자는 아이의 반응을 성격으로 굳히지 말고 상황을 바꿨을 때도 같은 모습인지 관찰해주세요.` : `${dayLabel} 사주의 반응을 편한 상황과 부담스러운 상황에서 각각 비교해보세요. ${actionCue}`,
     },
     {
-      question: '어떤 환경에서 장점을 쓰기 쉬울까요?',
+      question: `${data.fiveElements.dominant} 기운이 강한 장점을 어떤 환경에서 쓰기 쉬울까요?`,
       answer: role?.answer ?? '직업명 하나보다 실제로 맡을 역할과 일하는 방식을 비교하는 것이 먼저입니다.',
       evidence: roleEvidence,
       example: `${setting} ${second ? `'${ROLE_READING[second[0]].meaning}'도 함께 필요합니다. ${ROLE_READING[second[0]].example}` : '혼자 할 부분과 도움받을 부분을 나누어 반응을 확인해보세요.'}`,
       choice: role?.choice ?? '편하게 반복할 수 있는 방식인지 작은 과제로 확인한 뒤 활동의 범위를 넓혀보세요.',
     },
     {
-      question: '잘하던 일이 왜 부담으로 바뀔까요?',
+      question: `${data.fiveElements.weakest} 기운이 약해질 때 잘하던 일이 왜 부담으로 바뀔까요?`,
       answer: capacity.answer,
       evidence: strength ? `강약 판단은 ${strength}입니다. 사주 안에서 본인을 돕는 힘과 소모시키는 힘을 비교한 것으로, 건강이나 실제 능력의 높낮이를 판정한 값은 아닙니다.` : '강약을 확정할 수 없어 생활 조건을 기준으로 부담을 확인합니다.',
       example: `${profile?.watchPoints[0] ?? ''} ${capacity.example}`.trim(),
       choice: child ? `보호자가 일정과 요구의 양을 조절하고 아이가 도움을 청할 수 있게 해주세요. ${capacity.choice}` : capacity.choice,
     },
     {
-      question: '지금 바꿔볼 선택 기준은 무엇일까요?',
+      question: support ? `${support} 기운을 살리려면 지금 어떤 선택 기준을 바꿔볼까요?` : '지금 바꿔볼 선택 기준은 무엇일까요?',
       answer: support ? `${support} 기운을 보완 방향으로 읽고, 생활에서 조정할 방법을 찾습니다.` : '보완 기운을 확정하기보다 이미 확인한 강점과 부담을 실제 선택에 연결해보세요.',
-      evidence: `${support ? '보완 방향은 오행 개수 하나가 아니라 원국의 균형 판단에 따른 것입니다.' : '용신 정보가 충분하지 않아 특정 기운이 필요하다고 단정하지 않습니다.'} ${major ? `현재 계산된 ${ganziForBody(major.ganzi)} 대운과 함께 보되, 좋은 일이나 나쁜 일이 생기는 날짜로 해석하지 않습니다.` : '현재 대운은 미산정이어서 전환 시기를 제시하지 않습니다.'} ${data.input.hourKnown ? '' : '태어난 시간이 없어 시주에 따른 해석은 제외했습니다.'}`.trim(),
-      example: concernExample || (situation?.relationshipStatus === 'married' && !child ? '입력하신 기혼 상황에서는 함께 결정하는 일과 각자 결정할 일을 나누어 이 기준을 적용해볼 수 있어요.' : situation?.relationshipStatus === 'dating' && !child ? '입력하신 연애 관계에서는 상대의 의도를 추측하기보다 서로 원하는 방식과 가능한 범위를 확인하는 대화에 적용해보세요.' : child ? '놀이와 배움에서 무엇을 좋아하고 어떤 요구에 부담을 느끼는지 보호자가 짧게 기록해보세요.' : '일과 가까운 관계에서 반복되는 고민 하나를 골라, 바꾸기 전후에 부담과 결과가 어떻게 달라지는지 확인해보세요.'),
+      evidence: `${support ? `보완 방향(${support} 기운)은 오행 개수 하나가 아니라 원국의 균형 판단에 따른 것입니다.` : '용신 정보가 충분하지 않아 특정 기운이 필요하다고 단정하지 않습니다.'} ${major ? `현재 계산된 ${ganziForBody(major.ganzi)} 대운과 함께 보되, 좋은 일이나 나쁜 일이 생기는 날짜로 해석하지 않습니다.` : '현재 대운은 미산정이어서 전환 시기를 제시하지 않습니다.'} ${data.input.hourKnown ? '' : '태어난 시간이 없어 시주에 따른 해석은 제외했습니다.'}`.trim(),
+      example: concernExample || (situation?.relationshipStatus === 'married' && !child ? '입력하신 기혼 상황에서는 함께 결정하는 일과 각자 결정할 일을 나누어 이 기준을 적용해볼 수 있어요.' : situation?.relationshipStatus === 'dating' && !child ? '입력하신 연애 관계에서는 상대의 의도를 추측하기보다 서로 원하는 방식과 가능한 범위를 확인하는 대화에 적용해보세요.' : child ? '놀이와 배움에서 무엇을 좋아하고 어떤 요구에 부담을 느끼는지 보호자가 짧게 기록해보세요.' : `일과 가까운 관계에서 ${data.fiveElements.dominant} 기운이 앞서며 반복되는 고민 하나를 골라, 바꾸기 전후에 부담과 결과가 어떻게 달라지는지 확인해보세요.`),
       choice: child ? `보호자가 함께 시도하며 조절해주세요. ${supportChoice}` : supportChoice,
     },
   ];

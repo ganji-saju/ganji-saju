@@ -19,13 +19,13 @@ export function NatureSection({
   const strength = sajuData.strength;
   const cards = [
     {
-      label: '역할의 근거', title: '같은 일주도 무엇이 다를까요?',
+      label: '역할의 근거', title: `같은 ${dayGanziKorean || '일주'} 일주도 무엇이 다를까요?`,
       desc: pattern
-        ? `${pattern.name}을 함께 읽습니다. 월지에서 어떤 역할이 중심이 되는지 본 것으로, 일주 성향만 같다고 직업이나 관계 방식까지 같다고 보지는 않습니다.${pattern.confidence === '낮음' ? ' 이 격국은 참고 후보이므로 하나의 역할로 단정하지 않습니다.' : ''}`
+        ? `${pattern.name}을 함께 읽습니다. 월지에서 ${pattern.tenGod ?? '어떤'} 역할이 중심이 되는지 본 것으로, 일주 성향만 같다고 직업이나 관계 방식까지 같다고 보지는 않습니다.${pattern.confidence === '낮음' ? ' 이 격국은 참고 후보이므로 하나의 역할로 단정하지 않습니다.' : ''}`
         : '격국 정보가 충분하지 않아 특정 역할에 잘 맞는다고 좁히지 않습니다.',
     },
     {
-      label: '부담의 근거', title: '같은 강점도 언제 부담이 될까요?',
+      label: '부담의 근거', title: `${strength?.level ? `${strength.level} 사주의 ` : ''}같은 강점도 언제 부담이 될까요?`,
       desc: strength?.level === '신약'
         ? '본인 기운을 돕는 조건이 중요한 사주로 읽습니다. 같은 일을 맡아도 도움을 받을 수 있는지, 한꺼번에 요구가 몰리는지에 따라 체감이 달라질 수 있어요.'
         : strength?.level === '신강'
