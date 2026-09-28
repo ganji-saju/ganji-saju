@@ -796,8 +796,8 @@ function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
       용신: `이 사주에서는 ${formatSymbolList([yongsin.primary])}입니다.`,
       희신: yongsin.secondary.length > 0 ? `이 사주에서는 ${formatSymbolList(yongsin.secondary)}입니다.` : null,
       기신: yongsin.kiyshin.length > 0 ? `이 사주에서는 ${kiyshinLabel}입니다.` : null,
-      조후: yongsin.method === '조후용신' ? '이 사주는 이 판단을 먼저 적용했습니다.' : '이 사주는 이 판단보다 다른 기준을 앞에 두었습니다.',
-      억부: yongsin.method === '억부용신' ? '이 사주는 이 판단을 먼저 적용했습니다.' : '이 사주는 이 판단을 보조로 참고했습니다.',
+      조후: yongsin.method === '조후용신' ? `이 사주는 이 판단으로 ${formatSymbolList([yongsin.primary])}을 먼저 골랐습니다.` : `이 사주는 이 판단보다 다른 기준으로 ${formatSymbolList([yongsin.primary])}을 골랐습니다.`,
+      억부: yongsin.method === '억부용신' ? `이 사주는 이 판단으로 ${formatSymbolList([yongsin.primary])}을 먼저 골랐습니다.` : `이 사주는 ${data.strength?.level ?? '강약'} 판단을 보조로 참고했습니다.`,
     }) : undefined,
     computed,
     source: getEvidenceSource(key),
@@ -851,6 +851,15 @@ const PATTERN_TEN_GOD_ACTIONS: Record<string, string[]> = {
   편인: ['남다른 생각을 작은 실험으로 옮기기', '혼자 생각이 길어지면 한 사람에게 묻기'],
   정인: ['배운 것을 하나씩 실제로 써보기', '받은 도움에 고마움 표현하기'],
 };
+// 빈자리 글자의 오행별 행동(2026-09-28).
+const BRANCH_ELEMENT_OF = { 子: '수', 丑: '토', 寅: '목', 卯: '목', 辰: '토', 巳: '화', 午: '화', 未: '토', 申: '금', 酉: '금', 戌: '토', 亥: '수' } as const;
+const GONGMANG_ELEMENT_ACTIONS: Record<string, string> = {
+  목: '새로 시작하는 일은 기대치를 낮추고 천천히 키우기',
+  화: '인정받고 싶은 일은 결과가 늦어도 꾸준히 보여주기',
+  토: '돈과 일정의 여유분을 미리 남겨 두기',
+  금: '결정과 계약은 한 번 더 확인하고 마무리하기',
+  수: '정보와 연락은 두 번 확인하고 기록해 두기',
+};
 const GONGMANG_SLOT_ACTIONS: Record<string, string> = {
   year: '집안·어른과의 약속은 한 번 더 확인하기',
   month: '일과 직장에서 기대만큼 채워지지 않는 부분 미리 점검하기',
@@ -882,7 +891,7 @@ function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     label: '합충',
     title: labels.length > 0 ? labels.join(' · ') : '합충 근거 없음',
     body: selected.length > 0
-      ? `이 사주에는 ${labels.join('·')} 관계가 있습니다. 쉽게 말하면 관계, 이동, 결정의 압력이 이 ${labels.length}가지 지점에서 생기기 쉽다는 뜻입니다.`
+      ? `이 사주에는 ${labels.join('·')} 관계가 있습니다. 쉽게 말하면 관계, 이동, 결정의 압력이 ${labels.join('·')} 쪽에서 생기기 쉽다는 뜻입니다.`
       : '현재 명식에서 화면에 우선 표시할 합충 관계는 아직 확인되지 않았습니다.',
     details: selected.length > 0
       ? selected.map(formatRelationEvidenceLine)
@@ -931,18 +940,22 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
   return {
     key,
     label: '공망',
-    title: branches ? `${branches} 공망` : '공망 근거 없음',
+    title: branches ? `${koreanizeGanzi(branches)} 공망` : '공망 근거 없음',
     body: branches
-      ? `이 사주의 빈자리는 ${koreanizeGanzi(branches)}${slots.length > 0 ? `(${slots.join('·')})` : ''}입니다. 쉽게 말하면 ${slots.length > 0 ? `${withParticle(slots.join('·'), '과', '와')} 이어진 일` : '이 자리와 이어진 일'}은 기대보다 늦게 채워지기 쉬우니 약속·일정·마무리를 미리 확인하라는 뜻입니다.`
+      ? `이 사주의 빈자리는 ${koreanizeGanzi(branches)}${slots.length > 0 ? `(${slots.join('·')})` : ''}입니다. 쉽게 말하면 ${slots.length > 0 ? `${withParticle(slots.join('·'), '과', '와')} 이어진 일` : `${koreanizeGanzi(branches)} 자리와 이어진 일`}은 기대보다 늦게 채워지기 쉬우니 약속·일정·마무리를 미리 확인하라는 뜻입니다.`
       : '현재 저장본에서 공망 값은 아직 확인되지 않았습니다.',
     details: slots.length > 0
       ? [`작용 위치: ${slots.join(' · ')}`]
-      : ['공망 글자가 특정 주에 닿으면 이곳에 작용 위치가 함께 표시됩니다.'],
+      : [`${koreanizeGanzi(branches)} 글자가 원국의 기둥에 직접 닿지 않아, 이 빈자리는 생활 전반의 참고로만 봅니다.`],
     plainSummary: branches
-      ? `공망 메모: ${branches} 공망`
+      ? `공망 메모: ${koreanizeGanzi(branches)} 공망`
       : '공망 메모: 확인된 흐름 없음',
     technicalSummary: '전문적으로는 일주 원칙 공망 글자를 잡고, 그 글자가 년·월·일·시 어느 자리에 닿는지 확인합니다.',
-    practicalActions: [...new Set([...(gongmang?.pillarSlots ?? []).map((slot) => GONGMANG_SLOT_ACTIONS[slot]).filter(Boolean), ...EVIDENCE_ACTIONS.gongmang])].slice(0, 3),
+    practicalActions: [...new Set([
+      ...(gongmang?.pillarSlots ?? []).map((slot) => GONGMANG_SLOT_ACTIONS[slot]).filter(Boolean),
+      ...(gongmang?.branches ?? []).map((branch) => GONGMANG_ELEMENT_ACTIONS[BRANCH_ELEMENT_OF[branch as keyof typeof BRANCH_ELEMENT_OF]]).filter(Boolean),
+      ...EVIDENCE_ACTIONS.gongmang,
+    ])].slice(0, 3),
     explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.gongmang, {
       공망: branches ? `이 사주에서는 ${koreanizeGanzi(branches)} 자리가 여기에 해당합니다.` : null,
     }),
@@ -952,6 +965,26 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     topicMapping: getEvidenceTopicMapping(key),
   };
 }
+
+// 신살 이름별 행동(2026-09-28) — 신살 카드 행동이 누구에게나 같았다.
+const SPECIAL_SAL_ACTIONS: Record<string, string> = {
+  천을귀인: '막힐 때 도와줄 사람에게 먼저 연락하기',
+  천덕귀인: '받은 도움을 기록하고 되돌려 주기',
+  월덕귀인: '가족·가까운 어른의 조언 한 번 듣기',
+  문창귀인: '배운 것을 글로 정리해 두기',
+  금여록: '안정된 자리와 수입을 꾸준히 지키기',
+  암록: '드러나지 않는 도움의 통로 챙기기',
+  역마: '이동과 변화는 일정에 여유를 두고 계획하기',
+  도화: '호감은 천천히 확인하고 약속은 분명히 하기',
+  화개: '혼자 몰입하는 시간을 따로 떼어 두기',
+  양인: '밀어붙이기 전에 한 번 멈춰 점검하기',
+  백호: '서두르는 동작과 이동을 여유 있게 하기',
+  괴강: '강하게 말하기 전에 상대 입장을 먼저 듣기',
+  망신: '체면이 걸린 일은 기록과 확인을 먼저 하기',
+  겁살: '큰 지출과 계약은 하루 미뤄 다시 보기',
+  원진: '서운함은 쌓아 두지 말고 가볍게 먼저 말하기',
+  귀문관: '생각이 많을 때 짧은 산책으로 머리 식히기',
+};
 
 function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const key = 'specialSals';
@@ -978,7 +1011,7 @@ function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvid
       ? `신살 메모: ${names.slice(0, 5).join(' · ')}`
       : '신살 메모: 주요 표지 없음',
     technicalSummary: '전문적으로는 일간·일지·연지 등을 바탕으로 귀인, 도화, 양인, 백호 같은 보조 표지를 대조합니다.',
-    practicalActions: EVIDENCE_ACTIONS.specialSals,
+    practicalActions: [...new Set([...names.map((name) => SPECIAL_SAL_ACTIONS[name.replace(/살$/, '')]).filter(Boolean), ...EVIDENCE_ACTIONS.specialSals])].slice(0, 3),
     explainers: personalizeExplainers(CORE_TERM_EXPLAINERS.specialSals, {
       신살: names.length > 0 ? `이 사주에서 눈에 띄는 것은 ${names.slice(0, 3).join(' · ')}입니다.` : '이 사주에는 두드러진 신살이 적습니다.',
     }),
@@ -1295,7 +1328,7 @@ function buildQuestionFocusInsight(
         title: `${withParticle(FOCUS_TOPIC_META[topic].label, '은', '는')} ${withParticle(supportText, '을', '를')} 먼저 활용하는 것이 좋습니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
-          `${FOCUS_TOPIC_META[topic].subtitle} 먼저 체감되는 장점을 살리고, 조급함보다는 반복 가능한 행동으로 연결하는 편이 좋습니다.`,
+          `먼저 체감되는 장점을 살리고, 조급함보다는 반복 가능한 행동으로 연결하는 편이 좋습니다.`,
         ]).join(' '),
       };
   }
@@ -1472,7 +1505,8 @@ function buildTimeline(data: SajuDataV1 | SajuDataV2, topic: FocusTopic): Report
     {
       label: '오늘',
       headline: `${withParticle(bestTone.cue, '을', '를')} 먼저 살리는 날`,
-      body: `${FOCUS_TOPIC_META[topic].subtitle} 오늘은 ${bestTone.move}${wolwoon?.ganzi ? ` 현재 월운은 ${wolwoon.ganzi}라 작은 말투와 생활 리듬의 조절이 실제 체감 차이로 이어집니다.` : ''}`,
+      // 이번 달 흐름은 바로 아래 '이번 달' 항목이 말한다 — 여기서 간지(한자)와 함께 되풀이하지 않는다(2026-09-28).
+      body: `오늘은 ${bestTone.move}`,
       points: [
         `먼저 할 일: ${bestTone.move}`,
         `피할 흐름: ${getElementTone(data.fiveElements.weakest).avoid}`,
@@ -1568,7 +1602,10 @@ function toPublicEvidenceCard(card: ReportEvidenceCard): ReportEvidenceCard {
   return {
     ...card,
     label: getPublicEvidenceLabel(card.key),
-    title: getPublicEvidenceTitle(card),
+    // 사람마다 다른 원래 제목을 살린다(공개용 소제목만 쓰면 누구에게나 같았다, 2026-09-28).
+    title: ['strength', 'pattern', 'yongsin', 'relations', 'gongmang', 'specialSals'].includes(card.key) && card.title && !/근거 없음|준비 안내|없음$/.test(card.title)
+      ? `${simplifySajuCopy(card.title)} — ${getPublicEvidenceTitle(card)}`
+      : getPublicEvidenceTitle(card),
     body: limitSajuSentences(card.body, 2),
     details: simplifySajuCopyList(card.details, 3),
     practicalActions: card.practicalActions
