@@ -96,7 +96,7 @@ export function buildFallbackInterpretation(
 
   const personalInsights = compactStrings([
     personalContext?.sixtyGapja?.actionCue
-      ? `오늘의 방향: ${personalContext.sixtyGapja.actionCue}`
+      ? `평소 방향: ${personalContext.sixtyGapja.actionCue}`
       : null,
     personalContext?.sixtyGapja?.strengths[0]
       ? `강점: ${personalContext.sixtyGapja.strengths[0]}을 살리면 좋습니다.`
