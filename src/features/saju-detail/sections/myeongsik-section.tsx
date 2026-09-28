@@ -43,8 +43,9 @@ export function MyeongsikSection({
         <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">내 사주 도식</h2>
         {/* '천간·지지' 는 행 이름이라 칸마다 반복하지 않고 여기서 한 번만 알려준다. */}
         <p className="mt-1 text-[12.1px] leading-[1.5] text-[var(--app-copy-muted)]">
-          위 글자는 <strong>천간</strong>(하늘 기운), 아래 글자는 <strong>지지</strong>(땅 기운)입니다.
-          각 글자 밑은 <strong>읽는 음</strong>과 <strong>일간에서 본 역할</strong>이에요.
+          {/* 2026-09-28 — 읽는 법 안내에 이 사주의 일간을 넣는다(누구에게나 같았다). */}
+          위 글자는 <strong>천간</strong>(하늘 기운), 아래 글자는 <strong>지지</strong>(땅 기운)이고, 나를 뜻하는 글자는 태어난 날 위 글자인 <strong>{koreanizeGanzi(sajuData.dayMaster.stem)}{sajuData.dayMaster.element}</strong>입니다.
+          각 글자 밑은 <strong>읽는 음</strong>과 <strong>{koreanizeGanzi(sajuData.dayMaster.stem)}{sajuData.dayMaster.element} 일간에서 본 역할</strong>이에요.
         </p>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {PILLAR_DISPLAY_ORDER.map((key) => {

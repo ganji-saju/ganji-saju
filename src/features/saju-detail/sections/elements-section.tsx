@@ -145,7 +145,8 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
             style={{ background: 'var(--app-pink-soft)' }}
           >
             <strong>분포 읽기</strong> · {dominant} 기운의 비율이 가장 크고 {weakest} 기운의 비율이 가장 작습니다.
-            같은 분포라도 태어난 계절과 다른 기운의 관계에 따라 해석이 달라져요.
+            {/* 2026-09-28 — 누구에게나 같던 문장에 이 사주의 값을 넣는다. */}
+            {dominant} 기운이 {dominantPercent}%로 가장 많지만, 태어난 계절과 다른 기운의 관계에 따라 쓰임이 달라져요.
           </p>
         </article>
       </section>
@@ -156,7 +157,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
           균형 메모
         </div>
         <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
-          적은 기운을 무조건 채워야 할까요?
+          적은 {weakest} 기운을 무조건 채워야 할까요?
         </h2>
         <p className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]">
           {supportGuide ? `${supportElement} 기운을 보완 방향으로 읽습니다. ${supportGuide.support}` : '현재 정보로는 특정 보완 기운을 정하지 않았습니다.'} 최소 비율과 용신은 같은 뜻이 아니며, 오행이 적다는 이유만으로 약점이나 질환을 판단하지 않습니다.
@@ -186,7 +187,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
               {weakest} 기운
             </div>
             <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
-              {weakestState === 'weak' || weakestState === 'missing' ? '계산상 비중이 작지만, 실제 보완 방향은 원국의 균형과 함께 판단합니다.' : '다른 기운보다 비율은 작아도 부족한 상태로 분류되지 않았습니다.'}
+              {weakestState === 'weak' || weakestState === 'missing' ? `${weakest} 기운은 계산상 비중이 작지만, 실제 보완 방향${supportElement ? `(${supportElement} 기운)` : ''}은 원국의 균형과 함께 판단합니다.` : '다른 기운보다 비율은 작아도 부족한 상태로 분류되지 않았습니다.'}
             </p>
           </article>
           {supportGuide?.habits.slice(0, 2).map((habit, index) => (

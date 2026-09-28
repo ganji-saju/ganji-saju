@@ -20,7 +20,8 @@ const people = Array.from({ length: 30 }, (_, i) => ({
   hour: (i * 3) % 24, minute: 0, gender: (i % 2 ? 'male' : 'female') as 'male' | 'female',
 }));
 
-const text = (html: string) => html.replace(/<[^>]+>/g, '\n').replace(/&[a-z#0-9]+;/g, ' ');
+// 굵은 글씨 같은 인라인 태그는 문장을 자르지 않는다(한 문장이 조각으로 세이던 것).
+const text = (html: string) => html.replace(/<\/?(strong|b|em|span|i)\b[^>]*>/g, '').replace(/<[^>]+>/g, '\n').replace(/&[a-z#0-9]+;/g, ' ');
 function sentences(t: string) {
   // 카드마다 붙는 UI 제목('실천 4단 · 왜 / 무엇을 / 어떻게')은 문장이 아니라 뺀다.
   return t.split(/\n+|(?<=[.!?。])\s+/).map((s) => s.trim()).filter((s) => s.length >= 15 && /[가-힣]/.test(s) && !s.startsWith('실천 4단'));
