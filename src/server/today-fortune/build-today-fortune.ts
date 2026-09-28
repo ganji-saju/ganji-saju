@@ -1,4 +1,4 @@
-import { PREMIUM_RELATION_COPY, todayRelationStep } from './premium-relation-copy';
+import { PREMIUM_FOLLOW_UPS, PREMIUM_RELATION_COPY, SCENARIO_TITLE_TAG, todayRelationStep } from './premium-relation-copy';
 import { DAILY_TOPIC_QUESTIONS_BY_RELATION, DAILY_TOPIC_SCENES, GENERAL_FOLLOW_UPS_BY_RELATION, type DailySceneRelation } from './daily-topic-scenes';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
@@ -2746,7 +2746,7 @@ function buildScenarioComparison(
 
   return [
     {
-      title: concernCopy.actNowTitle,
+      title: step === null ? concernCopy.actNowTitle : `${concernCopy.actNowTitle} · ${SCENARIO_TITLE_TAG[step]}`,
       better: joinUniqueSentences([
         flowSignal,
         evidenceSnippet,
@@ -2761,7 +2761,7 @@ function buildScenarioComparison(
       ]),
     },
     {
-      title: concernCopy.waitTitle,
+      title: step === null ? concernCopy.waitTitle : `${concernCopy.waitTitle} · ${SCENARIO_TITLE_TAG[step]}`,
       better: joinUniqueSentences([
         evidenceSnippet,
         secondaryLeadHint ? `${withKoreanParticle(`"${secondaryLeadHint}"`, '을', '를')} 먼저 정리하고 움직이면 결과가 더 매끈해집니다.` : null,
@@ -3520,7 +3520,13 @@ export function buildTodayFortunePremiumResult(
       scenarios: buildScenarioComparison(concernId, focusReport, sajuData, dailyContext),
     }),
     evidenceLines: buildEvidenceLines(focusReport, todayReport, sajuData, Boolean(input.unknownTime)),
-    followUpQuestions: concern.followUpQuestions,
+    // 추천 질문을 오늘의 관계로 가른다(관심사마다 3개 고정이었다, 2026-09-28).
+    followUpQuestions: (() => {
+      const step = todayRelationStep(sajuData.dayMaster.element, todayPillar.stemElement);
+      if (step === null) return concern.followUpQuestions;
+      if (concernId === 'general') return GENERAL_FOLLOW_UPS_BY_RELATION[(['비견', '식신', '편재', '편관', '편인'] as const)[step]] ?? concern.followUpQuestions;
+      return PREMIUM_FOLLOW_UPS[concernId]?.[step] ?? concern.followUpQuestions;
+    })(),
     safetyNote:
       concernId === 'energy_health'
         ? '건강운은 질병 진단이 아니라 컨디션, 휴식, 생활 리듬을 읽는 참고 조언으로 제한합니다.'
