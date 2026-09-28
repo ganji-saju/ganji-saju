@@ -17,6 +17,8 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
   const gongmang = grounding.evidenceJson.relations.gongmang ?? [];
   const specialSals = grounding.evidenceJson.relations.specialSals ?? [];
 
+  // 2026-09-29 — 제목·안내에 이 사주에서 실제로 잡힌 신호 수를 넣는다(누구에게나 같던 문장).
+  const total = Math.min(relations.length, 4) + gongmang.length + Math.min(specialSals.length, 6);
   // 모두 비어있으면 카드 자체 렌더하지 않음.
   if (relations.length === 0 && gongmang.length === 0 && specialSals.length === 0) {
     return null;
@@ -34,7 +36,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
         className="mt-1 text-[17.3px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        사람·선택·타이밍에서 함께 볼 부분
+        사람·선택·타이밍에서 함께 볼 신호 {total}가지
       </h3>
 
       <div className="mt-3 grid gap-2.5">
@@ -43,7 +45,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
             label="합·충"
             items={relations.slice(0, 4)}
             tone="pink"
-            hint="관계와 이동에서 묶이거나 부딪히는 신호"
+            hint={`관계와 이동에서 묶이거나 부딪히는 신호 ${Math.min(relations.length, 4)}곳`}
           />
         ) : null}
         {gongmang.length > 0 ? (
@@ -51,7 +53,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
             label="공망"
             items={gongmang}
             tone="indigo"
-            hint="비어 보이는 영역 — 노력 대비 효과가 약한 자리"
+            hint={`비어 보이는 영역 ${gongmang.length}곳 — 노력 대비 효과가 늦게 보이기 쉬운 자리`}
           />
         ) : null}
         {specialSals.length > 0 ? (
@@ -59,7 +61,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
             label="신살"
             items={specialSals.slice(0, 6)}
             tone="amber"
-            hint="강하게 작용하는 명리 부속 신호 (귀인·역마·도화 등)"
+            hint={`강하게 작용하는 명리 부속 신호 ${Math.min(specialSals.length, 6)}개 (귀인·역마·도화 등)`}
           />
         ) : null}
       </div>
@@ -68,7 +70,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
         className="mt-3 text-[15px] leading-[1.55] text-[var(--app-copy-soft)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        이 신호들은 풀이 본문의 보조 근거로 쓰이며 단독 해석은 피하는 편이 좋습니다.
+        이 {total}가지 신호는 풀이 본문의 보조 근거로 쓰이며 단독 해석은 피하는 편이 좋습니다.
       </p>
     </article>
   );

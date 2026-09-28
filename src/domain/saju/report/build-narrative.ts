@@ -62,7 +62,6 @@ export function buildSajuNarrative(
 ): SajuNarrative {
   const ctx = personalizationContext ?? buildSajuPersonalizationContext(data);
   const profile = ctx.sixtyGapja;
-  const actionCue = (profile?.actionCue ?? '').replace(/오늘(?:은|의)?\s*/gu, '').replace('하루가 좋습니다', '방식이 좋습니다');
   const dayLabel = ctx.dayGanziCode || ganziToKorean(data.pillars.day.ganzi);
   const ranked = (Object.entries(ctx.tenGodDistribution) as [TenGodGroup, number][])
     .filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]);
@@ -109,10 +108,11 @@ export function buildSajuNarrative(
   const questions: SajuNarrativeQuestion[] = [
     {
       question: `${dayLabel} 사주에서 어떤 성향이 반복해서 드러날까요?`,
-      answer: profile?.core ?? `${data.dayMaster.element} 기운을 중심으로 반응하는 성향을 살펴봅니다.`,
+      // 같은 화면의 '나의 일주' 카드가 core·주의점·핵심 행동을 그대로 보여준다 — 여기서는 오행 맥락을 붙인 문장으로(2026-09-29).
+      answer: profile?.core ? `${data.fiveElements.dominant} 기운이 앞서는 ${dayLabel} 사주는 ${profile.core}` : `${data.dayMaster.element} 기운을 중심으로 반응하는 성향을 살펴봅니다.`,
       evidence: `${dayLabel} 일주를 기본 성향의 출발점으로 봅니다. ${data.pattern ? `${data.pattern.name}은 반복되는 역할의 ${data.pattern.confidence === '낮음' ? '참고 후보' : '판단 근거'}로 함께 읽습니다.` : '격국은 정하지 않아 하나의 역할로 성향을 좁히지 않습니다.'}`,
       example: role?.example ?? '새로운 과제를 받았을 때 먼저 이해하려는지, 실행하며 확인하는지 실제 반응을 비교해보세요.',
-      choice: child ? `보호자는 아이의 반응을 성격으로 굳히지 말고 상황을 바꿨을 때도 같은 모습인지 관찰해주세요.` : `${dayLabel} 사주의 반응을 편한 상황과 부담스러운 상황에서 각각 비교해보세요. ${actionCue}`,
+      choice: child ? `보호자는 아이의 반응을 성격으로 굳히지 말고 상황을 바꿨을 때도 같은 모습인지 관찰해주세요.` : `${dayLabel} 사주의 반응을 편한 상황과 부담스러운 상황에서 각각 비교해보세요.`,
     },
     {
       question: `${data.fiveElements.dominant} 기운이 강한 장점을 어떤 환경에서 쓰기 쉬울까요?`,
@@ -125,7 +125,7 @@ export function buildSajuNarrative(
       question: `${data.fiveElements.weakest} 기운이 약해질 때 잘하던 일이 왜 부담으로 바뀔까요?`,
       answer: capacity.answer,
       evidence: strength ? `강약 판단은 ${strength}입니다. 사주 안에서 본인을 돕는 힘과 소모시키는 힘을 비교한 것으로, 건강이나 실제 능력의 높낮이를 판정한 값은 아닙니다.` : '강약을 확정할 수 없어 생활 조건을 기준으로 부담을 확인합니다.',
-      example: `${profile?.watchPoints[0] ?? ''} ${capacity.example}`.trim(),
+      example: capacity.example,
       choice: child ? `보호자가 일정과 요구의 양을 조절하고 아이가 도움을 청할 수 있게 해주세요. ${capacity.choice}` : capacity.choice,
     },
     {
