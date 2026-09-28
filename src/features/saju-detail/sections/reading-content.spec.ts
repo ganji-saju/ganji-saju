@@ -31,7 +31,8 @@ describe('기본사주 질문과 오행 풀이 표시', () => {
     const html = renderToStaticMarkup(createElement(NatureSection, { sajuData: data, grounding }));
     expect(html.split(context.sixtyGapja!.core)).toHaveLength(2);
     expect(html).toContain(data.pattern!.name);
-    expect(html).toContain('같은 일주도 무엇이 다를까요?');
+    // 제목에 이 사주의 일주 이름이 들어간다(예: '같은 임자 일주도…').
+    expect(html).toMatch(/같은 (\S+ )?일주도 무엇이 다를까요\?/);
   });
 
   it('균형의 최소 오행은 결핍으로 표시하지 않고 계산된 용신을 보완 방향으로 사용한다', () => {
