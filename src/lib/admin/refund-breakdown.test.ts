@@ -1,7 +1,7 @@
 // 2026-08-26 회귀 가드 — "오늘 결제 990인데 환불 9,900" 제보의 해설 데이터.
 //   숫자를 바꾸는 게 아니라, 그 환불의 원 결제일이 언제인지 화면이 말하게 하는 계산.
 import assert from 'node:assert/strict';
-import { computeRefundBreakdown } from './refund-breakdown';
+import { computeRefundBreakdown, pickRefundReason } from './refund-breakdown';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -161,4 +161,16 @@ test('환불 내역: 누가 환불받았는지(user_id) 건마다 남긴다', ()
     WINDOW
   );
   assert.deepEqual(out.items.map((i) => i.userId), ['u-1', null]);
+});
+
+test('환불 사유: 결제키로 연결, 부분 환불은 금액이 같은 요청, 없으면 최신', () => {
+  const reqs = [
+    { payment_key: 'pk1', reason: '두 번째 요청', amount: 1000 },
+    { payment_key: 'pk1', reason: '고객 변심', amount: 3300 },
+    { payment_key: 'pk2', reason: '  ', amount: 3300 },
+  ];
+  assert.equal(pickRefundReason({ paymentKey: 'pk1', amountWon: 3300 }, reqs), '고객 변심');
+  assert.equal(pickRefundReason({ paymentKey: 'pk1', amountWon: 9900 }, reqs), '두 번째 요청');
+  assert.equal(pickRefundReason({ paymentKey: 'pk2', amountWon: 3300 }, reqs), null);
+  assert.equal(pickRefundReason({ paymentKey: null, amountWon: 3300 }, reqs), null);
 });
