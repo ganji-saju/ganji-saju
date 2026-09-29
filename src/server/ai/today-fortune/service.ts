@@ -1,3 +1,4 @@
+import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
 import { getClassicReadingGrounding, readingGroundingFingerprint } from '@/server/classics/reading-grounding';
 // Task 6 — 오늘운세 LLM 오케스트레이터 (플래그 → 캐시 → 프롬프트 → 생성 → 검증 → 폴백).
 //
@@ -73,7 +74,9 @@ export function parseTodayFortuneNarrative(
       return { ...fallback, source: 'fallback' };
     }
 
-    return { headline, body, source: 'openai' };
+    // 2026-09-29 — 제목·본문을 한 문단으로 보고 첫 '오늘'만 둔다(지시만으로는 반복이 남는다).
+    const [thinHeadline, thinBody] = thinRepeatedTodayDeep([headline, body]);
+    return { headline: thinHeadline, body: thinBody, source: 'openai' };
   } catch {
     return { ...fallback, source: 'fallback' };
   }
