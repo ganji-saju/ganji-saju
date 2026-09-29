@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { dedupeSentencesDeep } from './dedupe-sentences';
+import { dedupeSentencesDeep, thinRepeatedTodayDeep } from './dedupe-sentences';
 import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { buildLifetimeReport, buildYearlyReport } from '@/domain/saju/report';
 import { buildFallbackNewYearExtras, buildFallbackYearlyInterpretation } from '@/server/ai/saju-yearly-interpretation';
@@ -43,4 +43,9 @@ test('연간·신년·평생 기본 풀이: 한 풀이 안 반복 문장 0', () 
     assert.equal(dupCount(merged), 0, 'merged');
     assert.equal(dupCount(buildFallbackLifetimeInterpretation(buildLifetimeReport(p, data, 2026))), 0, 'lifetime');
   }
+});
+
+test('thinRepeatedTodayDeep: 문단·문자열 목록에서 첫 오늘만 남긴다', () => {
+  assert.equal(thinRepeatedTodayDeep('오늘은 쉬세요. 오늘은 걷고 오늘 하나만 하세요. 오늘의 방향.'), '오늘은 쉬세요. 걷고 하나만 하세요. 오늘의 방향.');
+  assert.deepEqual(thinRepeatedTodayDeep({ a: ['쉬세요.', '오늘은 걷기.', '오늘은 읽기.'], b: '오늘은 쉼.' }), { a: ['쉬세요.', '오늘은 걷기.', '읽기.'], b: '오늘은 쉼.' });
 });
