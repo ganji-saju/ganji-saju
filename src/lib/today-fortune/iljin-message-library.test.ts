@@ -63,3 +63,9 @@ test('iljin 라이브러리: plain 톤 — 명리 전문어/한자 노출 0 (결
     }
   }
 });
+
+test('substituteVariables: 이름이 없어도 "선생님 님" 이 나오지 않음', () => {
+  assert.equal(substituteVariables('[이름] 님이 최고의 상태인 날.', {}), '선생님이 최고의 상태인 날.');
+  assert.equal(substituteVariables('[이름] 님이 최고의 상태인 날.', { name: '선생님' }), '선생님이 최고의 상태인 날.');
+  assert.equal(substituteVariables('[이름] 님이 최고의 상태인 날.', { name: '김영민' }), '김영민 님이 최고의 상태인 날.');
+});

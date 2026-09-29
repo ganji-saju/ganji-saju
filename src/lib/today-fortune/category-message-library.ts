@@ -481,7 +481,7 @@ export const CATEGORY_MESSAGE_LIBRARY: Library = {
 
 // 변수 치환 ([이름] 등).
 export function substituteCategoryVariables(template: string, vars: CategoryVariables): string {
-  return sanitizeUserFacingCopy(template.replace(/\[이름\]/g, vars.name ?? '선생님'));
+  return sanitizeUserFacingCopy(template.replace(/\[이름\]/g, vars.name ?? '선생님').replace(/선생님 님/g, '선생님'));
 }
 
 /**

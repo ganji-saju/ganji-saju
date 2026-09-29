@@ -49,3 +49,10 @@ test('thinRepeatedTodayDeep: 문단·문자열 목록에서 첫 오늘만 남긴
   assert.equal(thinRepeatedTodayDeep('오늘은 쉬세요. 오늘은 걷고 오늘 하나만 하세요. 오늘의 방향.'), '오늘은 쉬세요. 걷고 하나만 하세요. 오늘의 방향.');
   assert.deepEqual(thinRepeatedTodayDeep({ a: ['쉬세요.', '오늘은 걷기.', '오늘은 읽기.'], b: '오늘은 쉼.' }), { a: ['쉬세요.', '오늘은 걷기.', '읽기.'], b: '오늘은 쉼.' });
 });
+
+test('thinRepeatedTodayDeep(whole): 객체 전체에서 첫 오늘만 남긴다', () => {
+  assert.deepEqual(
+    thinRepeatedTodayDeep({ a: '오늘은 쉼.', b: { c: '오늘은 걷기.', d: ['오늘 읽기.'] } }, { seen: false }, true),
+    { a: '오늘은 쉼.', b: { c: '걷기.', d: ['읽기.'] } },
+  );
+});

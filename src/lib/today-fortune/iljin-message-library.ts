@@ -389,6 +389,8 @@ export interface MessageVariables {
 export function substituteVariables(template: string, vars: MessageVariables): string {
   return template
     .replace(/\[이름\]/g, vars.name ?? '선생님')
+    // 이름이 없으면 '선생님' 으로 채우는데, 템플릿의 "[이름] 님" 과 겹쳐 "선생님 님" 이 됐다(2026-09-29 staging).
+    .replace(/선생님 님/g, '선생님')
     .replace(/\[오행\]/g, vars.element ?? '')
     .replace(/\[시간대\]/g, vars.timeWindow ?? '')
     // 오행 등 placeholder 가 빈 문자열로 치환되면 생기는 이중 공백 정리.
