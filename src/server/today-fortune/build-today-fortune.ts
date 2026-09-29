@@ -20,7 +20,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { MoonlightCounselorId } from '@/lib/counselors';
 import { sanitizeUserFacingCopy, simplifySajuCopy } from '@/lib/saju/public-copy';
-import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
+import { toKoreanGanzi, toKoreanGanziStem } from '@/lib/saju/ganzi-korean';
 import { toSlug } from '@/lib/saju/pillars';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
@@ -1282,12 +1282,12 @@ function buildTodayGroundingSummary(
     ? `현재 큰 흐름 ${grounding.evidenceJson.luckFlow.currentMajorLuck}`
     : grounding?.evidenceJson.luckFlow.saewoon
       ? `올해 흐름 ${grounding.evidenceJson.luckFlow.saewoon}`
-      : `현재 흐름 ${sajuData.currentLuck?.saewoon?.ganzi ?? '정리 중'}`;
+      : `현재 흐름 ${sajuData.currentLuck?.saewoon?.ganzi ? toKoreanGanzi(sajuData.currentLuck.saewoon.ganzi) : '정리 중'}`;
 
   return {
     primaryConcept,
     factLines: [
-      `나를 나타내는 기운 ${sajuData.dayMaster.stem}${sajuData.dayMaster.element ? ` · ${sajuData.dayMaster.element}` : ''}`,
+      `나를 나타내는 기운 ${toKoreanGanziStem(sajuData.dayMaster.stem)}${sajuData.dayMaster.element ? ` · ${sajuData.dayMaster.element}` : ''}`,
       strengthLine,
       patternLine,
       yongsinLine,
@@ -2217,13 +2217,13 @@ function getEvidenceActionHints(
 function getLuckFactLine(sajuData: SajuDataV1 | SajuDataV2) {
   return compactStrings([
     sajuData.currentLuck?.currentMajorLuck?.ganzi
-      ? `${sajuData.currentLuck.currentMajorLuck.ganzi} 큰 흐름`
+      ? `${toKoreanGanzi(sajuData.currentLuck.currentMajorLuck.ganzi)} 큰 흐름`
       : null,
     sajuData.currentLuck?.saewoon?.ganzi
-      ? `${sajuData.currentLuck.saewoon.ganzi} 올해 흐름`
+      ? `${toKoreanGanzi(sajuData.currentLuck.saewoon.ganzi)} 올해 흐름`
       : null,
     sajuData.currentLuck?.wolwoon?.ganzi
-      ? `${sajuData.currentLuck.wolwoon.ganzi} 이번 달 흐름`
+      ? `${toKoreanGanzi(sajuData.currentLuck.wolwoon.ganzi)} 이번 달 흐름`
       : null,
   ]).join(' / ');
 }
@@ -2786,7 +2786,7 @@ function buildEvidenceLines(
 ) {
   const lines = [
     `${focusReport.evidenceCards[0]?.label ?? '오늘 흐름'} · ${focusReport.evidenceCards[0]?.title ?? focusReport.summary}`,
-    `큰 흐름 · ${sajuData.currentLuck?.currentMajorLuck?.ganzi ?? '정리 중'} / ${sajuData.currentLuck?.saewoon?.ganzi ?? '올해 흐름 정리 중'} / ${sajuData.currentLuck?.wolwoon?.ganzi ?? '이번 달 흐름 정리 중'}`,
+    `큰 흐름 · ${sajuData.currentLuck?.currentMajorLuck?.ganzi ? toKoreanGanzi(sajuData.currentLuck.currentMajorLuck.ganzi) : '정리 중'} / ${sajuData.currentLuck?.saewoon?.ganzi ? toKoreanGanzi(sajuData.currentLuck.saewoon.ganzi) : '올해 흐름 정리 중'} / ${sajuData.currentLuck?.wolwoon?.ganzi ? toKoreanGanzi(sajuData.currentLuck.wolwoon.ganzi) : '이번 달 흐름 정리 중'}`,
     `보완 힌트 · ${sajuData.yongsin?.plainSummary ?? '부족한 부분을 차분히 채우는 편이 좋습니다.'}`,
   ];
 
@@ -3565,7 +3565,7 @@ export function buildTodayFortunePremiumResult(
       const c = buildCausalNarrative(ci, { seed: `premium::${todayPillar.dateKey}` });
       return { title: '오늘 이 흐름인 이유', body: c.full };
     })(),
-  });
+  }, { seen: false }, true);
 }
 
 export function buildBirthInputFromTodayPayload(

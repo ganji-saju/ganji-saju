@@ -43,7 +43,8 @@ export function dedupeSentencesDeep<T>(value: T, seen: Set<string> = new Set()):
 // 2026-09-29 — 오늘운세 한 풀이에 '오늘'이 평균 21번 나와 어색했다(사용자 피드백: "오늘은 오늘은 하면서").
 //   한 문단 안에서 첫 '오늘'만 두고 뒤에 다시 나오는 '오늘은 '·'오늘 ' 을 뺀다('오늘의'·'오늘도' 등은 둔다).
 //   문자열 목록(추천·피할 행동 등)은 한 문단처럼 이어 읽히므로 목록 전체에서 첫 '오늘'만 둔다.
-export function thinRepeatedTodayDeep<T>(value: T, state = { seen: false }): T {
+//   whole=true 면 객체 전체를 한 화면으로 보고 첫 '오늘'만 둔다(상세 화면은 카드마다 '오늘은'으로 시작해 45번 나왔다, 2026-09-29 staging).
+export function thinRepeatedTodayDeep<T>(value: T, state = { seen: false }, whole = false): T {
   if (typeof value === 'string') {
     const first = state.seen ? -2 : value.indexOf('오늘');
     if (first === -1) return value;
@@ -52,11 +53,11 @@ export function thinRepeatedTodayDeep<T>(value: T, state = { seen: false }): T {
     return (head + value.slice(first + 2).replace(/오늘은? /g, '')) as T;
   }
   if (Array.isArray(value)) {
-    const shared = { seen: false };
-    return value.map((v) => thinRepeatedTodayDeep(v, typeof v === 'string' ? shared : { seen: false })) as T;
+    const shared = whole ? state : { seen: false };
+    return value.map((v) => thinRepeatedTodayDeep(v, typeof v === 'string' || whole ? shared : { seen: false }, whole)) as T;
   }
   if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, thinRepeatedTodayDeep(v)])) as T;
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, thinRepeatedTodayDeep(v, whole ? state : { seen: false }, whole)])) as T;
   }
   return value;
 }

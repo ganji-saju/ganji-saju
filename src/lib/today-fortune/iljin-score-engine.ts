@@ -324,7 +324,7 @@ function getGrade(score: number): { grade: IljinScoreGrade; emoji: string; messa
   if (score >= 60) return { grade: '무난', emoji: '🙂', message: '큰 변동 없이 안정적인 날' };
   if (score >= 45) return { grade: '보통', emoji: '😐', message: '평범한 하루, 평소처럼 하세요' };
   if (score >= 30) return { grade: '주의', emoji: '😕', message: '신중함이 필요한 날, 큰 결정은 피하세요' };
-  return { grade: '매우 주의', emoji: '⚠️', message: '조심해야 할 날, 수성(守城)의 자세를' };
+  return { grade: '매우 주의', emoji: '⚠️', message: '조심해야 할 날, 지키는 자세를' };
 }
 
 export function calculateIljinScore(saju: SajuOriginInput, iljin: IljinInput): IljinScoreResult {
