@@ -7,6 +7,7 @@
 // - readability: 14px / line-height 1.78 / word-break keep-all
 'use client';
 
+import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { useEffect, useState } from 'react';
 import { ChapterFeedbackCard } from '@/components/saju/chapter-feedback-card';
 import Link from 'next/link';
@@ -486,7 +487,7 @@ function MajorLuckTimeline({
                     className="text-[20.7px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
                     style={{ fontFamily: 'var(--font-han)' }}
                   >
-                    {cycle.ganzi}
+                    {toKoreanGanzi(cycle.ganzi)}
                   </h4>
                   {cycle.chapterTitle ? (
                     <span
@@ -1048,7 +1049,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
                 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]"
                 style={{ fontFamily: 'var(--font-han)' }}
               >
-                {value}
+                {value === '미입력' ? value : toKoreanGanzi(value)}
               </div>
             </div>
           ))}

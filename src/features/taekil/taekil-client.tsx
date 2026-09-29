@@ -240,7 +240,7 @@ export function TaekilClient() {
                     className="mt-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
                     style={{ fontFamily: 'var(--font-han)' }}
                   >
-                    {formatDate(day.isoDate, day.weekday)} · {day.iljinKorean}({day.iljinGanzi})일
+                    {formatDate(day.isoDate, day.weekday)} · {day.iljinKorean}일
                   </div>
                   <p
                     className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy)]"

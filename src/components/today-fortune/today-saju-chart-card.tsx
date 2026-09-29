@@ -20,10 +20,6 @@ const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
   午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
 };
 
-const ELEMENT_HAN: Record<'목' | '화' | '토' | '금' | '수', string> = {
-  목: '木', 화: '火', 토: '土', 금: '金', 수: '水',
-};
-
 const ELEMENT_COLOR: Record<'목' | '화' | '토' | '금' | '수', string> = {
   목: '#3F8796', // 청록
   화: '#B3372A', // 적(赤). 주석은 '적'인데 값이 개편 전 핑크였다 — 인주 붉음으로 정정.
@@ -60,9 +56,9 @@ export function TodaySajuChartCard({ chart }: Props) {
             나의 사주 명식
           </div>
           <h2 className="mt-0.5 text-[17.3px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
-            {dayMasterKor}({chart.dayMaster.stem})일주 ·{' '}
+            {dayMasterKor}일주 ·{' '}
             <span style={{ color: ELEMENT_COLOR[chart.dayMaster.element] }}>
-              {chart.dayMaster.element}({ELEMENT_HAN[chart.dayMaster.element]})
+              {chart.dayMaster.element}
             </span>
           </h2>
         </div>
@@ -76,7 +72,7 @@ export function TodaySajuChartCard({ chart }: Props) {
         ) : null}
       </div>
 
-      {/* 4 기둥 명식 도식 — 한자 + 한글 발음 + 오행 색상 */}
+      {/* 4 기둥 명식 도식 — 한글 + 오행 색상(2026-09-29 명식 한자도 금지) */}
       <div className="mt-3 grid grid-cols-4 gap-2">
         {pillars.map((item) => {
           if (!item.pillar) {
@@ -108,20 +104,16 @@ export function TodaySajuChartCard({ chart }: Props) {
               <div className="py-1.5">
                 <div
                   className="text-[23px] font-bold leading-tight"
-                  style={{ fontFamily: 'var(--font-han)' }}
                 >
-                  {item.pillar.stem}
+                  {stemKor || item.pillar.stem}
                 </div>
-                <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">{stemKor}</div>
               </div>
               <div className="pb-2 pt-0.5">
                 <div
                   className="text-[23px] font-bold leading-tight"
-                  style={{ fontFamily: 'var(--font-han)' }}
                 >
-                  {item.pillar.branch}
+                  {branchKor || item.pillar.branch}
                 </div>
-                <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">{branchKor}</div>
               </div>
             </article>
           );
@@ -163,7 +155,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                   className="text-[12.6px] font-extrabold leading-tight"
                   style={{ fontFamily: 'var(--font-han)', color }}
                 >
-                  {el.element}({ELEMENT_HAN[el.element]})
+                  {el.element}
                 </span>
                 <div
                   className="relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full"
