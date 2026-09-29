@@ -8,8 +8,19 @@ import {
   buildChapterSystemPrompt,
 } from './chapter-prompts';
 import type { ChapterId } from './chapter-input-types';
+import { validateChapterBody } from '@/lib/saju/chapter-validator';
 
 const ALL_CHAPTER_IDS: ChapterId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+test('few-shot answers satisfy the same length and prose rules requested from the model', () => {
+  for (const [key, example] of Object.entries(FEW_SHOT_EXAMPLES)) {
+    const id = Number(key) as ChapterId;
+    const { min, max } = CHAPTER_OUTPUT_SPECS[id].bodyLengthRange;
+    assert.ok(example.output.length >= min && example.output.length <= max, `chapter ${id}: ${example.output.length}, expected ${min}..${max}`);
+    const result = validateChapterBody(example.output, { chapterId: id });
+    assert.deepEqual(result.failures, [], `chapter ${id}`);
+  }
+});
 
 test('CHAPTER_META 가 9 챕터 모두 정의', () => {
   for (const id of ALL_CHAPTER_IDS) {

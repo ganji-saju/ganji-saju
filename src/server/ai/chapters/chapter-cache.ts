@@ -7,7 +7,7 @@ import type { ChapterUserContext } from './chapter-input-types';
 
 export const CHAPTER_CACHE_TTL_DAYS = 30;
 // Bump when the chapter's content contract changes; old envelopes remain readable.
-const CHAPTER_CONTENT_VERSION = 'lifetime-questions-v2';
+const CHAPTER_CONTENT_VERSION = 'lifetime-natal-evidence-v3';
 
 /**
  * 챕터 LLM 결과 캐시 키.
@@ -26,12 +26,16 @@ export function buildChapterCacheKey(
   const payload = JSON.stringify({
     contentVersion: CHAPTER_CONTENT_VERSION,
     classicEvidenceHash,
-    pillars: {
-      year: sajuData.pillars.year.ganzi,
-      month: sajuData.pillars.month.ganzi,
-      day: sajuData.pillars.day.ganzi,
-      hour: sajuData.pillars.hour?.ganzi ?? null,
+    // Same pillars can receive revised engine judgments; do not reuse old prose.
+    natalEvidence: {
+      hourKnown: sajuData.input?.hourKnown,
+      strength: sajuData.strength,
+      pattern: sajuData.pattern,
+      yongsin: sajuData.yongsin,
+      fiveElements: sajuData.fiveElements,
+      tenGods: sajuData.tenGods,
     },
+    pillars: sajuData.pillars,
     dayMaster: {
       stem: sajuData.dayMaster.stem,
       element: sajuData.dayMaster.element,

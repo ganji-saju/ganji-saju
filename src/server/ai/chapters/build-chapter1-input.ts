@@ -35,12 +35,6 @@ const STEM_HANJA_TO_KOREAN: Record<Stem, string> = {
   癸: '계',
 };
 
-const STRENGTH_TO_KOREAN: Record<string, ChapterSaju['strength']> = {
-  신강: '에너지가 강한 편',
-  중화: '균형이 잡힌 편',
-  신약: '에너지가 차분한 편',
-};
-
 function elementLabel(element: Element | null | undefined): string {
   if (!element) return '';
   return ELEMENT_INFO[element].name;
@@ -104,7 +98,7 @@ export function buildChapter1Input(
       year: toKoreanGanzi(pillars.year.ganzi),
       month: toKoreanGanzi(pillars.month.ganzi),
       day: toKoreanGanzi(pillars.day.ganzi),
-      hour: pillars.hour ? toKoreanGanzi(pillars.hour.ganzi) : null,
+      hour: sajuData.input.hourKnown && pillars.hour ? toKoreanGanzi(pillars.hour.ganzi) : null,
     },
     dayMaster: {
       stem: STEM_HANJA_TO_KOREAN[dayMaster.stem] ?? dayMaster.stem,
@@ -134,7 +128,7 @@ export function buildChapter1Input(
       primary: yongsin?.primary?.label ?? '',
       reason: yongsin?.rationale?.[0] ?? '',
     },
-    strength: STRENGTH_TO_KOREAN[strength?.level ?? ''] ?? '균형이 잡힌 편',
+    strength: strength?.level ?? '미산정',
     tenGods: {
       dominant: tenGods?.dominant ?? '',
       // 2026-05-19: byType count === 0 인 십성 코드들을 부족 항목으로.
@@ -145,6 +139,17 @@ export function buildChapter1Input(
         : [],
     },
     notableSinsals: [], // 2026-05-19: 신살 매핑은 후속 PR (sajuData 의 sinsals 구조 확인 후)
+    natalEvidence: {
+      hourKnown: sajuData.input.hourKnown,
+      pillars: Object.entries(pillars)
+        .filter(([position, pillar]) => pillar && (position !== 'hour' || sajuData.input.hourKnown))
+        .map(([position, pillar]) => ({ position, stemTenGod: pillar!.stemTenGod, hiddenStems: pillar!.hiddenStems })),
+      strength,
+      pattern,
+      yongsin,
+      tenGods,
+      fiveElements,
+    },
   };
 
   const userContext: ChapterUserContext = {

@@ -1,4 +1,5 @@
 import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import type { SajuDataV1, SajuPillar } from '@/domain/saju/engine/saju-data-v1';
 // 2026-05-19 — 9 챕터 LLM 호출의 입력 JSON 스키마.
 //   report-llm-spec.md §2 의 ChapterLLMInput 을 TypeScript 로 구체화.
 //   LLM 호출 자체는 아직 구현 안 함 — 본 파일은 정적 자산.
@@ -68,9 +69,14 @@ export interface ChapterSaju {
   fiveElements: ChapterFiveElements;
   pattern: ChapterPattern;
   yongsin: ChapterYongsin;
-  strength: '에너지가 강한 편' | '균형이 잡힌 편' | '에너지가 차분한 편';
+  strength: '신강' | '중화' | '신약' | '미산정' | '에너지가 강한 편' | '균형이 잡힌 편' | '에너지가 차분한 편';
   tenGods: ChapterTenGods;
   notableSinsals: ChapterNotableSinsal[];
+  /** Engine facts, not an invitation for the model to recalculate a chart. */
+  natalEvidence?: {
+    hourKnown: boolean;
+    pillars: Array<{ position: string; stemTenGod: SajuPillar['stemTenGod']; hiddenStems: SajuPillar['hiddenStems'] }>;
+  } & Pick<SajuDataV1, 'strength' | 'pattern' | 'yongsin' | 'tenGods' | 'fiveElements'>;
 }
 
 export interface ChapterUserContext {

@@ -3,8 +3,34 @@ import assert from 'node:assert/strict';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { upgradeSajuDataV1ToV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildChapter1Input } from './build-chapter1-input';
+import { buildChapter4Input } from './build-chapter4-input';
+import { buildChapter5Input } from './build-chapter5-input';
+import { buildChapterUserMessage } from './generate-chapter';
 
 // 2026-05-19 (a) 2-1 — SajuDataV1 + V2 → ChapterLLMInput 변환 검증.
+
+test('all chapter input paths retain natal reasoning and do not invent balance or an unknown hour', () => {
+  const data = calculateSajuDataV1({ year: 1982, month: 1, day: 29, hour: 8, gender: 'male' });
+  const before = structuredClone(data);
+  for (const build of [buildChapter1Input, buildChapter4Input, buildChapter5Input]) {
+    const input = build(data, null);
+    assert.deepEqual(input.saju.natalEvidence?.pattern, data.pattern);
+    assert.deepEqual(input.saju.natalEvidence?.yongsin, data.yongsin);
+    assert.deepEqual(input.saju.natalEvidence?.strength, data.strength);
+    assert.deepEqual(input.saju.natalEvidence?.pillars[1].hiddenStems, data.pillars.month.hiddenStems);
+    const message = buildChapterUserMessage(input);
+    assert.match(message, /natalEvidence/);
+    assert.ok(message.includes(JSON.stringify(data.pattern?.confidence)));
+    const missing = build({ ...data, input: { ...data.input, hourKnown: false }, strength: null, pattern: null, yongsin: null }, null);
+    assert.equal(missing.saju.strength, '미산정');
+    assert.equal(missing.saju.pillars.hour, null);
+    assert.ok(missing.saju.natalEvidence?.pillars.every((pillar) => pillar.position !== 'hour'));
+    assert.equal(missing.saju.natalEvidence?.pattern, null);
+    const weak = build({ ...data, strength: { ...data.strength!, level: '신약' } }, null);
+    assert.equal(weak.saju.strength, '신약');
+  }
+  assert.deepEqual(data, before);
+});
 
 test('buildChapter1Input — fixture 사주에서 ChapterLLMInput 정상 빌드', () => {
   const data = calculateSajuDataV1({
@@ -42,7 +68,7 @@ test('buildChapter1Input — fixture 사주에서 ChapterLLMInput 정상 빌드'
 
   // strength 일상어
   assert.ok(
-    ['에너지가 강한 편', '균형이 잡힌 편', '에너지가 차분한 편'].includes(input.saju.strength),
+    ['신강', '중화', '신약'].includes(input.saju.strength),
     `strength 일상어: ${input.saju.strength}`
   );
 

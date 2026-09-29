@@ -10,7 +10,7 @@ import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 // 2026-09-26 v3 — 가족 관계·학업과 배움 두 장 추가(버전이 바뀌어 기존 구매자도 다음 열람에 새로 만든다).
-export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v3-family-study';
+export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v4-natal-depth';
 
 export type SajuLifetimeAiSectionKey =
   | 'coreIdentity'
@@ -457,7 +457,7 @@ function createGrounding(
       year: serializePillar(data.pillars.year),
       month: serializePillar(data.pillars.month),
       day: serializePillar(data.pillars.day),
-      hour: serializePillar(data.pillars.hour),
+      hour: data.input.hourKnown ? serializePillar(data.pillars.hour) : null,
     },
     dayMaster: data.dayMaster,
     fiveElements: data.fiveElements,
@@ -526,8 +526,8 @@ export function createLifetimeInterpretationPrompt(
       '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 문구는 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
-      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 기존 9개 section 키를 빠짐없이 유지한다.',
-      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 400~550자, 나머지 6개 장은 각 100~140자를 목표로 쓴다. 전체 문장은 2200~2700자 안에서 마무리하고 JSON을 완성한다.',
+      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 지정된 11개 section 키를 빠짐없이 유지한다.',
+      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 400~550자, 나머지 8개 장은 각 100~140자를 목표로 쓴다. 전체 문장은 2200~2700자 안에서 마무리하고 JSON을 완성한다.',
       '- 재물 장은 ① 무엇을 어떤 조건으로 대가에 연결하는가 ② 벌어도 남지 않는 패턴은 무엇인가 ③ 큰 결정을 앞두고 어떤 조건을 비교할 것인가에 답한다. lifetimeEvidence.wealthStyle의 네 상세 필드를 근거로 사용한다.',
       '- 직업 장은 ① 어떤 역할과 환경에서 실력이 드러나는가 ② 잘하지만 소진되는 일은 무엇인가 ③ 조직·독립을 고를 때 어떤 조건이 필요한가에 답한다. 직업명 목록 대신 실제로 맡는 과정·권한·평가 조건을 비교한다.',
       '- 관계 장은 ① 편안하게 가까워지는 방식은 무엇인가 ② 표현과 기대가 어긋나는 장면은 무엇인가 ③ 오래 가는 관계를 위해 어떤 합의가 필요한가에 답한다. 입력한 현재 관계 상태만 사용한다.',
@@ -538,7 +538,7 @@ export function createLifetimeInterpretationPrompt(
       '- 생시 미입력은 시주를 근거로 쓰지 않는다. 입력하지 않은 소득·직업·부모의 성격·배우자의 외모·자녀 수·건강 상태를 만들어내지 않는다. 충·합이나 십성의 개수를 사건·성공 확률로 바꾸지 않는다.',
       '- opening은 첫 문단부터 흡입력 있게 쓰되 상담실 톤을 유지한다.',
       '- rememberRules는 실제 생활에 바로 적용 가능한 짧은 기억 문장 5개로 쓴다.',
-      '- [밀착 개인화] 성향을 형용사로 요약하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여준다(show, don\'t tell). "책임감이 강하다"(요약) ❌ → "맡은 일은 끝을 봐야 마음이 놓여서, 남들이 이미 넘어간 자리를 혼자 한 번 더 확인하곤 한다"(장면) ⭕.',
+      '- [밀착 개인화] 실제 습관을 안다고 말하지 않는다. "남들이 넘어간 자리도 늘 확인한다" 대신 "일을 마친 뒤에도 확인하는 상황이라면, 필요한 점검과 결정을 미루는 걱정을 구분해보세요"처럼 조건부 장면과 비교 기준을 쓴다.',
       '- [밀착 개인화] 열 사람 중 아홉에게 맞는 말("대인관계가 원만하다")은 실패다. 이 사주 데이터에서만 나오는 이 사람만의 차이를 장면으로 짚는다. 사용자 컨텍스트(직업·관계·나이·고민)가 있으면 장면의 배경으로 자연스럽게 깔되, 없는 사실·사건은 지어내지 않는다.',
     ].join('\n'),
     input: JSON.stringify({
