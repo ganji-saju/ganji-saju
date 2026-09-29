@@ -151,3 +151,14 @@ test('환불 내역: 상품명은 카탈로그에서, 없으면 packageId 그대
   assert.ok(out.items[0].productName.length > 0);
   assert.equal(out.items[1].productName, 'credit_legacy_gone');
 });
+
+test('환불 내역: 누가 환불받았는지(user_id) 건마다 남긴다', () => {
+  const out = computeRefundBreakdown(
+    [
+      { order_id: 'o1', user_id: 'u-1', package_id: 'x', amount: 3300, refunded_at: kst('2026-08-26'), confirmed_at: kst('2026-08-25'), fulfilled_at: null, created_at: null },
+      { order_id: 'o2', package_id: 'x', amount: 3300, refunded_at: kst('2026-08-26'), confirmed_at: kst('2026-08-25'), fulfilled_at: null, created_at: null },
+    ],
+    WINDOW
+  );
+  assert.deepEqual(out.items.map((i) => i.userId), ['u-1', null]);
+});

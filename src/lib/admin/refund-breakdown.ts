@@ -10,6 +10,8 @@
 //   ⚠️ 조회 전용. 집계(metrics_daily.refunded_won)는 건드리지 않는다.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPackage } from '@/lib/payments/catalog';
+import type { AdminRole } from '@/lib/admin-auth';
+import { maskEmail } from './masking';
 import { expandRefundRows, kstDateKey, shiftDateKey } from './analytics-rollup';
 
 export interface RefundBreakdownItem {
@@ -25,6 +27,11 @@ export interface RefundBreakdownItem {
   paidInWindow: boolean;
   /** 판 날과 환불한 날이 같은가(당일 환불이면 마이너스로 보일 일이 없다). */
   sameDay: boolean;
+  /** 2026-09-29 — 누가 환불받았나(운영 필수, 사용자 요청). 회원 상세 링크용. */
+  userId: string | null;
+  /** 역할별 마스킹된 이메일(super_admin 만 원문). */
+  userEmail: string | null;
+  userName: string | null;
 }
 
 export interface RefundBreakdown {
@@ -41,6 +48,7 @@ const MAX_ITEMS = 200;
 
 interface RefundOrderRow {
   order_id: string | null;
+  user_id?: string | null;
   package_id: string | null;
   amount: number | null;
   refunded_at: string | null;
@@ -78,6 +86,9 @@ export function computeRefundBreakdown(
       // '정상'으로 분류하면 왜곡 금액이 과소 집계된다.
       paidInWindow: paidOn != null && paidOn >= window.fromKey && paidOn <= window.toKey,
       sameDay: paidOn != null && paidOn === refundedOn,
+      userId: row.user_id ?? null,
+      userEmail: null,
+      userName: null,
     });
   }
 
@@ -102,14 +113,15 @@ export function computeRefundBreakdown(
 export async function getRefundBreakdown(
   service: SupabaseClient,
   windowDays: number,
-  now = new Date()
+  now = new Date(),
+  role: AdminRole = 'admin'
 ): Promise<RefundBreakdown> {
   const toKey = kstDateKey(now.toISOString());
   const fromKey = shiftDateKey(toKey, -(Math.max(1, windowDays) - 1));
   const startIso = new Date(Date.parse(`${fromKey}T00:00:00+09:00`)).toISOString();
   const endIso = new Date(Date.parse(`${shiftDateKey(toKey, 1)}T00:00:00+09:00`)).toISOString();
 
-  const columns = 'order_id, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at, metadata';
+  const columns = 'order_id, user_id, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at, metadata';
   const { data, error } = await service
     .from('payment_orders')
     .select(columns)
@@ -130,5 +142,25 @@ export async function getRefundBreakdown(
   }
 
   const rows = expandRefundRows((data ?? []) as RefundOrderRow[], (partial?.data ?? []) as RefundOrderRow[]);
-  return computeRefundBreakdown(rows, { fromKey, toKey });
+  const breakdown = computeRefundBreakdown(rows, { fromKey, toKey });
+  return attachRefundUsers(service, breakdown, role);
+}
+
+/** 환불 건에 회원 이름·이메일을 붙인다(admin_user_summary). 실패해도 목록은 그대로 둔다. */
+async function attachRefundUsers(service: SupabaseClient, breakdown: RefundBreakdown, role: AdminRole): Promise<RefundBreakdown> {
+  const ids = [...new Set(breakdown.items.map((i) => i.userId).filter((id): id is string => Boolean(id)))];
+  if (ids.length === 0) return breakdown;
+  const { data, error } = await service.from('admin_user_summary').select('user_id, email, display_name').in('user_id', ids);
+  if (error) {
+    console.error('[refund-breakdown] user lookup failed:', error.message);
+    return breakdown;
+  }
+  const byId = new Map((data ?? []).map((u: { user_id: string; email: string | null; display_name: string | null }) => [u.user_id, u]));
+  return {
+    ...breakdown,
+    items: breakdown.items.map((i) => {
+      const u = i.userId ? byId.get(i.userId) : undefined;
+      return u ? { ...i, userEmail: maskEmail(u.email, role), userName: u.display_name } : i;
+    }),
+  };
 }

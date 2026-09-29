@@ -2,7 +2,7 @@
 // 2026-09-01 — 롤링 days= 를 달력 기간(unit+period)으로 교체. /admin 과 축을 맞춘다.
 //   admin 가드 후 service 클라이언트로 조회(metrics_daily RLS deny-all).
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentAdminCheck } from '@/lib/admin-auth';
+import { getCurrentAdminRole } from '@/lib/admin-auth';
 import {
   assessDailyMetricsFreshness,
   getDailyMetrics,
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   const windowDays = period.days;
 
   const supabase = await createClient();
-  const guard = await getCurrentAdminCheck(supabase);
+  const guard = await getCurrentAdminRole(supabase);
   if (!guard.ok) {
     return NextResponse.json(
       { ok: false, error: guard.reason },
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       getExternalAnalyticsSnapshot(windowDays, periodEnd),
       // 2026-08-26 — 환불 건별 원 결제일. '오늘 매출 990 / 환불 9,900' 이 왜 그런지
       //   화면이 스스로 답하게 한다(집계는 그대로, 해설만 추가).
-      getRefundBreakdown(service, windowDays, periodEnd),
+      getRefundBreakdown(service, windowDays, periodEnd, guard.role ?? 'admin'),
       getPagePathStats(service, period.startKey, period.endKey),
     ]);
     return NextResponse.json(
