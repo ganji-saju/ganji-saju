@@ -554,10 +554,14 @@ export function GangiServiceCardLink({
               </span>
             </span>
           </span>
-          {/* 우측 수호신 — 호랑이(寅, 한 해의 첫 달). 좌측 글자 대비를 위해 왼쪽을 옅게 가린다. */}
-          {/* 2026-09-29 — 초상 파일 양옆 20px 에 밝은 띠가 있어 좁은 칸에서 세로 줄(점선처럼)로 보였다.
-              12% 확대해 양옆 띠를 칸 밖으로 밀어내고 칸에서 자른다. */}
-          <span className="relative block w-[38%] max-w-[190px] shrink-0 overflow-hidden">
+          {/* 초상 양옆을 실제 배너 배경으로 페이드해 이미지 띠와 색상 경계가 드러나지 않게 한다. */}
+          <span
+            className="relative block w-[38%] max-w-[190px] shrink-0 overflow-hidden"
+            style={{
+              maskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 78%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, #000 32%, #000 78%, transparent 100%)',
+            }}
+          >
             {card.image ? (
               <GuardianPortrait
                 id={card.image}
@@ -570,11 +574,6 @@ export function GangiServiceCardLink({
                 <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
               </span>
             )}
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0 w-3/4"
-              style={{ background: 'linear-gradient(90deg, #db6a33 0%, rgba(219,106,51,0.55) 45%, rgba(219,106,51,0) 100%)' }}
-            />
           </span>
         </span>
       </Link>
