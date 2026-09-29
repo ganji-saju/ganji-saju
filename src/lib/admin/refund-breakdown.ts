@@ -182,7 +182,8 @@ async function attachRefundReasons(service: SupabaseClient, breakdown: RefundBre
     .from('refund_requests')
     .select('payment_key, reason, amount, status, created_at')
     .in('payment_key', keys)
-    .neq('status', 'rejected')
+    // 실패·반려·대기 요청의 사유는 붙이지 않는다(그 요청으로 돈이 나간 게 아니다).
+    .in('status', ['completed', 'revoke_pending', 'processing'])
     .order('created_at', { ascending: false });
   if (error) {
     console.error('[refund-breakdown] reason lookup failed:', error.message);
