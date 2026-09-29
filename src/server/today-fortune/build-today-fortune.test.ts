@@ -198,7 +198,7 @@ test('today fortune premium windows and scenarios carry grounded current-luck cu
   // 제목 뒤에 오늘의 관계 꼬리표(' · …')가 붙을 수 있다 — 앞부분이 관심사 제목인지 확인한다.
   assert.deepEqual(
     result.scenarios.map((item) => item.title.split(' · ')[0]),
-    ['오늘 미팅을 바로 진행할 때', '한 번 더 조율하고 진행할 때']
+    ['미팅을 바로 진행할 때', '한 번 더 조율하고 진행할 때']
   );
 
   if (currentLuckFact) {

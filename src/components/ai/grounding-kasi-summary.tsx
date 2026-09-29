@@ -1,3 +1,4 @@
+import { toKoreanGanziStem } from '@/lib/saju/ganzi-korean';
 import type { SajuInterpretationGrounding } from '@/domain/saju/report';
 import { GroundingDecisionTrace } from '@/components/saju/grounding-decision-trace';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
@@ -23,7 +24,7 @@ function buildKasiLine(kasiComparison: KasiSingleInputComparison | null | undefi
 
 function buildFactLines(grounding: SajuInterpretationGrounding) {
   return [
-    `나를 나타내는 기운 ${grounding.factJson.dayMaster.stem} · ${grounding.factJson.dayMaster.element}`,
+    `나를 나타내는 기운 ${toKoreanGanziStem(grounding.factJson.dayMaster.stem)} · ${grounding.factJson.dayMaster.element}`,
     grounding.evidenceJson.strength.level && grounding.evidenceJson.strength.score !== null
       ? `기운 균형 ${grounding.evidenceJson.strength.level}`
       : null,
