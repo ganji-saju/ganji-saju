@@ -1,4 +1,4 @@
-import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { FocusTopic, ReportScore, SajuReport } from '@/domain/saju/report/types';
 import {
   buildSajuInterpretationGrounding,
@@ -10,7 +10,7 @@ import {
 } from '@/lib/counselors';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
-export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v7';
+export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v8-depth';
 
 export interface SajuAiInterpretation {
   headline: string;
@@ -228,11 +228,11 @@ function buildElementImbalanceLines(grounding: SajuInterpretationGrounding) {
     }
 
     if (value === 0) {
-      return [`${withSubjectParticle(element)} 없음: 이 영역은 의식적으로 빌려 써야 하며, 생활 루틴과 선택 방식에서 보완이 필요합니다.`];
+      return [`${withSubjectParticle(element)} 없음: 겉으로 드러난 분포에 없다는 뜻이며 능력의 결핍이나 필수 보완을 뜻하지 않습니다. 월령·강약·용신 근거를 함께 확인합니다.`];
     }
 
     if (value <= 10) {
-      return [`${withSubjectParticle(element)} 약함: 이 기운은 쉽게 부족해질 수 있어 하루 선택에서 작게 보완해야 합니다.`];
+      return [`${withSubjectParticle(element)} 약함: 상대적으로 적은 분포입니다. 실제 보완 방향은 월령·강약·용신 판정을 함께 읽습니다.`];
     }
 
     return [];
@@ -359,13 +359,14 @@ export function createInterpretationPrompt(
     instructions: [
       '당신은 한국 사주 풀이 전문가가 운영하는 운세 서비스의 작가입니다. 명리 도메인 지식을 갖춘 글쓰기 가이드입니다.',
       CLASSIC_READING_INSTRUCTIONS,
+      READING_SCOPE_INSTRUCTIONS.natal,
       '제공된 personalizationContext, factJson, evidenceJson 안에서만 해석하고, 없는 신살·격국·고전 출처를 새로 만들지 않습니다.',
       '개인화의 1순위 근거는 ===사주 원국===과 ===이 사주의 고유 특성===입니다. dayGanziCode, sixtyGapja, fiveElementRatio, tenGodDistribution, strengthJudgement, yongsinKiyshin, currentLuck을 반드시 참고해 사람마다 다른 결론을 만듭니다.',
       '사용자는 명리 공부가 아니라 오늘 내 삶에 필요한 말을 보러 왔습니다. 결론, 마음가짐, 오늘 할 행동을 먼저 씁니다.',
       // 2026-05-15 P1: 한국 사주 사이트 벤치마크상 일주 이름과 격국·용신 같은 명리 라벨을
       // 의도적으로 노출하는 것이 신뢰감의 핵심. 기존 prompt 가 "내부 용어 금지" 였던 것을
       // "사주 글자·격국·용신·일주 라벨은 그대로 인용 권장" 으로 전환.
-      '일주 이름(한글, 예: 갑자일주), 격국 이름(예: 정관격·식신격), 용신/희신(한글 기운, 예: 화 기운·목 기운), 강약(신강·신약·중화)은 본문에 그대로 인용해도 좋습니다. 단 한 문장에 하나만 — 카탈로그 나열 금지.',
+      '일주 이름(한글, 예: 갑자일주), 격국 이름(예: 정관격·식신격), 용신/희신(한글 기운, 예: 화 기운·목 기운), 강약(신강·신약·중화)은 본문에 그대로 인용해도 좋습니다. 관련된 두 근거는 의미를 설명한 뒤 연결해도 됩니다. 카탈로그 나열은 피합니다.',
       '한자(漢字)는 본문에 한 글자도 쓰지 않습니다. 입력에 간지가 한자(예: 辛巳·壬寅)로 있어도 절대 그대로 옮기지 말고, 필요하면 한글 일주 이름으로만 씁니다.',
       'sixtyGapja.title 과 sixtyGapja.core 를 headline 또는 summary 첫 문장에 직접 인용하면 가장 좋습니다. 예: "갑자일주 큰 방향을 세우는 나무, 오늘은 ___합니다."',
       // 2026-05-15 P1: 유보형 → 단정형 + 명령형 전환. 시장 벤치마크상 "할 수 있어요",
@@ -377,15 +378,15 @@ export function createInterpretationPrompt(
       '의학, 법률, 투자, 생명·안전 문제는 생활 조언 수준으로 제한합니다. 일·관계·재물에서도 실제 경험과 미래 결과를 확인한 사실처럼 단정하지 않습니다.',
       '근거 없는 일반론을 길게 늘어놓지 말고, 사용자가 바로 이해할 수 있는 상황과 행동으로 바꿉니다.',
       // 2026-07-06 — 밀착 개인화(show, don't tell): 추상 성격어 대신 이 사람의 실제 일상 장면으로.
-      '[밀착 개인화] 성향·강점·약점을 추상적으로 서술하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여주세요. "책임감이 강합니다"(추상·일반론) ❌ → "맡은 일은 끝을 봐야 마음이 놓입니다. 남들이 이미 넘어간 자리를 혼자 한 번 더 확인합니다"(장면·단정형) ⭕.',
-      '[밀착 개인화] 누구에게나 해당되는 말은 실패입니다. "대인관계가 원만합니다" ❌ → "처음 보는 자리에선 말수를 줄이고 상대를 살핍니다. 편해졌다 싶으면 그때 말문이 트입니다" ⭕. 반드시 이 사주 데이터(강약·격국·용신·오행·일주)에서만 나오는 차이를 장면으로 짚습니다.',
+      '[밀착 개인화] 성향·강점·약점을 추상적으로 서술하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여주세요. "책임감이 강합니다"(추상·일반론) ❌ → "일을 끝내고도 확인하는 상황이라면 필요한 점검과 결정을 미루는 걱정을 나눠보세요"(조건부 장면) ⭕.',
+      '[밀착 개인화] 누구에게나 해당되는 말은 실패입니다. "대인관계가 원만합니다" ❌ → "낯선 자리와 익숙한 자리에서 말하는 방식이 다르다면, 어떤 조건에서 의견을 편하게 전하는지 비교해보세요" ⭕. 반드시 이 사주 데이터(강약·격국·용신·오행·일주)에서만 나오는 차이를 장면으로 짚습니다.',
       '[밀착 개인화] structuredInput 의 직업·관계·고민 컨텍스트가 있으면 장면의 배경으로 자연스럽게 깔아 이 사람의 지금 삶에 닿게 합니다. 없는 사실·사건은 지어내지 말고, 일어날 수 있는 장면은 "~한다면", "~할 때"처럼 조건으로 엽니다.',
-      'insights 각 항목은 반드시 "근거 글자 1개(일주/격국/용신/오행 중 하나) + 그 성향이 드러나는 구체 장면 + 행동" 구조로 씁니다. 예: "정관격이라 책임을 혼자 떠안다 지치기 쉬우니, 맡기 전에 \'어디까지\' 를 한 줄로 적어두세요." / "용신 火가 약해 하고 싶은 말을 삼키다 뒤늦게 후회하니, 떠오를 때 짧게라도 먼저 말하세요."',
+      'insights 각 항목은 확인된 명리 근거와 적용 조건 → 조건부 생활 장면 → 선택 기준으로 씁니다. 용신으로 채택됐다는 사실을 그 오행의 부족 판정으로 바꾸지 마세요.',
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
       'JSON 스키마: {"headline":"짧은 제목","summary":"3~4문장의 자연어 요약","insights":["근거+장면+행동 통찰 1","통찰 2","통찰 3","통찰 4"]}',
       'headline은 38자 안팎으로, 일주 이름 또는 격국을 인용해 사용자가 "내 사주 풀이다" 라고 즉시 인식할 수 있게 씁니다.',
-      'summary는 3~4문장으로 풍성하게 씁니다. 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 핵심 해석을 단정형으로 넣고, 이어지는 문장은 그 해석이 이 사람 삶에서 어떻게 드러나는지 구체적 장면으로 풀어 읽는 맛을 살립니다.',
-      'insights는 4개로 작성하며, 강점/약점(무너지는 자리)/관계 또는 일의 포인트/오늘의 행동을 각각 다른 항목에 담되 서로 겹치지 않게 합니다. 각 항목은 근거 글자 + 구체 장면 + 행동 구조로, 단정형 + 명령형으로 끝맺습니다.',
+      'summary는 3~4문장으로 풍성하게 씁니다. 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 핵심 해석과 적용 조건을 넣고, 이어지는 문장은 그 해석이 이 사람 삶에서 어떻게 드러나는지 구체적 장면으로 풀어 읽는 맛을 살립니다.',
+      'insights는 4개로 작성하며, 강점/약점(무너지는 자리)/관계 또는 일의 포인트/오늘의 행동을 각각 다른 항목에 담되 서로 겹치지 않게 합니다. 각 항목은 근거 글자 + 구체 장면 + 행동 구조로, 독자가 실제 상황과 비교할 질문이나 선택 기준으로 마무리합니다.',
       ...buildReportCounselorInstructions(counselorId),
     ].join('\n'),
     input: structuredInput,

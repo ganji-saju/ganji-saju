@@ -1,3 +1,4 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 // 2026-05-23 — 궁합 깊은 풀이 입력 빌더(②-b). 결정론 CompatibilityInterpretation → LLM grounding.
 //   fallbackSections = lib 의 결정론 deepSections 를 그대로 사용(플래그 OFF·LLM 실패 시 노출).
 import { ELEMENT_INFO } from '@/lib/saju/elements';
@@ -25,6 +26,7 @@ export function buildCompatibilityInterpretationInput(
   partnerName: string
 ): CompatibilityInterpretationInput {
   return {
+    natalEvidence: { self: buildNatalReadingEvidence(interpretation.selfData), partner: buildNatalReadingEvidence(interpretation.partnerData) },
     relationship: interpretation.relationship,
     relationshipLabel: RELATIONSHIP_LABELS[interpretation.relationship],
     selfName,

@@ -20,25 +20,24 @@ export function buildOhaengGuidanceInput(chart: OhaengChartData): OhaengGuidance
 
 export function buildDeterministicOhaengGuidance(input: OhaengGuidanceInput): string {
   const strong = input.labels[input.dominant]; // "토 기운"
-  const strongMeaning = input.meanings[input.dominant]; // "담아냄과 안정"
 
   if (input.lack.length > 0) {
     const lacking = input.lack.map((el) => input.labels[el]).join(', ');
     return (
-      `${strong}이 도드라지는 사주예요. ${strongMeaning}의 힘이 강점으로 잘 작동합니다. ` +
-      `다만 ${lacking}이 부족한 편이라, 이 기운을 의식적으로 채워 주는 작은 습관을 더하면 흐름이 한결 부드러워집니다.`
+      `제공된 글자에서는 ${strong}이 상대적으로 많고 ${lacking}이 적게 나타나요. ` +
+      '개수만으로 능력의 부족이나 보완 방향을 정하지는 않아요. 익숙한 방식이 도움이 된 상황과 부담이 된 상황을 하나씩 비교해보세요.'
     );
   }
 
   if (input.balanceLevel === 'high') {
     return (
-      `다섯 기운이 비교적 고르게 자리잡은 사주예요. ${strong}을 중심으로 균형이 잘 잡혀 있어, ` +
-      `지금의 리듬을 꾸준히 유지하는 것 자체가 강점이 됩니다.`
+      '제공된 글자의 개수는 비교적 고르게 분포해요. ' +
+      '이 분포만으로 사주 전체의 균형이나 좋은 운을 확정하지는 않아요. 힘을 쓰기 편한 환경과 쉽게 지치는 환경의 차이를 확인해보세요.'
     );
   }
 
   return (
-    `${strong}이 중심이 되는 사주예요. ${strongMeaning}의 힘을 살리되, ` +
-    `나머지 기운도 조금씩 함께 써 주면 더 안정적인 흐름을 만들 수 있어요.`
+    `제공된 글자에서는 ${strong}의 비중이 상대적으로 커요. ` +
+    '많다고 모두 강점이거나 적다고 모두 채워야 하는 것은 아니에요. 같은 방식을 반복할 때 편해지는 일과 선택이 좁아지는 일을 나눠보세요.'
   );
 }

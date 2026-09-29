@@ -1,4 +1,4 @@
-import { CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
 // Task 3 — 오늘운세 LLM 프롬프트 빌더 (순수 함수 — LLM 호출 없음, DB 없음).
 //
 // `createTodayFortunePrompt` 은 Task-2 grounding DTO 를 받아 LLM 호출용
@@ -9,7 +9,7 @@ import { CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-groundin
 // naming-policy: 본문 한자 0, doom/공포 조장 금지, 단정 표현 금지.
 import type { TodayFortuneGrounding } from './grounding';
 
-export const TODAY_FORTUNE_PROMPT_VERSION = 'tf-v2';
+export const TODAY_FORTUNE_PROMPT_VERSION = 'tf-v3-depth';
 
 /**
  * TodayFortuneGrounding → { instructions, input }
@@ -28,6 +28,7 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
     '점수는 성공·질병·수입의 확률이 아닙니다. 높은 점수로 성과를 보장하거나 낮은 점수로 나쁜 사건을 예고하지 마세요.',
     '근거에 없는 시간대·다음 날·미래 시점은 만들지 마세요. 계산된 관계와 생활 조언을 구분하고, 서로 다른 분야의 점수를 바꿔 해석하지 마세요.',
     CLASSIC_READING_INSTRUCTIONS,
+    READING_SCOPE_INSTRUCTIONS.daily,
     '규칙:',
     '1. 사실만 자연스럽게 연결할 것. 근거 없이 단정하거나 과장하지 마세요.',
     '2. 단정 표현 금지 — "반드시", "절대", "100%", "무조건" 같은 단정 표현은 쓰지 마세요.',
@@ -41,6 +42,7 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
   ].join('\n');
 
   const lines: Array<string | null> = [
+    g.natalEvidence ? `원국 계산 근거: ${JSON.stringify(g.natalEvidence)}` : null,
     g.classicGrounding ? `고전 해석 근거: ${JSON.stringify(g.classicGrounding)}` : null,
     g.readingDate ? `풀이 날짜: ${g.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 일진: ${g.todayGanzi}`,
@@ -57,8 +59,8 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
       : g.iljinScore !== null
       ? `오늘 일진 점수: ${g.iljinScore}점`
       : null,
-    `약한 흐름: ${g.weakElement}`,
-    `강한 흐름: ${g.strongElement}`,
+    `원국에서 상대적으로 적은 오행: ${g.weakElement}`,
+    `원국에서 상대적으로 많은 오행: ${g.strongElement}`,
     g.topAreas.length > 0
       ? `높은 영역: ${g.topAreas.map((a) => `${a.label}(${a.score}점)`).join(', ')}`
       : null,

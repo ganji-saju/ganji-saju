@@ -1,3 +1,4 @@
+import type { NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 // 2026-05-21 — 사주 총평 LLM 입력/출력 타입. saju-total-review-llm-spec.md §2·§6.
 //   _internal_* 명리어/한자는 *이 입력 객체에 포함하지 않는다* — 본문 누출 원천 차단.
@@ -95,6 +96,7 @@ export interface TotalReviewUser {
 }
 
 export interface TotalReviewInput {
+  natalEvidence?: NatalReadingEvidence;
   classicGrounding?: ClassicReadingGrounding;
   user: TotalReviewUser;
   context: TotalReviewContext;

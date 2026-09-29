@@ -1,4 +1,4 @@
-import { CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
 // 2026-05-21 — 총평 system prompt + 섹션별 user message + few-shot.
 //   saju-total-review-llm-spec.md §3(system) · §4(섹션 지시) · §5(few-shot).
 import type { TotalReviewInput, TotalReviewSectionId } from './total-review-types';
@@ -26,6 +26,7 @@ export const TOTAL_REVIEW_SYSTEM_PROMPT = `당신은 친근하고 차분한 명�
 [밀착 개인화 — 총평 품질의 핵심] 성향을 형용사로 요약하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여줄 것(show, don't tell). "책임감이 강해요"(요약) ❌ → "완료한 과제를 다시 확인하는 일이 반복된다면, 필요한 점검인지 마음을 놓기 위한 확인인지 비교해보세요"(장면) ⭕. 열 사람 중 아홉에게 맞는 문장("대인관계가 원만해요")은 실패 — 이 사주 데이터에서만 나오는 이 사람만의 차이를 장면으로 짚을 것. 사용자 컨텍스트(직업·관계·나이·고민)가 있으면 장면의 배경으로 자연스럽게 깔 것(없는 사실은 지어내지 말 것).
 [톤] 친근한 구어체(~예요/~죠/~세요). 따뜻하고 구체적으로 쓰되 과장·확정은 피한다. 자연 비유로 내용을 늘리지 말고 실제 선택과 행동으로 설명한다.
 ${CLASSIC_READING_INSTRUCTIONS}
+${READING_SCOPE_INSTRUCTIONS.natal}
 [출력 형식] 지정된 JSON 스키마를 정확히 따른다. 다른 텍스트는 출력하지 않는다.`;
 
 const SECTION_INSTRUCTIONS: Record<TotalReviewSectionId, string> = {

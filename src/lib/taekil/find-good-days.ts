@@ -256,12 +256,10 @@ function buildReasonHint(
   negatives: string[]
 ): string {
   const purposeLabel = TAEKIL_PURPOSES.find((p) => p.key === purpose)?.label ?? '';
-  if (negatives.length > 0) {
-    return `${negatives[0]} 발동 — ${purposeLabel}에 부담 가능`;
-  }
-  if (positives.length > 0) {
-    return `${positives[0]} 발동 — ${purposeLabel}에 길운`;
-  }
-  // 평범한 날 — 십성 위주.
-  return `${sipsung} 작용 · ${purposeLabel}에 무난`;
+  const factors = [
+    `${sipsung} 관계`,
+    positives.length ? `보조 참고 ${positives.join('·')}` : '',
+    negatives.length ? `주의 참고 ${negatives.join('·')}` : '',
+  ].filter(Boolean).join(' / ');
+  return `${factors}. ${purposeLabel}의 후보 날짜를 비교하는 근거이며 결과를 보장하지 않습니다. 실제 일정과 준비 조건도 함께 확인하세요.`;
 }

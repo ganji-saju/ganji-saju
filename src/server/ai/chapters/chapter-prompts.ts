@@ -1,4 +1,4 @@
-import { CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS } from '@/server/classics/reading-grounding';
 import type { ChapterId, ChapterMeta } from './chapter-input-types';
 
 // 2026-05-19 — 9 챕터별 system prompt + user message template.
@@ -12,6 +12,7 @@ import type { ChapterId, ChapterMeta } from './chapter-input-types';
 export const COMMON_SYSTEM_PROMPT = `당신은 한국 사주 명리 사이트 ganjisaju.kr 의 풀이 작성자입니다. 사용자에게 그 사람의 사주를 자연스럽고 책임감 있게 풀어 전달합니다.
 
 ${CLASSIC_READING_INSTRUCTIONS}
+${READING_SCOPE_INSTRUCTIONS.natal}
 
 ## 절대 규칙
 1. **한자 금지** — 본문에 한자 (甲乙丙丁戊己庚辛壬癸 / 子丑寅卯辰巳午未申酉戌亥 / 木火土金水 / 大運四柱 등) 를 절대 사용하지 마세요. 한글 표기만 사용 ("갑오 대운", "토 기운").

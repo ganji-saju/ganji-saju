@@ -23,8 +23,8 @@ test('validateOhaengGuidance: "X의 기운"(naming-policy §2) 차단', () => {
   assert.equal(validateOhaengGuidance('토의 기운이 강합니다').ok, false);
 });
 
-test('validateOhaengGuidance: 명리 술어(용신/신강) 차단', () => {
-  assert.equal(validateOhaengGuidance('용신이 토라서 신강한 사주예요').ok, false);
+test('validateOhaengGuidance: 한글 명리 근거 설명 허용', () => {
+  assert.equal(validateOhaengGuidance('용신은 보완 방향이며, 오행 개수만으로 정하지 않아요.').ok, true);
 });
 
 test('validateOhaengGuidance: 자극/단정(대박/반드시) 차단', () => {

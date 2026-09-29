@@ -1,3 +1,4 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 // 2026-05-21 — 원국(SajuDataV1/V2) + personalizationContext → 총평 LLM 입력 JSON.
 //   _easy 필드를 *미리* 일상어로 도출해 LLM 이 추측/한자노출 하지 않도록 잠근다. spec §2·§1-2.
 //   wonkuk/current_timeline 은 deepStripHanja 로 한자 0건 보장(엔진 라벨 방어).
@@ -107,6 +108,7 @@ export function buildTotalReviewInput(
     options.currentAge ?? (birthYear ? now.getFullYear() - birthYear + 1 : null);
 
   return {
+    natalEvidence: buildNatalReadingEvidence(data),
     user: {
       name: options.userName ?? null,
       gender: options.gender ?? null,

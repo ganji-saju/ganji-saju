@@ -1,5 +1,5 @@
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
-import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import { getLifetimeCalendarLuck } from '@/domain/saju/report/build-lifetime-report';
 import {
@@ -518,6 +518,7 @@ export function createLifetimeInterpretationPrompt(
       '  "oneLineSummary": string',
       '}',
       CLASSIC_READING_INSTRUCTIONS,
+      READING_SCOPE_INSTRUCTIONS.natal,
       '규칙:',
       '- familyPattern 은 부모·배우자·자녀와 반복되는 역할과 거리감, 조율법을 쓴다. 가족 개인의 운명을 단정하지 않는다. studyPath 는 맞는 공부 방식과 배움이 열리는 대운 시기를 쓰고 합격을 단정하지 않는다.',
       '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',

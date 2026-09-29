@@ -939,6 +939,8 @@ const DEEP_SECTION_AXIS_LEAD: Record<CompatibilityPracticalCard['key'], string> 
 };
 
 interface DeepSectionContext {
+  selfData: SajuDataV1 | SajuDataV2;
+  partnerData: SajuDataV1 | SajuDataV2;
   stemInteraction: ReturnType<typeof summarizeStemInteraction>;
   elementInteraction: ReturnType<typeof summarizeElementInteraction>;
   branchInteraction: ReturnType<typeof summarizeBranchInteraction>;
@@ -978,6 +980,7 @@ function buildDeterministicDeepSections(
 ): CompatibilityDeepSection[] {
   const band = resolveScoreBand(ctx.score);
   const frame = DEEP_SECTION_FRAME[ctx.stemInteraction.kind][band];
+  const strengthComparison = `${ctx.selfName}님의 계산된 강약은 ${ctx.selfData.strength?.level ?? '미산정'}, ${ctx.partnerName}님은 ${ctx.partnerData.strength?.level ?? '미산정'}입니다. 강약은 의지나 능력의 우열이 아닙니다.`;
 
   return practicalCards.map((card, index) => {
     const coupleLine =
@@ -985,7 +988,7 @@ function buildDeterministicDeepSections(
     // 2026-08-26 🔴 사용자 제보("결제해도 같은 내용이 나온다"): frame 은 관계유형×점수대 **공통**
     //   문장이라 4개 섹션 머리에 똑같이 붙고 있었다. 3,300원을 내고 같은 문장을 네 번 읽는 셈이라
     //   유료 섹션 전체가 한 덩어리로 보였다. 관계 전체를 여는 문장이므로 **첫 섹션에만** 둔다.
-    const body = [index === 0 ? frame : '', coupleLine]
+    const body = [index === 0 ? strengthComparison : '', index === 0 ? frame : '', coupleLine]
       .filter(Boolean)
       .join(' ')
       .replace(/\s+/g, ' ')
@@ -1162,6 +1165,8 @@ export function buildCompatibilityInterpretation(
       branchSupport: branchInteraction.supportive?.label ?? null,
     },
     deepSections: buildDeterministicDeepSections(practicalCards, {
+      selfData,
+      partnerData,
       stemInteraction,
       elementInteraction,
       branchInteraction,

@@ -1,3 +1,5 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
+import type { NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import type { ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 // Task 2 — 오늘운세 LLM facts grounding 빌더 (순수 결정론, LLM 호출 없음).
 //
@@ -12,6 +14,7 @@ import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 
 export interface TodayFortuneGrounding {
+  natalEvidence?: NatalReadingEvidence;
   classicGrounding?: ClassicReadingGrounding;
   name: string;
   todayGanzi: string;       // 일진 간지 (한자 아님, 한글 음 — 예: '갑자')
@@ -69,6 +72,7 @@ export function buildTodayFortuneGrounding(args: {
   const reading = result.scores.find((score) => score.key === focusKey)?.reading;
 
   return {
+    natalEvidence: buildNatalReadingEvidence(sajuData),
     name: result.userName ?? '',
     todayGanzi,
     iljinScore,

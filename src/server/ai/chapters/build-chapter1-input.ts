@@ -1,3 +1,4 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type {
@@ -139,17 +140,7 @@ export function buildChapter1Input(
         : [],
     },
     notableSinsals: [], // 2026-05-19: 신살 매핑은 후속 PR (sajuData 의 sinsals 구조 확인 후)
-    natalEvidence: {
-      hourKnown: sajuData.input.hourKnown,
-      pillars: Object.entries(pillars)
-        .filter(([position, pillar]) => pillar && (position !== 'hour' || sajuData.input.hourKnown))
-        .map(([position, pillar]) => ({ position, stemTenGod: pillar!.stemTenGod, hiddenStems: pillar!.hiddenStems })),
-      strength,
-      pattern,
-      yongsin,
-      tenGods,
-      fiveElements,
-    },
+    natalEvidence: buildNatalReadingEvidence(sajuData),
   };
 
   const userContext: ChapterUserContext = {

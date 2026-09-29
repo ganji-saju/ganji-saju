@@ -22,6 +22,13 @@ import { ensureDialogueExpertVisibleOpening } from '@/lib/dialogue-experts';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
+test('실제 상담 경로의 공통 프롬프트는 명리 근거와 조건을 보존한다', () => {
+  const prompt = createDialoguePrompt('제 사주의 일하는 방식을 설명해 주세요');
+  assert.match(prompt.instructions, /원국 풀이:/);
+  assert.match(prompt.instructions, /조건부 예시/);
+  assert.equal(normalizeDialogueAnswer('정관은 책임과 규범의 별입니다. 신약은 능력의 우열이 아닙니다.'), '정관은 책임과 규범의 별입니다. 신약은 능력의 우열이 아닙니다.');
+});
+
 test('dialogue fallback copy stays conversational without internal memo leakage', () => {
   const text = buildDialogueFallback('오늘 관계운을 짧게 알려줘');
 
@@ -38,7 +45,7 @@ test('dialogue prompt uses the selected zodiac expert and infers focus topic fro
   assert.match(prompt.instructions, /로봇처럼 설명하지 말고 실제 역술가/);
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);
   assert.match(prompt.instructions, /별자리선생 · 별자리/);
-  assert.match(prompt.instructions, /전문 오버레이 RAG/);
+  assert.match(prompt.input, /전문 오버레이 RAG/);
   assert.match(prompt.instructions, /첫 문단은 반드시 이 관점으로 시작합니다/);
   assert.match(prompt.instructions, /오늘 별자리 분위기/);
   assert.match(prompt.instructions, /별자리를 운명처럼 단정하지 않습니다/);

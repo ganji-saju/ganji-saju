@@ -67,9 +67,9 @@ test('buildTodayFortuneFallbackText 는 JSON.stringify({headline, body})', () =>
   assert.equal(result, JSON.stringify({ headline: '오늘은 좋은 날', body: '흐름이 순탄합니다.' }));
 });
 
-test('TODAY_FORTUNE_PROMPT_VERSION 은 tf-v2', () => {
+test('TODAY_FORTUNE_PROMPT_VERSION 은 tf-v3-depth', () => {
   const { TODAY_FORTUNE_PROMPT_VERSION } = require('./prompt');
-  assert.equal(TODAY_FORTUNE_PROMPT_VERSION, 'tf-v2');
+  assert.equal(TODAY_FORTUNE_PROMPT_VERSION, 'tf-v3-depth');
 });
 
 

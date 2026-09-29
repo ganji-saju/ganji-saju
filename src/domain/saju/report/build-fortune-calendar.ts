@@ -23,6 +23,8 @@ import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
 //   PR #179/#180/#181 의 통일에서 fortune-calendar 만 누락된 경로를 fix.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 import { ganziToKorean } from '@/lib/saju/terminology';
+import { SIPSUNG_DESC } from '@/lib/today-fortune/causal-narrative';
+import { calculateSipsung } from '@/lib/today-fortune/iljin-rules';
 
 // 한자 ganzi → 한글.
 
@@ -207,8 +209,8 @@ function createDayEntryDraft(
         monthStem: sourceData.pillars.month.stem as Stem,
         monthBranch: sourceData.pillars.month.branch as Branch,
         dayBranch: sourceData.pillars.day.branch as Branch,
-        hourStem: (sourceData.pillars.hour?.stem ?? null) as Stem | null,
-        hourBranch: (sourceData.pillars.hour?.branch ?? null) as Branch | null,
+        hourStem: (sourceData.input.hourKnown ? sourceData.pillars.hour?.stem ?? null : null) as Stem | null,
+        hourBranch: (sourceData.input.hourKnown ? sourceData.pillars.hour?.branch ?? null : null) as Branch | null,
         elementPercentages,
         strengthLabel: sourceData.strength?.level ?? null,
         yongsinElement: null,
@@ -225,7 +227,9 @@ function createDayEntryDraft(
         `${isoDate}::${sourceData.pillars.day.ganzi}`,
         2
       );
-      dayMessages = picked.messages;
+      const dayGod = calculateSipsung(sourceData.dayMaster.stem, iljin.stem as Stem);
+      const dailyBasis = `${ganziToKorean(iljin.ganzi)}일 천간은 본인 일간에 ${dayGod}(${SIPSUNG_DESC[dayGod]}) 관계입니다. 이 관계는 하루의 선택을 살피는 관점이며 실제 사건을 예고하지 않습니다.`;
+      dayMessages = [dailyBasis, ...picked.messages];
       // 일별 summary 를 발동 케이스 1번 메시지로 교체 → 날짜마다 진짜 다른 카피.
       if (picked.messages.length > 0) {
         perDaySummary = picked.messages[0]!;

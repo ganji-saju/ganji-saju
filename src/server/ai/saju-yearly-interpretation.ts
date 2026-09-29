@@ -1,5 +1,5 @@
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
-import { CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuYearlyReport, YearlyCategoryKey } from '@/domain/saju/report/yearly-types';
 import {
   buildReportCounselorInstructions,
@@ -8,7 +8,7 @@ import {
 import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
-export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v7';
+export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v8-depth';
 
 const YEARLY_CATEGORY_ORDER: YearlyCategoryKey[] = [
   'work',
@@ -38,7 +38,7 @@ export interface SajuYearlyAiMonthlyFlow {
 
 // 2026-09-26 — 2027 신년운세 부가 필드. YearlyCategoryKey 를 넓히지 않고 옵셔널로 붙인다 —
 //   그 타입은 buildYearlyReport·패널·year-core 경로 전체로 번지고, 부가 필드는 신년운세·평생 구매자에게만 나가야 한다(route 티어).
-export const SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION = 'saju-newyear-extras-v1';
+export const SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION = 'saju-newyear-extras-v2-depth';
 export type NewYearExtraCategory = 'family' | 'study';
 export type NewYearHighlightCategory = YearlyCategoryKey | NewYearExtraCategory;
 
@@ -749,6 +749,11 @@ function createSharedGrounding(
   counselorId: MoonlightCounselorId
 ) {
   const data = record.sajuData;
+  // Stored readings can have been calculated in another year. Timing comes
+  // only from the target-year report, not the saved daily/monthly snapshot.
+  const { luckCycles: _savedCycles, ...natalFacts } = record.grounding.factJson;
+  const { luckFlow: _savedFlow, ...natalEvidence } = record.grounding.evidenceJson;
+  const { currentLuck: _savedLuck, promptFacts: _savedBrief, ...personalization } = record.grounding.personalizationContext;
   return {
     counselor: {
       id: counselorId,
@@ -768,7 +773,7 @@ function createSharedGrounding(
       year: serializePillar(data.pillars.year),
       month: serializePillar(data.pillars.month),
       day: serializePillar(data.pillars.day),
-      hour: serializePillar(data.pillars.hour),
+      hour: data.input.hourKnown ? serializePillar(data.pillars.hour) : null,
     },
     dayMaster: data.dayMaster,
     fiveElements: data.fiveElements,
@@ -776,10 +781,10 @@ function createSharedGrounding(
     strength: data.strength,
     pattern: data.pattern,
     yongsin: data.yongsin,
-    currentLuck: data.currentLuck,
-    personalizationContext: record.grounding.personalizationContext,
-    factJson: record.grounding.factJson,
-    evidenceJson: record.grounding.evidenceJson,
+    annualTiming: report.annualContext,
+    personalizationContext: personalization,
+    factJson: { ...natalFacts, pillars: { ...natalFacts.pillars, hour: data.input.hourKnown ? natalFacts.pillars.hour : null } },
+    evidenceJson: natalEvidence,
     kasiComparison: record.kasiComparison,
   };
 }
@@ -895,10 +900,10 @@ export function createYearlyInterpretationPrompt(
     section === 'newyear'
       ? '{"categories":{"family":"가족운 2~3문장","study":"학업·시험운 2~3문장"},"quarterlyFlows":[{"quarter":1,"summary":"1~3월 요약","focusCategory":"wealth"},{"quarter":2,"summary":"4~6월 요약","focusCategory":"work"},{"quarter":3,"summary":"7~9월 요약","focusCategory":"love"},{"quarter":4,"summary":"10~12월 요약","focusCategory":"family"}],"expectations":[{"month":5,"category":"wealth","text":"기대할 일 한 문장"},"...3~6개"],"cautions":[{"month":8,"category":"health","text":"조심할 일 한 문장"},"...3~6개"]}'
       : section === 'monthly'
-      ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}]}'
+      ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"}]}'
       : section === 'narrative'
         ? '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}'
-        : '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}],"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}';
+        : '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"}],"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}';
 
   const sectionSpecificInstructions =
     section === 'newyear'
@@ -938,9 +943,10 @@ export function createYearlyInterpretationPrompt(
       '무조건, 반드시, 100% 같은 단정 문구는 쓰지 않습니다.',
       'recentFeedbackSummary가 있으면 최근 실제 반응을 참고해 말 강도만 미세 조정하고, 계산 설명보다 사용자 체감을 앞세웁니다.',
       CLASSIC_READING_INSTRUCTIONS,
+      READING_SCOPE_INSTRUCTIONS.yearly,
       '격국·용신·대운·세운 등 근거의 한글 명리 용어는 유지하고 첫 등장에 짧게 설명합니다. factJson·evidenceJson 같은 구현 용어와 한자는 본문에 쓰지 않습니다.',
-      '연애, 일, 재물, 관계, 건강, 이동의 현실 주제를 우선하고, 왜 그런 흐름인지보다 그래서 무엇을 하면 좋은지를 먼저 씁니다.',
-      '[밀착 개인화] 성향이나 흐름을 형용사로 요약하지 말고 그 흐름이 드러나는 구체적 장면으로 보여줍니다. "대인관계 운이 좋아요"(요약·일반론) ❌ → "먼저 연락하기 어색한 사람이 있다면, 이번 봄 가벼운 안부 한마디가 뜻밖의 자리로 이어지는 흐름입니다"(장면) ⭕. 열 사람 중 아홉에게 맞는 말은 쓰지 않고, 이 사주 데이터에서 나온 이 사람만의 장면을 짚습니다. 단, 없는 사실·사건(구체적 직업·관계·일화)은 지어내지 말고, 일어날 수 있는 장면은 "~한 사람이 있다면", "~하는 일이 생기면"처럼 조건으로 엽니다.',
+      '연애, 일, 재물, 관계, 건강, 이동의 질문에 답한 뒤, 해당 연도와 원국의 어떤 관계에서 나온 해석인지 연결하고 적용 조건을 설명합니다.',
+      '[밀착 개인화] 성향이나 흐름을 형용사로 요약하지 말고 그 흐름이 드러나는 구체적 장면으로 보여줍니다. "대인관계 운이 좋아요"(요약·일반론) ❌ → "먼저 연락하기 어색한 사람이 있다면, 연락할 목적과 상대가 답할 여유를 먼저 확인해보세요"(장면) ⭕. 열 사람 중 아홉에게 맞는 말은 쓰지 않고, 이 사주 데이터에서 나온 이 사람만의 장면을 짚습니다. 단, 없는 사실·사건(구체적 직업·관계·일화)은 지어내지 말고, 일어날 수 있는 장면은 "~한 사람이 있다면", "~하는 일이 생기면"처럼 조건으로 엽니다.',
       '길게 늘어놓기보다 읽기 쉽게 씁니다. 한 문단은 2~3문장을 넘기지 않고, 같은 접속어와 같은 결론 구조를 반복하지 않습니다.',
       '카드 안 문구는 설명보다 판단이 먼저 보여야 합니다. 짧게 잘라서 한 번에 읽히게 씁니다.',
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
@@ -949,10 +955,10 @@ export function createYearlyInterpretationPrompt(
       'opening은 제목 없이 바로 시작되는 첫 문단이며, 흡입력 있게 시작해야 합니다.',
       'keywords는 3~5개입니다. 각 항목은 한 해의 핵심 키워드와 그 이유를 함께 담습니다.',
       'firstHalf와 secondHalf는 각각 2~3문장 안에서 쓰고, 기회와 리스크와 첫 행동이 겹치지 않게 나눕니다.',
-      'categories의 6개 분야는 각 분야마다 "무슨 장면이 핵심인지 / 무엇을 조심할지 / 어떻게 행동할지"가 바로 읽히게 2~3문장 안에서 정리합니다.',
+      'categories의 6개 분야는 각 분야마다 "질문의 답 / 확인된 연간 근거 / 유리한 조건과 부담 조건 / 생활 선택"을 4~5개의 짧은 문장으로 설명합니다. 분야마다 다른 근거와 장면을 사용하고 근거가 없으면 보류합니다.',
       'monthlyFlows는 1월부터 12월까지 서로 다른 질문을 던져야 합니다. 같은 문장 구조, 같은 도입, 같은 결론을 반복하지 않습니다.',
       'monthlyFlows는 사용자가 실제로 궁금해하는 선택 장면, 돈과 일의 판단, 관계 조율, 달력에 표시해 둘 만한 포인트를 우선해서 씁니다.',
-      'monthlyFlows는 체감 가능한 변화 중심으로 쓰고, 설명보다 오늘 할 일이 먼저 보이게 씁니다. 한 달 설명을 장문 단락 하나로 늘리지 않습니다.',
+      'monthlyFlows는 체감 가능한 변화 중심으로 쓰고, 그 달의 근거와 선택 기준이 함께 보이게 씁니다. 한 달 설명을 장문 단락 하나로 늘리지 않습니다.',
       'monthlyFlows의 summary, focus, caution, action은 서로 역할이 겹치지 않게 씁니다. 같은 말을 조금 바꿔 반복하지 않습니다.',
       'goodPeriods와 cautionPeriods는 시기와 이유, 활용 또는 방어 전략이 함께 드러나야 합니다.',
       'actionAdvice는 3~6개로 작성하고, 한 해를 잘 보내기 위한 실제 행동 힌트를 줍니다.',

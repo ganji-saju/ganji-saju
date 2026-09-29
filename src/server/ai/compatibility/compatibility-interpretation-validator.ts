@@ -79,8 +79,8 @@ export function validateCompatibilitySections(
         `섹션 ${index + 1} 본문 길이 ${bodyLen}자 (${COMPATIBILITY_INTERPRETATION_MIN_BODY}~${COMPATIBILITY_INTERPRETATION_MAX_BODY})`
       );
     }
-    reasons.push(...hardTextReasons(section.title, `궁합 풀이 섹션 ${index + 1} 제목`));
-    reasons.push(...hardTextReasons(section.body, `궁합 풀이 섹션 ${index + 1} 본문`));
+    reasons.push(...hardTextReasons(section.title, `궁합 풀이 섹션 ${index + 1} 제목`, true));
+    reasons.push(...hardTextReasons(section.body, `궁합 풀이 섹션 ${index + 1} 본문`, true));
     const gyeol = countGyeol(section.body);
     if (gyeol > 1) reasons.push(`섹션 ${index + 1} '결' 과다: ${gyeol}회 (최대 1회)`);
   });
