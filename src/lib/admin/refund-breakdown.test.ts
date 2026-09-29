@@ -184,4 +184,5 @@ test('환불 사유: 관리자가 나중에 적은 사유(refundNote)를 읽는�
     WINDOW
   );
   assert.equal(out.items[0].reason, '콘솔 취소');
+  assert.equal(out.items[0].reasonSource, 'note');
 });

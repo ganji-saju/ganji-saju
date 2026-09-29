@@ -584,7 +584,9 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
                 </td>
                 <td className={`${td} text-left text-[var(--app-copy-soft)]`}>{item.productName}</td>
                 <td className={`${td} text-left`} style={{ wordBreak: 'keep-all' }}>
-                  {item.reason ?? (item.orderId ? <RefundNoteInput orderId={item.orderId} /> : '—')}
+                  {item.reasonSource === 'request' || !item.orderId
+                    ? item.reason ?? '—'
+                    : <RefundNoteInput orderId={item.orderId} initial={item.reason} />}
                 </td>
                 <td className={`${td} text-[var(--app-coral)]`}>-{fmtWon(item.amountWon)}</td>
               </tr>
@@ -597,12 +599,30 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
 }
 
 /** 2026-09-29 — 사유 없는 환불(결제사 콘솔 직접 취소 등)에 관리자가 사유를 적는다. 저장하면 그 자리에 사유가 남는다. */
-function RefundNoteInput({ orderId }: { orderId: string }) {
-  const [note, setNote] = useState('');
-  const [saved, setSaved] = useState<string | null>(null);
+function RefundNoteInput({ orderId, initial }: { orderId: string; initial: string | null }) {
+  const [note, setNote] = useState(initial ?? '');
+  const [saved, setSaved] = useState<string | null>(initial);
+  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (saved) return <>{saved}</>;
+  // 저장된 사유는 '수정'으로 다시 고칠 수 있다(관리자가 적은 사유만 — 환불 요청 사유는 고정).
+  if (saved && !editing) {
+    return (
+      <span>
+        {saved}
+        <button
+          type="button"
+          className="ml-1 text-[11px] text-[var(--app-copy-soft)] underline"
+          onClick={() => {
+            setNote(saved);
+            setEditing(true);
+          }}
+        >
+          수정
+        </button>
+      </span>
+    );
+  }
   async function save() {
     setSaving(true);
     setError(null);
@@ -615,6 +635,7 @@ function RefundNoteInput({ orderId }: { orderId: string }) {
       const data = (await res.json().catch(() => null)) as { ok?: boolean; note?: string; error?: string } | null;
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? '저장하지 못했습니다.');
       setSaved(data.note ?? note.trim());
+      setEditing(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장하지 못했습니다.');
     } finally {
@@ -623,7 +644,7 @@ function RefundNoteInput({ orderId }: { orderId: string }) {
   }
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[11px] text-[var(--app-copy-soft)]">요청 기록 없음(결제사 직접 취소 등)</span>
+      {editing ? null : <span className="text-[11px] text-[var(--app-copy-soft)]">요청 기록 없음(결제사 직접 취소 등)</span>}
       <div className="flex gap-1">
         <input
           className="min-w-0 flex-1 rounded-[6px] border border-[var(--app-line)] px-2 py-1 text-[13px]"
@@ -640,6 +661,11 @@ function RefundNoteInput({ orderId }: { orderId: string }) {
         >
           {saving ? '저장 중' : '저장'}
         </button>
+        {editing ? (
+          <button type="button" className="shrink-0 px-1 text-[11px] text-[var(--app-copy-soft)] underline" onClick={() => setEditing(false)}>
+            취소
+          </button>
+        ) : null}
       </div>
       {error ? <span className="text-[11px] text-[var(--app-coral)]">{error}</span> : null}
     </div>

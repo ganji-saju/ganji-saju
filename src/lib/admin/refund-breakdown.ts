@@ -34,6 +34,8 @@ export interface RefundBreakdownItem {
   userName: string | null;
   /** 2026-09-29 — 관리자 환불 요청에 적은 사유(refund_requests.reason). 요청 기록이 없으면 null(PG 콘솔 직접 취소 등). */
   reason: string | null;
+  /** 사유 출처 — 'request'(환불 요청, 고정) · 'note'(관리자가 적은 것, 고칠 수 있음). */
+  reasonSource: 'request' | 'note' | null;
   /** 서버 안에서 사유 연결용 — 응답 전에 비운다. */
   paymentKey: string | null;
 }
@@ -95,6 +97,7 @@ export function computeRefundBreakdown(
       userEmail: null,
       userName: null,
       reason: refundNoteOf(row.metadata),
+      reasonSource: refundNoteOf(row.metadata) ? 'note' : null,
       paymentKey: row.payment_key ?? null,
     });
   }
@@ -190,7 +193,10 @@ async function attachRefundReasons(service: SupabaseClient, breakdown: RefundBre
     return breakdown;
   }
   // 환불 요청 사유가 우선, 없으면 관리자가 나중에 적은 사유(refundNote).
-  return { ...breakdown, items: breakdown.items.map((i) => ({ ...i, reason: pickRefundReason(i, (data ?? []) as RefundRequestRow[]) ?? i.reason })) };
+  return { ...breakdown, items: breakdown.items.map((i) => {
+    const fromRequest = pickRefundReason(i, (data ?? []) as RefundRequestRow[]);
+    return fromRequest ? { ...i, reason: fromRequest, reasonSource: 'request' as const } : i;
+  }) };
 }
 
 interface RefundRequestRow {
