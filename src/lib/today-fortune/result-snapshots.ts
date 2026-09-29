@@ -1,3 +1,5 @@
+import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
+import { hangulizeDeep } from '@/lib/saju/terminology';
 import {
   createServiceClient,
   hasSupabaseServiceEnv,
@@ -244,8 +246,10 @@ function mapRow(row: TodayFortuneResultSnapshotRow): TodayFortuneResultSnapshot 
     concernId: row.concern_id,
     counselorId: row.counselor_id,
     inputJson: row.input_json ?? {},
-    freeResult: row.free_result_json,
-    premiumResult: row.premium_result_json,
+    // 2026-09-29 — 수정 전에 저장된 풀이도 읽을 때 '오늘' 반복·본문 한자를 거른다(저장값은 그대로).
+    //   무료 결과엔 사주 기둥 카드 한자가 있어 한자 변환은 상세에만 한다.
+    freeResult: thinRepeatedTodayDeep(row.free_result_json),
+    premiumResult: thinRepeatedTodayDeep(hangulizeDeep(row.premium_result_json), { seen: false }, true),
     snapshotJson: row.snapshot_json ?? {},
     snapshotVersion: row.snapshot_version,
     builderVersion: row.builder_version,

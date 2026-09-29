@@ -203,7 +203,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
                   {[
                     ['이렇게 읽었어요', score.reading.evidence],
                     ['생활에서 살펴볼 모습', score.reading.example],
-                    ['오늘의 선택 기준', score.reading.choice],
+                    ['선택 기준', score.reading.choice],
                   ].map(([label, text]) => (
                     <div key={label}>
                       <dt className="font-bold text-[var(--app-ink)]">{label}</dt>

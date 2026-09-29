@@ -75,7 +75,7 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
             className="mt-0.5 text-[17.8px] font-extrabold text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            오늘 점수가 이렇게 나온 이유
+            점수가 이렇게 나온 이유
           </h2>
         </div>
         <div className="text-right">
@@ -141,7 +141,7 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
       {iljinMessages && iljinMessages.messages.length > 0 ? (
         <div className="mt-3">
           <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-            오늘 발동한 명리 케이스
+            발동한 명리 케이스
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {iljinMessages.messages.map((msg, idx) => (

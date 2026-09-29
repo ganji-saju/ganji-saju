@@ -35,7 +35,7 @@ export function TodayPremiumQuestionChips({
         className="mt-1 text-[17.3px] font-extrabold leading-tight text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
-        오늘 더 풀어볼 만한 질문들
+        더 풀어볼 만한 질문들
       </h3>
       <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
         누르면 대화방에 질문이 미리 적혀요. 전송 버튼만 누르면 이어집니다.

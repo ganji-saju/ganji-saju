@@ -209,7 +209,7 @@ export function TodayPremiumPanel({
               className="mt-2 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              12 시진(時辰) 풀이 + 추천/회피 행동 + 고민될 때 시나리오
+              12 시진 풀이 + 추천/회피 행동 + 고민될 때 시나리오
             </p>
           </div>
           {/* 2026-07-19 — '✦ 10전' 가격 배지 제거. 이 패널은 **언락을 마친 뒤에만** 렌더되는
@@ -270,7 +270,7 @@ export function TodayPremiumPanel({
                 boxShadow: '0 6px 14px rgba(15,159,122,0.22)',
               }}
             >
-              ✦ 오늘의 흐름 풀이
+              ✦ 흐름 풀이
             </div>
             {result.todayIljinReading.score != null ? (
               <span className="text-[13.8px] font-extrabold text-[var(--app-jade)]">
@@ -322,7 +322,7 @@ export function TodayPremiumPanel({
           <li className="flex items-start gap-1.5">
             <span className="mt-0.5 shrink-0 text-[var(--app-amber)]">②</span>
             <span>
-              <strong>결정 직전</strong> — "오늘 해볼 것" 으로 추진, "오늘 줄일
+              <strong>결정 직전</strong> — "해볼 것" 으로 추진, "줄일
               것" 항목은 다음 날로 연기
             </span>
           </li>
@@ -369,13 +369,13 @@ export function TodayPremiumPanel({
       </ToneSection>
 
       {/* §행동 — amber + indigo */}
-      <ToneSection tone="amber" eyebrow="오늘 해볼 것">
+      <ToneSection tone="amber" eyebrow="해볼 것">
         {recommendedActions.map((item, index) => (
           <ActionRow key={item} text={item} tone="amber" index={index} />
         ))}
       </ToneSection>
 
-      <ToneSection tone="indigo" eyebrow="오늘 줄일 것">
+      <ToneSection tone="indigo" eyebrow="줄일 것">
         {avoidActions.map((item, index) => (
           <ActionRow key={item} text={item} tone="indigo" index={index} />
         ))}
