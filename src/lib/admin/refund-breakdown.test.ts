@@ -1,7 +1,7 @@
 // 2026-08-26 회귀 가드 — "오늘 결제 990인데 환불 9,900" 제보의 해설 데이터.
 //   숫자를 바꾸는 게 아니라, 그 환불의 원 결제일이 언제인지 화면이 말하게 하는 계산.
 import assert from 'node:assert/strict';
-import { computeRefundBreakdown, pickRefundReason } from './refund-breakdown';
+import { computeRefundBreakdown, pickRefundReason, refundNoteOf } from './refund-breakdown';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -173,4 +173,15 @@ test('환불 사유: 결제키로 연결, 부분 환불은 금액이 같은 요�
   assert.equal(pickRefundReason({ paymentKey: 'pk1', amountWon: 9900 }, reqs), '두 번째 요청');
   assert.equal(pickRefundReason({ paymentKey: 'pk2', amountWon: 3300 }, reqs), null);
   assert.equal(pickRefundReason({ paymentKey: null, amountWon: 3300 }, reqs), null);
+});
+
+test('환불 사유: 관리자가 나중에 적은 사유(refundNote)를 읽는다', () => {
+  assert.equal(refundNoteOf({ refundNote: { text: ' 고객 요청(전화) ' } }), '고객 요청(전화)');
+  assert.equal(refundNoteOf({ refundNote: { text: '' } }), null);
+  assert.equal(refundNoteOf(null), null);
+  const out = computeRefundBreakdown(
+    [{ order_id: 'o1', package_id: 'x', amount: 3300, refunded_at: kst('2026-08-26'), confirmed_at: null, fulfilled_at: null, created_at: null, metadata: { refundNote: { text: '콘솔 취소' } } }],
+    WINDOW
+  );
+  assert.equal(out.items[0].reason, '콘솔 취소');
 });
