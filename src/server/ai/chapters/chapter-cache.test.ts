@@ -36,6 +36,12 @@ test('buildChapterCacheKey — 동일 input 은 동일 sha256 (안정성)', () =
   assert.equal(k1.length, 64); // sha256 hex
 });
 
+test('chapter cache follows revised natal judgments but ignores calculation timestamps', () => {
+  const key = buildChapterCacheKey(fakeSajuData, baseUserContext, 1);
+  assert.notEqual(buildChapterCacheKey({ ...fakeSajuData, strength: { level: '신약', score: 30, rationale: ['수정된 근거'] } }, baseUserContext, 1), key);
+  assert.equal(buildChapterCacheKey({ ...fakeSajuData, calculatedAt: '2026-09-29T00:00:00Z' } as SajuDataV1, baseUserContext, 1), key);
+});
+
 test('buildChapterCacheKey does not reuse a pre-question-content envelope', () => {
   const legacyPayload = {
     pillars: { year: '甲午', month: '丙寅', day: '己巳', hour: '甲子' },

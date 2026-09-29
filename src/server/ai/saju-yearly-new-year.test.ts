@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
-import { buildYearlyReport } from '@/domain/saju/report';
+import { buildSajuInterpretationGrounding, buildSajuReport, buildYearlyReport } from '@/domain/saju/report';
 import type { BirthInput } from '@/lib/saju/types';
 import {
   buildFallbackNewYearExtras,
@@ -61,7 +61,7 @@ test('new-year 파서: 정상 응답을 받아들이고 분기 월을 채운다'
 });
 
 test('new-year 프롬프트: 부가 필드만 요구하고 월·분야를 강제한다', () => {
-  const record = { input: birthInput, sajuData, grounding: { personalizationContext: null, factJson: null, evidenceJson: null }, kasiComparison: null } as unknown as ReadingRecord;
+  const record = { input: birthInput, sajuData, grounding: buildSajuInterpretationGrounding(birthInput, sajuData, buildSajuReport(birthInput, sajuData, 'today')), kasiComparison: null } as unknown as ReadingRecord;
   const prompt = createYearlyInterpretationPrompt(record, report, 'female', 'newyear');
   assert.match(prompt.instructions, /quarterlyFlows/);
   assert.match(prompt.instructions, /month\(1~12\)/);

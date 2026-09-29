@@ -1,3 +1,4 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type {
@@ -33,12 +34,6 @@ const STEM_HANJA_TO_KOREAN: Record<Stem, string> = {
   辛: '신',
   壬: '임',
   癸: '계',
-};
-
-const STRENGTH_TO_KOREAN: Record<string, ChapterSaju['strength']> = {
-  신강: '에너지가 강한 편',
-  중화: '균형이 잡힌 편',
-  신약: '에너지가 차분한 편',
 };
 
 function elementLabel(element: Element | null | undefined): string {
@@ -104,7 +99,7 @@ export function buildChapter1Input(
       year: toKoreanGanzi(pillars.year.ganzi),
       month: toKoreanGanzi(pillars.month.ganzi),
       day: toKoreanGanzi(pillars.day.ganzi),
-      hour: pillars.hour ? toKoreanGanzi(pillars.hour.ganzi) : null,
+      hour: sajuData.input.hourKnown && pillars.hour ? toKoreanGanzi(pillars.hour.ganzi) : null,
     },
     dayMaster: {
       stem: STEM_HANJA_TO_KOREAN[dayMaster.stem] ?? dayMaster.stem,
@@ -134,7 +129,7 @@ export function buildChapter1Input(
       primary: yongsin?.primary?.label ?? '',
       reason: yongsin?.rationale?.[0] ?? '',
     },
-    strength: STRENGTH_TO_KOREAN[strength?.level ?? ''] ?? '균형이 잡힌 편',
+    strength: strength?.level ?? '미산정',
     tenGods: {
       dominant: tenGods?.dominant ?? '',
       // 2026-05-19: byType count === 0 인 십성 코드들을 부족 항목으로.
@@ -145,6 +140,7 @@ export function buildChapter1Input(
         : [],
     },
     notableSinsals: [], // 2026-05-19: 신살 매핑은 후속 PR (sajuData 의 sinsals 구조 확인 후)
+    natalEvidence: buildNatalReadingEvidence(sajuData),
   };
 
   const userContext: ChapterUserContext = {

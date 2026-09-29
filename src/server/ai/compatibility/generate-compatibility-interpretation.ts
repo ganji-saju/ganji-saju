@@ -48,7 +48,7 @@ export interface GenerateCompatibilityInterpretationArgs {
   recordRun?: typeof recordLlmRun;
 }
 
-const MAX_OUTPUT_TOKENS = 1400;
+const MAX_OUTPUT_TOKENS = 2400;
 
 function toSections(
   parsed: { title: string; body: string }[]

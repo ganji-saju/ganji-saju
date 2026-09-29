@@ -1,5 +1,7 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
+import type { NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
-import { CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
+import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 // 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
 //   흐름: 언락(결제) 시 buildTodayFortuneSnapshotContent → attachTodayPremiumNarrative →
@@ -21,6 +23,7 @@ import type { LlmTelemetryStore } from './llm-telemetry';
 import { validateChapterBody } from '@/lib/saju/chapter-validator';
 
 export interface TodayPremiumInterpretationInput {
+  natalEvidence?: NatalReadingEvidence;
   classicGrounding?: ClassicReadingGrounding;
   concernLabel: string;
   gradeLabel: string | null;
@@ -98,9 +101,11 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     '치료·진단 단정, "반드시/100%/완치" 같은 단정, 투자 종목 매수·매도 지시는 쓰지 마세요. 참고 조언 톤을 유지합니다.',
     NAMING_POLICY_GUARD,
     CLASSIC_READING_INSTRUCTIONS,
+    READING_SCOPE_INSTRUCTIONS.daily,
   ].join('\n');
 
   const lines: Array<string | null> = [
+    input.natalEvidence ? `원국 계산 근거: ${JSON.stringify(input.natalEvidence)}` : null,
     input.classicGrounding ? `고전 해석 근거: ${JSON.stringify(input.classicGrounding)}` : null,
     input.readingDate ? `풀이 날짜: ${input.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 고민 주제: ${input.concernLabel}`,
@@ -208,6 +213,7 @@ export async function attachTodayPremiumNarrative(
   const generate = deps.generateInterpretation ?? generateTodayPremiumInterpretation;
   const input = toTodayPremiumInterpretationInput(free, premium, deps.userId);
   if (deps.sajuData && isTodayPremiumLLMEnabled(deps.env)) {
+    input.natalEvidence = buildNatalReadingEvidence(deps.sajuData);
     input.classicGrounding = await (deps.getClassicGrounding ?? getClassicReadingGrounding)(deps.sajuData, 'daily');
   }
   const narrative = await generate(

@@ -23,6 +23,7 @@ test('buildFortuneCalendarMonth returns a complete month grid with tone counts',
   assert.equal(report.monthLabel, '2026년 5월');
   assert.equal(report.totalDays, 31);
   assert.equal(report.days.length, 31);
+  assert.ok(report.days.every((day) => day.dayMessages?.[0].includes(`${day.iljinKorean}일 천간`)));
   assert.ok(report.weeks.length >= 4);
   assert.equal(
     report.summary.toneCounts.decision +

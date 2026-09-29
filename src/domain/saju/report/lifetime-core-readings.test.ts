@@ -62,3 +62,23 @@ test('lifetime core uses child examples even if an adult situation was supplied'
     assert.doesNotMatch(JSON.stringify(core), /현재 기혼|현재 자영업|매수|배우자|급여|연애 중/);
   }
 });
+
+test('career reading explains a source-backed combination and changes when its conditions disappear', () => {
+  const birth: BirthInput = { year: 1980, month: 5, day: 15, hour: 14, minute: 30, gender: 'female' };
+  const data = dataFor(birth);
+  const original = structuredClone(data);
+  const career = buildLifetimeCoreReadings(birth, data, 2026, null).careerDirection;
+  assert.match(career.endureVsShine, /상관의 개선.*정관의 지켜야/);
+  assert.match(career.endureVsShine, /신강에 재성/);
+  assert.match(career.basis.join(' '), /적천수 집요/);
+  const missing = structuredClone(data);
+  for (const pillar of Object.values(missing.pillars)) {
+    if (!pillar) continue;
+    if (pillar.stemTenGod === '정관') pillar.stemTenGod = null;
+    for (const hidden of pillar.hiddenStems) if (hidden.tenGod === '정관') hidden.tenGod = null;
+  }
+  const changed = buildLifetimeCoreReadings(birth, missing, 2026, null).careerDirection;
+  assert.doesNotMatch(changed.endureVsShine, /상관의 개선/);
+  assert.doesNotMatch(changed.basis.join(' '), /적천수 집요/);
+  assert.deepEqual(data, original);
+});

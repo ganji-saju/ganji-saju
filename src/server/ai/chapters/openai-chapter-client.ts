@@ -13,7 +13,7 @@ import type { LlmTelemetryStore } from '../llm-telemetry';
 export interface OpenAIChapterClientOptions {
   /** 모델 override. 기본은 getOpenAIInterpretationModel() (env OPENAI_INTERPRET_MODEL or 'gpt-5.2-chat-latest') */
   model?: string;
-  /** 최대 출력 토큰. 챕터당 300자 본문이면 ~600 토큰 충분 */
+  /** 최대 출력 토큰. 기본값은 근거와 조건을 포함한 320~480자 본문에 맞춤 */
   maxOutputTokens?: number;
   /**
    * 0~1. **기본 미전달** — GPT-5.x 계열이 temperature 를 지원하지 않아(400) 값을 넣으면
@@ -89,7 +89,7 @@ export class OpenAIChapterClient implements ChapterLLMClient {
       // throw 로 알려서 retry/fallback 흐름으로.
       fallbackText: '',
       model: this.options.model ?? getOpenAIInterpretationModel(),
-      maxOutputTokens: this.options.maxOutputTokens ?? 700,
+      maxOutputTokens: this.options.maxOutputTokens ?? 1100,
       // temperature 는 명시 시에만 전달 (미설정=undefined=미전달). GPT-5.x 미지원 대응.
       temperature: this.options.temperature,
       timeoutMs: remainingMs === undefined

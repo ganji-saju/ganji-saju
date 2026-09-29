@@ -1,3 +1,6 @@
+import { CLASSIC_READING_INSTRUCTIONS, READING_SCOPE_INSTRUCTIONS } from '@/server/classics/reading-grounding';
+import { buildNatalReadingEvidence, type NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
+import { createDialoguePrompt, normalizeDialogueAnswer } from './route-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   buildReportCounselorInstructions,
@@ -97,6 +100,7 @@ interface DialogueCallToAction {
 }
 
 interface DialogueProfileGrounding {
+  natalEvidence: NatalReadingEvidence;
   profileSummary: string;
   focusTopic: FocusTopic;
   focusLabel: string;
@@ -300,6 +304,7 @@ function createDialogueProfileGrounding(
   const focusReport = focusTopic === 'today' ? todayReport : buildSajuReport(input, sajuData, focusTopic);
 
   return {
+    natalEvidence: buildNatalReadingEvidence(sajuData),
     profileSummary: formatStoredProfileSummary(profile),
     focusTopic,
     focusLabel: FOCUS_TOPIC_META[focusTopic].label,
@@ -406,12 +411,6 @@ function buildDialogueFallback(
     .join('\n\n');
 }
 
-function isDialogueInternalMemo(paragraph: string) {
-  return /(?:이 질문은 .*답변|이 질문은 .*흐름|기본 흐름은|핵심 단서는|보조 단서|우선 판단 렌즈|답변 순서|행동 제안 방식|피할 방식|오행\/균형|역할 흐름|보완 힌트|fact_?json|evidence_?json|engine[_ -]?version|rule[_ -]?set|[甲乙丙丁戊己庚辛壬癸]\s*타고난 기질|[木火土金水]\s*\([^)]+\)\s*(?:·|기운))/iu.test(
-    paragraph
-  );
-}
-
 function createYearlyDialogueFallback(
   message: string,
   profileSummary: string,
@@ -449,6 +448,8 @@ function createYearlyDialoguePrompt(input: {
   return {
     instructions: [
       '당신은 간지사주의 숙련 사주명리 상담가입니다.',
+      CLASSIC_READING_INSTRUCTIONS,
+      READING_SCOPE_INSTRUCTIONS.yearly,
       '이번 답변은 채팅용 짧은 브리지 답변입니다. 올해 전략서 전체를 길게 쓰지 말고 3~5문단으로만 답합니다.',
       '첫 문장에서 해당 연도의 전체 결론을 먼저 말합니다.',
       '이어서 상반기와 하반기의 차이, 잘 쓰기 좋은 시기와 조심할 시기를 짧고 또렷하게 짚습니다.',
@@ -463,6 +464,8 @@ function createYearlyDialoguePrompt(input: {
         targetYear: input.targetYear,
         profileSummary: input.profileSummary,
         yearlyEvidence: {
+          annualContext: report.annualContext,
+          computation: report.computation,
           overview: report.overview,
           coreKeywords: report.coreKeywords.slice(0, 4),
           firstHalf: report.firstHalf,
@@ -537,101 +540,6 @@ function createYearlyDialogueBridge(
   };
 }
 
-function normalizeDialogueAnswer(text: string) {
-  const cleaned = text
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/__(.*?)__/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
-    .replace(/^\s*>\s?/gm, '')
-    .replace(/^\s*[-*•▪︎◦]+\s+/gm, '')
-    .replace(/^\s*\d+[.)]\s+/gm, '')
-    .replace(/[ \t]+\n/g, '\n');
-
-  const paragraphs = cleaned
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => simplifySajuCopy(line.replace(/\s{2,}/g, ' ')))
-    .filter((line) => !isDialogueInternalMemo(line))
-    .filter(Boolean);
-
-  return paragraphs.join('\n\n');
-}
-
-function formatDialogueProfileBrief(profileGrounding: DialogueProfileGrounding) {
-  return [
-    `기본 초점: ${profileGrounding.focusLabel}`,
-    `한 줄 소재: ${limitSajuSentences(profileGrounding.reports.focus.headline, 1)}`,
-    `짧은 해석: ${limitSajuSentences(profileGrounding.reports.focus.summary, 2)}`,
-    `바로 할 일: ${limitSajuSentences(profileGrounding.reports.focus.action, 1)}`,
-    `조심할 점: ${limitSajuSentences(profileGrounding.reports.focus.caution, 1)}`,
-    profileGrounding.missing.birthTime
-      ? '태어난 시간이 없어 시간대별 세부 흐름은 짧게만 말합니다.'
-      : null,
-    profileGrounding.missing.birthLocation
-      ? '출생지가 없어 지역 보정 이야기는 답변에 꺼내지 않습니다.'
-      : null,
-  ]
-    .filter(Boolean)
-    .join('\n');
-}
-
-function createDialoguePrompt(
-  message: string,
-  profileGrounding?: DialogueProfileGrounding | null,
-  expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message)),
-  recentFeedbackSummary?: string | null
-) {
-  const expert = getDialogueExpertMeta(expertId);
-  const expertRagOverlay = getDialogueExpertRagOverlay(expertId);
-
-  return {
-    instructions: [
-      '당신은 한국어 운세 서비스 간지사주에서 실제 상담을 맡은 숙련 상담가입니다.',
-      `사용자가 선택한 12간지 전문 분야는 ${expert.teacherName} · ${expert.label}입니다.`,
-      '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
-      '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
-      '반드시 사용자 질문의 핵심 단어와 상황을 붙잡고 답합니다. 저장된 사주 정보는 배경일 뿐이며, 질문과 상관없는 오늘운세나 일반 성향 설명으로 빠지지 않습니다.',
-      '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
-      '마크다운 기호를 쓰지 않습니다. 별표 두 개, 샵, 글머리표, 번호 목록, 표식 문장을 쓰지 말고 자연스러운 문단으로만 답합니다.',
-      '문단은 3~5개 정도로 짧게 나누고, 한 문단 안에서도 문장을 길게 늘이지 않습니다.',
-      '대화방 답변은 긴 사주 리포트가 아닙니다. 사용자의 사주에서 핵심 소재는 한두 줄만 쓰고, 나머지는 질문에 맞는 피드백으로 답합니다.',
-      '사용자에게 보이는 답변에는 “기본 흐름”, “핵심 단서”, “답변 순서”, “오행/균형”, “보완 힌트”, “저장 프로필 정보”, 한자 기호, 점수, 내부 JSON 이름을 쓰지 않습니다.',
-      '전문 근거는 화면에 드러내지 말고 쉬운 생활 언어로 바꿔 말합니다.',
-      'AI 비서처럼 메타 설명하거나, 과하게 조심스러운 군더더기 말을 반복하지 않습니다.',
-      '결론을 흐리게 돌려 말하지 말고, 보이는 흐름은 분명하게 말합니다. 다만 태어난 시간이나 출생지처럼 빠진 정보 때문에 보류해야 하는 부분은 짧고 또렷하게 선을 그어 설명합니다.',
-      '말끝마다 가능성만 늘어놓지 말고, 지금 흐름에서 무엇이 강하고 무엇을 조절해야 하는지 힘있게 짚어줍니다.',
-      '격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
-      '저장 프로필 정보가 제공되면 그 정보를 기본값으로 사용합니다. 다만 사용자가 다른 사람의 사주를 따로 묻는 문맥이면 저장 프로필을 섞지 말고 필요한 출생 정보를 먼저 확인합니다.',
-      'recentFeedbackSummary가 있으면 최근 반응을 참고해 단정 문구 강도만 조절하고, 계산 설명보다 앞세우지 않습니다.',
-      '의료, 법률, 투자 판단은 해석으로 대신하지 않습니다.',
-      '출생 정보나 사주 데이터가 없는 경우 빈말로 얼버무리지 말고, 어떤 정보가 필요한지 짧게 요청합니다.',
-      '고전 원문이나 출처는 제공된 참고자료가 없으면 인용하지 않습니다.',
-      '다음과 같은 말은 피합니다: 결론적으로, 분석해보면, 참고로, AI로서, 표로 정리하면, 1번 2번 3번.',
-      ...buildDialogueExpertInstructions(expertId),
-    ].join('\n'),
-    input: [
-      [
-        '선택된 12지신 전문 오버레이 RAG:',
-        `첫 문단 관점: ${expertRagOverlay.visibleOpening}`,
-        `질문을 볼 렌즈: ${expertRagOverlay.primaryLens.join(' / ')}`,
-        `피드백 방향: ${expertRagOverlay.actionPattern.join(' / ')}`,
-        `피해야 할 답변: ${expertRagOverlay.avoid.join(' / ')}`,
-      ].join('\n'),
-      profileGrounding
-        ? `대화용 개인화 소재:\n${formatDialogueProfileBrief(profileGrounding)}`
-        : '대화용 개인화 소재 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
-      recentFeedbackSummary
-        ? `최근 사용자 피드백 요약:\n${recentFeedbackSummary}`
-        : null,
-      `사용자 질문:\n${message}`,
-    ]
-      .filter(Boolean)
-      .join('\n\n'),
-  };
-}
-
 function formatEvidenceCards(report: SajuReport) {
   return report.evidenceCards.map((card) => ({
     label: card.label,
@@ -691,8 +599,9 @@ function createReportGrounding(record: ReadingRecord, report: SajuReport) {
       year: data.pillars.year.ganzi,
       month: data.pillars.month.ganzi,
       day: data.pillars.day.ganzi,
-      hour: data.pillars.hour?.ganzi ?? null,
+      hour: data.input.hourKnown ? data.pillars.hour?.ganzi ?? null : null,
     },
+    natalEvidence: buildNatalReadingEvidence(data),
     dayMaster: data.dayMaster,
     fiveElements: data.fiveElements,
     tenGods: data.tenGods,
@@ -728,10 +637,12 @@ function createReportPrompt(
   return {
     instructions: [
       '당신은 한국어 운세 서비스 간지사주의 쉬운 사주풀이 에디터입니다.',
+      CLASSIC_READING_INSTRUCTIONS,
+      READING_SCOPE_INSTRUCTIONS.natal,
       '반드시 제공된 사주 데이터 안에서만 해석하고, 없는 사건이나 고전 인용을 지어내지 않습니다.',
       '고전 원문은 별도 참고자료가 제공됐을 때만 인용합니다. 현재 참고자료가 없으면 고전 출처를 지어내지 않습니다.',
       '문장은 차분하고 고급스럽게 쓰되, 첫 문장에서 결론을 먼저 전하고 사용자가 바로 읽기 쉽도록 4~6개의 짧은 단락으로 나눕니다.',
-      '격국, 용신, 대운, 세운, 월운, 원국, 명식 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
+      '명리 용어는 확인된 근거에 한해 한글 원어와 짧은 뜻풀이를 사용합니다.',
       '점수나 계산값을 복붙하듯 나열하지 말고, 현재 흐름의 핵심과 생활 적용으로 자연스럽게 풀어 설명합니다.',
       '사용자가 궁금한 결론, 조심할 패턴, 오늘 할 행동을 먼저 말합니다.',
       '의료·법률·투자 결론은 피하고, 필요한 경우 전문가 확인을 권합니다.',

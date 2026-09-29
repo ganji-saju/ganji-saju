@@ -1,3 +1,4 @@
+import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 // 2026-05-21 — 총평 LLM 결과 캐시 키 + TTL + env flag. chapter-cache.ts 패턴 복제.
 //   키 = (birth + gender + name + context_hash). 이름/컨텍스트(관계/직업/고민) 변경 시 재생성.
 import { createHash } from 'node:crypto';
@@ -5,7 +6,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const TOTAL_REVIEW_PROMPT_VERSION = 'total-review/v4-classic-evidence';
+export const TOTAL_REVIEW_PROMPT_VERSION = 'total-review/v5-depth';
 
 export const TOTAL_REVIEW_CACHE_TTL_DAYS = 30;
 
@@ -38,6 +39,7 @@ export function buildTotalReviewCacheKey(
       stem: sajuData.dayMaster.stem,
       element: sajuData.dayMaster.element,
     },
+    natalEvidence: buildNatalReadingEvidence(sajuData),
     gender: context.gender ?? null,
     userName,
     context: {

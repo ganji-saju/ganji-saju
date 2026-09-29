@@ -5,7 +5,7 @@ import type { Ohaeng } from '@/lib/saju-score';
 import type { OhaengGuidanceInput } from './ohaeng-guidance-types';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const OHAENG_GUIDANCE_PROMPT_VERSION = 'ohaeng-guidance/v1';
+export const OHAENG_GUIDANCE_PROMPT_VERSION = 'ohaeng-guidance/v2-depth';
 
 export const OHAENG_GUIDANCE_CACHE_TTL_DAYS = 30;
 

@@ -83,6 +83,8 @@ describe('classic evidence reaches actual generation entry points without paid c
     expect(getClassicReadingGrounding).toHaveBeenCalledTimes(1);
     expect(prompts).toHaveLength(3);
     prompts.forEach(assertPrompt);
+    expect(prompts.every((prompt) => prompt.input.includes('natalEvidence'))).toBe(true);
+    expect(prompts.every((prompt) => prompt.instructions.includes('원국 풀이:'))).toBe(true);
     vi.mocked(getClassicReadingGrounding).mockResolvedValue({ ...classic, version: 'fixture-v2' });
     const second = await generateTotalReview(args);
     expect(second.meta.cacheKey).not.toBe(first.meta.cacheKey);
@@ -118,6 +120,26 @@ describe('classic evidence reaches actual generation entry points without paid c
     const prompts = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
     expect(prompts).toHaveLength(2);
     prompts.forEach(assertPrompt);
+    expect(prompts.every((prompt) => prompt.instructions.includes('연간 풀이:'))).toBe(true);
+  });
+
+  it('2027 new-year extras retain their year and monthly evidence alongside narrative and monthly passes', async () => {
+    await generateYearlyInterpretation({ readingIdentifier: 'fixture-reading', targetYear: 2027, includeNewYear: true });
+    const prompts = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
+    expect(prompts).toHaveLength(3);
+    for (const prompt of prompts) {
+      assertPrompt(prompt);
+      expect(prompt.instructions).toContain('연간 풀이:');
+      expect(prompt.instructions).toContain('targetYear와 다르면');
+      const input = JSON.parse(prompt.input);
+      expect(input.targetYear).toBe(2027);
+      expect(input.pattern).toEqual(fixture().sajuData.pattern);
+      expect(input.annualTiming).toEqual(input.yearlyEvidence.annualContext);
+      expect(input.factJson.luckCycles).toBeUndefined();
+      expect(input.evidenceJson.luckFlow).toBeUndefined();
+    }
+    const extras = prompts.find((prompt) => prompt.instructions.includes('expectations 와 cautions'))!;
+    expect(JSON.parse(extras.input).yearlyEvidence.monthlyFlows).toHaveLength(12);
   });
 
   it('today free and paid receive daily-scoped evidence; free cache changes with evidence', async () => {
@@ -135,5 +157,11 @@ describe('classic evidence reaches actual generation entry points without paid c
     await attachTodayPremiumNarrative(free, premium, { sajuData: reading.sajuData, userId: 'fixture-user', env: { NODE_ENV: 'test', OPENAI_INTERPRET_TODAY_PREMIUM: '1' } });
     assertPrompt(vi.mocked(generateAiText).mock.calls.at(-1)![0]);
     expect(getClassicReadingGrounding).toHaveBeenLastCalledWith(reading.sajuData, 'daily');
+    for (const [prompt] of vi.mocked(generateAiText).mock.calls) {
+      expect(prompt.instructions).toContain('하루 풀이:');
+      expect(prompt.input).toContain('원국 계산 근거:');
+      expect(prompt.input).toContain('"hiddenStems"');
+      expect(prompt.input).toContain(free.dateKey);
+    }
   });
 });

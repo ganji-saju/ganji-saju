@@ -1,11 +1,13 @@
 import {
   AUTHORITY_ALIGN, CAREER_VIEW, ELEMENT_ADJ, ELEMENT_ENV, ELEMENT_WAY, HELP_BOUNDARY, OLD_TIE, SILENT_CARE, INDEPENDENCE_CHECK, OUTPUT_SHOWCASE, RESOURCE_EXPRESS, WEALTH_EXAMPLE, annotateTenGodGroups, tenGodGroupElement, RELATIONSHIP_LONGEVITY, RELATIONSHIP_OPEN_ADVICE, WEALTH_PROPOSAL, WEALTH_VIEW,
 } from './lifetime-personal-copy';
-import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV1, SajuPillar, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput, UserSituation } from '@/lib/saju/types';
 import { isBranchChung, isYukhap } from '@/lib/today-fortune/iljin-rules';
 import type { SajuLifetimeReport } from './lifetime-types';
+import { selectClassicReadingRules } from './classic-reading-rules';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 
 // Natal readings deliberately do not reuse daily scores or today's action copy.
 const GOD_PROFILES: Record<TenGodCode, { meaning: string; work: string; scene: string; bond: string }> = {
@@ -132,7 +134,16 @@ export function buildLifetimeCoreReadings(
         : `${WEALTH_PROPOSAL[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]} 어떤 상황에 있든 실제 계약과 형편을 확인한 뒤 결정해야 하며, 사주 해석만으로 매수·매도 시점이나 자산 종류를 정하지 않습니다.`;
 
   const fit = `${roleBasis} ${profile ? `일의 이름보다 ${profile.work}에 주목해 보세요. ${profile.scene}에서 집중이 이어지는지 확인하는 방식입니다.` : '하고 있는 일에서 집중이 이어지는 과정과 반복해서 소진되는 과정을 나눠보세요. 익숙한 직업명보다 실제로 맡는 업무의 조건을 비교하는 편이 낫습니다.'}`;
-  const workTension = output > 0 && authority > 0
+  const classicRules = selectClassicReadingRules(data);
+  const expressionAndRules = classicRules.find((rule) => rule.id === 'dt-shangguan-zhengguan-context');
+  const pressureAndSupport = classicRules.find((rule) => rule.id === 'sm-pressure-and-resource');
+  const workTension = expressionAndRules
+    ? `상관의 개선하려는 표현과 정관의 지켜야 할 기준을 함께 읽습니다. 두 십성이 있다는 이유만으로 조직과 충돌하는 성격이라고 정하지는 않습니다. ${data.strength?.level === '신강'
+      ? '계산된 신강에 재성도 확인되어, 바꾸고 싶은 방식을 비용과 결과로 설명할 조건을 살펴봅니다. 개선안을 낸다면 무엇이 불편한지에 더해 어느 자원을 쓰고 무엇을 바꿀지 제시해 보세요.'
+      : '계산된 신약에 인성도 확인되어, 요구를 더 버티기보다 이해하고 준비할 지원을 살펴봅니다. 기준이 낯선 일을 맡는다면 자료를 읽을 시간과 질문할 사람을 확보해 보세요.'} 제안이 받아들여지는 환경과 설명할 기회 없이 결과만 요구받는 환경에서 본인의 반응이 어떻게 다른지 비교하세요. 각 기운의 존재만으로 제화가 성립했다고 확정한 풀이는 아닙니다.`
+    : pressureAndSupport
+      ? '계산된 신약에 편관과 인성이 함께 확인됩니다. 편관의 책임과 긴장을 살필 때 인성의 배움과 지원도 함께 봅니다. 어려운 역할을 맡는 상황이라면, 참고할 자료와 물어볼 사람이 있을 때와 혼자 판단해야 할 때를 비교해 보세요. 같은 업무도 익힐 시간과 결정 권한이 있으면 부담의 조건이 달라집니다. 잘 견딘다는 평가보다 지원을 실제로 쓸 수 있는지를 확인하세요. 이 조합의 존재만으로 살인상생격이나 승진을 확정하지 않습니다.'
+    : output > 0 && authority > 0
     ? `식상의 새로운 표현과 관성의 기준이 함께 보여, 바꾸고 싶은 방식과 지켜야 하는 절차 사이의 조율이 중요합니다. ${ELEMENT_ENV[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '관성')]} 환경이나 결정권이 없는 곳에서는 개선안을 내도 능력과 별개로 지치기 쉽습니다. ${AUTHORITY_ALIGN[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '관성')]}`
     : resource > output
       ? '준비하는 인성이 표현하는 식상보다 많이 확인되어, 충분히 알아야 시작할 수 있다는 기준이 작업을 늦추는지 살펴볼 수 있습니다. 조사한 내용을 곧바로 완성품으로 내기보다 초안을 먼저 보여주고 질문을 받는 과정이 도움이 됩니다. 더 배우는 일과 평가받는 일을 계속 바꾸어 미루지 않는지 확인하세요.'
@@ -146,16 +157,22 @@ export function buildLifetimeCoreReadings(
       ? '관성이 확인되어 합의한 기준을 안정적으로 지키는 과정에서 신뢰를 쌓는 방식을 살펴봅니다. 맡은 책임을 조용히 끝내기만 하면 기여가 잘 보이지 않을 수 있습니다. 무엇을 예방했고 어떤 조건을 개선했는지 짧게 남기고, 다음 역할의 범위와 평가 기준을 함께 확인하세요.'
       : `${learningBridge} 설명할 때는 알고 있는 내용을 모두 나열하기보다 상대가 해결하려는 질문부터 확인하세요. 다른 사람이 이해하거나 활용한 변화가 보이면 자신의 강점을 구체적으로 설명할 수 있습니다.`;
 
-  const natal = [data.pillars.year, data.pillars.month, data.pillars.day, ...(data.input.hourKnown && data.pillars.hour ? [data.pillars.hour] : [])];
-  const hasClash = natal.some((left, i) => natal.slice(i + 1).some((right) => isBranchChung(left.branch, right.branch)));
-  const hasCombine = natal.some((left, i) => natal.slice(i + 1).some((right) => isYukhap(left.branch, right.branch)));
-  const relationBasis = hasClash && hasCombine
+  const natal: Array<[string, SajuPillar]> = [['연지', data.pillars.year], ['월지', data.pillars.month], ['일지', data.pillars.day]];
+  if (data.input.hourKnown && data.pillars.hour) natal.push(['시지', data.pillars.hour]);
+  const relations = natal.flatMap(([leftSlot, left], i) => natal.slice(i + 1).flatMap(([rightSlot, right]) => {
+    const kind = isBranchChung(left.branch, right.branch) ? '충' : isYukhap(left.branch, right.branch) ? '육합' : null;
+    return kind ? [{ kind, detail: `${leftSlot} ${koreanizeGanzi(left.branch)}와 ${rightSlot} ${koreanizeGanzi(right.branch)}의 ${kind}` }] : [];
+  }));
+  const hasClash = relations.some(({ kind }) => kind === '충');
+  const hasCombine = relations.some(({ kind }) => kind === '육합');
+  const relationMeaning = hasClash && hasCombine
     ? '원국에 충과 육합이 함께 확인됩니다. 차이를 조율하는 주제와 가까워지려는 주제를 함께 읽으며, 실제 갈등이나 결별을 예고하는 것은 아닙니다.'
     : hasClash
       ? '원국의 지지 사이에 충이 확인됩니다. 서로 다른 요구를 조율하는 관점으로 읽되, 실제 갈등이나 관계의 끝을 정하는 표시는 아닙니다.'
       : hasCombine
         ? '원국의 지지 사이에 육합이 확인됩니다. 접점을 찾는 관계를 살피는 관점이며, 모든 관계가 원만하다는 뜻은 아닙니다.'
         : '확인된 지지 사이에 직접적인 충·육합이 없다는 사실만으로 관계가 평탄하다고 정하지 않습니다. 표현과 기대가 실제로 어떻게 맞물리는지 살펴보세요.';
+  const relationBasis = [relations.length ? `확인된 자리: ${relations.map(({ detail }) => detail).join(' · ')}.` : '', relationMeaning].filter(Boolean).join(' ');
   const distance = `${roleBasis} ${profile ? `${profile.bond}를 관계의 기준으로 검토해 보세요.` : '편안하게 연락하는 빈도와 혼자 쉬고 싶은 때를 구분해 보세요.'} ${peer > resource ? '서로 존중한다는 이유로 필요한 도움까지 혼자 처리하고 있지는 않은지 살펴보세요.' : resource > peer ? HELP_BOUNDARY[tenGodGroupElement(data.dayMaster.element as Parameters<typeof tenGodGroupElement>[0], '인성')] : '배려하는 마음이 있어도 같은 방식의 연락과 표현을 기대하는지는 직접 확인해야 합니다.'}`;
   const expression = output > resource
     ? '식상이 인성보다 많이 확인되어, 생각을 말하거나 행동으로 보여주는 방식에 먼저 주목합니다. 문제를 듣자마자 해결책을 말한다면 상대는 공감이 빠졌다고 느낄 수 있습니다. 조언을 원하는지 들어주길 원하는지 먼저 묻고, 본인의 뜻을 전한 뒤 상대가 어떻게 받아들였는지도 확인해 보세요.'
@@ -179,7 +196,7 @@ export function buildLifetimeCoreReadings(
     Object.fromEntries(Object.entries(section).map(([k, v]) => [k, typeof v === 'string' && !['headline', 'summary'].includes(k) ? annotateTenGodGroups(v, dayEl) : v])) as T;
   const readings = {
     wealthStyle: { headline: '돈을 버는 방식과 남기는 기준', summary: `${roleBasis} ${WEALTH_VIEW[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, earningStyle: earning, keepingStyle: keeping, spendingMistakes: leak, operatingStyle: operating, basis: [roleBasis, distribution, capacity, ...hourNote] },
-    careerDirection: { headline: '실력이 드러나는 일과 오래할 수 있는 환경', summary: `${profile ? `${profile.work}을 먼저 살펴볼 만합니다.` : '적합한 일은 직업명보다 맡는 과정과 책임의 조건으로 비교합니다.'} ${CAREER_VIEW[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, fitStructure: fit, endureVsShine: workTension, independenceStyle: independence, recognitionStyle: recognition, basis: [roleBasis, distribution, capacity, ...hourNote] },
+    careerDirection: { headline: '실력이 드러나는 일과 오래할 수 있는 환경', summary: `${profile ? `${profile.work}을 먼저 살펴볼 만합니다.` : '적합한 일은 직업명보다 맡는 과정과 책임의 조건으로 비교합니다.'} ${CAREER_VIEW[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, fitStructure: fit, endureVsShine: workTension, independenceStyle: independence, recognitionStyle: recognition, basis: [roleBasis, distribution, capacity, ...[expressionAndRules ?? pressureAndSupport].flatMap((rule) => rule ? [`${rule.sourceTitle}의 해석 관점: ${rule.matchedFacts.join(' · ')}`, ...rule.limits] : []), ...hourNote] },
     relationshipPattern: { headline: '가까워지는 방식과 반복 갈등의 이유', summary: `${profile ? `${profile.bond}에 주목해 보세요.` : '편안한 거리와 필요한 표현을 함께 살펴봅니다.'} ${RELATIONSHIP_LONGEVITY[(data.dayMaster.element as keyof typeof RELATIONSHIP_LONGEVITY)]}`, distanceStyle: distance, expressionStyle: expression, conflictTriggers: conflict, longevityGuide: longevity, basis: [roleBasis, distribution, relationBasis, ...hourNote] },
   };
   return { wealthStyle: mark(readings.wealthStyle), careerDirection: mark(readings.careerDirection), relationshipPattern: mark(readings.relationshipPattern) };

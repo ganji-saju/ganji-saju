@@ -9,7 +9,7 @@ export interface OhaengGuidanceValidationResult {
 }
 
 export function validateOhaengGuidance(text: string): OhaengGuidanceValidationResult {
-  const reasons = hardTextReasons(text, '오행 가이드');
+  const reasons = hardTextReasons(text, '오행 가이드', true);
   const gyeol = countGyeol(text);
   if (gyeol > 1) reasons.push(`'결' 과다: ${gyeol}회 (최대 1회)`);
   return { ok: reasons.length === 0, reasons };
@@ -17,5 +17,5 @@ export function validateOhaengGuidance(text: string): OhaengGuidanceValidationRe
 
 /** 한자/금지어/일일톤/자극어 — deterministic fallback 으로 교체해야 하는 치명 위반. */
 export function hasHardOhaengGuidanceViolation(text: string): boolean {
-  return hardTextReasons(text, '').length > 0;
+  return hardTextReasons(text, '', true).length > 0;
 }

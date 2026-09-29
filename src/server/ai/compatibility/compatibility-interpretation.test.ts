@@ -3,6 +3,7 @@ import { buildCompatibilityInterpretation, type CompatibilityPerson } from '@/li
 import type { ChapterLLMClient } from '../chapters/generate-chapter';
 import { buildCompatibilityInterpretationInput } from './compatibility-interpretation-content';
 import { buildCompatibilityInterpretationCacheKey } from './compatibility-interpretation-cache';
+import { buildCompatibilityInterpretationUserMessage, COMPATIBILITY_INTERPRETATION_SYSTEM_PROMPT } from './compatibility-interpretation-prompts';
 import {
   parseCompatibilitySections,
   validateCompatibilitySections,
@@ -14,6 +15,22 @@ declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
 const PERSON_A: CompatibilityPerson = { name: '가영', birthInput: { year: 1990, month: 4, day: 12, hour: 9, gender: 'female' } };
 const PERSON_B: CompatibilityPerson = { name: '나준', birthInput: { year: 1988, month: 9, day: 3, hour: 14, gender: 'male' } };
+
+test('궁합은 두 사람의 원국 판정을 구분하고 판정 변경 시 이전 풀이를 재사용하지 않는다', () => {
+  const report = interp('lover');
+  const input = buildCompatibilityInterpretationInput(report, '가영', '나준');
+  assert.deepEqual(input.natalEvidence?.self.pattern, report.selfData.pattern);
+  assert.deepEqual(input.natalEvidence?.partner.yongsin, report.partnerData.yongsin);
+  assert.match(buildCompatibilityInterpretationUserMessage(input), /hiddenStems/);
+  assert.match(COMPATIBILITY_INTERPRETATION_SYSTEM_PROMPT, /궁합 풀이:/);
+  assert.match(report.deepSections[0].body, /계산된 강약/);
+  const changed = structuredClone(input);
+  changed.natalEvidence!.self.strength = null;
+  assert.notEqual(buildCompatibilityInterpretationCacheKey(input), buildCompatibilityInterpretationCacheKey(changed));
+  const sections = Array.from({ length: 3 }, (_, index) => ({ title: `비교 ${index + 1}`, body: '정관은 책임과 규범의 관점으로 읽습니다. 약속을 정하는 상황이라면 서로 기대하는 범위를 먼저 확인해보세요. 같은 기준을 편안해하는지 실제 경험과 비교해보세요.' }));
+  assert.equal(validateCompatibilitySections(sections).ok, true);
+  assert.equal(validateCompatibilitySections(sections.map((section) => ({ ...section, body: section.body + ' 반드시 결혼합니다.' }))).ok, false);
+});
 
 function interp(
   slug: 'lover' | 'family' | 'friend' | 'partner',

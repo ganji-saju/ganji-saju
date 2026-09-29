@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import type { CompatibilityInterpretationInput } from './compatibility-interpretation-types';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v1';
+export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v2-depth';
 
 export const COMPATIBILITY_INTERPRETATION_CACHE_TTL_DAYS = 30;
 
@@ -26,8 +26,8 @@ export function buildCompatibilityInterpretationCacheKey(
   input: CompatibilityInterpretationInput
 ): string {
   const pair = [
-    [input.selfChartKey, normalizeName(input.selfName)],
-    [input.partnerChartKey, normalizeName(input.partnerName)],
+    [input.selfChartKey, normalizeName(input.selfName), JSON.stringify(input.natalEvidence?.self ?? null)],
+    [input.partnerChartKey, normalizeName(input.partnerName), JSON.stringify(input.natalEvidence?.partner ?? null)],
   ].sort((a, b) => (a[0] !== b[0] ? (a[0]! < b[0]! ? -1 : 1) : a[1]! < b[1]! ? -1 : a[1]! > b[1]! ? 1 : 0));
   const payload = JSON.stringify({
     pair,
