@@ -9,6 +9,23 @@ import { chunkPdfYears, paginatePdfNarrative } from '@/lib/saju/pdf-report-pages
 import type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 export type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 
+// 각 장의 읽을거리를 안내한다. 개인의 실제 경험이나 사건을 추정하는 문구가 아니다.
+const DEEP_CHAPTER_LEADS: Record<string, string> = {
+  '풀이를 시작하며': '사주의 전체 구조를 먼저 살펴보고, 분야별 풀이를 읽는 순서를 안내합니다. 생활 예시는 실제 이력이 아닌, 자신의 경험과 비교해 볼 질문입니다.',
+  '타고난 성향': '일간과 십성의 관계를 바탕으로 나다운 반응과 판단 방식을 살펴봅니다. 같은 성향이 강점으로 쓰일 때와 부담이 될 때의 차이를 읽어보세요.',
+  '돈을 벌고 남기는 방식': '재물 풀이를 버는 방식, 남기는 습관, 지출의 기준으로 나누어 살펴봅니다. 안정과 확장 사이에서 어떤 조건을 확인할지 생각해보세요.',
+  '잘하는 일과 오래할 수 있는 일': '능력을 발휘하기 좋은 역할과 꾸준히 이어갈 수 있는 환경을 함께 살펴봅니다. 조직 안에서의 역할과 독립에 필요한 조건을 비교해보세요.',
+  '학업과 배움': '새로운 것을 이해하고 익혀 표현하는 과정을 살펴봅니다. 공부의 성과를 단정하기보다, 배움을 이어가는 방식과 필요한 도움을 찾아보세요.',
+  '연애와 가까운 관계': '친밀감을 느끼는 거리와 마음을 표현하는 방식, 갈등을 조율하는 기준을 살펴봅니다. 나와 상대의 기대를 맞추기 위해 어떤 대화가 필요한지 읽어보세요.',
+  '가족 관계': '가족 안에서 기대하는 역할과 서로를 돕는 방식, 필요한 경계를 살펴봅니다. 실제 가족 상황에 비추어 책임을 나누고 의사를 전할 기준을 찾아보세요.',
+  '부담과 회복의 균형': '일간의 강약과 도움·소모의 관계를 바탕으로 힘을 쓰는 조건을 살펴봅니다. 강약을 능력의 우열로 읽기보다 부담을 줄일 환경과 지원을 생각해보세요.',
+  '내 선택을 돕는 기준': '격국과 용신의 해석을 연결해 선택할 때 참고할 기준을 살펴봅니다. 어떤 조건을 우선하고 무엇을 조절할지, 사주 전체의 관계 속에서 읽어보세요.',
+  '생활과 회복의 방식': '일상에서 부담을 느끼는 상황과 쉬는 방식, 유지할 습관을 돌아봅니다. 건강 상태를 진단하는 풀이가 아닌 생활 점검의 질문으로 활용해보세요.',
+  '10년 단위 큰 흐름': '원국과 대운의 관계를 통해 시기마다 달라지는 해석의 초점을 살펴봅니다. 특정 사건의 예고보다 전환기에 점검할 조건과 준비할 선택에 주목해보세요.',
+  '평생 활용 전략': '앞선 성향·관계·재물·직업 풀이를 묶어 오래 활용할 선택 기준을 정리합니다. 힘을 발휘할 때의 태도와 부담이 커질 때의 대응을 나누어 읽어보세요.',
+  '기억할 규칙': '전체 풀이에서 일상으로 가져갈 핵심 원칙을 다시 짚습니다. 지금의 상황에 맞는 기준을 골라, 작은 선택부터 적용해보세요.',
+};
+
 /** 문장 경계로 끊어 2문장씩 묶는다. 문장부호가 없으면 통째로 한 덩어리(안전). */
 function splitIntoParagraphs(text: string, perParagraph = 2): string[] {
   const sentences = text
@@ -557,7 +574,7 @@ export function ReportDocument({
               {narrativePages.map((sections, index) => (
                 <section className="report-page rp-narrative-page" data-page={narrativeStartPage + index} key={`deep-${index}`}>
                   <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
-                  <ChapterHead no={questionEdition ? '풀이' : '08'} titleLines={['깊은 사주풀이', sections[0].chapter ?? sections[0].label]} lead="타고난 성향과 삶의 선택을 연결하는 상세 풀이입니다. 생활 예시는 실제 이력을 뜻하지 않으며, 자신의 상황에 맞는 선택 기준을 찾아보세요." />
+                  <ChapterHead no={questionEdition ? '풀이' : '08'} titleLines={['깊은 사주풀이', sections[0].chapter ?? sections[0].label]} lead={DEEP_CHAPTER_LEADS[(sections[0].chapter ?? sections[0].label).replace(/ · 계속$/, '')] ?? `${sections[0].chapter ?? sections[0].label}에 관한 해석과 선택 기준을 살펴봅니다.`} />
                   {sections.map((section, sectionIndex) => <DeepSection key={`${section.label}-${sectionIndex}`} no={sectionIndex + 1} label={section.label} text={section.text} />)}
                   <PageFooter page={narrativeStartPage + index} total={totalPages} />
                 </section>

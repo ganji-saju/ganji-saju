@@ -98,6 +98,8 @@ export interface GenerateLifetimeInterpretationRequest {
   deadlineAt?: number;
   signal?: AbortSignal;
   getClassicGrounding?: typeof getClassicReadingGrounding;
+  /** 완료된 처리 단계 기준 진행률. 토큰 생성량이나 예상 시간은 아니다. */
+  onProgress?: (percent: number, label: string) => void;
 }
 
 type ChapterGenerationOptions = Pick<GenerateLifetimeInterpretationRequest, 'telemetryStore' | 'deadlineAt' | 'signal'> & { classicGrounding?: ClassicReadingGrounding };
@@ -163,6 +165,7 @@ export async function generateLifetimeInterpretation(
   const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
   const classicGrounding = await (request.getClassicGrounding ?? getClassicReadingGrounding)(reading.sajuData);
   request.signal?.throwIfAborted();
+  request.onProgress?.(10, '명식과 대운 정리 완료 · 챕터 풀이 준비 중');
   const model = getOpenAIInterpretationModel();
   // 🟡 대운 다양성 fix (이전 PR L 은 병렬): 챕터 1→2→3→4→5→6→7 *직렬* LLM enhance.
   //   - 직렬 이유: 각 챕터가 *앞서 생성된 챕터*(priorChapterDigests + 본문) 를 보고
@@ -240,6 +243,7 @@ export async function generateLifetimeInterpretation(
       title: CHAPTER_META[id].title,
       digest: extractChapterDigest(summary),
     });
+    request.onProgress?.((id + 1) * 10, `${CHAPTER_META[id].title} 정리 완료`);
   }
   // 🟡 챕터 9 synthesis — 1~7 LLM 적용 *이후* 직렬 호출.
   //   priorChapterDigests 가 enhanced summary 를 digest 소스로 사용해야 LLM 이
@@ -251,6 +255,7 @@ export async function generateLifetimeInterpretation(
     generationOptions
   );
   request.signal?.throwIfAborted();
+  request.onProgress?.(90, '전체 풀이를 다듬고 확인하고 있어요');
   const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
   const recentFeedbackSummary = reading.userId
     ? await getRecentFortuneFeedbackSummary(reading.userId)

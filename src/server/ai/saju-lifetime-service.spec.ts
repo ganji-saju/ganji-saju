@@ -46,11 +46,13 @@ describe('lifetime generation isolated persistence and budget', () => {
   it('passes the isolated telemetry store to every chapter retry and final generation', async () => {
     const reading = buildTransientReading(input, 'external-report-test');
     const telemetryStore = createInMemoryLlmTelemetryStore();
+    const onProgress = vi.fn();
     const result = await generateLifetimeInterpretation({
       readingIdentifier: reading.id, readingRecord: reading, targetYear: 2026,
-      cacheStore: createInMemoryLifetimeCacheStore(), telemetryStore, deadlineAt: Date.now() + 240_000,
+      cacheStore: createInMemoryLifetimeCacheStore(), telemetryStore, onProgress, deadlineAt: Date.now() + 240_000,
     });
     expect(result?.source).toBe('fallback');
+    expect(onProgress.mock.calls.map(([percent]) => percent)).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 90]);
     const calls = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
     expect(calls.filter((request) => request.feature === 'chapter')).toHaveLength(24);
     expect(calls.filter((request) => request.feature === 'lifetime')).toHaveLength(1);
