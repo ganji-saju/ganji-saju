@@ -42,8 +42,10 @@
     min-height: 100svh;
   }
 
+  /* 2026-09-29 — both 였다: 애니메이션이 시작되기 전(배경 탭 등)엔 from 상태(opacity 0)로 붙어 본문이 통째로 안 보였다.
+     채움 없음으로 두면 시작 전엔 그냥 보이고, 시작되면 똑같이 떠오른다(지연 0 이라 깜빡임 없음). */
   .app-shell-content {
-    animation: app-fade-up 360ms ease both;
+    animation: app-fade-up 360ms ease;
   }
 
   .app-fixed-bottom-cta-clearance {
