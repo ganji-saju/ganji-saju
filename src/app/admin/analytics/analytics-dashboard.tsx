@@ -556,6 +556,7 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
               <th className={`${th} text-left`}>원 결제일</th>
               <th className={`${th} text-left`}>회원</th>
               <th className={`${th} text-left`}>상품</th>
+              <th className={`${th} text-left`}>사유</th>
               <th className={th}>환불액</th>
             </tr>
           </thead>
@@ -582,6 +583,9 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
                   ) : null}
                 </td>
                 <td className={`${td} text-left text-[var(--app-copy-soft)]`}>{item.productName}</td>
+                <td className={`${td} text-left`} style={{ wordBreak: 'keep-all' }}>
+                  {item.reason ?? <span className="text-[11px] text-[var(--app-copy-soft)]">요청 기록 없음(결제사 직접 취소 등)</span>}
+                </td>
                 <td className={`${td} text-[var(--app-coral)]`}>-{fmtWon(item.amountWon)}</td>
               </tr>
             ))}

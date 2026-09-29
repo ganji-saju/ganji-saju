@@ -32,6 +32,10 @@ export interface RefundBreakdownItem {
   /** 역할별 마스킹된 이메일(super_admin 만 원문). */
   userEmail: string | null;
   userName: string | null;
+  /** 2026-09-29 — 관리자 환불 요청에 적은 사유(refund_requests.reason). 요청 기록이 없으면 null(PG 콘솔 직접 취소 등). */
+  reason: string | null;
+  /** 서버 안에서 사유 연결용 — 응답 전에 비운다. */
+  paymentKey: string | null;
 }
 
 export interface RefundBreakdown {
@@ -49,6 +53,7 @@ const MAX_ITEMS = 200;
 interface RefundOrderRow {
   order_id: string | null;
   user_id?: string | null;
+  payment_key?: string | null;
   package_id: string | null;
   amount: number | null;
   refunded_at: string | null;
@@ -89,6 +94,8 @@ export function computeRefundBreakdown(
       userId: row.user_id ?? null,
       userEmail: null,
       userName: null,
+      reason: null,
+      paymentKey: row.payment_key ?? null,
     });
   }
 
@@ -121,7 +128,7 @@ export async function getRefundBreakdown(
   const startIso = new Date(Date.parse(`${fromKey}T00:00:00+09:00`)).toISOString();
   const endIso = new Date(Date.parse(`${shiftDateKey(toKey, 1)}T00:00:00+09:00`)).toISOString();
 
-  const columns = 'order_id, user_id, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at, metadata';
+  const columns = 'order_id, user_id, payment_key, package_id, amount, refunded_at, confirmed_at, fulfilled_at, created_at, metadata';
   const { data, error } = await service
     .from('payment_orders')
     .select(columns)
@@ -143,7 +150,9 @@ export async function getRefundBreakdown(
 
   const rows = expandRefundRows((data ?? []) as RefundOrderRow[], (partial?.data ?? []) as RefundOrderRow[]);
   const breakdown = computeRefundBreakdown(rows, { fromKey, toKey });
-  return attachRefundUsers(service, breakdown, role);
+  const detailed = await attachRefundReasons(service, await attachRefundUsers(service, breakdown, role));
+  // 결제키는 사유 연결에만 쓰고 화면(브라우저)으로는 보내지 않는다.
+  return { ...detailed, items: detailed.items.map((i) => ({ ...i, paymentKey: null })) };
 }
 
 /** 환불 건에 회원 이름·이메일을 붙인다(admin_user_summary). 실패해도 목록은 그대로 둔다. */
@@ -163,4 +172,34 @@ async function attachRefundUsers(service: SupabaseClient, breakdown: RefundBreak
       return u ? { ...i, userEmail: maskEmail(u.email, role), userName: u.display_name } : i;
     }),
   };
+}
+
+/** 환불 건에 관리자 환불 요청 사유를 붙인다(결제키로 연결). 한 결제에 요청이 여럿이면(부분 환불) 금액이 같은 것, 없으면 최신. */
+async function attachRefundReasons(service: SupabaseClient, breakdown: RefundBreakdown): Promise<RefundBreakdown> {
+  const keys = [...new Set(breakdown.items.map((i) => i.paymentKey).filter((k): k is string => Boolean(k)))];
+  if (keys.length === 0) return breakdown;
+  const { data, error } = await service
+    .from('refund_requests')
+    .select('payment_key, reason, amount, status, created_at')
+    .in('payment_key', keys)
+    .neq('status', 'rejected')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('[refund-breakdown] reason lookup failed:', error.message);
+    return breakdown;
+  }
+  return { ...breakdown, items: breakdown.items.map((i) => ({ ...i, reason: pickRefundReason(i, (data ?? []) as RefundRequestRow[]) })) };
+}
+
+interface RefundRequestRow {
+  payment_key: string | null;
+  reason: string | null;
+  amount: number | null;
+}
+
+/** 순수 — 테스트한다. requests 는 최신순. */
+export function pickRefundReason(item: Pick<RefundBreakdownItem, 'paymentKey' | 'amountWon'>, requests: readonly RefundRequestRow[]): string | null {
+  const mine = requests.filter((r) => r.payment_key && r.payment_key === item.paymentKey);
+  const hit = mine.find((r) => Number(r.amount) === item.amountWon) ?? mine[0];
+  return hit?.reason?.trim() || null;
 }

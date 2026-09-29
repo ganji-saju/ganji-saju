@@ -219,6 +219,9 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
                     {item.userName || item.userEmail || '회원 상세'}
                   </a>
                 ) : null}
+                {item.reason ? (
+                  <span className="ml-2 font-normal text-[var(--app-copy-muted)]">· {item.reason}</span>
+                ) : null}
               </span>
               <span className="shrink-0 tabular-nums text-[var(--app-copy-muted)]">
                 {item.refundedOn}
