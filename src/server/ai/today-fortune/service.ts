@@ -118,7 +118,9 @@ export async function generateTodayFortuneNarrative(args: {
     // 2026-07-04 감사 — 캐시 hit 계측 누락 수정(형제 서비스 yearly/interpret/total_review 와
     // 동일 패턴). 미기록 시 대시보드 cacheHitRate 가 항상 0%로 표시됨. 비차단(내부 no-throw).
     await recordLlmRun({ feature: 'today_fortune', source: 'cache', model: cached.model, userId });
-    return { headline: cached.headline, body: cached.body, source: 'cache' };
+    // #887 이전에 저장된 문장도 읽을 때 거른다(이미 거른 문장엔 영향 없음).
+    const [headline, body] = thinRepeatedTodayDeep([cached.headline, cached.body]);
+    return { headline, body, source: 'cache' };
   }
 
   // Step 3: grounding → prompt → LLM 호출.
