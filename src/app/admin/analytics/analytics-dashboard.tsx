@@ -554,6 +554,7 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
             <tr>
               <th className={`${th} text-left`}>환불일</th>
               <th className={`${th} text-left`}>원 결제일</th>
+              <th className={`${th} text-left`}>회원</th>
               <th className={`${th} text-left`}>상품</th>
               <th className={th}>환불액</th>
             </tr>
@@ -566,6 +567,18 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
                   {item.paidOn ?? '—'}
                   {item.paidOn && !item.sameDay ? (
                     <span className="ml-1 text-[11px] text-[var(--app-coral)]">다른 날 결제분</span>
+                  ) : null}
+                </td>
+                <td className={`${td} text-left`}>
+                  {item.userId ? (
+                    <a className="font-semibold text-[var(--app-ink)] underline" href={`/admin/users/${item.userId}`}>
+                      {item.userName || item.userEmail || '회원 상세'}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                  {item.userName && item.userEmail ? (
+                    <span className="ml-1 text-[11px] text-[var(--app-copy-soft)]">{item.userEmail}</span>
                   ) : null}
                 </td>
                 <td className={`${td} text-left text-[var(--app-copy-soft)]`}>{item.productName}</td>

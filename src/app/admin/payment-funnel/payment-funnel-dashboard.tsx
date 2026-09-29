@@ -214,6 +214,11 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
             >
               <span className="min-w-0 truncate font-semibold text-[var(--app-ink)]">
                 {item.productName}
+                {item.userId ? (
+                  <a className="ml-2 font-normal text-[var(--app-copy-soft)] underline" href={`/admin/users/${item.userId}`}>
+                    {item.userName || item.userEmail || '회원 상세'}
+                  </a>
+                ) : null}
               </span>
               <span className="shrink-0 tabular-nums text-[var(--app-copy-muted)]">
                 {item.refundedOn}
