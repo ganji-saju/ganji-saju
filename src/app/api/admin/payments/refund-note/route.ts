@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   const service = await createServiceClient();
   const { data: order, error } = await service
     .from('payment_orders')
-    .select('order_id, status, metadata')
+    .select('order_id, status, metadata, updated_at')
     .eq('order_id', orderId)
     .maybeSingle();
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
@@ -38,11 +38,18 @@ export async function POST(request: NextRequest) {
   }
 
   const refundNote = { text: note, by: check.userId, at: new Date().toISOString() };
-  const { error: updateError } = await service
+  // metadata 에는 부분 환불 기록(partialRefunds) 같은 돈 장부가 함께 있다 — 읽은 뒤 다른 곳(웹훅)이 고쳤으면
+  //   덮어쓰지 않도록 읽은 시점의 updated_at 이 그대로일 때만 저장한다(트리거가 매 수정마다 갱신).
+  const { data: updated, error: updateError } = await service
     .from('payment_orders')
     .update({ metadata: { ...metadata, refundNote } })
-    .eq('order_id', orderId);
+    .eq('order_id', orderId)
+    .eq('updated_at', order.updated_at)
+    .select('order_id');
   if (updateError) return NextResponse.json({ ok: false, error: updateError.message }, { status: 500 });
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ ok: false, error: '방금 다른 곳에서 이 주문이 바뀌었습니다. 새로고침 후 다시 저장해 주세요.' }, { status: 409 });
+  }
 
   return NextResponse.json({ ok: true, note });
 }
