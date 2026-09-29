@@ -1,6 +1,6 @@
 import { PREMIUM_FOLLOW_UPS, PREMIUM_RELATION_COPY, SCENARIO_TITLE_TAG, todayRelationStep } from './premium-relation-copy';
 import { DAILY_TOPIC_QUESTIONS_BY_RELATION, DAILY_TOPIC_SCENES, GENERAL_FOLLOW_UPS_BY_RELATION, type DailySceneRelation } from './daily-topic-scenes';
-import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
+import { dedupeSentencesDeep, thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
 import { Solar } from 'lunar-typescript';
 import { getFeatureCost } from '@/lib/credits/costs';
 import {
@@ -1798,7 +1798,7 @@ function buildTodayQuestionReading(
   const needsCaregiver = lifeStage === 'child';
   const answer = key === 'overall' ? `${personal.focus} ${asSentence(profile.actionBody)}` : DAILY_TOPIC_ANSWERS[personal.relation][key];
   const natalStem = `${toKoreanGanzi(sajuData.dayMaster.stem)}${sajuData.dayMaster.element}`;
-  const evidence = `태어난 날의 중심인 ${withKoreanParticle(natalStem, '과', '와')} 오늘 ${toKoreanGanzi(todayPillar.ganzi)}의 관계를 ${withKoreanParticle(personal.relation, '으로', '로')} 읽어, ${withKoreanParticle(PERSONAL_DAY_MEANINGS[personal.relation], '을', '를')} 살펴봅니다.`;
+  const evidence = `태어난 날의 중심인 ${withKoreanParticle(natalStem, '과', '와')} ${toKoreanGanzi(todayPillar.ganzi)}일의 관계를 ${withKoreanParticle(personal.relation, '으로', '로')} 읽어, ${withKoreanParticle(PERSONAL_DAY_MEANINGS[personal.relation], '을', '를')} 살펴봅니다.`;
   const natalRole = profile.tenGod as PersonalDayRelation;
   const natalMeaning = PERSONAL_DAY_MEANINGS[natalRole];
   const natalTone = TEN_GOD_PUBLIC_TONES[natalRole];
@@ -1822,7 +1822,7 @@ function buildTodayQuestionReading(
     //   설명하는 긴 근거는 '오늘 전체' 카드에만 두고, 분야 카드는 그 분야에 적용한 짧은 근거로 쓴다.
     evidence: key === 'overall'
       ? `${evidence}${natalMeaning ? ` 원국에서 두드러진 ${profile.tenGod}(${natalMeaning})도 함께 고려합니다.` : ''}${personal.branchNote ? ` ${personal.branchNote}` : ''}`
-      : `태어난 날의 중심과 오늘 ${toKoreanGanzi(todayPillar.ganzi)}의 관계(${personal.relation})를 ${TOPIC_SCENE_LABEL[key]}에 적용했습니다.`,
+      : `태어난 날의 중심과 ${toKoreanGanzi(todayPillar.ganzi)}일의 관계(${personal.relation})를 ${TOPIC_SCENE_LABEL[key]}에 적용했습니다.`,
     example: needsCaregiver ? `${child.example}${key === 'overall' ? ` ${CHILD_ROLE_GUIDANCE[personal.relation]}` : ''}`
       // 같은 성향 문장이 6개 카드에 똑같이 붙어 한 풀이에서 반복됐다 — 성향 설명은 '오늘 전체' 카드에만,
       //   분야 카드는 그 장면에 맞춘 성향 주의 한 줄로 쓴다(원국 성향에 따라 장면이 달라지는 개인화 유지).
@@ -3329,7 +3329,7 @@ export function buildTodayFortuneFreeResult(
   // 기회·주의 카드가 위 요약·점수 카드 문장을 다시 싣지 않게 한다(두 카드만 대상 — 개인화 카드 문장은 건드리지 않음).
   const seen = new Set<string>();
   dedupeSentencesDeep([freeResult.oneLine, freeResult.scores.map((score) => score.summary)], seen);
-  return { ...freeResult, ...dedupeSentencesDeep({ opportunity: freeResult.opportunity, risk: freeResult.risk }, seen) };
+  return thinRepeatedTodayDeep({ ...freeResult, ...dedupeSentencesDeep({ opportunity: freeResult.opportunity, risk: freeResult.risk }, seen) });
 }
 
 // Task 4 — 오늘 일진 기준 신살 탐지 (free 의 buildSajuChartSnapshot 블록과 동일 로직을 재사용 가능하게 추출).
@@ -3498,7 +3498,7 @@ export function buildTodayFortunePremiumResult(
     flowSignal,
   };
 
-  return {
+  return thinRepeatedTodayDeep({
     productCode: 'TODAY_DEEP_READING',
     // 2026-06-26 — 실제 차감과 표시 일치(기존 1 은 표시≠실제 불일치).
     // 2026-07-19 — 파생으로 전환(위 nextAction 과 동일 이유).
@@ -3565,7 +3565,7 @@ export function buildTodayFortunePremiumResult(
       const c = buildCausalNarrative(ci, { seed: `premium::${todayPillar.dateKey}` });
       return { title: '오늘 이 흐름인 이유', body: c.full };
     })(),
-  };
+  });
 }
 
 export function buildBirthInputFromTodayPayload(

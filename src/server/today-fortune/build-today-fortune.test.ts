@@ -659,7 +659,7 @@ test('today question readings use the same calculated day and distinct personal 
     for (const score of result.scores) {
       assert.ok(score.reading);
       assert.equal(score.summary, score.reading.answer);
-      assert.match(score.reading.evidence, /태어난 날.*오늘.*관계/);
+      assert.match(score.reading.evidence, /태어난 날.*일의 관계/);
       assert.ok(score.reading.example.length > 20);
       assert.ok(score.reading.choice.length > 20);
       assert.doesNotMatch(JSON.stringify(score.reading), /[\u3400-\u9fff]|반드시|문제의 절반|소득이 생기는|무조건/);

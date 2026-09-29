@@ -39,3 +39,24 @@ export function dedupeSentencesDeep<T>(value: T, seen: Set<string> = new Set()):
   }
   return value;
 }
+
+// 2026-09-29 — 오늘운세 한 풀이에 '오늘'이 평균 21번 나와 어색했다(사용자 피드백: "오늘은 오늘은 하면서").
+//   한 문단 안에서 첫 '오늘'만 두고 뒤에 다시 나오는 '오늘은 '·'오늘 ' 을 뺀다('오늘의'·'오늘도' 등은 둔다).
+//   문자열 목록(추천·피할 행동 등)은 한 문단처럼 이어 읽히므로 목록 전체에서 첫 '오늘'만 둔다.
+export function thinRepeatedTodayDeep<T>(value: T, state = { seen: false }): T {
+  if (typeof value === 'string') {
+    const first = state.seen ? -2 : value.indexOf('오늘');
+    if (first === -1) return value;
+    state.seen = true;
+    const head = value.slice(0, first + 2);
+    return (head + value.slice(first + 2).replace(/오늘은? /g, '')) as T;
+  }
+  if (Array.isArray(value)) {
+    const shared = { seen: false };
+    return value.map((v) => thinRepeatedTodayDeep(v, typeof v === 'string' ? shared : { seen: false })) as T;
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, thinRepeatedTodayDeep(v)])) as T;
+  }
+  return value;
+}

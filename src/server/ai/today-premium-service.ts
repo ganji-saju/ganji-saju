@@ -1,3 +1,4 @@
+import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
 import { CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 // 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
@@ -90,6 +91,7 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     '결제한 사용자에게 보여줄 "오늘의 깊은 풀이" 한 단락을 작성하세요.',
     '구조 순서: 오늘 질문의 답 → 원국과 해당 날짜가 만나는 근거 → 공감할 수 있는 조건부 생활 장면 → 상황별 차이 → 오늘의 선택 기준.',
     '4~6문장으로 자연스럽게 이어지는 한 단락만 작성합니다. 목록·번호·소제목 없이 줄글로.',
+    '"오늘"은 첫 문장에 한 번만 쓰고 이후 문장에서는 되풀이하지 마세요("오늘은"으로 문장을 여러 번 시작하지 않기).',
     '아래 입력 정보를 근거로 삼되 그대로 복사하지 말고 하나의 흐름으로 풀어 씁니다.',
     '입력에 없는 직업·연애 상태·사건·상대의 마음은 지어내지 마세요. "그런 상황이라면"으로 구분하고, 조건이 다르면 어떻게 선택할지도 설명하세요.',
     '점수를 성공 확률이나 건강 상태로 해석하지 마세요. 날짜와 계산된 관계를 바꾸지 말고, 실제 근거가 없는 시간대나 다음 날 결과도 만들지 마세요.',
@@ -157,7 +159,7 @@ export async function generateTodayPremiumInterpretation(
   // 원어 근거는 허용하고 한자·무근거 단정·본문 품질 위반은 차단한다.
   if (FORBIDDEN_CJK.test(text)
     || /100%|무조건/.test(text) || !validateChapterBody(text).passed) return null;
-  return text;
+  return thinRepeatedTodayDeep(text);
 }
 
 function firstNonEmpty(...values: Array<string | null | undefined>): string {
