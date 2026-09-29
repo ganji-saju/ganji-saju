@@ -10,10 +10,6 @@ interface Props {
   luckyPackage: TodayLuckyPackage;
 }
 
-const ELEMENT_HAN: Record<'목' | '화' | '토' | '금' | '수', string> = {
-  목: '木', 화: '火', 토: '土', 금: '金', 수: '水',
-};
-
 interface RowProps {
   icon: string;
   label: string;
@@ -75,7 +71,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
           >
             행운 오행 ·{' '}
             <span style={{ color: 'var(--app-pink-strong)' }}>
-              {lucky}({ELEMENT_HAN[lucky]})
+              {lucky}
             </span>{' '}
             기운
           </h2>
@@ -90,7 +86,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
             }}
             title="오늘 부담스러운 오행"
           >
-            피해야 할 · {unlucky}({ELEMENT_HAN[unlucky]})
+            피해야 할 · {unlucky}
           </span>
         ) : null}
       </div>
@@ -110,7 +106,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
                   background: circle.color,
                   boxShadow: '0 3px 8px rgba(0,0,0,0.18)',
                 }}
-                title={`${circle.element}(${ELEMENT_HAN[circle.element]})`}
+                title={circle.element}
               >
                 {circle.number}
               </div>
@@ -180,7 +176,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
         />
         <LuckyRow
           icon="compass"
-          label="궁합 좋은 띠 (오늘 일진 三合)"
+          label="궁합 좋은 띠 (일진 삼합)"
           items={luckyPackage.zodiacFriends}
           accent="var(--app-jade)"
         />
@@ -199,7 +195,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
           }}
         >
           <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-            ⚠️ 오늘 피하면 좋은 것
+            ⚠️ 피하면 좋은 것
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {luckyPackage.avoidColors.length > 0 ? (

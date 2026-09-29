@@ -71,7 +71,7 @@ export function TodaySajuChartCard({ chart }: Props) {
             className="rounded-[12px] px-2.5 py-1 text-[12.1px] font-extrabold text-white"
             style={{ background: 'var(--app-ink)' }}
           >
-            오늘 일진 · {todayKor || chart.todayGanzi}({chart.todayGanzi})
+            오늘 일진 · {todayKor || chart.todayGanzi}
           </span>
         ) : null}
       </div>
