@@ -1,5 +1,6 @@
 'use client';
 
+import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -335,7 +336,7 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
             <div className="mt-1 inline-flex items-center gap-1 rounded-[12px] bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-ink)]" style={{ border: '1px solid var(--app-pink-line)' }}>
               <span>일진</span>
               <span style={{ fontFamily: 'var(--font-han)' }}>
-                {entry.iljinKorean ? `${entry.iljinKorean}(${entry.iljinGanzi})` : entry.iljinGanzi}
+                {entry.iljinKorean || toKoreanGanzi(entry.iljinGanzi)}
               </span>
               <span className="text-[11.5px] font-bold text-[var(--app-pink-strong)]">·</span>
               <span className="text-[12.1px] tabular-nums">{entry.score}점</span>

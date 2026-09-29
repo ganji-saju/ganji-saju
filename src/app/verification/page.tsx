@@ -1,3 +1,4 @@
+import { stemCharToKorean } from '@/lib/saju/ganzi-korean';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
@@ -720,7 +721,7 @@ export default async function VerificationPage({ searchParams }: VerificationPag
             <div>
               <div className="app-caption">사주 계산 추적</div>
               <h2 className="mt-2 text-3xl font-semibold text-[var(--app-ivory)]">
-                {sajuAudit.status === 'ready' ? `${sajuAudit.calculation.dayMaster.stem} 일간 계산 로그` : '계산 로그 없음'}
+                {sajuAudit.status === 'ready' ? `${stemCharToKorean(sajuAudit.calculation.dayMaster.stem)} 일간 계산 로그` : '계산 로그 없음'}
               </h2>
             </div>
             <JsonLink href={sajuApiHref} />

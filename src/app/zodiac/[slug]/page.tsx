@@ -1,6 +1,7 @@
 // Redesign 2026-05-13 (Claude Design / screens-e.jsx ScreenZodiacDetail):
 // 띠 상세 — gradient hero + 한자 워터마크 + ZodiacChip + period tabs + 점수 + 키워드 + 분야별 + 다른 띠.
 // 데이터(ZODIAC_FORTUNES / personalization)·라우팅 무수정.
+import { branchCharToKorean } from '@/lib/saju/ganzi-korean';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -239,7 +240,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
   const isPersonalizedMatch = personalizedSlug === item.slug;
   const meta = ZODIAC_META[item.slug as keyof typeof ZODIAC_META];
   const zodiacKey = SLUG_TO_ZODIAC[item.slug] ?? 'dragon';
-  const hanja = ZODIAC_HANJA[item.slug] ?? '辰';
+  const hanja = branchCharToKorean(ZODIAC_HANJA[item.slug] ?? '辰');
   const gradient = ZODIAC_GRADIENT[item.slug] ?? ZODIAC_GRADIENT.dragon;
   const scores = getDailyScores(item.slug, period);
   const luckyColor = LUCKY_COLOR_TABLE[scores.seed % LUCKY_COLOR_TABLE.length];
