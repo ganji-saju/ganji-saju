@@ -105,3 +105,12 @@ test('오늘운세 LLM 출력 상한은 추론형 모델이 빈 답을 내지 �
   const m = source.match(/maxOutputTokens:\s*(\d[\d_]*)/);
   assert.ok(m && Number(m[1].replace(/_/g, '')) >= 1000);
 });
+
+test('AI 제목·본문에서 첫 오늘만 남긴다', () => {
+  const r = parseTodayFortuneNarrative(
+    '{"headline":"오늘은 차분한 하루","body":"오늘은 천천히 가요. 오늘 하나만 정해요."}',
+    { headline: 'FB', body: 'FBB' }
+  );
+  assert.equal(r.source, 'openai');
+  assert.equal(r.body, '천천히 가요. 하나만 정해요.');
+});
