@@ -94,7 +94,7 @@ export function computeRefundBreakdown(
       userId: row.user_id ?? null,
       userEmail: null,
       userName: null,
-      reason: null,
+      reason: refundNoteOf(row.metadata),
       paymentKey: row.payment_key ?? null,
     });
   }
@@ -189,7 +189,8 @@ async function attachRefundReasons(service: SupabaseClient, breakdown: RefundBre
     console.error('[refund-breakdown] reason lookup failed:', error.message);
     return breakdown;
   }
-  return { ...breakdown, items: breakdown.items.map((i) => ({ ...i, reason: pickRefundReason(i, (data ?? []) as RefundRequestRow[]) })) };
+  // 환불 요청 사유가 우선, 없으면 관리자가 나중에 적은 사유(refundNote).
+  return { ...breakdown, items: breakdown.items.map((i) => ({ ...i, reason: pickRefundReason(i, (data ?? []) as RefundRequestRow[]) ?? i.reason })) };
 }
 
 interface RefundRequestRow {
@@ -203,4 +204,10 @@ export function pickRefundReason(item: Pick<RefundBreakdownItem, 'paymentKey' | 
   const mine = requests.filter((r) => r.payment_key && r.payment_key === item.paymentKey);
   const hit = mine.find((r) => Number(r.amount) === item.amountWon) ?? mine[0];
   return hit?.reason?.trim() || null;
+}
+
+/** 관리자가 나중에 적은 사유(payment_orders.metadata.refundNote.text). */
+export function refundNoteOf(metadata: unknown): string | null {
+  const note = (metadata as { refundNote?: { text?: unknown } } | null)?.refundNote?.text;
+  return typeof note === 'string' && note.trim() ? note.trim() : null;
 }
