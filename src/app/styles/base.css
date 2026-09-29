@@ -1,4 +1,15 @@
 @layer base {
+  /* 2026-09-29 — 페이지 전체 셸 전용: 투명도 없이 살짝 올라오기만. 배경 탭에선 애니메이션이 0초에 멈춘 채
+     '진행 중'으로 남아(채움 모드와 무관) opacity 0 키프레임이면 본문이 통째로 안 보였다. */
+  @keyframes app-rise {
+    from {
+      transform: translateY(14px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
   @keyframes app-fade-up {
     from {
       opacity: 0;

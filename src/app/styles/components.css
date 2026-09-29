@@ -42,10 +42,10 @@
     min-height: 100svh;
   }
 
-  /* 2026-09-29 — both 였다: 애니메이션이 시작되기 전(배경 탭 등)엔 from 상태(opacity 0)로 붙어 본문이 통째로 안 보였다.
-     채움 없음으로 두면 시작 전엔 그냥 보이고, 시작되면 똑같이 떠오른다(지연 0 이라 깜빡임 없음). */
+  /* 2026-09-29 — 투명도 페이드는 배경 탭에서 멈춰 본문을 가렸다(#894 의 채움 모드 변경으론 안 풀림 — 멈춘 애니메이션은
+     '진행 중' 이라 from 이 그대로 적용된다). 셸은 올라오기만 한다. */
   .app-shell-content {
-    animation: app-fade-up 360ms ease;
+    animation: app-rise 360ms ease;
   }
 
   .app-fixed-bottom-cta-clearance {
