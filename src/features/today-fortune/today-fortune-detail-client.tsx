@@ -6,6 +6,7 @@
 'use client';
 
 import Link from 'next/link';
+import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, MessageCircleMore } from 'lucide-react';
 import { GangiLoadingOverlay, GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -65,6 +66,11 @@ function getAccessNotice(access: TodayFortuneUnlockResponse['access']) {
   }
 }
 
+
+function thinDetailFree<T>(value: T): T {
+  return value ? thinRepeatedTodayDeep(value, { seen: false }, true) : value;
+}
+
 export function TodayFortuneDetailClient({
   sourceSessionId,
   concern,
@@ -99,7 +105,8 @@ export function TodayFortuneDetailClient({
   const [loading, setLoading] = useState(Boolean(sourceSessionId) && !hasInitialResult);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TodayFortunePremiumResult | null>(initialResult);
-  const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(initialFreeResult);
+  // 2026-09-29 — 상세 화면엔 무료 카드 6개가 함께 나와 카드마다 '오늘'이 남았다 → 이 화면에선 전체 기준 첫 '오늘'만.
+  const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(() => thinDetailFree(initialFreeResult));
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(initialNotice);
   const attemptedRef = useRef(false);
@@ -195,7 +202,7 @@ export function TodayFortuneDetailClient({
         }
 
         setResult(data.result);
-        setFreeResult(data.freeResult ?? null);
+        setFreeResult(thinDetailFree(data.freeResult ?? null));
         setRemainingCredits(data.remaining ?? null);
         setNotice(getAccessNotice(data.access));
         trackMoonlightEvent('premium_result_viewed', {
