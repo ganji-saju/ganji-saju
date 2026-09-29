@@ -104,13 +104,52 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const response = await generateLifetimeInterpretation({
+  const generationRequest = {
     readingIdentifier: parsed.readingId,
     targetYear: parsed.targetYear ?? getCurrentKoreaYear(),
     regenerate: parsed.regenerate,
     counselorId: parsed.counselorId,
     readingRecord: reading,
-  });
+  };
+
+
+  // Opt-in streaming keeps existing JSON consumers (including saved-report flows) compatible.
+  if (req.headers.get('accept')?.includes('application/x-ndjson')) {
+    const encoder = new TextEncoder();
+    const abort = new AbortController();
+    let closed = false;
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (event: unknown) => {
+          if (!closed) controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+        };
+        const onAbort = () => abort.abort();
+        req.signal.addEventListener('abort', onAbort, { once: true });
+        if (req.signal.aborted) abort.abort();
+        try {
+          send({ type: 'progress', percent: 0, label: '풀이를 준비하고 있어요' });
+          const response = await generateLifetimeInterpretation({
+            ...generationRequest,
+            signal: abort.signal,
+            onProgress: (percent, label) => send({ type: 'progress', percent, label }),
+          });
+          if (!response) throw new Error('missing reading');
+          send({ type: 'result', payload: { ...response, interpretation: hangulizeDeep(dedupeSentencesDeep(response.interpretation)) } });
+        } catch {
+          send({ type: 'error', error: '깊은 사주풀이를 불러오지 못했습니다. 다시 시도해 주세요.' });
+        } finally {
+          req.signal.removeEventListener('abort', onAbort);
+          if (!closed) { closed = true; controller.close(); }
+        }
+      },
+      cancel() { closed = true; abort.abort(); },
+    });
+    return new Response(stream, {
+      headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' },
+    });
+  }
+
+  const response = await generateLifetimeInterpretation(generationRequest);
 
   if (!response) {
     return NextResponse.json(

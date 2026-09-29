@@ -827,6 +827,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
   const [data, setData] = useState<LifetimeInterpretationResponse | null>(null);
   const [error, setError] = useState('');
   const [reloadToken, setReloadToken] = useState(0);
+  const [progress, setProgress] = useState({ percent: 0, label: '풀이를 준비하고 있어요' });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -834,11 +835,12 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
     async function load() {
       setState('loading');
       setError('');
+      setProgress({ percent: 0, label: '풀이를 준비하고 있어요' });
 
       try {
         const response = await fetch('/api/interpret/lifetime', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Accept: 'application/x-ndjson' },
           body: JSON.stringify({
             readingId: slug,
             targetYear,
@@ -847,10 +849,42 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           signal: controller.signal,
         });
 
-        const payload = (await response.json().catch(() => null)) as
-          | LifetimeInterpretationResponse
-          | { error?: string }
-          | null;
+        let payload: LifetimeInterpretationResponse | { error?: string } | null = null;
+        if (response.ok && response.headers?.get('content-type')?.includes('application/x-ndjson') && response.body) {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let pending = '';
+          const consume = (line: string) => {
+            if (!line.trim()) return;
+            const event = JSON.parse(line);
+            if (event.type === 'progress' && Number.isFinite(event.percent) && typeof event.label === 'string') {
+              setProgress(previous => ({ percent: Math.max(previous.percent, Math.min(99, Math.max(0, event.percent))), label: event.label }));
+            } else if (event.type === 'result') {
+              payload = event.payload;
+            } else if (event.type === 'error') {
+              throw new Error('Generation failed');
+            }
+          };
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (controller.signal.aborted) return;
+              pending += decoder.decode(value, { stream: !done });
+              let newline: number;
+              while ((newline = pending.indexOf('\n')) !== -1) {
+                consume(pending.slice(0, newline));
+                pending = pending.slice(newline + 1);
+              }
+              if (done) { consume(pending); break; }
+            }
+          } finally {
+            await reader.cancel().catch(() => undefined);
+            reader.releaseLock();
+          }
+        } else {
+          payload = await response.json().catch(() => null);
+        }
+        if (controller.signal.aborted) return;
 
         if (!response.ok || !payload || !('ok' in payload) || payload.ok !== true) {
           setError(payload && 'error' in payload && payload.error ? payload.error : '깊은 사주풀이를 불러오지 못했습니다.');
@@ -858,6 +892,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           return;
         }
 
+        setProgress({ percent: 100, label: '풀이 준비 완료' });
         setData(payload);
         setState('ready');
       } catch (fetchError) {
@@ -905,6 +940,25 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
             성향·관계·재물·일·건강·대운·평생 전략까지 9개 챕터로 묶어드릴게요.
           </p>
+        </div>
+        <div className="mt-5">
+          <div className="mb-2 flex items-center justify-between gap-3 text-[14px] font-bold text-[var(--app-ink)]">
+            <span>생성 진행률</span>
+            <span className="tabular-nums text-[var(--app-pink-strong)]">{progress.percent}%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="깊은 사주풀이 생성 진행률"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress.percent}
+            aria-valuetext={`${progress.percent}% · ${progress.label}`}
+            className="h-3 overflow-hidden rounded-full bg-[var(--app-pink-line)]"
+          >
+            <div className="h-full rounded-full bg-[var(--app-pink-strong)] transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${progress.percent}%` }} />
+          </div>
+          <p role="status" className="mt-2 text-[14px] font-bold text-[var(--app-copy)]">{progress.label}</p>
+          <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">완료된 처리 단계 기준이에요. 단계마다 걸리는 시간은 달라요.</p>
         </div>
         <ul className="mt-5 grid gap-1.5">
           {['타고난 성향과 보완 방향 정리', '10년 단위 대운 흐름 매칭', '평생 활용 전략 작성'].map((label, index) => (
