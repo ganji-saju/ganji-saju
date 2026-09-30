@@ -1,5 +1,12 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-30 — 풀이·PDF 개선 머지/배포 및 Codex staging 동기화 지침
+
+- 사용자 승인: 이번 풀이 분량·쉬운 설명·PDF 개선을 머지하고 운영 및 staging에 배포. 이후 Codex도 Claude Code와 동일하게 staging 반영까지 마무리하도록 요청.
+- 확인: 현재 `codex/reading-depth-budgets`에 `37c56bd2`·`11cb92c2` 두 작업 커밋. main `6243ce4a`, staging은 main보다 4커밋 뒤이며 staging 전용 커밋 없음. 관련 기존 PR 없음, 무관한 Dependabot #896 제외. `.claude/qa/` 보존.
+- AGENTS.md에 승인된 머지·배포 범위, staging 전용 변경 보존/fast-forward, CI·E2E·CodeQL 요약 체크 및 두 환경 배포 상태 확인을 공통 지침으로 추가.
+- 사전 검증은 위 두 작업 기록의 단위 2,032개·사양 536개·타입 검사·PDF 6사례 통과 결과를 사용. 이번 추가는 작업 지침/기록만 변경했으며 diff 검사 통과. PR 원격 검사·머지·실제 배포 결과는 후속 기록으로 남긴다.
+
 ## 2026-09-30 — PDF 큰 글씨·신년 20쪽 구성·쉬운 풀이 설명
 
 - 사용자 요청: 모든 PDF 글씨 확대, 신년운세 20쪽 분량, 누구나 이해하기 쉬운 풀이. 기존 `codex/reading-depth-budgets`의 미배포 분량 보강 커밋 `37c56bd2`에 이어 작업. 원격 main `6243ce4a`, 기존 `.claude/qa/` 보존.
