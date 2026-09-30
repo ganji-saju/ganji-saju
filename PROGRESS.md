@@ -5,7 +5,7 @@
 - PR #905 최종 HEAD `28fcefa8`의 CI 2건, CodeQL 분석 및 별도 요약 체크, Playwright E2E, Vercel 미리보기 모두 통과 확인 후 squash 머지. 제품 반영 커밋 `bdf1ee53`.
 - 원격 main/staging을 `bdf1ee53`으로 동기화. staging 전용 커밋이 없는 것을 확인하고 강제 push 없이 fast-forward함. 앞으로 Codex의 머지·배포 요청에도 같은 범위를 적용하는 AGENTS.md 지침 포함.
 - 운영 배포 `dpl_DfSkBXd7XuUCqocp1FyHypsaARaJ`, staging 배포 `dpl_2dHKJPoEUCKQ6HmLdKtfsT9nG4Qu` 모두 READY. GitHub 배포 6749675305(Production)·6749678488(Preview)의 SHA가 제품 반영 커밋과 일치하고 각 도메인이 해당 배포를 가리킴을 확인.
-- https://ganjisaju.kr 및 https://staging.ganjisaju.kr 홈 응답 HTTP 200 확인. 생성 분량·쉬운 설명·큰 글씨 PDF·신년 기본 20쪽 반영 완료. 저장 풀이 일괄 재작성이나 실제 유료 AI 생성 검수는 수행하지 않음.
+- https://ganjisaju.kr 홈 HTTP 200 확인. staging은 배포 READY이며 도메인에서 기존 관리자 전용 Basic 인증 안내와 HTTP 401이 정상 응답함을 확인(익명 홈 200으로 확인한 것은 아님). 인증 후 화면 검수는 미실시. 생성 분량·쉬운 설명·큰 글씨 PDF·신년 기본 20쪽 반영 완료. 저장 풀이 일괄 재작성이나 실제 유료 AI 생성 검수는 수행하지 않음.
 - 이 완료 기록은 별도 문서 PR로 함께 보존하며, 기록 머지 후에도 main/staging 동기화와 배포 완료를 확인한다. 기존 `.claude/qa/`는 수정·커밋하지 않음.
 
 ## 2026-09-30 — PR #905 배포 빌드 타입 오류 수정 및 검증 정정
