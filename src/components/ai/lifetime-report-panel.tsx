@@ -953,7 +953,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             aria-valuemax={100}
             aria-valuenow={progress.percent}
             aria-valuetext={`${progress.percent}% · ${progress.label}`}
-            className="h-3 overflow-hidden rounded-full bg-[var(--app-pink-line)]"
+            className="lifetime-generation-track relative h-3 overflow-hidden rounded-full bg-[var(--app-pink-line)]"
           >
             <div className="h-full rounded-full bg-[var(--app-pink-strong)] transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${progress.percent}%` }} />
           </div>
