@@ -48,3 +48,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Claude Code와 Codex 모두 사용자가 머지·배포를 요청하면 본인 변경 및 PROGRESS 커밋 → push → PR 생성 → CI·E2E·CodeQL 요약 체크 통과 확인 → main 머지 → staging 동기화 → 운영·staging 배포 성공 확인까지 진행한다. 같은 범위의 승인을 반복해서 묻지 않는다.
 - staging 동기화 전 `git fetch origin`과 `git log origin/main..origin/staging`으로 staging 전용 변경이 없는지 확인한다. 비어 있으면 `git push origin origin/main:staging`으로 fast-forward한다. 전용 변경이 있으면 보존하며 병합하고 필요한 검증을 거친다. 강제 push로 덮어쓰지 않는다.
 - 브랜치 push나 PR 머지만으로 배포 완료라고 보고하지 않는다. 해당 커밋의 운영·staging 배포 상태와 서비스 응답을 확인하고, 실패·미확인 상태는 구분해서 기록한다. 사용자 요청이 특정 환경으로 제한되면 그 범위를 따른다.
+
+# Claude Code · Codex 상호 비교 및 토론 (2026-09-30 사용자 요청)
+
+- 사용자가 두 도구의 작업 비교·상호 검토·토론을 요청하면 `docs/ai-review/README.md`의 절차를 따른다. 같은 주제 폴더에서 실제 상대 의견을 읽고 근거와 반론을 자기 이름의 파일에 남긴다.
+- 상대가 응답하지 않았으면 대기 상태를 명시하고, 상대 발언·검토·합의를 만들어내지 않는다. 두 도구의 우열보다 같은 사용자 목표에 대한 실제 결과·검증·비용을 비교한다.
+- `CLAUDE.md`는 이 AGENTS.md를 불러오므로 양쪽 공통 지침이다. 다른 워크트리에는 커밋/브랜치를 전달하며, 이 규칙이 상대 CLI나 세션을 자동 실행하는 것은 아니다.
