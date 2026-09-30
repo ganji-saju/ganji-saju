@@ -15,7 +15,7 @@ import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
 import { hasNewYearEntitlementForReading, hasYearCoreEntitlementForReading } from '@/lib/product-entitlements';
 
 export const runtime = 'nodejs';
-export const maxDuration = 75;
+export const maxDuration = 90;
 
 interface InterpretYearlyRequest {
   readingId: string;

@@ -10,7 +10,7 @@ import {
 } from '@/lib/counselors';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
-export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v8-depth';
+export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v9-rich-reading';
 
 export interface SajuAiInterpretation {
   headline: string;
@@ -25,8 +25,8 @@ export interface ParsedSajuAiInterpretation {
 }
 
 const MAX_HEADLINE_LENGTH = 80;
-const MAX_SUMMARY_LENGTH = 520;
-const MAX_INSIGHT_LENGTH = 220;
+const MAX_SUMMARY_LENGTH = 1600;
+const MAX_INSIGHT_LENGTH = 700;
 const MAX_INSIGHTS = 4;
 
 // 2026-07-06 — interpret 경로는 챕터/총평과 달리 런타임 한자 validator 가 없다.
@@ -383,10 +383,10 @@ export function createInterpretationPrompt(
       '[밀착 개인화] structuredInput 의 직업·관계·고민 컨텍스트가 있으면 장면의 배경으로 자연스럽게 깔아 이 사람의 지금 삶에 닿게 합니다. 없는 사실·사건은 지어내지 말고, 일어날 수 있는 장면은 "~한다면", "~할 때"처럼 조건으로 엽니다.',
       'insights 각 항목은 확인된 명리 근거와 적용 조건 → 조건부 생활 장면 → 선택 기준으로 씁니다. 용신으로 채택됐다는 사실을 그 오행의 부족 판정으로 바꾸지 마세요.',
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
-      'JSON 스키마: {"headline":"짧은 제목","summary":"3~4문장의 자연어 요약","insights":["근거+장면+행동 통찰 1","통찰 2","통찰 3","통찰 4"]}',
+      'JSON 스키마: {"headline":"짧은 제목","summary":"7~10문장의 자연어 요약","insights":["근거+장면+행동 통찰 1","통찰 2","통찰 3","통찰 4"]}',
       'headline은 38자 안팎으로, 일주 이름 또는 격국을 인용해 사용자가 "내 사주 풀이다" 라고 즉시 인식할 수 있게 씁니다.',
-      'summary는 3~4문장으로 풍성하게 씁니다. 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 핵심 해석과 적용 조건을 넣고, 이어지는 문장은 그 해석이 이 사람 삶에서 어떻게 드러나는지 구체적 장면으로 풀어 읽는 맛을 살립니다.',
-      'insights는 4개로 작성하며, 강점/약점(무너지는 자리)/관계 또는 일의 포인트/오늘의 행동을 각각 다른 항목에 담되 서로 겹치지 않게 합니다. 각 항목은 근거 글자 + 구체 장면 + 행동 구조로, 독자가 실제 상황과 비교할 질문이나 선택 기준으로 마무리합니다.',
+      'summary는 7~10문장으로 풍성하게 씁니다. 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 핵심 해석과 적용 조건을 넣고, 이어지는 문장은 그 해석이 이 사람 삶에서 어떻게 드러나는지 구체적 장면으로 풀어 읽는 맛을 살립니다.',
+      'insights는 4개로 작성하며, 강점/약점(무너지는 자리)/관계 또는 일의 포인트/오늘의 행동을 각각 다른 항목에 담되 서로 겹치지 않게 합니다. 각 항목은 4~6문장으로 근거 글자 + 구체 장면 + 반대 조건 + 행동 구조로, 독자가 실제 상황과 비교할 질문이나 선택 기준으로 마무리합니다.',
       ...buildReportCounselorInstructions(counselorId),
     ].join('\n'),
     input: structuredInput,

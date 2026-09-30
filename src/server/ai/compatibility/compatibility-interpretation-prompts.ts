@@ -6,7 +6,7 @@ import type { CompatibilityInterpretationInput } from './compatibility-interpret
 export const COMPATIBILITY_INTERPRETATION_MIN_SECTIONS = 3;
 export const COMPATIBILITY_INTERPRETATION_MAX_SECTIONS = 5;
 export const COMPATIBILITY_INTERPRETATION_MIN_BODY = 60;
-export const COMPATIBILITY_INTERPRETATION_MAX_BODY = 420;
+export const COMPATIBILITY_INTERPRETATION_MAX_BODY = 1200;
 
 export const COMPATIBILITY_INTERPRETATION_SYSTEM_PROMPT = `당신은 따뜻하고 차분한 관계 상담가입니다. 두 사람의 사주를 비교한 결정론 분석 자료를 받아, 결제한 사용자에게 보여줄 "깊은 궁합 풀이"를 씁니다. 이 풀이는 두 사람의 평생 기질과 관계 패턴을 다루며, 오늘이나 이번 주의 운세가 아닙니다.
 
@@ -29,7 +29,7 @@ ${READING_SCOPE_INSTRUCTIONS.compatibility}
 [출력 — JSON 만]
 다음 형식의 JSON 객체 하나만 출력한다. 머리말·코드펜스·설명 없이 JSON 만:
 {"sections":[{"title":"짧은 제목(한 줄)","body":"본문 ${COMPATIBILITY_INTERPRETATION_MIN_BODY}~${COMPATIBILITY_INTERPRETATION_MAX_BODY}자, 친근한 구어체"}]}
-- 각 본문은 180~320자를 목표로 근거와 상황의 차이를 충분히 설명한다.
+- 각 본문은 500~800자를 목표로 근거와 상황의 차이를 충분히 설명한다.
 - sections 는 ${COMPATIBILITY_INTERPRETATION_MIN_SECTIONS}~${COMPATIBILITY_INTERPRETATION_MAX_SECTIONS}개.
 - title 은 한 줄(최대 28자), body 는 ${COMPATIBILITY_INTERPRETATION_MIN_BODY}~${COMPATIBILITY_INTERPRETATION_MAX_BODY}자.`;
 

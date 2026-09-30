@@ -10,7 +10,7 @@ import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 // 2026-09-26 v3 — 가족 관계·학업과 배움 두 장 추가(버전이 바뀌어 기존 구매자도 다음 열람에 새로 만든다).
-export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v4-natal-depth';
+export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v5-rich-reading';
 
 export type SajuLifetimeAiSectionKey =
   | 'coreIdentity'
@@ -57,7 +57,7 @@ const SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string }> = [
 const MAX_OPENING_LENGTH = 1500;
 const MAX_KEYWORD_LENGTH = 180;
 const MAX_RULE_LENGTH = 420;
-const MAX_SECTION_LENGTH = 1800;
+const MAX_SECTION_LENGTH = 3200;
 const MAX_REMEMBER_LENGTH = 220;
 const MAX_SUMMARY_LENGTH = 220;
 const CORE_SECTION_KEYS = ['wealthStyle', 'careerDirection', 'relationshipPattern'] as const;
@@ -528,7 +528,7 @@ export function createLifetimeInterpretationPrompt(
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 문구는 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
       '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 지정된 11개 section 키를 빠짐없이 유지한다.',
-      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 400~550자, 나머지 8개 장은 각 100~140자를 목표로 쓴다. 전체 문장은 2200~2700자 안에서 마무리하고 JSON을 완성한다.',
+      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 600~900자, 나머지 8개 장도 각 350~600자를 목표로 쓴다. 다른 장의 조언을 반복하지 말고 각 분야의 근거·조건·생활 장면을 설명한 뒤 JSON을 완성한다. 근거가 부족한 장은 억지로 분량을 채우지 않는다.',
       '- 재물 장은 ① 무엇을 어떤 조건으로 대가에 연결하는가 ② 벌어도 남지 않는 패턴은 무엇인가 ③ 큰 결정을 앞두고 어떤 조건을 비교할 것인가에 답한다. lifetimeEvidence.wealthStyle의 네 상세 필드를 근거로 사용한다.',
       '- 직업 장은 ① 어떤 역할과 환경에서 실력이 드러나는가 ② 잘하지만 소진되는 일은 무엇인가 ③ 조직·독립을 고를 때 어떤 조건이 필요한가에 답한다. 직업명 목록 대신 실제로 맡는 과정·권한·평가 조건을 비교한다.',
       '- 관계 장은 ① 편안하게 가까워지는 방식은 무엇인가 ② 표현과 기대가 어긋나는 장면은 무엇인가 ③ 오래 가는 관계를 위해 어떤 합의가 필요한가에 답한다. 입력한 현재 관계 상태만 사용한다.',

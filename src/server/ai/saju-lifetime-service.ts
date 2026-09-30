@@ -137,8 +137,8 @@ export interface LifetimeInterpretationResponsePayload {
   stageResults: LifetimeGenerationStageResult[];
 }
 
-const LIFETIME_TIMEOUT_MS = 38_000;
-const LIFETIME_OUTPUT_TOKENS = 4800;
+const LIFETIME_TIMEOUT_MS = 65_000;
+const LIFETIME_OUTPUT_TOKENS = 14000;
 
 export async function generateLifetimeInterpretation(
   request: GenerateLifetimeInterpretationRequest

@@ -136,7 +136,7 @@ export async function resolveNamedReadingInput(
 }
 
 export const TODAY_FORTUNE_RESULT_SNAPSHOT_VERSION = 'today-fortune-result-snapshot/v1';
-export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v3-depth';
+export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v4-rich-reading';
 
 export interface TodayFortuneResultSnapshot {
   id: string;

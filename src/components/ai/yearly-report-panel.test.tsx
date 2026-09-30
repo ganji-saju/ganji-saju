@@ -18,6 +18,9 @@ it('신년운세 모드: 상담사·재생성 없이 한 번만 요청하고, �
   const input = { year: 1982, month: 1, day: 29, hour: 8, gender: 'male' as const };
   const report = buildYearlyReport(input, calculateSajuDataV1(input), 2027);
   const interpretation = buildFallbackYearlyInterpretation(report);
+  interpretation.opening = '정관은 책임과 역할의 관계를 살피는 근거입니다. 두 번째 설명입니다. 세 번째 장면입니다. 마지막 선택 기준도 끝까지 표시합니다.';
+  interpretation.categories.work = '첫 직업 근거입니다. 두 번째 조건입니다. 세 번째 대비입니다. 직업 선택의 마지막 질문입니다.';
+  interpretation.monthlyFlows[0].focus = '월별 근거를 설명합니다. '.repeat(12) + '월별 선택의 마지막 조건도 표시합니다.';
   let resolve!: (v: unknown) => void;
   const fetchMock = vi.fn(() => new Promise((r) => { resolve = r; }));
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -33,6 +36,11 @@ it('신년운세 모드: 상담사·재생성 없이 한 번만 요청하고, �
     expect(body.regenerate).toBe(false);
     await act(async () => { resolve({ ok: true, json: async () => ({ ok: true, targetYear: 2027, counselorId: 'female', report, interpretation }) }); });
     expect(host.textContent).not.toContain('다시 생성');
+    expect(host.textContent).toContain('정관은 책임과 역할의 관계를 살피는 근거입니다.');
+    expect(host.textContent).toContain('마지막 선택 기준도 끝까지 표시합니다.');
+    expect(host.textContent).toContain('직업 선택의 마지막 질문입니다.');
+    await act(async () => { Array.from(host.querySelectorAll('button')).find(button => button.textContent?.includes('다음'))!.click(); });
+    expect(host.textContent).toContain('월별 선택의 마지막 조건도 표시합니다.');
   } finally {
     act(() => root.unmount());
     vi.unstubAllGlobals();

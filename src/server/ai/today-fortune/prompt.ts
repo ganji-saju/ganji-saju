@@ -5,11 +5,11 @@ import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS } from '@/serv
 // { instructions, input } 문자열 쌍을 반환한다.
 // Task-6 에서 generateAiText({ ..., responseFormat: { type: 'json_schema_body' } }) 에 전달된다.
 //
-// 출력 JSON 형식: { headline: string (1문장), body: string (4문장, 260자 이내) }
+// 출력 JSON 형식: { headline: string (1문장), body: string (6~9문장, 350~550자 목표) }
 // naming-policy: 본문 한자 0, doom/공포 조장 금지, 단정 표현 금지.
 import type { TodayFortuneGrounding } from './grounding';
 
-export const TODAY_FORTUNE_PROMPT_VERSION = 'tf-v3-depth';
+export const TODAY_FORTUNE_PROMPT_VERSION = 'tf-v4-rich-reading';
 
 /**
  * TodayFortuneGrounding → { instructions, input }
@@ -37,7 +37,7 @@ export function createTodayFortunePrompt(g: TodayFortuneGrounding): {
     '4. doom·공포·불안 조장 금지 — 무서운 예언, 경고성 선고, 불안 유발 표현을 쓰지 마세요.',
     '5. 치료·진단 단정 금지. 참고 조언 톤을 유지합니다.',
     '6. "오늘"은 첫 문장에 한 번만 쓰고 이후 문장에서는 되풀이하지 마세요("오늘은"으로 문장을 여러 번 시작하지 않기).',
-    '출력 형식: JSON { "headline": "오늘 질문의 답을 한 문장으로", "body": "답 → 근거 → 조건부 생활 장면 → 선택 기준을 담은 4문장, 260자 이내" }',
+    '출력 형식: JSON { "headline": "오늘 질문의 답을 한 문장으로", "body": "답 → 근거 → 조건부 생활 장면 → 선택 기준을 담은 6~9문장, 350~550자 목표" }',
     '목록·번호·소제목 없이 JSON 만 출력하세요.',
   ].join('\n');
 

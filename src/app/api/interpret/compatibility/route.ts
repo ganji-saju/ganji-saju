@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 import { generateCompatibilityInterpretation } from '@/server/ai/compatibility/generate-compatibility-interpretation';
 
 export const runtime = 'nodejs';
-export const maxDuration = 75;
+export const maxDuration = 120;
 
 const RELATIONSHIPS: CompatibilityRelationshipSlug[] = ['lover', 'family', 'friend', 'partner'];
 

@@ -64,8 +64,8 @@ export interface AttachTodayPremiumNarrativeDeps {
   userId?: string | null;
 }
 
-const TODAY_PREMIUM_MAX_OUTPUT_TOKENS = 600;
-const TODAY_PREMIUM_TIMEOUT_MS = 20_000;
+const TODAY_PREMIUM_MAX_OUTPUT_TOKENS = 2400;
+const TODAY_PREMIUM_TIMEOUT_MS = 35_000;
 
 /**
  * 플래그(기본 OFF). 코드 머지만으로 비용이 발생하지 않게 운영자가 명시적으로 켠다.
@@ -93,7 +93,7 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     '당신은 오늘 하루의 운세를 따뜻하고 차분하게 풀어주는 한국어 상담가입니다.',
     '결제한 사용자에게 보여줄 "오늘의 깊은 풀이" 한 단락을 작성하세요.',
     '구조 순서: 오늘 질문의 답 → 원국과 해당 날짜가 만나는 근거 → 공감할 수 있는 조건부 생활 장면 → 상황별 차이 → 오늘의 선택 기준.',
-    '4~6문장으로 자연스럽게 이어지는 한 단락만 작성합니다. 목록·번호·소제목 없이 줄글로.',
+    '10~14개의 짧은 문장, 600~900자를 목표로 2~3단락을 작성합니다. 오늘의 질문에 대한 답과 원국·일진 근거, 잘 풀릴 조건과 부담 조건, 서로 다른 생활 장면 2개, 선택 기준을 연결합니다. 목록·번호·소제목 없이 줄글로 쓰고 근거 부족은 반복으로 채우지 않습니다.',
     '"오늘"은 첫 문장에 한 번만 쓰고 이후 문장에서는 되풀이하지 마세요("오늘은"으로 문장을 여러 번 시작하지 않기).',
     '아래 입력 정보를 근거로 삼되 그대로 복사하지 말고 하나의 흐름으로 풀어 씁니다.',
     '입력에 없는 직업·연애 상태·사건·상대의 마음은 지어내지 마세요. "그런 상황이라면"으로 구분하고, 조건이 다르면 어떻게 선택할지도 설명하세요.',
