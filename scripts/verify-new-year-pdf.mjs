@@ -65,6 +65,7 @@ try {
     await page.setContent(html, { waitUntil: 'load' });
     await page.emulateMedia({ media: 'print' });
     await page.evaluate(() => document.fonts.ready);
+    assert.ok(await page.locator('.rp-deep-sec p').evaluateAll((nodes) => nodes.length > 0 && nodes.every((el) => parseFloat(getComputedStyle(el).fontSize) >= 16)), 'PDF narrative body must be at least 16px (12pt)');
     const metrics = await page.evaluate(() => ({
       pages: [...document.querySelectorAll('.report-page')].map((el) => ({ number: Number(el.getAttribute('data-page')), height: el.getBoundingClientRect().height })),
       // 2026-09-27 한자 전면 금지(명식 포함) — 문서 전체에서 한 글자도 없어야 한다.
@@ -72,6 +73,8 @@ try {
       horizontalOverflow: [...document.querySelectorAll('.report-page')].some((el) => el.scrollWidth > el.clientWidth + 1),
     }));
     assert.deepEqual(metrics.pages.map((p) => p.number), Array.from({ length: metrics.pages.length }, (_, i) => i + 1), 'page numbers must be sequential');
+    assert.ok(metrics.pages.length >= 20, 'new-year report must contain at least 20 substantive pages');
+    if (index === 0) assert.equal(metrics.pages.length, 20, 'standard report has 20 pages');
     const tooTall = metrics.pages.filter((p) => p.height > 1122.6);
     assert.deepEqual(tooTall, [], `A new-year sheet exceeds A4: ${JSON.stringify(tooTall)}`);
     assert.equal(metrics.horizontalOverflow, false, 'overflows horizontally');

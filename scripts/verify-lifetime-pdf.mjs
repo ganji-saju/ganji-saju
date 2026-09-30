@@ -85,6 +85,7 @@ try {
     await page.emulateMedia({ media: 'print' });
     await page.evaluate(() => document.fonts.ready);
     assert.ok((await page.locator('.rp-subject-title').textContent()).includes(input.name), 'Buyer name missing from the cover');
+    assert.ok(await page.locator('.rp-deep-sec p').evaluateAll((nodes) => nodes.length > 0 && nodes.every((el) => parseFloat(getComputedStyle(el).fontSize) >= 16)), 'PDF narrative body must be at least 16px (12pt)');
     const metrics = await page.evaluate(() => ({
       pages: [...document.querySelectorAll('.report-page')].map((element) => ({ number: Number(element.getAttribute('data-page')), height: element.getBoundingClientRect().height, width: element.getBoundingClientRect().width, text: element.textContent.length })),
       years: [...document.querySelectorAll('[data-year]')].map((el) => Number(el.getAttribute('data-year'))),

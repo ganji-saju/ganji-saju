@@ -5,12 +5,11 @@
 import type { ReactNode } from 'react';
 import { ChapterHead, DeepSection, PageFooter, RunningHeader } from '@/components/report/report-document';
 import { PDF_ELEMENT_COLORS } from '@/lib/saju/pdf-report-maps';
-import type { PdfNarrativeSection } from '@/lib/saju/pdf-report-pages';
+import { paginatePdfNarrative, type PdfNarrativeSection } from '@/lib/saju/pdf-report-pages';
 import type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { SajuYearlyReport } from '@/domain/saju/report';
 import type {
-  NewYearHighlight,
   NewYearHighlightCategory,
   SajuYearlyAiInterpretation,
 } from '@/server/ai/saju-yearly-interpretation';
@@ -25,7 +24,7 @@ const CATEGORY_LABEL: Record<NewYearHighlightCategory, string> = {
   family: '가족운',
   study: '학업·시험운',
 };
-// 총론과 분야별 운을 한 장으로 흘린다 — 장이 바뀌면 쪽이 강제로 나뉘어 총론 쪽이 반만 찼다(실측 450/1123px).
+// 총론과 관련 분야를 묶어 읽고, 긴 본문은 추가 쪽에 보존한다.
 const NARRATIVE_CHAPTER = '총론과 분야별 운';
 const BASE_CATEGORIES = ['work', 'wealth', 'love', 'relationship', 'health', 'move'] as const;
 
@@ -36,9 +35,9 @@ const MOMENTUM = {
 } as const;
 
 // 2026-09-27 사용자 지시 — 단락을 쪽 경계에서 잘라 "· 계속"으로 넘기지 않는다. 단락은 통째로 다음 쪽으로 간다.
-//   (평생 PDF 의 paginatePdfNarrative 는 1,100자에서 자른다.) 한 단락이 한 쪽을 넘을 만큼 길 때만 그 단락 혼자 한 쪽을 쓴다.
-const PAGE_WEIGHT = 1500;
-function paginateWholeSections(sections: PdfNarrativeSection[]): PdfNarrativeSection[][] {
+// 큰 글씨로 한 쪽에 담기 어려운 단락만 공통 쪽 나눔으로 이어 쓴다.
+const PAGE_WEIGHT = 1050;
+function paginateWholeSections(sections: PdfNarrativeSection[], maxWeight = PAGE_WEIGHT): PdfNarrativeSection[][] {
   const pages: PdfNarrativeSection[][] = [];
   let page: PdfNarrativeSection[] = [];
   let weight = 0;
@@ -46,7 +45,7 @@ function paginateWholeSections(sections: PdfNarrativeSection[]): PdfNarrativeSec
     if (!whole.text.trim()) continue;
     for (const section of splitOversized(whole)) {
     const w = section.text.length + 160;
-    if (page.length && weight + w > PAGE_WEIGHT) {
+    if (page.length && weight + w > maxWeight) {
       pages.push(page);
       page = [];
       weight = 0;
@@ -59,26 +58,10 @@ function paginateWholeSections(sections: PdfNarrativeSection[]): PdfNarrativeSec
   return pages;
 }
 
-// 한 단락이 혼자서도 한 쪽을 넘을 때만 문장 경계에서 나눈다(글자를 버리지 않는다). 보통 단락은 통째로 넘긴다.
-const MAX_SECTION_CHARS = PAGE_WEIGHT - 300;
+// Keep normal paragraphs together; the shared splitter also handles punctuation-free output.
 function splitOversized(section: PdfNarrativeSection): PdfNarrativeSection[] {
-  if (section.text.length <= MAX_SECTION_CHARS) return [section];
-  const sentences = section.text.split(/(?<=[.!?。])\s+/);
-  const chunks: string[] = [];
-  let current = '';
-  for (const sentence of sentences) {
-    if (current && current.length + sentence.length + 1 > MAX_SECTION_CHARS) {
-      chunks.push(current);
-      current = '';
-    }
-    current = current ? `${current} ${sentence}` : sentence;
-  }
-  if (current) chunks.push(current);
-  return chunks.map((text, i) => ({ ...section, label: i === 0 ? section.label : `${section.label} · 계속`, text }));
+  return section.text.length <= 850 ? [section] : paginatePdfNarrative([section], { maxItems: 1 }).flat();
 }
-
-// 인쇄 중 한 카드·단락이 쪽 가운데서 갈라지지 않게.
-const KEEP_TOGETHER = { breakInside: 'avoid', pageBreakInside: 'avoid' } as const;
 
 // 한자 전면 금지(2026-09-27 사용자 결정 — 명식 포함). 명식 한 글자(甲·子)도 한글로.
 const toHangul = (text: string) => koreanizeGanzi(text);
@@ -106,29 +89,6 @@ function Page({
   );
 }
 
-function HighlightColumn({ title, items, tone }: { title: string; items: NewYearHighlight[]; tone: 'rise' | 'caution' }) {
-  const m = MOMENTUM[tone];
-  return (
-    <div className="rp-card" style={{ ...KEEP_TOGETHER, borderColor: m.color, background: m.soft }}>
-      <div className="rp-eyebrow" style={{ color: m.color }}>{title}</div>
-      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
-        {items.map((h) => (
-          <li key={`${h.month}-${h.text}`} style={{ display: 'grid', gridTemplateColumns: '38px 1fr', gap: 8, alignItems: 'start' }}>
-            <span
-              style={{ background: m.color, color: '#fff', borderRadius: 8, textAlign: 'center', fontSize: 12, fontWeight: 800, padding: '4px 0' }}
-            >
-              {h.month}월
-            </span>
-            <span style={{ fontSize: 11, lineHeight: 1.55, wordBreak: 'keep-all' }}>
-              <strong style={{ color: m.color }}>{CATEGORY_LABEL[h.category]}</strong> · {koreanizeGanzi(h.text)}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export function NewYearReportDocument({
   data,
   report,
@@ -148,7 +108,7 @@ export function NewYearReportDocument({
   const yearGanji = koreanizeGanzi(report.annualContext.yearGanji);
 
   // 총론·분야별 풀이는 길이가 모델마다 달라 고정 쪽에 담으면 넘친다 → 평생 PDF 와 같은 쪽 나눔.
-  const narrativePages = paginateWholeSections([
+  const narrativeSections: PdfNarrativeSection[] = [
     { label: `${year}년 총론`, text: k(interpretation.opening), chapter: NARRATIVE_CHAPTER },
     ...BASE_CATEGORIES.map((key) => ({ label: CATEGORY_LABEL[key], text: k(interpretation.categories[key]), chapter: NARRATIVE_CHAPTER })),
     ...(extras
@@ -157,20 +117,46 @@ export function NewYearReportDocument({
           { label: CATEGORY_LABEL.study, text: k(extras.categories.study), chapter: NARRATIVE_CHAPTER },
         ]
       : []),
-  ]);
+  ];
+  const narrativePages = [
+    narrativeSections.slice(0, 1),
+    narrativeSections.slice(1, 3),
+    narrativeSections.slice(3, 5),
+    narrativeSections.slice(5, 7),
+    narrativeSections.slice(7),
+  ].filter((sections) => sections.length).flatMap((sections) => paginateWholeSections(sections));
   const halves = [
     { label: '상반기 먼저 볼 것', text: k(interpretation.firstHalf) },
     { label: '하반기 먼저 볼 것', text: k(interpretation.secondHalf) },
   ];
 
   const flowOf = (month: number) => report.monthlyFlows.find((f) => f.month === month);
-  // 분기마다 한 쪽 — 한 단(1열) 카드라 6달을 한 쪽에 담으면 넘친다.
-  const monthQuarters = [0, 1, 2, 3].map((q) => interpretation.monthlyFlows.filter((m) => Math.ceil(m.month / 3) === q + 1));
+  // A month starts on its own sheet; unusually long content continues without truncation.
+  const monthPages = interpretation.monthlyFlows.flatMap((month, index) => {
+    const quarter = index % 3 === 0 ? extras?.quarterlyFlows[Math.floor(index / 3)] : null;
+    const half = index === 0 ? halves[0] : index === 6 ? halves[1] : null;
+    const sections = [
+      ...(half ? [half] : []),
+      ...(quarter ? [{ label: `${quarter.quarter}분기 · 먼저 볼 분야 ${CATEGORY_LABEL[quarter.focusCategory]}`, text: k(quarter.summary) }] : []),
+      { label: '이번 달의 흐름', text: k(month.summary) },
+      { label: '먼저 살펴볼 것', text: k(month.focus) },
+      { label: '조심할 점', text: k(month.caution) },
+      { label: '이렇게 해보세요', text: k(month.action) },
+    ];
+    return paginateWholeSections(sections, 1600).map((sections, continuation) => ({ month: month.month, sections, continuation }));
+  });
 
   const firstNarrative = 3;
   const monthStart = firstNarrative + narrativePages.length;
-  const closingPage = monthStart + monthQuarters.length;
-  const total = closingPage;
+  const closingPage = monthStart + monthPages.length;
+  const closingPages = paginateWholeSections([
+    ...(extras ? [
+      { label: '기대할 일', text: extras.expectations.map((item) => `${item.month}월 · ${CATEGORY_LABEL[item.category]}: ${k(item.text)}`).join('\n\n') },
+      { label: '조심할 일', text: extras.cautions.map((item) => `${item.month}월 · ${CATEGORY_LABEL[item.category]}: ${k(item.text)}`).join('\n\n') },
+    ] : []),
+    { label: '올해 이렇게 해보세요', text: interpretation.actionAdvice.map(k).join('\n\n') },
+  ], 1600);
+  const total = closingPage + closingPages.length - 1;
 
   return (
     <article className="report-doc rp-question-edition" aria-label={`${year} 신년운세 PDF 미리보기`}>
@@ -249,7 +235,7 @@ export function NewYearReportDocument({
               {interpretation.keywords.slice(0, 4).map((keyword) => {
                 const [label, ...rest] = keyword.split(':');
                 return (
-                  <li key={keyword} style={{ fontSize: 11, lineHeight: 1.5, wordBreak: 'keep-all' }}>
+                  <li key={keyword} style={{ fontSize: 16, lineHeight: 1.5, wordBreak: 'keep-all' }}>
                     <strong style={{ color: 'var(--rp-pink)' }}>{koreanizeGanzi(label.trim())}</strong>
                     {rest.length ? ` — ${k(rest.join(':').trim())}` : ''}
                   </li>
@@ -267,10 +253,10 @@ export function NewYearReportDocument({
               const tone = MOMENTUM[f.momentum];
               return (
                 <div key={f.month} style={{ textAlign: 'center' }}>
-                  <div style={{ height: 34, borderRadius: 6, background: tone.color, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800 }}>
+                  <div style={{ height: 34, borderRadius: 6, background: tone.color, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800 }}>
                     {f.month}월
                   </div>
-                  <div style={{ marginTop: 3, fontSize: 9.5, fontWeight: 700, color: tone.color }}>{tone.label}</div>
+                  <div style={{ marginTop: 3, fontSize: 14, fontWeight: 700, color: tone.color }}>{tone.label}</div>
                 </div>
               );
             })}
@@ -289,7 +275,7 @@ export function NewYearReportDocument({
         <ChapterHead
           no="01"
           titleLines={['내 사주의 구조', '십성과 신살']}
-          lead={`${year}년 흐름은 타고난 구조 위에서 움직입니다. 나를 둘러싼 기운의 분포와 사주에 자리한 작은 별을 먼저 봅니다.`}
+          lead={`${year}년 흐름은 타고난 구조 위에서 움직입니다. 십성은 나와 다른 글자들의 관계를, 신살은 특정 글자 조합의 보조 의미를 살펴보는 방법입니다. 어느 하나만으로 성격이나 미래를 정하지 않습니다.`}
         />
         <div className="rp-tengod-list">
           {data.tenGods.map((t) => (
@@ -337,91 +323,28 @@ export function NewYearReportDocument({
         </Page>
       ))}
 
-      {/* ── 분기·월별 흐름 ── */}
-      {monthQuarters.map((months, qi) => {
-        const quarter = extras?.quarterlyFlows[qi];
-        const half = qi === 0 ? halves[0] : qi === 2 ? halves[1] : null;
+      {/* ── 한 달씩 읽는 월별 풀이 ── */}
+      {monthPages.map(({ month, sections, continuation }, index) => {
+        const flow = flowOf(month);
+        const tone = MOMENTUM[flow?.momentum ?? 'steady'];
         return (
-          <Page key={`m-${qi}`} no={monthStart + qi} total={total} data={data}>
-            <ChapterHead
-              no="03"
-              titleLines={['분기·월별 흐름', `${qi + 1}분기 · ${qi * 3 + 1}~${qi * 3 + 3}월`]}
-              lead="달마다 흐름(상승·유지·주의)과 월 간지, 먼저 볼 것과 조심할 것을 봅니다."
-            />
-            {half ? (
-              <div className="rp-card" style={{ ...KEEP_TOGETHER, marginTop: 14, borderColor: 'var(--rp-pink)', borderWidth: 1.5 }}>
-                <div className="rp-eyebrow">{half.label}</div>
-                <p style={{ margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.65, wordBreak: 'keep-all' }}>{half.text}</p>
-              </div>
-            ) : null}
-            {quarter ? (
-              <div className="rp-summary" style={{ ...KEEP_TOGETHER, marginTop: 10 }}>
-                <div className="rp-eyebrow">
-                  {quarter.quarter}분기 · {quarter.months[0]}~{quarter.months[2]}월 · 먼저 볼 분야 {CATEGORY_LABEL[quarter.focusCategory]}
-                </div>
-                <p style={{ fontSize: 11.5 }}>{k(quarter.summary)}</p>
-              </div>
-            ) : null}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginTop: 12 }}>
-              {months.map((m) => {
-                const flow = flowOf(m.month);
-                const tone = MOMENTUM[flow?.momentum ?? 'steady'];
-                return (
-                  <div key={m.month} className="rp-card" style={{ ...KEEP_TOGETHER, padding: '10px 12px', borderLeft: `4px solid ${tone.color}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                      <strong style={{ fontSize: 14 }}>
-                        {m.month}월
-                        {flow?.monthlyGanji ? (
-                          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--rp-ink-muted)' }}>
-                            {' '}· {toHangul(flow.monthlyGanji)}월
-                          </span>
-                        ) : null}
-                      </strong>
-                      <span style={{ background: tone.soft, color: tone.color, borderRadius: 999, padding: '2px 8px', fontSize: 10, fontWeight: 800 }}>
-                        {tone.label}
-                      </span>
-                    </div>
-                    <p style={{ margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.6, wordBreak: 'keep-all' }}>{k(m.summary)}</p>
-                    {m.caution ? (
-                      <p style={{ margin: '4px 0 0', fontSize: 11, lineHeight: 1.55, color: MOMENTUM.caution.color, wordBreak: 'keep-all' }}>
-                        조심 · {k(m.caution)}
-                      </p>
-                    ) : null}
-                    {m.action ? (
-                      <p style={{ margin: '3px 0 0', fontSize: 11, lineHeight: 1.55, color: MOMENTUM.rise.color, wordBreak: 'keep-all' }}>
-                        할 일 · {k(m.action)}
-                      </p>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
+          <Page key={`m-${month}-${continuation}`} no={monthStart + index} total={total} data={data} narrative>
+            <ChapterHead no="03"
+              titleLines={['이번 달을 읽는 법', `${month}월${continuation ? ' · 계속' : ' · 무엇을 먼저 살펴볼까요?'}`]}
+              lead={`${flow?.monthlyGanji ? `${toHangul(flow.monthlyGanji)}월 · ` : ''}${tone.label} 흐름입니다. 아래 설명을 자신의 일정과 비교해보세요. 상승은 성공 보장이 아니며, 주의는 나쁜 일이 생긴다는 뜻이 아닙니다.`} />
+            {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
           </Page>
         );
       })}
 
       {/* ── 기대할 일 · 조심할 일 · 행동 지침 ── */}
-      <Page no={closingPage} total={total} data={data}>
-        <ChapterHead
-          no="05"
-          titleLines={[`${year}년에`, '기대할 일과 조심할 일']}
-          lead="언제, 어느 분야에서, 무엇을 — 달력에 표시해 두고 한 해 동안 다시 펼쳐 보세요."
-        />
-        {extras ? (
-          <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-            <HighlightColumn title="기대할 일" items={extras.expectations} tone="rise" />
-            <HighlightColumn title="조심할 일" items={extras.cautions} tone="caution" />
-          </div>
-        ) : null}
-        <div className="rp-summary">
-          <div className="rp-eyebrow">올해의 행동 지침</div>
-          <ol style={{ margin: '8px 0 0', paddingLeft: 18, display: 'grid', gap: 5, fontSize: 11.5, lineHeight: 1.55 }}>
-            {interpretation.actionAdvice.map((a) => (
-              <li key={a} style={{ wordBreak: 'keep-all' }}>{k(a)}</li>
-            ))}
-          </ol>
-        </div>
-      </Page>
+      {closingPages.map((sections, index) => (
+        <Page key={`closing-${index}`} no={closingPage + index} total={total} data={data} narrative>
+          <ChapterHead no="04" titleLines={[`${year}년에`, `기대할 일과 조심할 일${index ? ' · 계속' : ''}`]}
+            lead="언제, 어느 분야에서, 무엇을 살펴보면 좋을지 모았습니다. 필요한 내용을 달력에 적고 다시 읽어보세요." />
+          {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
+        </Page>
+      ))}
     </article>
   );
 }

@@ -45,7 +45,7 @@ describe('신년운세 PDF 페이지', () => {
     const html = await render();
     expect(vi.mocked(generateYearlyInterpretation).mock.calls[0][0].includeNewYear).toBe(true);
     // 2026-09-27 사용자 피드백 — 사주팔자 명식·오행·십성이 표지와 사주 구조 쪽에 있어야 하고, 2027 흐름이 그 뒤로 이어진다.
-    const order = ['네 기둥과 여덟 글자', '오행 균형', '십성과 신살', '총론과 분야별 운', '분기·월별 흐름', '기대할 일과 조심할 일', '올해의 행동 지침'];
+    const order = ['네 기둥과 여덟 글자', '오행 균형', '십성과 신살', '총론과 분야별 운', '이번 달을 읽는 법', '기대할 일과 조심할 일', '올해 이렇게 해보세요'];
     const positions = order.map((title) => html.indexOf(title));
     expect(positions.every((p) => p > 0), JSON.stringify(positions)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);

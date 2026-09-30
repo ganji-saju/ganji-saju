@@ -7,13 +7,12 @@ export interface PdfNarrativeSection {
 }
 
 /** Keep every character while bounding the amount of prose on one A4 page. */
-//   limits — 2026-09-27 신년운세 PDF 는 글자가 작고 섹션이 짧아 기본 한도로는 쪽이 절반만 찼다(사용자: 여백이 많다).
-//   기본값은 평생 PDF 가 A4 로 검증한 값이라 바꾸지 않는다.
+// Budget calibrated for the shared 16px A4 body text.
 export function paginatePdfNarrative(
   sections: PdfNarrativeSection[],
   limits: { maxWeight?: number; maxItems?: number } = {}
 ): PdfNarrativeSection[][] {
-  const maxWeight = limits.maxWeight ?? 1600;
+  const maxWeight = limits.maxWeight ?? 1050;
   const pages: PdfNarrativeSection[][] = [];
   let page: PdfNarrativeSection[] = [];
   let weight = 0;
@@ -27,10 +26,10 @@ export function paginatePdfNarrative(
     let continuation = false;
     while (remaining) {
       // Split even punctuation-free model output; never truncate paid content.
-      let end = Math.min(remaining.length, 1100);
+      let end = Math.min(remaining.length, 850);
       if (end < remaining.length) {
         const boundary = remaining.slice(0, end).lastIndexOf(' ');
-        if (boundary > 700) end = boundary;
+        if (boundary > 550) end = boundary;
       }
       const text = remaining.slice(0, end).trim();
       const item = { ...section, label: `${section.label}${continuation ? ' · 계속' : ''}`, text };
@@ -59,9 +58,9 @@ function annualHeight(year: AnnualText): number {
     const wide = index === 0 || index === 5;
     const lines = text.split('\n').reduce((sum, paragraph) => {
       const width = Array.from(paragraph).reduce((units, char) => units + (/\s/.test(char) ? 0.29 : /[ -~]/.test(char) ? 0.55 : 1), 0);
-      return sum + Math.max(1, Math.ceil(width / (wide ? 66 : 59)));
+      return sum + Math.max(1, Math.ceil(width / (wide ? 45 : 40)));
     }, 0);
-    return height + lines * (index === 0 ? 21.6 : index === 5 ? 20.7 : 21);
+    return height + lines * 27.2;
   }, 0);
 }
 

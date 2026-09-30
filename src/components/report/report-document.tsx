@@ -12,17 +12,17 @@ export type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 // 각 장의 읽을거리를 안내한다. 개인의 실제 경험이나 사건을 추정하는 문구가 아니다.
 const DEEP_CHAPTER_LEADS: Record<string, string> = {
   '풀이를 시작하며': '사주의 전체 구조를 먼저 살펴보고, 분야별 풀이를 읽는 순서를 안내합니다. 생활 예시는 실제 이력이 아닌, 자신의 경험과 비교해 볼 질문입니다.',
-  '타고난 성향': '일간과 십성의 관계를 바탕으로 나다운 반응과 판단 방식을 살펴봅니다. 같은 성향이 강점으로 쓰일 때와 부담이 될 때의 차이를 읽어보세요.',
-  '돈을 벌고 남기는 방식': '재물 풀이를 버는 방식, 남기는 습관, 지출의 기준으로 나누어 살펴봅니다. 안정과 확장 사이에서 어떤 조건을 확인할지 생각해보세요.',
-  '잘하는 일과 오래할 수 있는 일': '능력을 발휘하기 좋은 역할과 꾸준히 이어갈 수 있는 환경을 함께 살펴봅니다. 조직 안에서의 역할과 독립에 필요한 조건을 비교해보세요.',
-  '학업과 배움': '새로운 것을 이해하고 익혀 표현하는 과정을 살펴봅니다. 공부의 성과를 단정하기보다, 배움을 이어가는 방식과 필요한 도움을 찾아보세요.',
-  '연애와 가까운 관계': '친밀감을 느끼는 거리와 마음을 표현하는 방식, 갈등을 조율하는 기준을 살펴봅니다. 나와 상대의 기대를 맞추기 위해 어떤 대화가 필요한지 읽어보세요.',
-  '가족 관계': '가족 안에서 기대하는 역할과 서로를 돕는 방식, 필요한 경계를 살펴봅니다. 실제 가족 상황에 비추어 책임을 나누고 의사를 전할 기준을 찾아보세요.',
-  '부담과 회복의 균형': '일간의 강약과 도움·소모의 관계를 바탕으로 힘을 쓰는 조건을 살펴봅니다. 강약을 능력의 우열로 읽기보다 부담을 줄일 환경과 지원을 생각해보세요.',
-  '내 선택을 돕는 기준': '격국과 용신의 해석을 연결해 선택할 때 참고할 기준을 살펴봅니다. 어떤 조건을 우선하고 무엇을 조절할지, 사주 전체의 관계 속에서 읽어보세요.',
+  '타고난 성향': '평소 어떤 방식으로 판단하고 행동하는지 살펴봅니다. 같은 성향이 도움이 될 때와 부담이 될 때를 자신의 경험과 비교해보세요.',
+  '돈을 벌고 남기는 방식': '돈을 버는 방법, 모으는 습관, 쓸 때 확인할 점을 나누어 봅니다. 수입이나 지출을 결정하기 전에 무엇을 살피면 좋을지 읽어보세요.',
+  '잘하는 일과 오래할 수 있는 일': '어떤 일을 맡을 때 능력을 쓰기 편한지 살펴봅니다. 함께 일할 때와 혼자 일할 때 필요한 조건도 비교해보세요.',
+  '학업과 배움': '어떻게 공부하고 연습하면 자신에게 도움이 될지 살펴봅니다. 시험 결과를 미리 정하는 풀이가 아니라, 꾸준히 배우는 방법을 찾는 안내입니다.',
+  '연애와 가까운 관계': '마음을 어떻게 표현하고, 의견이 다를 때 어떻게 대화하는지 살펴봅니다. 가까운 사람과 서로 원하는 것을 확인할 때 참고해보세요.',
+  '가족 관계': '가족을 돕는 일과 혼자 떠안지 않아도 되는 일을 나누어 봅니다. 지금의 가족 상황과 비교하며 무엇을 부탁하거나 나눌지 생각해보세요.',
+  '부담과 회복의 균형': '사주에서 나를 돕는 관계와 힘을 쓰게 하는 관계를 살펴봅니다. 신강·신약은 이 관계를 읽는 말이며, 능력이 좋거나 부족하다는 뜻은 아닙니다.',
+  '내 선택을 돕는 기준': '격국은 사주를 해석하는 큰 짜임이고, 용신은 균형을 살필 때 중요하게 보는 오행입니다. 이 해석을 일이나 관계를 선택할 때 어떻게 참고할지 알아봅니다.',
   '생활과 회복의 방식': '일상에서 부담을 느끼는 상황과 쉬는 방식, 유지할 습관을 돌아봅니다. 건강 상태를 진단하는 풀이가 아닌 생활 점검의 질문으로 활용해보세요.',
-  '10년 단위 큰 흐름': '원국과 대운의 관계를 통해 시기마다 달라지는 해석의 초점을 살펴봅니다. 특정 사건의 예고보다 전환기에 점검할 조건과 준비할 선택에 주목해보세요.',
-  '평생 활용 전략': '앞선 성향·관계·재물·직업 풀이를 묶어 오래 활용할 선택 기준을 정리합니다. 힘을 발휘할 때의 태도와 부담이 커질 때의 대응을 나누어 읽어보세요.',
+  '10년 단위 큰 흐름': '대운은 약 10년씩 나누어 보는 운의 흐름입니다. 시기가 바뀔 때 무엇을 돌아보고 준비하면 좋을지 살펴봅니다.',
+  '평생 활용 전략': '앞에서 읽은 성향, 돈, 일, 관계의 조언을 모았습니다. 지금 가장 필요한 한 가지를 골라 생활에서 적용해보세요.',
   '기억할 규칙': '전체 풀이에서 일상으로 가져갈 핵심 원칙을 다시 짚습니다. 지금의 상황에 맞는 기준을 골라, 작은 선택부터 적용해보세요.',
 };
 
@@ -144,16 +144,16 @@ export function ReportDocument({
     { label: '기억할 규칙', text: data.deepReading.rememberRules.join('\n\n'), chapter: questionEdition ? '평생 활용 전략' : undefined },
   ] : []);
   const annualPages = chunkPdfYears(data.timeline.years);
-  const narrativeStartPage = questionEdition ? 5 : 8;
+  const narrativeStartPage = questionEdition ? 6 : 9;
   const cycleIndexPage = questionEdition ? narrativeStartPage + narrativePages.length : 4;
-  const cycleStartPage = questionEdition ? cycleIndexPage + 1 : 8 + narrativePages.length;
-  const annualStartPage = cycleStartPage + data.timeline.cycles.length;
+  const cycleStartPage = questionEdition ? cycleIndexPage + 1 : 9 + narrativePages.length;
+  const annualStartPage = cycleStartPage + data.timeline.cycles.length * 2;
   const annualEndPage = annualStartPage + annualPages.length - 1;
   const tenGodPage = questionEdition ? annualEndPage + 1 : 2;
   const patternPage = questionEdition ? annualEndPage + 2 : 6;
   const guidePage = questionEdition ? 2 : 7;
-  const areaPage = questionEdition ? 3 : 5;
-  const identityPage = questionEdition ? 4 : 3;
+  const areaPage = questionEdition ? 4 : 5;
+  const identityPage = questionEdition ? 5 : 3;
   const totalPages = annualEndPage + (questionEdition ? 3 : 1);
   const chapterRanges = narrativePages.reduce<Array<{ title: string; start: number; end: number }>>((ranges, sections, index) => {
     const title = sections[0].chapter ?? sections[0].label;
@@ -324,7 +324,7 @@ export function ReportDocument({
                 {/* 신살 */}
                 <div className="rp-block">
                   <div className="rp-eyebrow">신살</div>
-                  <h3 className="rp-block-title">내 사주에 자리잡은 작은 별</h3>
+                  <h3 className="rp-block-title">신살 · 글자 조합으로 살펴보는 보조 풀이</h3>
                   <div className="rp-sinsal-grid">
                     {data.sinsal.map((s) => (
                       <div
@@ -438,7 +438,7 @@ export function ReportDocument({
                   {data.timeline.cycles.map((cycle, index) => (
                     <div className={`rp-lifetime-index-row${cycle.isCurrent ? ' is-current' : ''}`} key={cycle.index}>
                       <div><strong>{cycle.startYear}–{cycle.endYear}</strong><span>{cycle.startAge}–{cycle.endAge}세 · {ganziToKorean(cycle.ganzi)} 대운</span></div>
-                      <p>{cycle.title}</p><span>{cycleStartPage + index}쪽</span>
+                      <p>{cycle.title}</p><span>{cycleStartPage + index * 2}쪽</span>
                     </div>
                   ))}
                 </div>
@@ -554,21 +554,27 @@ export function ReportDocument({
                 <ChapterHead no={questionEdition ? '목차' : '07'} titleLines={['생애 보고서 안내', '필요한 질문부터 찾아 읽기']}
                   lead={`${birthYear}년부터 ${birthYear + 100}년까지 101개 연도를 한 해씩 살펴봅니다. 100세까지라는 범위는 보고서의 분석 기간이며 수명을 뜻하지 않습니다.`} />
                 <div className="rp-guide-contents">
-                  <div><strong>{questionEdition ? '핵심 요약과 나의 성향' : '타고난 성향과 사주의 구조'}</strong><span>{questionEdition ? '3–4쪽' : '1–6쪽'}</span></div>
-                  {questionEdition ? chapterRanges.map((chapter) => <div key={chapter.title}><strong>{chapter.title}</strong><span>{chapter.start === chapter.end ? chapter.start : `${chapter.start}–${chapter.end}`}쪽</span></div>) : narrativePages.length > 0 && <div><strong>깊은 사주풀이 전문</strong><span>8–{cycleStartPage - 1}쪽</span></div>}
+                  <div><strong>{questionEdition ? '핵심 요약과 나의 성향' : '타고난 성향과 사주의 구조'}</strong><span>{questionEdition ? '4–5쪽' : '1–6쪽'}</span></div>
+                  {questionEdition ? chapterRanges.map((chapter) => <div key={chapter.title}><strong>{chapter.title}</strong><span>{chapter.start === chapter.end ? chapter.start : `${chapter.start}–${chapter.end}`}쪽</span></div>) : narrativePages.length > 0 && <div><strong>깊은 사주풀이 전문</strong><span>9–{cycleStartPage - 1}쪽</span></div>}
                   {data.timeline.cycles.length > 0 && <div><strong>대운별 심층 풀이와 전환기</strong><span>{questionEdition ? cycleIndexPage : cycleStartPage}–{annualStartPage - 1}쪽</span></div>}
                   <div><strong>출생부터 100세까지 연도별 풀이</strong><span>{annualStartPage}–{annualEndPage}쪽</span></div>
                   {questionEdition && <div><strong>참고 · 사주의 구조와 용어</strong><span>{tenGodPage}–{patternPage}쪽</span></div>}
                   <div><strong>마무리와 활용 방법</strong><span>{totalPages}쪽</span></div>
                 </div>
+                <div className="rp-guide-copy"><h3>이렇게 활용해보세요</h3><p>먼저 올해의 풀이를 읽고, 해당 대운의 전환기 조언을 확인하세요. 과거 연도는 실제 경험을 돌아보는 질문으로, 미래 연도는 선택을 준비하는 참고로 활용할 수 있습니다. 같은 세운이 돌아와도 생애 단계와 대운이 달라 풀이의 초점은 달라집니다.</p></div>
+                <PageFooter page={guidePage} total={totalPages} />
+              </section>
+              <section className="report-page rp-contents-page" data-page={guidePage + 1}>
+                <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
+                <ChapterHead no="읽는 법" titleLines={['내 나이에 맞는 풀이', '찾아보고 활용하기']} lead="아래에서 궁금한 나이를 찾아 해당 쪽을 펼쳐보세요. 지나온 시기는 경험과 비교하고, 앞으로의 시기는 선택을 준비할 때 참고하세요." />
                 <div className="rp-year-finder">
                   {Array.from({ length: 11 }, (_, i) => i * 10).map((age) => (
                     <div key={age}><strong>{age === 0 ? '출생~9세' : age === 100 ? '100세' : `${age}~${age + 9}세`}</strong><span>{birthYear + age}년부터 · {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.age === age))}쪽</span></div>
                   ))}
                 </div>
                 <div className="rp-guide-note">{data.timeline.notes.map((note) => <p key={note}>{note}</p>)}</div>
-                <div className="rp-guide-copy"><h3>이렇게 활용해보세요</h3><p>먼저 올해의 풀이를 읽고, 해당 대운의 전환기 조언을 확인하세요. 과거 연도는 실제 경험을 돌아보는 질문으로, 미래 연도는 선택을 준비하는 참고로 활용할 수 있습니다. 같은 세운이 돌아와도 생애 단계와 대운이 달라 풀이의 초점은 달라집니다.</p></div>
-                <PageFooter page={guidePage} total={totalPages} />
+
+                <PageFooter page={guidePage + 1} total={totalPages} />
               </section>
 
               {narrativePages.map((sections, index) => (
@@ -580,8 +586,8 @@ export function ReportDocument({
                 </section>
               ))}
 
-              {data.timeline.cycles.map((cycle, index) => (
-                <section className="report-page rp-cycle-page" data-page={cycleStartPage + index} key={`cycle-${cycle.index}`}>
+              {data.timeline.cycles.map((cycle, index) => ([
+                <section className="report-page rp-cycle-page" data-page={cycleStartPage + index * 2} key={`cycle-${cycle.index}`}>
                   <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                   <ChapterHead no="09" titleLines={[cycle.title, `${cycle.startYear}–${cycle.endYear}년 · ${cycle.startAge}–${cycle.endAge}세`]}
                     lead={`${cycle.startYear}–${cycle.endYear}년${cycle.isCurrent ? ' · 발행연도가 포함된 대운' : ''} · 대운의 큰 흐름과 진입 전후의 준비를 함께 살펴봅니다.`} />
@@ -591,15 +597,20 @@ export function ReportDocument({
                     <div><h3>관계에서 살펴볼 점</h3><p>{cycle.relationships}</p></div>
                     <div><h3>활동과 생활 기반</h3><p>{cycle.resources}</p></div>
                   </div>
+                  <PageFooter page={cycleStartPage + index * 2} total={totalPages} />
+                </section>,
+                <section className="report-page rp-cycle-page" data-page={cycleStartPage + index * 2 + 1} key={`transition-${cycle.index}`}>
+                  <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
+                  <ChapterHead no="09" titleLines={[`${cycle.startYear}년 전후`, '변화에 준비하는 방법']} lead="대운이 바뀌는 시기를 세 단계로 나누었습니다. 실제 생활에서 바뀌는 일이 있는지 확인하고, 필요한 조언을 골라 활용하세요." />
                   <div className="rp-transition"><h3>대운 전환기, 세 단계로 준비하기</h3>
                     <div><strong>{cycle.startYear - 1}년 · 정리</strong><p>{cycle.transition.before}</p></div>
                     <div><strong>{cycle.startYear}년 · 진입</strong><p>{cycle.transition.entry}</p></div>
                     <div><strong>{cycle.startYear + 1}년 · 적응</strong><p>{cycle.transition.after}</p></div>
                   </div>
                   <div className="rp-cycle-actions"><h3>실천으로 옮길 세 가지</h3><ol>{cycle.actions.map((action, i) => <li key={i}>{action}</li>)}</ol></div>
-                  <PageFooter page={cycleStartPage + index} total={totalPages} />
+                  <PageFooter page={cycleStartPage + index * 2 + 1} total={totalPages} />
                 </section>
-              ))}
+              ]))}
 
               {annualPages.map((years, index) => (
                 <section className="report-page rp-annual-page" data-page={annualStartPage + index} key={`years-${index}`}>

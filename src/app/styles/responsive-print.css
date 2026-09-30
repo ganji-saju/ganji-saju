@@ -850,7 +850,7 @@
 
 /* eyebrow 라벨 */
 .rp-eyebrow {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.4px;
   color: var(--rp-pink);
@@ -915,14 +915,14 @@
 }
 
 .rp-brand-sub {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-pink);
 }
 
 .rp-cover-meta {
   text-align: right;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 16px;
   color: var(--rp-ink-muted);
 }
@@ -951,7 +951,7 @@
   flex-wrap: wrap;
   gap: 18px;
   margin-top: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--rp-ink-soft);
 }
 
@@ -988,7 +988,7 @@
 }
 
 .rp-pillar-label {
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-ink-muted);
 }
@@ -1011,7 +1011,7 @@
 
 .rp-pillar-god {
   margin-top: 6px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-pink);
 }
@@ -1088,7 +1088,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 12px;
 }
 
 .rp-elem-dot {
@@ -1123,7 +1123,7 @@
 .rp-bar-head {
   display: flex;
   justify-content: space-between;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-ink);
 }
@@ -1157,14 +1157,14 @@
 }
 
 .rp-fld-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-pink);
 }
 
 .rp-fld-card p {
   margin: 6px 0 0;
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.55;
   color: var(--rp-ink-soft);
   word-break: keep-all;
@@ -1195,7 +1195,7 @@
 }
 
 .rp-daewoon-age {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-ink);
 }
@@ -1220,13 +1220,13 @@
 
 .rp-cover-foot p {
   margin: 0;
-  font-size: 8.5px;
+  font-size: 12px;
   line-height: 1.6;
   color: var(--rp-ink-muted);
 }
 
 .rp-foot-page {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.54px;
   color: var(--rp-ink-faint);
@@ -1240,12 +1240,12 @@
   justify-content: space-between;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--rp-line);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--rp-ink-faint);
 }
 
 .rp-runhead-mark {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-pink);
 }
@@ -1267,7 +1267,7 @@
 .rp-chaplead {
   margin: 8px 0 0;
   max-width: 460px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
   color: rgba(17, 17, 20, 0.6);
   word-break: keep-all;
@@ -1280,7 +1280,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 12px;
   color: var(--rp-ink-faint);
 }
 
@@ -1338,7 +1338,7 @@
 
 .rp-tengod-name em {
   font-style: normal;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--rp-ink-muted);
 }
@@ -1354,7 +1354,7 @@
 
 .rp-tengod-body p {
   margin: 5px 0 0;
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--rp-ink-soft);
   word-break: keep-all;
@@ -1379,14 +1379,14 @@
 }
 
 .rp-sinsal-name {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-ink);
 }
 
 .rp-sinsal-meaning {
   margin-top: 3px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--rp-ink-muted);
 }
 
@@ -1419,14 +1419,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-ink);
 }
 
 .rp-have {
   font-style: normal;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.32px;
   color: #fff;
@@ -1437,7 +1437,7 @@
 
 .rp-sinsal-lg-meaning {
   margin-top: 2px;
-  font-size: 9.5px;
+  font-size: 12px;
   color: var(--rp-ink-muted);
 }
 
@@ -1468,7 +1468,7 @@
 
 .rp-tip p {
   margin: 0;
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.6;
   color: #7a5a00;
   word-break: keep-all;
@@ -1543,13 +1543,13 @@
 }
 
 .rp-ilju-card-nature {
-  font-size: 10.5px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.55);
 }
 
 .rp-ilju-card p {
   margin: 10px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.65;
   color: rgba(17, 17, 20, 0.7);
   word-break: keep-all;
@@ -1580,18 +1580,18 @@
   height: 36px;
   border-radius: 999px;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .rp-trait-label {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-ink);
 }
 
 .rp-trait-sub {
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.55);
 }
 
@@ -1618,7 +1618,7 @@
 }
 
 .rp-axis-age {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(17, 17, 20, 0.5);
 }
@@ -1679,7 +1679,7 @@
 
 .rp-now-text p {
   margin: 6px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.9);
   word-break: keep-all;
@@ -1711,7 +1711,7 @@
 
 .rp-period-age {
   flex: 0 0 50px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(17, 17, 20, 0.55);
 }
@@ -1719,7 +1719,7 @@
 .rp-period-ganzi {
   flex: 0 0 50px;
   font-family: var(--font-han, serif);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #111;
 }
@@ -1730,14 +1730,14 @@
 }
 
 .rp-period-key {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: #111;
 }
 
 .rp-period-desc {
   margin-top: 2px;
-  font-size: 10.5px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.6);
 }
 
@@ -1785,7 +1785,7 @@
 }
 
 .rp-area-sub {
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.55);
 }
 
@@ -1800,7 +1800,7 @@
 }
 
 .rp-area-score span {
-  font-size: 8px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.4);
   margin-left: 1px;
 }
@@ -1813,14 +1813,14 @@
 }
 
 .rp-area-sw-label {
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.34px;
 }
 
 .rp-area-sw-text {
   margin-top: 3px;
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.85);
   word-break: keep-all;
 }
@@ -1830,14 +1830,14 @@
 }
 
 .rp-area-tip-label {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.36px;
 }
 
 .rp-area-tip p {
   margin: 4px 0 0;
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.55;
   color: rgba(17, 17, 20, 0.75);
   word-break: keep-all;
@@ -1861,7 +1861,7 @@
 
 .rp-gyeokguk-hero p {
   margin: 8px 0 0;
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.92);
   word-break: keep-all;
@@ -1879,14 +1879,14 @@
 }
 
 .rp-month-anum {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(17, 17, 20, 0.55);
 }
 
 .rp-month-aval {
   margin-top: 1px;
-  font-size: 8.5px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(17, 17, 20, 0.5);
 }
@@ -1927,7 +1927,7 @@
 }
 
 .rp-best-chip span {
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .rp-best-name {
@@ -1939,7 +1939,7 @@
 
 .rp-best-text p {
   margin: 6px 0 0;
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.92);
   word-break: keep-all;
@@ -1967,7 +1967,7 @@
 
 .rp-monthkey-num {
   flex: 0 0 24px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   color: rgba(17, 17, 20, 0.55);
 }
@@ -1979,14 +1979,14 @@
 
 .rp-monthkey-key {
   flex: 0 0 50px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   color: #111;
 }
 
 .rp-monthkey-desc {
   flex: 1;
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.6);
 }
 
@@ -2000,7 +2000,7 @@
 
 .rp-closing p {
   margin: 0 0 12px;
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.85;
   letter-spacing: -0.06px;
   color: #3a2a2a;
@@ -2030,7 +2030,7 @@
 }
 
 .rp-sign-name {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(17, 17, 20, 0.55);
 }
@@ -2062,7 +2062,7 @@
   border-radius: 999px;
   background: var(--rp-pink-strong);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -2071,18 +2071,18 @@
 }
 
 .rp-next-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-ink);
 }
 
 .rp-next-sub {
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(17, 17, 20, 0.55);
 }
 
 .rp-next-price {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--rp-pink);
   white-space: nowrap;
@@ -2097,7 +2097,7 @@
 }
 
 .rp-notice-label {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.36px;
   color: rgba(17, 17, 20, 0.7);
@@ -2105,7 +2105,7 @@
 
 .rp-notice p {
   margin: 6px 0 0;
-  font-size: 9.5px;
+  font-size: 12px;
   line-height: 1.65;
   color: rgba(17, 17, 20, 0.65);
   word-break: keep-all;
@@ -2134,21 +2134,21 @@
 }
 
 .rp-final-brand-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.11px;
   color: var(--rp-ink);
 }
 
 .rp-final-brand-sub {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--rp-pink);
 }
 
 .rp-final-meta {
   text-align: right;
-  font-size: 8.5px;
+  font-size: 12px;
   line-height: 12.75px;
   color: rgba(17, 17, 20, 0.5);
 }
@@ -3005,3 +3005,26 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   .rp-annual-entry dl { margin: 8px 0; gap: 6px; }
   .rp-annual-action { padding: 9px 12px; }
 }
+
+/* Readable A4 type shared by every report, including browser PDF export. */
+.report-doc .report-page p,
+.report-doc .rp-deep-sec p,
+.report-doc .rp-annual-entry dd,
+.report-doc .rp-cycle-actions li,
+.report-doc .rp-guide-copy { font-size: 16px; line-height: 1.7; }
+.report-doc .rp-chaplead { font-size: 16px; }
+.report-doc .rp-guide-note,
+.report-doc .rp-sinsal-meaning,
+.report-doc .rp-tengod-body p,
+.report-doc .rp-lifetime-index-row,
+.report-doc .rp-guide-contents > div,
+.report-doc .rp-year-finder span { font-size: 14px; line-height: 1.6; }
+.report-doc .rp-runhead,
+.report-doc .rp-pagefoot,
+.report-doc .rp-eyebrow { font-size: 12px; }
+
+.report-doc .rp-contents-page .rp-year-finder { margin: 12px 0; gap: 8px 20px; }
+.report-doc .rp-contents-page .rp-guide-note,
+.report-doc .rp-contents-page .rp-guide-copy { margin-top: 12px; }
+
+.report-doc .rp-deep-label { font-size: 16px; }
