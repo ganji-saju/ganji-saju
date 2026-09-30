@@ -866,3 +866,22 @@
   font-weight: 700 !important;
 }
 
+
+/* 진행률 값과 별개로 생성 작업이 계속되고 있음을 표시한다(0%에서도 동작). */
+.lifetime-generation-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent 30%, rgba(255, 255, 255, 0.65) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: gangi-shimmer 1.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lifetime-generation-track::after {
+    animation: none;
+    opacity: 0;
+  }
+}
