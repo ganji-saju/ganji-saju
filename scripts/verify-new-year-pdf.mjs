@@ -53,6 +53,13 @@ try {
       for (const key of Object.keys(interpretation.categories)) interpretation.categories[key] = '분야 풀이가 길어진 경우를 가정한 문장입니다. '.repeat(25);
       interpretation.monthlyFlows = interpretation.monthlyFlows.map(flow => ({ ...flow, summary: '월별 근거와 적용 조건을 자세히 살펴봅니다. '.repeat(5), focus: '어떤 상황에서 선택이 도움이 될지 비교합니다. '.repeat(5), caution: '부담이 커질 조건과 실제 상황을 확인합니다. '.repeat(5), action: '맡을 역할과 도움받을 범위를 나누어 적어봅니다. '.repeat(5) }));
     }
+    if (index === 1) {
+      // Older saved monthly results may omit these optional fields.
+      const lastMonth = interpretation.monthlyFlows.at(-1);
+      delete lastMonth.focus;
+      delete lastMonth.caution;
+      delete lastMonth.action;
+    }
     const data = buildPdfModel(reading, buildLifetimeReport(input, sajuData, 2027), `GS-NY27-${index}`, 2027);
     const article = renderToStaticMarkup(React.createElement(NewYearReportDocument, { data, report, interpretation, issuedAt: '2026.09.27', year: 2027 }));
     const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>

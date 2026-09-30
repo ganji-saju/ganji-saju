@@ -139,9 +139,9 @@ export function NewYearReportDocument({
       ...(half ? [half] : []),
       ...(quarter ? [{ label: `${quarter.quarter}분기 · 먼저 볼 분야 ${CATEGORY_LABEL[quarter.focusCategory]}`, text: k(quarter.summary) }] : []),
       { label: '이번 달의 흐름', text: k(month.summary) },
-      { label: '먼저 살펴볼 것', text: k(month.focus) },
-      { label: '조심할 점', text: k(month.caution) },
-      { label: '이렇게 해보세요', text: k(month.action) },
+      { label: '먼저 살펴볼 것', text: k(month.focus ?? '') },
+      { label: '조심할 점', text: k(month.caution ?? '') },
+      { label: '이렇게 해보세요', text: k(month.action ?? '') },
     ];
     return paginateWholeSections(sections, 1600).map((sections, continuation) => ({ month: month.month, sections, continuation }));
   });
