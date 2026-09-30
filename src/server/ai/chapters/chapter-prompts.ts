@@ -191,8 +191,8 @@ export const FEW_SHOT_EXAMPLES: Partial<Record<ChapterId, { input: string; outpu
 
 export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
   1: {
-    bodyLengthRange: { min: 320, max: 480 },
-    structureGuide: `출력 (짧은 6~9 문장, 두 단락):
+    bodyLengthRange: { min: 320, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - 첫 문장: 일주 또는 격국을 출발점으로 핵심 성향을 설명. 월령이나 강약의 확인된 근거로 이 해석에 붙는 조건도 설명
   - 예: "정인격(돌봄과 배움이 중심인 사주)을 준비하는 방식과 연결해 읽어요."
 - 중간 1~2 문장: 강점이 드러나는 장면 (구체적 행동/상황)
@@ -201,8 +201,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{성향 핵심 키워드} — {그림자 신호}',
   },
   2: {
-    bodyLengthRange: { min: 180, max: 240 },
-    structureGuide: `출력 (3~4 문장):
+    bodyLengthRange: { min: 180, max: 700 },
+    structureGuide: `출력 (6~10개의 짧은 문장, 2단락, 350~600자 목표):
 - 첫 문장: 지배 오행 한 줄
 - 두 번째 문장: 실제로 부족 판정이 확인된 경우에만 보완 조건을 설명. 가장 적다는 이유만으로 결핍을 만들지 않기
 - 세 번째 문장: 보강 축 (용신) 을 일상에서 채우는 한 가지 행동
@@ -210,8 +210,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{확인된 오행 상태} — {계산된 보완 방향 또는 판단 보류}',
   },
   3: {
-    bodyLengthRange: { min: 320, max: 480 },
-    structureGuide: `출력 (짧은 6~9 문장, 두 단락):
+    bodyLengthRange: { min: 320, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - 첫 문장: 격국과 신뢰도 — 확정된 인생 역할 대신 월령·투출 근거가 어느 후보를 지지하는지 설명
 - 다음 두 문장: 그 역할이 잘 풀리는 환경 (구체 — 학습/멘토링/조직/혼자 작업 등)
 - 이어지는 두 문장: 제공된 조후·억부 후보의 차이와 채택 이유. 미산정이면 새 용신을 만들지 않기
@@ -219,8 +219,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{pattern_plain} 의 역할 반복 — {yongsin_plain} 보강이 핵심',
   },
   4: {
-    bodyLengthRange: { min: 320, max: 480 },
-    structureGuide: `출력 (짧은 6~9 문장, 두 단락):
+    bodyLengthRange: { min: 320, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - 첫 문장: 관계의 선택 방식과 그 원국 근거 한 줄. 신살만으로 결론 내리지 않기
 - 다음 두 문장: 가까운 사람과의 조건부 장면과 같은 특징이 부담이 되는 조건. 실제로 자주 일어난다고 단정하지 않기
 - 이어지는 두 문장: status 별 분기 (single/dating/married/separated)
@@ -228,8 +228,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{관계 본질 키워드} — {온도 조절 행동}',
   },
   5: {
-    bodyLengthRange: { min: 320, max: 480 },
-    structureGuide: `출력 (짧은 6~9 문장, 두 단락):
+    bodyLengthRange: { min: 320, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - 첫 문장: 재물을 다루는 방식과 그 계산 근거 한 줄
 - 다음 두 문장: 노력과 대가를 연결할 조건과 그 명리 근거. 소득과 수익을 예고하지 않기
 - 이어지는 두 문장: 실제 지출을 안다고 단정하지 않는 조건부 점검 장면과 대비 상황
@@ -237,8 +237,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{재물 본질} — {새는 패턴} 차단 + {모으는 패턴} 강화',
   },
   6: {
-    bodyLengthRange: { min: 320, max: 480 },
-    structureGuide: `출력 (짧은 6~9 문장, 두 단락):
+    bodyLengthRange: { min: 320, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - 첫 문장: 일에 잘 맞는 환경 한 줄 (혼자/팀/속도/안정)
 - 다음 두 문장: 일이 잘 풀리는 조건과 계산 근거
 - 이어지는 두 문장: 같은 특징이 부담이 되는 조건부 장면
@@ -246,8 +246,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{일의 방식 키워드} — {강점 환경} vs {피해야 할 환경}',
   },
   7: {
-    bodyLengthRange: { min: 180, max: 260 },
-    structureGuide: `출력 (3~4 문장):
+    bodyLengthRange: { min: 180, max: 700 },
+    structureGuide: `출력 (6~10개의 짧은 문장, 2단락, 350~600자 목표):
 - 첫 문장: 휴식과 활동의 균형을 살필 기준. 오행을 질병이나 장기 상태에 대응시키지 않기
 - 두 번째 문장: 본인이 실제로 기록해 확인할 수 있는 생활 리듬
 - 세 번째 문장: 회복 루틴 한 가지 (수면/식사/운동/마음 중)
@@ -261,8 +261,8 @@ export const CHAPTER_OUTPUT_SPECS: Record<ChapterId, ChapterOutputSpec> = {
     digestFormat: '{현재 대운} {요약 키워드} — {다음 10년} {요약 키워드}',
   },
   9: {
-    bodyLengthRange: { min: 350, max: 450 },
-    structureGuide: `출력 (5~7 문장):
+    bodyLengthRange: { min: 350, max: 1000 },
+    structureGuide: `출력 (10~15개의 짧은 문장, 3단락, 600~900자 목표):
 - **반드시 3~5개의 평생 원칙** 형태로. 각 원칙은:
   1. "계산 근거와 연결한 선택 원칙 한 줄"
   2. 그 원칙이 의사결정에서 어떻게 작동하는가 (1~2 문장)

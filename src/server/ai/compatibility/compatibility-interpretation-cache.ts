@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import type { CompatibilityInterpretationInput } from './compatibility-interpretation-types';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v2-depth';
+export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v3-rich-reading';
 
 export const COMPATIBILITY_INTERPRETATION_CACHE_TTL_DAYS = 30;
 

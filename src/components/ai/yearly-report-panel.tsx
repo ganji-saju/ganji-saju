@@ -35,6 +35,7 @@ import type {
   SajuYearlyAiInterpretation,
   SajuYearlyAiMonthlyFlow,
 } from '@/server/ai/saju-yearly-interpretation';
+import { toHangulDisplay } from '@/lib/saju/terminology';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { NewYearExtrasSection } from '@/components/ai/new-year-extras-section';
@@ -180,16 +181,15 @@ const YEARLY_AREA_LABEL: Record<YearlyMonthFlow['relatedAreas'][number], string>
 };
 
 function splitParagraphs(text: string) {
-  return simplifySajuCopy(text)
+  return toHangulDisplay(text)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
 }
 
-function renderCompactParagraphs(text: string, limit = 2) {
+function renderReadingParagraphs(text: string) {
   return splitParagraphs(text)
-    .slice(0, limit)
     .map((paragraph, index) => (
       <p
         key={`${paragraph.slice(0, 24)}-${index}`}
@@ -241,7 +241,18 @@ function normalizeMonthlyFlows(
   report: SajuYearlyReport | undefined,
   interpretation: SajuYearlyAiInterpretation
 ) {
-  if (report?.monthlyFlows?.length) return report.monthlyFlows;
+  if (report?.monthlyFlows?.length) {
+    return report.monthlyFlows.map(flow => {
+      const prose = interpretation.monthlyFlows.find(item => item.month === flow.month);
+      return prose ? {
+        ...flow,
+        summary: prose.summary || flow.summary,
+        opportunity: prose.focus || flow.opportunity,
+        caution: prose.caution || flow.caution,
+        action: prose.action || flow.action,
+      } : flow;
+    });
+  }
   return interpretation.monthlyFlows.map(buildMonthlyFallback);
 }
 
@@ -456,7 +467,7 @@ function MonthlyFlowCard({
               className="mt-2 text-[16.1px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              {tightenUiLine(flow.summary, 78)}
+              {toHangulDisplay(flow.summary)}
             </p>
             <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{areaLabel}</div>
           </div>
@@ -473,7 +484,7 @@ function MonthlyFlowCard({
             이번 달 바로 할 일
           </div>
           <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
-            {tightenUiLine(flow.action, 84)}
+            {toHangulDisplay(flow.action)}
           </p>
         </div>
         <div
@@ -501,7 +512,7 @@ function MonthlyFlowCard({
             className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            {tightenUiLine(flow.opportunity, 104)}
+            {toHangulDisplay(flow.opportunity)}
           </p>
         </div>
         <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
@@ -509,7 +520,7 @@ function MonthlyFlowCard({
             한 번 더 확인할 것
           </div>
           <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
-            {tightenUiLine(flow.caution, 104)}
+            {toHangulDisplay(flow.caution)}
           </p>
         </div>
       </div>
@@ -673,7 +684,7 @@ function CoreAreaCard({
           className="mt-2 space-y-2 rounded-[12px] border p-3.5"
           style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
         >
-          {renderCompactParagraphs(prose, 2)}
+          {renderReadingParagraphs(prose)}
         </div>
       </details>
 
@@ -770,7 +781,7 @@ function SupportAreaCard({
           className="mt-2 space-y-2 rounded-[12px] border p-3.5"
           style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
         >
-          {renderCompactParagraphs(prose, 2)}
+          {renderReadingParagraphs(prose)}
         </div>
       </details>
       {basis.length > 0 ? (
@@ -1115,7 +1126,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
     return (
       <GangiLoadingOverlay
         title={`${targetYear} 신년운세를 풀고 있어요`}
-        description="처음 한 번만 30초 정도 걸려요. 한 번 만든 풀이는 저장돼 화면과 PDF 에 같은 내용으로 나옵니다."
+        description="처음에는 상세 풀이를 작성하느라 시간이 걸릴 수 있어요. 한 번 만든 풀이는 저장돼 화면과 PDF 에 같은 내용으로 나옵니다."
         steps={['사주팔자와 올해 간지 맞추기', '분야별 8가지 운 정리', '분기·월별 흐름 산출', '기대할 일·조심할 일 정리']}
         estimateMs={35_000}
         revealAfterMs={4_000}
@@ -1361,7 +1372,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
             >
               {interpretation.oneLineSummary}
             </p>
-            <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.opening, 2)}</div>
+            <div className="mt-3 space-y-2">{renderReadingParagraphs(interpretation.opening)}</div>
           </article>
 
           <YearlyVisualMap report={data.report} />
@@ -1405,7 +1416,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
                   상반기 먼저 볼 것
                 </div>
               </div>
-              <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.firstHalf, 3)}</div>
+              <div className="mt-3 space-y-2">{renderReadingParagraphs(interpretation.firstHalf)}</div>
             </article>
             <article
               className="rounded-[18px] border bg-white p-5"
@@ -1423,7 +1434,7 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
                   하반기 먼저 볼 것
                 </div>
               </div>
-              <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.secondHalf, 3)}</div>
+              <div className="mt-3 space-y-2">{renderReadingParagraphs(interpretation.secondHalf)}</div>
             </article>
           </div>
 

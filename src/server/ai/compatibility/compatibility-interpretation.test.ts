@@ -227,3 +227,11 @@ test('compat interpretation: 플래그 OFF fallback 도 llm_disabled 사유로 �
   assert.equal(calls[0].feature, 'compatibility');
   assert.equal(calls[0].fallbackReason, 'llm_disabled');
 });
+
+
+test('궁합의 근거와 조건을 풀어 쓴 긴 본문을 짧은 폴백으로 바꾸지 않는다', () => {
+  const parsed = JSON.parse(validLlmJson());
+  parsed.sections = parsed.sections.map((section: { title: string; body: string }) => ({ ...section, body: Array.from({ length: 20 }, (_, index) => `${index + 1}번째 대화에서는 상대에게 필요한 도움과 내가 맡을 범위를 함께 확인해보세요.`).join(' ') }));
+  const result = validateCompatibilitySections(parsed.sections);
+  assert.equal(result.ok, true, JSON.stringify(result.reasons));
+});

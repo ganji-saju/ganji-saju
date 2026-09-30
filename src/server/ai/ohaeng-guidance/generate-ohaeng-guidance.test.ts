@@ -49,7 +49,7 @@ test('generateOhaengGuidance: 플래그 OFF → fallback (LLM 미호출)', async
   assert.equal(called, false, 'LLM 미호출이어야');
   assert.ok(r.guidanceText.includes('토 기운'));
   assert.match(r.meta.cacheKey, /^[0-9a-f]{64}$/);
-  assert.equal(r.meta.promptVersion, 'ohaeng-guidance/v2-depth');
+  assert.equal(r.meta.promptVersion, 'ohaeng-guidance/v3-rich-reading');
 });
 
 test('generateOhaengGuidance: 플래그 ON + 정상 텍스트 → llm', async () => {

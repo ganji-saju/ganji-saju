@@ -51,6 +51,14 @@ try {
       // 길어진 AI 풀이도 A4 를 넘치지 않고 다음 쪽으로 흘러야 한다.
       interpretation.opening = '한 해의 흐름을 길게 풀어 쓴 문장입니다. '.repeat(60);
       for (const key of Object.keys(interpretation.categories)) interpretation.categories[key] = '분야 풀이가 길어진 경우를 가정한 문장입니다. '.repeat(25);
+      interpretation.monthlyFlows = interpretation.monthlyFlows.map(flow => ({ ...flow, summary: '월별 근거와 적용 조건을 자세히 살펴봅니다. '.repeat(5), focus: '어떤 상황에서 선택이 도움이 될지 비교합니다. '.repeat(5), caution: '부담이 커질 조건과 실제 상황을 확인합니다. '.repeat(5), action: '맡을 역할과 도움받을 범위를 나누어 적어봅니다. '.repeat(5) }));
+    }
+    if (index === 1) {
+      // Older saved monthly results may omit these optional fields.
+      const lastMonth = interpretation.monthlyFlows.at(-1);
+      delete lastMonth.focus;
+      delete lastMonth.caution;
+      delete lastMonth.action;
     }
     const data = buildPdfModel(reading, buildLifetimeReport(input, sajuData, 2027), `GS-NY27-${index}`, 2027);
     const article = renderToStaticMarkup(React.createElement(NewYearReportDocument, { data, report, interpretation, issuedAt: '2026.09.27', year: 2027 }));
@@ -64,6 +72,7 @@ try {
     await page.setContent(html, { waitUntil: 'load' });
     await page.emulateMedia({ media: 'print' });
     await page.evaluate(() => document.fonts.ready);
+    assert.ok(await page.locator('.rp-deep-sec p').evaluateAll((nodes) => nodes.length > 0 && nodes.every((el) => parseFloat(getComputedStyle(el).fontSize) >= 16)), 'PDF narrative body must be at least 16px (12pt)');
     const metrics = await page.evaluate(() => ({
       pages: [...document.querySelectorAll('.report-page')].map((el) => ({ number: Number(el.getAttribute('data-page')), height: el.getBoundingClientRect().height })),
       // 2026-09-27 한자 전면 금지(명식 포함) — 문서 전체에서 한 글자도 없어야 한다.
@@ -71,6 +80,8 @@ try {
       horizontalOverflow: [...document.querySelectorAll('.report-page')].some((el) => el.scrollWidth > el.clientWidth + 1),
     }));
     assert.deepEqual(metrics.pages.map((p) => p.number), Array.from({ length: metrics.pages.length }, (_, i) => i + 1), 'page numbers must be sequential');
+    assert.ok(metrics.pages.length >= 20, 'new-year report must contain at least 20 substantive pages');
+    if (index === 0) assert.equal(metrics.pages.length, 20, 'standard report has 20 pages');
     const tooTall = metrics.pages.filter((p) => p.height > 1122.6);
     assert.deepEqual(tooTall, [], `A new-year sheet exceeds A4: ${JSON.stringify(tooTall)}`);
     assert.equal(metrics.horizontalOverflow, false, 'overflows horizontally');

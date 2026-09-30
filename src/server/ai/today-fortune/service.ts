@@ -138,7 +138,8 @@ export async function generateTodayFortuneNarrative(args: {
       model: getOpenAIInterpretationModel(),
       // 2026-09-29 — 500 이면 추론형 모델(gpt-5.x)이 추론에 상한을 다 써 빈 답(empty_ai_response)이 났다
       //   (temperature 수정 #861 뒤 운영 원장 2/2건). 같은 모델의 오늘운세 상세(600)는 성공 — 입력이 더 긴 무료 쪽에 여유를 둔다.
-      maxOutputTokens: 1500,
+      maxOutputTokens: 2400,
+      timeoutMs: 25_000,
       responseFormat: { type: 'text' },
       feature: 'today_fortune',
       userId,

@@ -71,7 +71,7 @@ export interface TotalReviewResult {
 //      성공 호출 p50 12s·p90 14s·max 14.9s 로 **성공이 타임아웃 벽에 붙어 있었다.**
 //      상한을 올리면 출력이 길어져 더 자주 걸린다 — ①과 ②는 한 세트다.
 //   ⚠️ 이 값들을 내리려면 먼저 /admin/llm-cost 의 total_review fallback 이 왜 늘지 않는지 확인할 것.
-export const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 2600;
+export const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 4800;
 export const TOTAL_REVIEW_TIMEOUT_MS = 40_000;
 
 /** 캐시 조각 + 신규 조각을 합쳐 완성 출력으로. 둘 다 없으면 deterministic 으로 메운다. */

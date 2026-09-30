@@ -42,3 +42,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 이유: 세션이 여러 폴더(git worktree — Orca 세션 포함)에서 돌면 미커밋 기록은 서로 안 보여 갈린다. 2026-08-31 에 실제로 갈렸고(커밋본 4,277줄 vs 작업본 5,761줄), 일주일치 기록이 노트북 한 곳에만 있었다.
 - 갈렸으면: 원격이 추가한 섹션을 작업본 상단에 끼워 넣는다(작업본이 상위집합인지 `## 20` 헤더 목록으로 대조).
+
+# 머지·배포 요청의 완료 범위 (2026-09-30 사용자 결정)
+
+- Claude Code와 Codex 모두 사용자가 머지·배포를 요청하면 본인 변경 및 PROGRESS 커밋 → push → PR 생성 → CI·E2E·CodeQL 요약 체크 통과 확인 → main 머지 → staging 동기화 → 운영·staging 배포 성공 확인까지 진행한다. 같은 범위의 승인을 반복해서 묻지 않는다.
+- staging 동기화 전 `git fetch origin`과 `git log origin/main..origin/staging`으로 staging 전용 변경이 없는지 확인한다. 비어 있으면 `git push origin origin/main:staging`으로 fast-forward한다. 전용 변경이 있으면 보존하며 병합하고 필요한 검증을 거친다. 강제 push로 덮어쓰지 않는다.
+- 브랜치 push나 PR 머지만으로 배포 완료라고 보고하지 않는다. 해당 커밋의 운영·staging 배포 상태와 서비스 응답을 확인하고, 실패·미확인 상태는 구분해서 기록한다. 사용자 요청이 특정 환경으로 제한되면 그 범위를 따른다.

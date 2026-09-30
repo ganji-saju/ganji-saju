@@ -8,7 +8,7 @@ import {
 import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
-export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v8-depth';
+export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v9-rich-reading';
 
 const YEARLY_CATEGORY_ORDER: YearlyCategoryKey[] = [
   'work',
@@ -38,7 +38,7 @@ export interface SajuYearlyAiMonthlyFlow {
 
 // 2026-09-26 — 2027 신년운세 부가 필드. YearlyCategoryKey 를 넓히지 않고 옵셔널로 붙인다 —
 //   그 타입은 buildYearlyReport·패널·year-core 경로 전체로 번지고, 부가 필드는 신년운세·평생 구매자에게만 나가야 한다(route 티어).
-export const SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION = 'saju-newyear-extras-v2-depth';
+export const SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION = 'saju-newyear-extras-v3-rich-reading';
 export type NewYearExtraCategory = 'family' | 'study';
 export type NewYearHighlightCategory = YearlyCategoryKey | NewYearExtraCategory;
 
@@ -113,9 +113,9 @@ export interface ParsedSajuYearlyAiMonthlyFlows {
 const MAX_OPENING_LENGTH = 1400;
 const MAX_KEYWORD_LENGTH = 180;
 const MAX_HALF_LENGTH = 1100;
-const MAX_CATEGORY_LENGTH = 700;
-const MAX_MONTHLY_LENGTH = 240;
-const MAX_MONTHLY_DETAIL_LENGTH = 110;
+const MAX_CATEGORY_LENGTH = 1600;
+const MAX_MONTHLY_LENGTH = 600;
+const MAX_MONTHLY_DETAIL_LENGTH = 400;
 const MAX_PERIOD_LENGTH = 260;
 const MAX_ACTION_LENGTH = 240;
 const MAX_SUMMARY_LENGTH = 220;
@@ -898,7 +898,7 @@ export function createYearlyInterpretationPrompt(
 
   const schemaLine =
     section === 'newyear'
-      ? '{"categories":{"family":"가족운 2~3문장","study":"학업·시험운 2~3문장"},"quarterlyFlows":[{"quarter":1,"summary":"1~3월 요약","focusCategory":"wealth"},{"quarter":2,"summary":"4~6월 요약","focusCategory":"work"},{"quarter":3,"summary":"7~9월 요약","focusCategory":"love"},{"quarter":4,"summary":"10~12월 요약","focusCategory":"family"}],"expectations":[{"month":5,"category":"wealth","text":"기대할 일 한 문장"},"...3~6개"],"cautions":[{"month":8,"category":"health","text":"조심할 일 한 문장"},"...3~6개"]}'
+      ? '{"categories":{"family":"가족운 6~9문장","study":"학업·시험운 6~9문장"},"quarterlyFlows":[{"quarter":1,"summary":"1~3월 요약","focusCategory":"wealth"},{"quarter":2,"summary":"4~6월 요약","focusCategory":"work"},{"quarter":3,"summary":"7~9월 요약","focusCategory":"love"},{"quarter":4,"summary":"10~12월 요약","focusCategory":"family"}],"expectations":[{"month":5,"category":"wealth","text":"기대할 일 한 문장"},"...3~6개"],"cautions":[{"month":8,"category":"health","text":"조심할 일 한 문장"},"...3~6개"]}'
       : section === 'monthly'
       ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"해당 달의 선택 기준"}]}'
       : section === 'narrative'
@@ -920,8 +920,8 @@ export function createYearlyInterpretationPrompt(
           '이번 응답에서는 monthlyFlows만 작성합니다.',
           'monthlyFlows 외의 키는 출력하지 않습니다.',
           '1월부터 12월까지 반드시 모두 채우고, 각 달마다 summary, focus, caution, action을 모두 넣습니다.',
-          'summary는 한 문장, 55자 안팎으로 씁니다.',
-          'focus/caution/action은 각각 한 문장으로 쓰고, 20~45자 안에서 바로 판단이 되게 씁니다.',
+          'summary는 해당 월의 근거와 생활 장면을 연결한 2~3문장으로 씁니다.',
+          'focus/caution/action은 각각 2문장으로 근거와 조건 또는 실행 방법을 설명합니다. 각 항목 80~140자를 목표로 하되 같은 설명을 반복하지 않습니다.',
         ]
       : section === 'narrative'
         ? [
@@ -954,8 +954,8 @@ export function createYearlyInterpretationPrompt(
       schemaLine,
       'opening은 제목 없이 바로 시작되는 첫 문단이며, 흡입력 있게 시작해야 합니다.',
       'keywords는 3~5개입니다. 각 항목은 한 해의 핵심 키워드와 그 이유를 함께 담습니다.',
-      'firstHalf와 secondHalf는 각각 2~3문장 안에서 쓰고, 기회와 리스크와 첫 행동이 겹치지 않게 나눕니다.',
-      'categories의 6개 분야는 각 분야마다 "질문의 답 / 확인된 연간 근거 / 유리한 조건과 부담 조건 / 생활 선택"을 4~5개의 짧은 문장으로 설명합니다. 분야마다 다른 근거와 장면을 사용하고 근거가 없으면 보류합니다.',
+      'firstHalf와 secondHalf는 각각 5~7문장으로 근거와 대비되는 상황을 설명하고, 기회와 리스크와 첫 행동이 겹치지 않게 나눕니다.',
+      'categories의 6개 분야는 각 분야마다 "질문의 답 / 확인된 연간 근거 / 유리한 조건과 부담 조건 / 생활 선택"을 7~10개의 짧은 문장(400~650자 목표)으로 설명합니다. 분야마다 다른 근거와 장면을 사용하고 근거가 없으면 보류합니다.',
       'monthlyFlows는 1월부터 12월까지 서로 다른 질문을 던져야 합니다. 같은 문장 구조, 같은 도입, 같은 결론을 반복하지 않습니다.',
       'monthlyFlows는 사용자가 실제로 궁금해하는 선택 장면, 돈과 일의 판단, 관계 조율, 달력에 표시해 둘 만한 포인트를 우선해서 씁니다.',
       'monthlyFlows는 체감 가능한 변화 중심으로 쓰고, 그 달의 근거와 선택 기준이 함께 보이게 씁니다. 한 달 설명을 장문 단락 하나로 늘리지 않습니다.',

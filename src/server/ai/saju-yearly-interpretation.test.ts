@@ -148,7 +148,7 @@ test('createYearlyInterpretationPrompt grounds narrative and monthly passes on y
   const narrativeGrounding = JSON.parse(narrativePrompt.input) as Record<string, unknown>;
   const monthlyGrounding = JSON.parse(monthlyPrompt.input) as Record<string, unknown>;
 
-  assert.equal(getYearlyInterpretationPromptVersion('male'), 'saju-yearly-interpret-v8-depth-male');
+  assert.equal(getYearlyInterpretationPromptVersion('male'), 'saju-yearly-interpret-v9-rich-reading-male');
   assert.match(narrativePrompt.instructions, /한 해 흐름을 쉽게 이해하도록 정리하는 생활 조언 에디터/);
   assert.match(narrativePrompt.instructions, /남선생/);
   assert.match(monthlyPrompt.instructions, /monthlyFlows만 작성/);
@@ -179,4 +179,17 @@ test('yearly parser and rendered report preserve different ten gods and their so
   const rendered = renderYearlyInterpretationReport(parsed.interpretation);
   assert.match(rendered, /신약은 본인 기운이 다소 약한 편/);
   assert.match(rendered, /정관은 책임과 규범을, 편관은 압박/);
+});
+
+
+test('상세 연간·월별 문장은 이전 700자·110자 경계에서 잘리지 않는다', () => {
+  const record = createReadingRecord();
+  const report = buildYearlyReport(record.input, record.sajuData, 2027);
+  const fallback = buildFallbackYearlyInterpretation(report);
+  const body = Array.from({ length: 32 }, (_, i) => `${i + 1}번째 상황에서는 맡은 역할과 도움받을 조건을 함께 살펴봅니다.`).join(' ');
+  const detail = '내가 맡을 역할과 상대에게 요청할 지원을 나누어 적어보세요. '.repeat(5).trim();
+  const result = parseYearlyInterpretationText(JSON.stringify({ ...fallback, categories: { ...fallback.categories, work: body }, monthlyFlows: fallback.monthlyFlows.map(flow => ({ ...flow, focus: detail })) }), fallback);
+  assert.equal(result.ok, true);
+  assert.equal(result.interpretation.categories.work, body);
+  assert.equal(result.interpretation.monthlyFlows[0].focus, detail);
 });

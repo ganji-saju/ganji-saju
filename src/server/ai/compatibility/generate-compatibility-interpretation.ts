@@ -48,7 +48,7 @@ export interface GenerateCompatibilityInterpretationArgs {
   recordRun?: typeof recordLlmRun;
 }
 
-const MAX_OUTPUT_TOKENS = 2400;
+const MAX_OUTPUT_TOKENS = 6000;
 
 function toSections(
   parsed: { title: string; body: string }[]
@@ -109,7 +109,7 @@ export async function generateCompatibilityInterpretation(
 
   const client =
     args.client ??
-    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, feature: 'compatibility', userId });
+    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, timeoutMs: 30_000, feature: 'compatibility', userId });
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildCompatibilityInterpretationUserMessage(input);
   let lastReasons: string[] = [];

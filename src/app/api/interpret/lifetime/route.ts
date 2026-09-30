@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { generateLifetimeInterpretation } from '@/server/ai/saju-lifetime-service';
 
 export const runtime = 'nodejs';
-export const maxDuration = 75;
+export const maxDuration = 180;
 
 interface InterpretLifetimeRequest {
   readingId: string;
@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
     regenerate: parsed.regenerate,
     counselorId: parsed.counselorId,
     readingRecord: reading,
+    deadlineAt: Date.now() + 160_000,
   };
 
 

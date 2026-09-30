@@ -7,7 +7,7 @@ import type { ChapterUserContext } from './chapter-input-types';
 
 export const CHAPTER_CACHE_TTL_DAYS = 30;
 // Bump when the chapter's content contract changes; old envelopes remain readable.
-const CHAPTER_CONTENT_VERSION = 'lifetime-natal-evidence-v3';
+const CHAPTER_CONTENT_VERSION = 'lifetime-natal-evidence-v4-rich';
 
 /**
  * 챕터 LLM 결과 캐시 키.

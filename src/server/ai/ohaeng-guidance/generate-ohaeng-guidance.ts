@@ -37,9 +37,9 @@ export interface GenerateOhaengGuidanceArgs {
   cacheStore?: OhaengGuidanceCacheStore;
 }
 
-const MAX_OUTPUT_TOKENS = 400;
+const MAX_OUTPUT_TOKENS = 1400;
 const MIN_LEN = 20;
-const MAX_LEN = 320;
+const MAX_LEN = 800;
 
 export async function generateOhaengGuidance(
   args: GenerateOhaengGuidanceArgs

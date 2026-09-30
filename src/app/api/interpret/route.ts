@@ -36,7 +36,7 @@ import {
 import { recordLlmRun } from '@/server/ai/llm-telemetry';
 
 export const runtime = 'nodejs';
-export const maxDuration = 25;
+export const maxDuration = 60;
 
 interface InterpretRequest {
   readingId: string;
@@ -270,7 +270,8 @@ export async function POST(req: NextRequest) {
     ...prompt,
     fallbackText: JSON.stringify(fallback),
     model,
-    maxOutputTokens: 900,
+    maxOutputTokens: 4200,
+    timeoutMs: 40_000,
     // 2026-07-06 — temperature 미전달. GPT-5.x 계열은 temperature 파라미터를
     //   지원하지 않아 400(Unsupported parameter)→ 전량 fallback 으로 조용히 떨어졌다.
     //   total-review/yearly/lifetime 이 이미 temperature 를 빼는 것과 동일 패턴.

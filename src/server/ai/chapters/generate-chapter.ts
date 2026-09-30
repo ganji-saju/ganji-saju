@@ -73,6 +73,7 @@ export function buildChapterUserMessage(input: ChapterLLMInput): string {
       '',
       '---',
       '',
+      '예시는 해석 방향을 보여주는 축약 예시입니다. 실제 본문은 아래 장별 출력 가이드의 분량과 구조를 따릅니다.',
       '## 실제 입력 — 사주 데이터'
     );
   } else {

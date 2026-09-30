@@ -66,7 +66,7 @@ import {
 import { aiFallbackCopy } from '@/server/ai/fallback-copy';
 
 export const runtime = 'nodejs';
-export const maxDuration = 20;
+export const maxDuration = 60;
 
 type AiMode = 'dialogue' | 'saju-report';
 
@@ -746,8 +746,8 @@ async function handleDialogue(request: DialogueAiRequest) {
     //   먹어 600 토큰이 900자 남짓에서 끊긴다. 1000 으로 올린다.
     //   ⚠️ 상한을 올려도 잘림은 없어지지 않는다 — openai-text 가 잘린 응답을 마지막 완결
     //      문장까지 자르는 게 실제 방어선이다. 상한은 그 일이 **덜 일어나게** 할 뿐이다.
-    maxOutputTokens: yearlyBridge ? 420 : 1000,
-    timeoutMs: yearlyBridge ? 12_000 : undefined,
+    maxOutputTokens: yearlyBridge ? 1600 : 2800,
+    timeoutMs: 35_000,
     feature: 'chat',
     userId: user.id,
   });
@@ -938,7 +938,8 @@ async function handleSajuReport(request: SajuReportAiRequest) {
     ...prompt,
     fallbackText: buildReportFallback(report),
     model,
-    maxOutputTokens: 900,
+    maxOutputTokens: 3200,
+    timeoutMs: 35_000,
     feature: 'chat',
   });
 

@@ -9,7 +9,7 @@ test('PDF pagination preserves long Korean paid prose without truncation', () =>
   const normalized = (value: string) => value.replace(/\s/g, '');
   assert.equal(normalized(pages.flat().map((section) => section.text).join('')), normalized(source));
   assert.ok(pages.length > 1);
-  assert.ok(pages.every((page) => page.reduce((sum, section) => sum + section.text.length + 160, 0) <= 1600));
+  assert.ok(pages.every((page) => page.reduce((sum, section) => sum + section.text.length + 160, 0) <= 1050));
 });
 
 test('PDF pagination handles unbroken prose and omits empty pages', () => {

@@ -135,12 +135,12 @@ interface CacheKeyParts {
   readingSlug: string | null;
 }
 
-const YEARLY_NARRATIVE_TIMEOUT_MS = 32_000;
-const YEARLY_MONTHLY_TIMEOUT_MS = 28_000;
-const YEARLY_NARRATIVE_OUTPUT_TOKENS = 2400;
-const YEARLY_MONTHLY_OUTPUT_TOKENS = 1900;
-const YEARLY_NEW_YEAR_TIMEOUT_MS = 30_000;
-const YEARLY_NEW_YEAR_OUTPUT_TOKENS = 1800;
+const YEARLY_NARRATIVE_TIMEOUT_MS = 65_000;
+const YEARLY_MONTHLY_TIMEOUT_MS = 60_000;
+const YEARLY_NARRATIVE_OUTPUT_TOKENS = 10000;
+const YEARLY_MONTHLY_OUTPUT_TOKENS = 8000;
+const YEARLY_NEW_YEAR_TIMEOUT_MS = 45_000;
+const YEARLY_NEW_YEAR_OUTPUT_TOKENS = 6000;
 
 async function runTimedAiStage<T extends { source: AiGenerationSource; fallbackReason: AiFallbackReason | null; errorMessage: string | null }>(
   task: Promise<T>
