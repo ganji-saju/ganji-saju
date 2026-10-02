@@ -561,7 +561,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {quote && quote.discountWon > 0 ? (
                 <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
                   <span className="text-[15px] text-[var(--app-copy)]">
-                    {quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : '쿠폰 할인'} ({quote.percent}%)
+                    {quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : quote.promo ? `할인코드 ${quote.promo.code}` : '쿠폰 할인'} ({quote.percent}%)
                   </span>
                   <span className="text-[15.5px] font-bold text-[var(--app-pink-strong)]">
                     -{formatWon(quote.discountWon)}
@@ -577,7 +577,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   open={couponInputMode === 'enter' && Boolean(couponInput || quote?.reason)}
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14.4px] text-[var(--app-copy)] [&::-webkit-details-marker]:hidden">
-                    <span>{couponInputMode === 'change' ? '다른 쿠폰 코드 쓰기' : '쿠폰이 있으신가요?'}</span>
+                    <span>{couponInputMode === 'change' ? '다른 쿠폰 코드 쓰기' : '쿠폰·할인코드가 있으신가요?'}</span>
                     <span
                       aria-hidden="true"
                       className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"

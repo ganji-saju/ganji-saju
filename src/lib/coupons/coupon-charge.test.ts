@@ -784,3 +784,26 @@ test('member-discount — 비회원은 쿠폰 그대로', async () => {
   assert.equal(quote.memberPercent, 0);
   assert.ok(quote.claim);
 });
+
+// 2026-10-02 전단지 공용 코드 — 귀속 없이 누구나 같은 코드, 화면 금액 = 주문 금액, 승인 직전 쿠폰 검사를 타지 않게 coupon_code 는 비운다.
+test('coupon-charge — 전단지 공용 코드: 신년운세 9,900원, 화면 = 주문, 쿠폰 귀속·조회 없음', async () => {
+  const pkg = getPackage('taste_new_year_2027')!;
+  for (const premium of [false, true]) {
+    const db = fakeDb();
+    const quote = await resolveChargeForUser(pkg, { id: 'u1' }, '간지사주50', { ...opts(db), isPremiumMember: async () => premium });
+    assert.equal(quote.chargeAmount, 9900, '멤버십(50% = 9,950)보다 싸므로 공용 코드');
+    assert.equal(quote.promo?.code, '간지사주50');
+    assert.equal(quote.claim, null);
+    assert.equal(quote.reason, null);
+    assert.equal(db.updates, 0);
+    await createPaymentOrder(
+      { userId: 'u1', pkg, listAmount: quote.listAmount, promo: quote.promo, acceptedKinds: [], recordedPolicyVersionIds: [] },
+      db.client
+    );
+    const inserted = db.inserted.at(-1)!;
+    assert.equal(inserted.amount, quote.chargeAmount);
+    assert.equal(inserted.discount_won, quote.discountWon);
+    assert.equal(inserted.coupon_code, null, '승인 직전 쿠폰 검사(discount_coupons)를 타면 coupon_missing 으로 막힌다');
+    assert.equal((inserted.metadata as Record<string, unknown>).promoCode, '간지사주50');
+  }
+});

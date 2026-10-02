@@ -12,6 +12,7 @@ import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { MEMBER_DISCOUNT_PERCENT_BY_PACKAGE, pickBetterDiscount } from '@/lib/payments/member-discount';
 import { isPremiumMember } from '@/lib/subscription';
+import { applyPromoPrice, findPromoCode, type PromoCode } from './promo-code';
 import { after } from 'next/server';
 import { readPaymentOrigin, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
 import { dailyPeriodKey } from '@/lib/credits/member-benefits';
@@ -194,6 +195,8 @@ export interface ChargeQuote {
   claim: CouponClaim | null;
   /** 2026-09-26 — 적용된 프리미엄 멤버십 할인율(0 = 없음). 쿠폰과 동시에 붙지 않는다. prepare 는 이 값을 createPaymentOrder 로 넘긴다. */
   memberPercent: number;
+  /** 2026-10-02 — 적용된 전단지 공용 코드(promo-code.ts). 쿠폰·멤버십과 겹치지 않는다. prepare 는 이 값을 createPaymentOrder 로 넘긴다. */
+  promo?: PromoCode | null;
 }
 
 /**
@@ -295,6 +298,16 @@ export async function resolveChargeForUser(
     memberPercent > 0 ? memberQuote(reason) : noDiscount(reason);
 
   const raw = couponInput?.trim() ? couponInput : null;
+
+  // 전단지 공용 코드 — 입력한 코드가 이 상품의 공용 코드면 고정가. 멤버십·등록 쿠폰보다 싸면 이것 하나만 붙는다.
+  const promo = findPromoCode(raw, pkg.id, listAmount);
+  if (promo) {
+    const p = applyPromoPrice(listAmount, promo);
+    const member = memberPercent > 0 ? memberQuote(null) : null;
+    if (member && member.chargeAmount <= p.chargeAmount) return member;
+    return { listAmount, discountWon: p.discountWon, chargeAmount: p.chargeAmount, percent: p.percent, couponCode: promo.code, reason: null, claim: null, memberPercent: 0, promo };
+  }
+
   const parsed = raw ? parseCouponCode(raw) : null;
   const service = opts.service ?? (await createServiceClient());
   const now = opts.now ?? new Date();
