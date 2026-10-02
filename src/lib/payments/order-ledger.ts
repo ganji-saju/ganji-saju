@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
+import { applyPromoPrice, type PromoCode } from '@/lib/coupons/promo-code';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
@@ -200,6 +201,8 @@ export async function createPaymentOrder(
     coupon?: { code: string; percent: number; maxDiscountWon?: number | null } | null;
     /** 2026-09-26 — 멤버십 할인율(서버 판정값 ChargeQuote.memberPercent 만). coupon 과 동시에 오지 않는다. */
     memberPercent?: number;
+    /** 2026-10-02 — 전단지 공용 코드(서버 판정값 ChargeQuote.promo 만). coupon·memberPercent 와 동시에 오지 않는다. */
+    promo?: PromoCode | null;
     slug?: string | null;
     scope?: string | null;
     product?: string | null;
@@ -221,7 +224,9 @@ export async function createPaymentOrder(
   const orderId = generatePaymentOrderId();
   // 🔴 할인이 금액이 되는 유일한 지점. 상한 50% clamp·원 단위 절사·0원 방지가 여기 들어 있다.
   //   호출부가 할인을 계산해 넘기는 구조였다면 경로마다 어긋났을 것이다.
-  const pricing = input.coupon
+  const pricing = input.promo
+    ? applyPromoPrice(input.listAmount, input.promo)
+    : input.coupon
     ? applyCouponDiscount(input.listAmount, input.coupon.percent, input.coupon.maxDiscountWon)
     : input.memberPercent
       ? applyCouponDiscount(input.listAmount, input.memberPercent, null)
@@ -251,7 +256,7 @@ export async function createPaymentOrder(
       ga_client_id: input.gaClientId ?? null,
       ga_session_id: input.gaSessionId ?? null,
       analytics_consent: input.analyticsConsent ?? null,
-      metadata: input.metadata ?? {},
+      metadata: input.promo ? { ...input.metadata, promoCode: input.promo.code } : (input.metadata ?? {}),
     })
     .select('*')
     .single();
