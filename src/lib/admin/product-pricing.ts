@@ -1,6 +1,7 @@
 // 2026-07-07 — /admin/pricing 백엔드 로직. 전 상품 가격 목록 + 변경 적용(upsert + 감사).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PAYMENT_PACKAGES, type PackageId } from '@/lib/payments/catalog';
+import { PARTNER_PACKAGE_ID } from '@/lib/partners/partner';
 
 export interface ProductPriceRow {
   packageId: PackageId;
@@ -32,7 +33,8 @@ export async function listProductPrices(service: SupabaseClient): Promise<Produc
     const o = overrides.get(pkg.id);
     return {
       packageId: pkg.id,
-      name: pkg.name,
+      // 2026-10-04 — 인플루언서 파트너판은 손님에게 같은 이름(2027 신년운세)으로 보이지만, 관리자 가격 화면에선 일반판과 구분한다.
+      name: pkg.id === PARTNER_PACKAGE_ID ? `${pkg.name} (인플루언서 전용)` : pkg.name,
       price: o ? o.price : pkg.price,
       previousPrice: o ? o.previous_price : null,
       isOverridden: Boolean(o),
