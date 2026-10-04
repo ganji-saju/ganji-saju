@@ -148,6 +148,8 @@ test('isBotUserAgent: 링크 미리보기 봇 (SNS 공유 시 자동 접속)', (
   assert.equal(isBotUserAgent('facebookexternalhit/1.1'), true);
   assert.equal(isBotUserAgent('Twitterbot/1.0'), true);
   assert.equal(isBotUserAgent('WhatsApp/2.19'), true);
+  assert.equal(isBotUserAgent('facebookexternalhit/1.1; kakaotalk-scrap/1.0; +https://devtalk.kakao.com/t/scrap/33984'), true);
+  assert.equal(isBotUserAgent('kakaotalk-scrap/1.0'), true);
 });
 
 test('isBotUserAgent: 진짜 사람 브라우저는 false', () => {
