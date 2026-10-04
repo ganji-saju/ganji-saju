@@ -11,7 +11,7 @@ import { BUSINESS_INFO } from '@/lib/business-info';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { shouldCountPartnerVisit } from '@/lib/partners/partner-host';
 
-export const metadata: Metadata = { title: '2027 신년운세', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: '올해운 노트 — 2027 운세', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 // 사업자 정보 — site-footer.tsx 와 같은 BUSINESS_INFO(법정 표기 정본). 그 컴포넌트는 간지사주 링크·쿠키 버튼이 섞인 클라이언트라 데이터만 재사용한다.
@@ -47,15 +47,22 @@ export default async function PartnerLandingPage({ params }: { params: Promise<{
   return (
     <main className="mx-auto max-w-[480px] px-4 pb-16 pt-10">
       {/* 브랜드 이름·로고·문구는 사용자 확정본으로 교체(설계 §7). 아래는 구조. */}
-      <h1 className="text-[28px] font-extrabold">2027 신년운세</h1>
-      <p className="mt-3 text-[16px] leading-[1.7]">재물·가족·일 — 새해 한 해의 흐름을 월별로 미리 봅니다. PDF로 저장해 다시 볼 수 있어요.</p>
+      {/* 2026-10-04 랜딩 문구 B안(사용자 선택) — 브랜드 '올해운 노트' */}
+      <p className="text-[14px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">올해운 노트</p>
+      <h1 className="mt-2 text-[28px] font-extrabold leading-[1.3]">내년 내 운, 미리 열어볼까요?</h1>
+      <p className="mt-3 text-[16px] leading-[1.7]">생년월일만 넣으면 2027년 한 해가 달별로 정리돼요.</p>
+      <ul className="mt-4 grid gap-1.5 text-[15px] leading-[1.6]">
+        <li>✓ 돈·사람·일, 신경 쓰이는 흐름 한눈에</li>
+        <li>✓ 달마다 &ldquo;이번 달 할 일&rdquo; 한 줄 정리</li>
+        <li>✓ 저장해 두고 새해 내내 꺼내 보기</li>
+      </ul>
       <div className="mt-6 rounded-[14px] border p-5">
         <p className="text-[15px] text-[var(--app-copy-muted)] line-through">{formatWon(list)}</p>
         <p className="text-[26px] font-extrabold">
           {formatWon(price.chargeAmount)} <span className="text-[16px]">({price.percent}% 할인)</span>
         </p>
         <a href={buyHref} className="mt-4 block rounded-[12px] bg-[var(--app-pink)] py-3 text-center font-extrabold text-white">
-          지금 보기
+          2027 운세 열기
         </a>
         <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">결제·풀이 제공: 간지사주(푸꼬컴퍼니) — 결제 화면에 이 이름이 표시됩니다.</p>
       </div>
