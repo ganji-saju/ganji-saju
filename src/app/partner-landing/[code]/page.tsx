@@ -1,6 +1,7 @@
 // 2026-10-04 인플루언서 전용 신년운세 랜딩(설계 §3-3). 간지사주 셸(헤더·메뉴) 없이 한 장.
 // 호스트 전환은 src/proxy.ts → partnerLandingRewritePath. 마이그레이션 090 미적용이면 '이용 불가' 안내로 닫힌다.
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { createServiceClient } from '@/lib/supabase/server';
 import { formatWon, getPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
@@ -8,6 +9,7 @@ import { applyPartnerPrice, getActivePartner, PARTNER_PACKAGE_ID } from '@/lib/p
 import { kstDateKey } from '@/lib/admin/analytics-rollup';
 import { BUSINESS_INFO } from '@/lib/business-info';
 import { CANONICAL_SITE_URL } from '@/lib/site';
+import { shouldCountPartnerVisit } from '@/lib/partners/partner-host';
 
 export const metadata: Metadata = { title: '2027 신년운세', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -33,10 +35,12 @@ export default async function PartnerLandingPage({ params }: { params: Promise<{
   if (!partner) {
     return <main className="mx-auto max-w-[480px] px-4 py-16 text-center">지금은 이용할 수 없는 링크입니다.</main>;
   }
-  // 집계 실패(테이블·함수 미적용 포함)는 랜딩을 막지 않는다.
-  await Promise.resolve(
-    service.rpc('increment_partner_visit', { p_code: partner.code, p_day: kstDateKey(new Date().toISOString()) }),
-  ).then(() => undefined, () => undefined);
+  // 봇·미리보기 크롤러는 세지 않는다. 집계 실패(테이블·함수 미적용 포함)는 랜딩을 막지 않는다.
+  if (shouldCountPartnerVisit((await headers()).get('user-agent'))) {
+    await Promise.resolve(
+      service.rpc('increment_partner_visit', { p_code: partner.code, p_day: kstDateKey(new Date().toISOString()) }),
+    ).then(() => undefined, () => undefined);
+  }
   const list = await resolvePackagePrice(getPackage(PARTNER_PACKAGE_ID)!.id);
   const price = applyPartnerPrice(list, partner);
   const buyHref = `${CANONICAL_SITE_URL}/partner/go?code=${encodeURIComponent(partner.code)}`;
