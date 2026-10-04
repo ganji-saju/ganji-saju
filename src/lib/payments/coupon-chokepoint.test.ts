@@ -294,6 +294,7 @@ test('정가·할인 스냅샷(list_amount·discount_won·coupon_percent)을 읽
       'src/lib/coupons/discount-coupon.ts',
       'src/lib/coupons/promo-code.ts', // 2026-10-02 전단지 공용 코드 — 할인 계산
       'src/lib/new-year-preview-price.ts',
+      'src/lib/partners/partner.ts', // 2026-10-04 파트너 가격 계산 (할인율 적용)
       'src/lib/payments/coupon-order-guard.ts',
       'src/lib/payments/member-discount.ts',
       'src/lib/payments/order-ledger.ts',
