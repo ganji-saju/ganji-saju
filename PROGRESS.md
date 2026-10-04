@@ -1,5 +1,11 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-04 — 마이그레이션 090(partners·partner_visits) 운영 적용
+
+- 사용자 승인 후 supabase-ganji 로 적용. 확인: 두 테이블 RLS 켜짐(정책 없음 = service 전용, 기존 테이블과 같은 INFO만) · increment_partner_visit 실행권한 anon·authenticated 없음, service_role 있음 · get_advisors 에 새 경고 없음.
+- 기존 경고 2건(handle_new_user, search_classic_evidence 가 anon 실행 가능)은 이번과 무관한 이전부터의 것 — 별도 확인 필요.
+- 다음: 테스트 인플루언서 등록 → 결제 화면 19,200원 확인 · 도메인 연결.
+
 ## 2026-10-04 — 인플루언서 전용 신년운세 랜딩 구현(머지 전)
 
 - 계획 docs/superpowers/plans/2026-10-04-influencer-landing.md 를 작업 6개로 나눠 작업마다 구현자·검토자 분리 + 전체 최종 검토로 진행.
