@@ -32,7 +32,7 @@
 - 멤버십 50% 할인은 적용하지 않음(`MEMBER_DISCOUNT_PERCENT_BY_PACKAGE`에 넣지 않음).
 
 ### 3-2. 인플루언서(파트너) 정보 — 새 테이블 (마이그레이션 090)
-- `partners`: `code`(주소용, 영문·숫자 3~20자, 유일) · `name` · `discount_percent`(기본 40) · `commission_percent`(기본 30) · `active` · `created_at`. RLS 활성·정책 없음(service 전용).
+- `partners`: `code`(주소용, 영문·숫자 3~20자, 유일) · `name` · `discount_percent`(기본 40, 1~50 — 상한 50%: DB 제약·관리자 입력·계산 함수 모두 50 초과를 막는다) · `commission_percent`(기본 30) · `active` · `created_at`. RLS 활성·정책 없음(service 전용).
 - `partner_visits`: `partner_code` · `visited_on`(KST 날짜) · `count` — 랜딩 방문 일별 집계(개인정보 없음). 봇 필터는 기존 방문 지표 규칙 재사용.
 - 새 SECURITY DEFINER 함수를 만들면 같은 마이그레이션에서 anon EXECUTE 회수.
 
@@ -44,7 +44,7 @@
 
 ### 3-4. 랜딩 → 결제 연결
 - 구매 버튼 = `ganjisaju.kr/membership/checkout?product=new-year-partner&partner=코드`. 사주 입력이 필요하면 기존 신년운세 흐름(사주 입력 → 결제)을 따른다 — 구현 계획에서 경로 확인.
-- 체크아웃은 `partner` 값을 짧은 쿠키(체크아웃 경로, 30분+로그인 왕복 유지)에 두고, 금액 계산은 기존 공용 코드와 같은 자리(`resolveChargeForUser`)에서 파트너 할인으로 낸다 → 화면 금액 = prepare 금액 = `order.amount`.
+- 체크아웃은 `partner` 값을 파트너 쿠키(경로 `/`, 7일 유지 — 링크를 보고 며칠 뒤 사는 손님도 그 인플루언서 실적으로 잡는다)에 두고, 금액 계산은 기존 공용 코드와 같은 자리(`resolveChargeForUser`)에서 파트너 할인으로 낸다 → 화면 금액 = prepare 금액 = `order.amount`.
 - 로그인 전에도 19,200원 표시(공용 코드와 같은 이유 — 추측 위험 없음, 실제 청구는 로그인 뒤 같은 계산).
 - 주문 기록: `payment_orders.metadata.partnerCode`, `metadata.partnerCommissionPercent`(주문 시점 스냅샷). `coupon_code`는 비움(승인 직전 쿠폰 검사 회피 — 공용 코드와 동일).
 - 쿠폰·공용 코드·멤버십과 겹치지 않음. 파트너 상품에는 파트너 할인만.

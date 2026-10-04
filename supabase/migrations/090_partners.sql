@@ -2,7 +2,7 @@
 create table if not exists public.partners (
   code text primary key check (code ~ '^[a-z0-9]{3,20}$'),
   name text not null,
-  discount_percent int not null default 40 check (discount_percent between 1 and 90),
+  discount_percent int not null default 40 check (discount_percent between 1 and 50),
   commission_percent int not null default 30 check (commission_percent between 0 and 90),
   active boolean not null default true,
   created_at timestamptz not null default now()

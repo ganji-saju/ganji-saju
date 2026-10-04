@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server';
 import { getTasteProductPackage } from '@/lib/payments/catalog';
 
 vi.mock('@/lib/supabase/server', () => ({
+  createServiceClient: vi.fn(async () => ({})),
   createClient: vi.fn(async () => ({ auth: { getUser: async () => ({ data: { user: { id: 'user-1' } } }) } })),
 }));
 vi.mock('@/lib/payments/funnel-log', () => ({ logPaymentFunnelEvent: vi.fn() }));
@@ -150,6 +151,21 @@ describe('prepare — 신년운세 중복 결제 차단', () => {
     vi.mocked(getLifetimeReportEntitlement).mockResolvedValueOnce({ id: 'e' } as never);
     const body = await (await newYear()).json();
     expect(body.alreadyPurchased).toBe(true);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+  });
+});
+
+// 2026-10-04 최종 검토 — 파트너판인데 활성 파트너가 없으면(쿠키 만료) expectedAmount 가 없어도 정가로 청구하지 않고 멈춘다.
+describe('prepare — 파트너판 파트너 없음', () => {
+  beforeEach(() => vi.clearAllMocks());
+  it('활성 파트너 없고 expectedAmount 도 없으면 409, 주문 미생성', async () => {
+    vi.mocked(resolveChargeForUser).mockResolvedValueOnce({ listAmount: 32000, chargeAmount: 32000, claim: null, reason: null, memberPercent: 0 } as never);
+    const res = await POST(new NextRequest('https://ganjisaju.kr/api/payments/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ packageId: 'taste_new_year_2027_partner', product: 'new-year-partner', slug: 'reading-dad' }),
+    }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toContain('결제는 진행되지 않았습니다');
     expect(createPaymentOrder).not.toHaveBeenCalled();
   });
 });

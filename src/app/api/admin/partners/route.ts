@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
     .not('metadata->>partnerCode', 'is', null)
     .gte('confirmed_at', new Date(Date.parse(`${period.startKey}T00:00:00+09:00`)).toISOString())
     .lt('confirmed_at', kstExclusiveEndIso(period.endKey))
+    .order('confirmed_at', { ascending: false })
     .limit(ORDER_LIMIT);
   if (oErr) return NextResponse.json({ ok: false, error: oErr.message }, { status: 500, headers: NO_STORE });
   const stats = computePartnerStats((orders ?? []) as PartnerOrderRow[]);
@@ -95,11 +96,11 @@ export async function POST(req: NextRequest) {
   if (
     !code ||
     name.length < 1 || name.length > 40 ||
-    !Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 90 ||
+    !Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 50 ||
     !Number.isInteger(commissionPercent) || commissionPercent < 0 || commissionPercent > 90
   ) {
     return NextResponse.json(
-      { ok: false, error: '코드(영문 소문자·숫자 3~20자)·이름(1~40자)·할인(1~90)·수수료(0~90)를 확인하세요.' },
+      { ok: false, error: '코드(영문 소문자·숫자 3~20자)·이름(1~40자)·할인(1~50, 상한 50%)·수수료(0~90)를 확인하세요.' },
       { status: 400 }
     );
   }

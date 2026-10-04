@@ -449,6 +449,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, authenticated: true, error }, { status: 409 });
   };
 
+  // 🔴 파트너판인데 활성 파트너가 없으면(쿠키 만료·파트너 비활성) 멈춘다. expectedAmount 를 안 보내는 옛 클라이언트는
+  //   아래 대조를 건너뛰어 정가(32,000)로 청구될 수 있다 — 그 구멍을 여기서 막는다.
+  if (pkg.id === PARTNER_PACKAGE_ID && !quote.partner) {
+    return blockPrepare('partner_missing', '할인 링크가 만료되었습니다. 링크로 다시 들어와 주세요. 결제는 진행되지 않았습니다.');
+  }
+
   // 🔴 화면이 할인을 보여 줬으면 그 코드가 여기로 온다. 그 코드가 지금 적용되지 않으면
   //   **조용히 정가로 청구하지 않고 멈춘다**(클라이언트 금액 폴백을 지운 것과 같은 원칙).
   //   2026-09-26 — 멤버십 할인이 이겼으면(memberPercent>0) 쿠폰은 일부러 안 붙인 것이라 막지 않는다 — 청구는 멤버십가.

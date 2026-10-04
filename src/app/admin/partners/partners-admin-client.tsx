@@ -29,6 +29,7 @@ const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
 export function PartnersAdminClient() {
   const [period, setPeriod] = useState(() => resolveAdminPeriod('day', undefined));
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [truncated, setTruncated] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [form, setForm] = useState({ code: '', name: '', discountPercent: '40', commissionPercent: '30' });
 
@@ -36,7 +37,7 @@ export function PartnersAdminClient() {
     try {
       const res = await fetch(`/api/admin/partners?unit=${period.unit}&period=${encodeURIComponent(period.anchor)}`, { cache: 'no-store' });
       const json = await res.json();
-      if (json.ok) { setRows(json.partners); setNotice(null); return; }
+      if (json.ok) { setRows(json.partners); setTruncated(json.truncated === true); setNotice(null); return; }
       setRows(null);
       setNotice(json.error === 'partners_table_missing' ? '인플루언서 테이블이 아직 적용되지 않았습니다.' : `불러오지 못했습니다: ${json.error}`);
     } catch {
@@ -62,6 +63,7 @@ export function PartnersAdminClient() {
       <AdminPeriodPicker period={period} onChange={setPeriod} />
       {notice && <div className="rounded-[10px] border border-[var(--app-coral)] bg-[var(--app-coral)]/5 p-3 text-[13px] text-[var(--app-ink)]">{notice}</div>}
 
+      {rows && truncated && <div className="text-[13px] font-bold text-[var(--app-coral)]">주문이 많아 최근 2,000건만 집계했습니다. 기간을 좁혀 주세요.</div>}
       {rows && (
         <div className="overflow-x-auto rounded-[10px] border border-[var(--app-line)] bg-white">
           <table className="w-full">
@@ -95,6 +97,7 @@ export function PartnersAdminClient() {
               ))}
             </tbody>
           </table>
+          <p className="px-2.5 py-2 text-[11.5px] text-[var(--app-copy-soft)]">환불은 판매한 기간의 실적에서 빼서 보여 줍니다.</p>
         </div>
       )}
 

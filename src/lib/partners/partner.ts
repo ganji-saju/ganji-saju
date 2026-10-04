@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const PARTNER_PACKAGE_ID = 'taste_new_year_2027_partner';
 export const PARTNER_COOKIE = 'ganji_partner';
+export const PARTNER_MAX_DISCOUNT_PERCENT = 50;
 export const PARTNER_COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
 export interface PartnerTerms {
@@ -20,8 +21,9 @@ export function normalizePartnerCode(raw: unknown): string | null {
 
 /** 표시(resolveChargeForUser)와 주문(createPaymentOrder)이 같은 함수를 쓴다 — 화면 금액 = order.amount. */
 export function applyPartnerPrice(listAmount: number, terms: PartnerTerms) {
-  const discountWon = Math.floor((listAmount * terms.discountPercent) / 100);
-  return { chargeAmount: listAmount - discountWon, discountWon, percent: terms.discountPercent };
+  const percent = Math.min(terms.discountPercent, PARTNER_MAX_DISCOUNT_PERCENT); // 방어: 상한 50%
+  const discountWon = Math.floor((listAmount * percent) / 100);
+  return { chargeAmount: listAmount - discountWon, discountWon, percent };
 }
 
 /** 조회 실패(마이그레이션 미적용 포함)는 '파트너 없음' — 체크아웃을 깨지 않는다. */

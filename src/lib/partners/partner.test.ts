@@ -8,6 +8,14 @@ test('applyPartnerPrice: 32,000 × 40% → 19,200', () => {
   assert.deepEqual(applyPartnerPrice(32000, terms), { chargeAmount: 19200, discountWon: 12800, percent: 40 });
 });
 
+test('applyPartnerPrice: 90% 는 50% 로 제한 → 32,000 → 16,000', () => {
+  assert.deepEqual(applyPartnerPrice(32000, { ...terms, discountPercent: 90 }), { chargeAmount: 16000, discountWon: 16000, percent: 50 });
+});
+
+test('applyPartnerPrice: 할인액은 내림 — 33,333 × 40% → 13,333 할인, 20,000 청구', () => {
+  assert.deepEqual(applyPartnerPrice(33333, terms), { chargeAmount: 20000, discountWon: 13333, percent: 40 });
+});
+
 test('normalizePartnerCode: 소문자·영숫자 3~20자만', () => {
   assert.equal(normalizePartnerCode(' MiNa01 '), 'mina01');
   assert.equal(normalizePartnerCode('a'), null);
