@@ -32,6 +32,8 @@ const BOT_UA_PATTERNS: readonly RegExp[] = [
   /headless|phantomjs|puppeteer|playwright|selenium|lighthouse/i,
   /curl\/|wget\/|python-requests|node-fetch|axios\/|go-http-client|okhttp|java\//i,
   /facebookexternalhit|whatsapp\/|telegram|discord|applebot|embedly|preview/i,
+  // 2026-10-04 — 카카오톡 링크 미리보기 수집기(kakaotalk-scrap). 인앱 브라우저(대문자 'KAKAOTALK 10.x')는 사람이라 '-scrap' 까지 맞춰야 한다.
+  /kakaotalk-scrap/i,
   /pingdom|uptimerobot|gtmetrix|newrelic|datadog/i,
 ];
 
