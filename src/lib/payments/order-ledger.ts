@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import { applyCouponDiscount } from '@/lib/coupons/discount-coupon';
 import { applyPromoPrice, type PromoCode } from '@/lib/coupons/promo-code';
+import { applyPartnerPrice, type PartnerTerms } from '@/lib/partners/partner';
 import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
@@ -203,6 +204,8 @@ export async function createPaymentOrder(
     memberPercent?: number;
     /** 2026-10-02 — 전단지 공용 코드(서버 판정값 ChargeQuote.promo 만). coupon·memberPercent 와 동시에 오지 않는다. */
     promo?: PromoCode | null;
+    /** 2026-10-04 — 인플루언서 파트너(서버 판정값 ChargeQuote.partner 만). 파트너판 전용이라 다른 할인과 겹치지 않는다. */
+    partner?: PartnerTerms | null;
     slug?: string | null;
     scope?: string | null;
     product?: string | null;
@@ -224,7 +227,9 @@ export async function createPaymentOrder(
   const orderId = generatePaymentOrderId();
   // 🔴 할인이 금액이 되는 유일한 지점. 상한 50% clamp·원 단위 절사·0원 방지가 여기 들어 있다.
   //   호출부가 할인을 계산해 넘기는 구조였다면 경로마다 어긋났을 것이다.
-  const pricing = input.promo
+  const pricing = input.partner
+    ? applyPartnerPrice(input.listAmount, input.partner)
+    : input.promo
     ? applyPromoPrice(input.listAmount, input.promo)
     : input.coupon
     ? applyCouponDiscount(input.listAmount, input.coupon.percent, input.coupon.maxDiscountWon)
@@ -256,7 +261,11 @@ export async function createPaymentOrder(
       ga_client_id: input.gaClientId ?? null,
       ga_session_id: input.gaSessionId ?? null,
       analytics_consent: input.analyticsConsent ?? null,
-      metadata: input.promo ? { ...input.metadata, promoCode: input.promo.code } : (input.metadata ?? {}),
+      metadata: {
+        ...(input.metadata ?? {}),
+        ...(input.promo ? { promoCode: input.promo.code } : {}),
+        ...(input.partner ? { partnerCode: input.partner.code, partnerCommissionPercent: input.partner.commissionPercent } : {}),
+      },
     })
     .select('*')
     .single();

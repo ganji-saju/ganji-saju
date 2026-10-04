@@ -45,8 +45,11 @@ import {
 // 2026-05-16 — 멤버십 구독 중복 결제 차단을 위해 현재 활성 구독 조회.
 import { getManagedSubscription, getMemberTier } from '@/lib/subscription';
 import { isSubscriptionPackage } from '@/lib/payments/catalog';
+import { PARTNER_COOKIE, PARTNER_PACKAGE_ID, getActivePartner } from '@/lib/partners/partner';
+import { resolveCheckoutPackage } from '@/lib/partners/checkout-package';
 import {
   createClient,
+  createServiceClient,
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
@@ -424,18 +427,26 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   // 2026-09-11 할인쿠폰 — prepare 와 **같은 함수**(resolveChargeForUser)로 계산한다. 이 화면의
   //   최종 결제 금액 = prepare 가 만들 order.amount = PG 청구액. 할인 표기는 **이 화면에서만** 한다
   //   — 전역 가격 맵(getPriceDisplayMap)은 전 방문자 공유 캐시라 사용자별 값을 담을 수 없다(설계 §3-2).
-  const quote = paymentPackage
+  // 2026-10-04 — 인플루언서 랜딩에서 온 손님(파트너 쿠키)은 신년운세를 파트너판으로. 쿠키가 없거나 비활성이면 일반 상품.
+  //   금액·결제 버튼·prepare 로 보내는 packageId 는 checkoutPackage, 가이드 문구·헤더 그림·중복구매 판정은 원래 선택(paymentPackage) 기준.
+  const partner =
+    paymentPackage && hasSupabaseServiceEnv
+      ? await getActivePartner(await createServiceClient(), cookieStore.get(PARTNER_COOKIE)?.value)
+      : null;
+  const checkoutPackage = paymentPackage ? resolveCheckoutPackage(paymentPackage, partner) : null;
+  const quote = checkoutPackage
     ? await resolveChargeForUser(
-        paymentPackage,
+        checkoutPackage,
         viewer,
         couponInput,
         {
           env: couponEnvForHost(requestHeaders.get('host')),
+          partner,
         }
       )
     : null;
   const formatPrice = (won: number) =>
-    paymentPackage?.kind === 'subscription' && paymentPackage.planSlug
+    checkoutPackage?.kind === 'subscription' && checkoutPackage.planSlug
       ? `월 ${formatWon(won)}`
       : formatWon(won);
   const displayPrice = quote ? formatPrice(quote.chargeAmount) : '';
@@ -463,7 +474,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   // 쿠폰 입력칸 — 결제 버튼이 있는 화면, 쿠폰이 붙는 상품(설계 §7)에서만. 쿠폰 없음 = 입력 · 미리보기 중(결제 전) = 다른 코드로
   //   바꾸기 · 등록된 쿠폰 = 없음(동시에 1개라 새 코드는 어차피 거부된다). checkoutCouponInputMode 주석 참조.
   const couponInputMode =
-    paymentPackage && quote && !funnelBlocked && isCouponEligiblePackage(paymentPackage)
+    checkoutPackage && quote && !funnelBlocked && checkoutPackage.id !== PARTNER_PACKAGE_ID && isCouponEligiblePackage(checkoutPackage)
       ? checkoutCouponInputMode(quote)
       : null;
   // 2026-09-03 — robots 는 이 경로를 disallow 하지만 지키지 않는 크롤러가 남는다.
@@ -475,11 +486,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     deploymentEnv: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
   });
   // 쿠폰 입력칸 제출(서버 액션)도 이 화면을 다시 그린다. 퍼널은 건수로 세므로 그때는 또 남기지 않는다.
-  if (paymentPackage && !funnelSkipReason && !requestHeaders.has('next-action')) {
+  if (checkoutPackage && !funnelSkipReason && !requestHeaders.has('next-action')) {
     after(() => {
       logCheckoutStage({
         stage: 'checkout_viewed',
-        packageId: paymentPackage.id,
+        packageId: checkoutPackage.id,
         product: selectedProduct ?? selectedBundle?.id ?? selectedPlan,
         slug: slug ?? null,
         from: from ?? null,
@@ -490,7 +501,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       if (returned === '1' && viewerId) {
         logCheckoutStage({
           stage: 'login_returned',
-          packageId: paymentPackage.id,
+          packageId: checkoutPackage.id,
           product: selectedProduct ?? selectedBundle?.id ?? selectedPlan,
           slug: slug ?? null,
           from: from ?? null,
@@ -514,12 +525,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
         <section className="space-y-5 px-1">
           {/* 2026-08-26 — GA4 view_item. 결제창 도달 = 상품 상세 도달이다.
               begin_checkout(버튼 클릭)보다 한 칸 앞이라 상세→시작→완료 퍼널이 완성된다. */}
-          {paymentPackage && quote ? (
+          {checkoutPackage && quote ? (
             <GtmViewItem
-              productType={paymentPackage.id}
+              productType={checkoutPackage.id}
               value={quote.chargeAmount}
               itemName={selected.title}
-              itemCategory={paymentPackage.kind}
+              itemCategory={checkoutPackage.kind}
             />
           ) : null}
 
@@ -561,7 +572,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {quote && quote.discountWon > 0 ? (
                 <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
                   <span className="text-[15px] text-[var(--app-copy)]">
-                    {quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : quote.promo ? `할인코드 ${quote.promo.code}` : '쿠폰 할인'} ({quote.percent}%)
+                    {quote.partner ? '파트너 특가' : quote.memberPercent > 0 ? '프리미엄 멤버십 할인' : quote.promo ? `할인코드 ${quote.promo.code}` : '쿠폰 할인'} ({quote.percent}%)
                   </span>
                   <span className="text-[15.5px] font-bold text-[var(--app-pink-strong)]">
                     -{formatWon(quote.discountWon)}
@@ -777,7 +788,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     멤버십 화면으로
                   </Link>
                 </div>
-              ) : paymentPackage && quote ? (
+              ) : checkoutPackage && quote ? (
                 <>
                   <p className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     결제창 열기
@@ -792,12 +803,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                         포함)이 뜬다. 서버 env 가 정본이고 클라 env 는 폴백이다. */}
                     <TossMembershipCheckout
                       provider={paymentProvider}
-                      packageId={paymentPackage.id}
+                      packageId={checkoutPackage.id}
                       plan={selectedPlan}
                       product={selectedProduct ?? selectedBundle?.id}
                       amount={quote.chargeAmount}
                       couponCode={quote.couponCode ?? undefined}
-                      orderName={paymentPackage.name}
+                      orderName={checkoutPackage.name}
                       slug={slug}
                       scope={scope}
                       entrySource={from ?? 'membership'}

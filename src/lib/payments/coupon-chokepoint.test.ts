@@ -225,11 +225,11 @@ test('체크아웃은 입력칸 쿠키를 ?coupon= 링크보다 먼저 쓴다(�
 
 // payment_funnel_events 는 건수로 집계된다 — 입력칸 제출마다 checkout_viewed 가 늘면 "도달했는데 안 산다"가 부푼다.
 test('입력칸 제출로 다시 그릴 때 checkout_viewed 를 또 남기지 않는다', () => {
-  assert.ok(/if \(paymentPackage && !funnelSkipReason && !requestHeaders\.has\('next-action'\)\)/.test(CHECKOUT_PAGE()));
+  assert.ok(/if \(checkoutPackage && !funnelSkipReason && !requestHeaders\.has\('next-action'\)\)/.test(CHECKOUT_PAGE()));
 });
 
 test('입력칸은 쿠폰이 붙는 상품에만 — 전이 전달물인 상품(설계 §7)엔 띄우지 않는다', () => {
-  assert.ok(/isCouponEligiblePackage\(paymentPackage\)/.test(CHECKOUT_PAGE()));
+  assert.ok(/isCouponEligiblePackage\(checkoutPackage\)/.test(CHECKOUT_PAGE()));
 });
 
 // 2026-09-13 — 미리보기 쿠폰은 "다른 쿠폰 코드 쓰기"로 바꿀 수 있어야 한다(입력칸을 적용된 쿠폰 여부로만 숨기면 30분간 못 바꾼다).
