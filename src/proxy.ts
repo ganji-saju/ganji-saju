@@ -6,6 +6,7 @@ import {
   isCanonicalRedirectExemptPath,
   shouldRedirectHost,
 } from '@/lib/site';
+import { isPartnerHost, partnerLandingRewritePath } from '@/lib/partners/partner-host';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const supabaseProxyUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -129,6 +130,13 @@ export async function proxy(req: NextRequest) {
   //   비인증 요청이 내부 경로를 한 걸음도 밟지 않는다.
   const gate = stagingGateResponse(req);
   if (gate) return gate;
+
+  // 2026-10-04 인플루언서 랜딩 도메인 — 랜딩 한 장만 보여 주고 간지사주의 다른 화면은 열지 않는다.
+  //   canonical 리다이렉트보다 앞: 새 도메인이 ganjisaju.kr 로 튕기면 안 된다.
+  if (isPartnerHost(req.nextUrl.hostname)) {
+    const rewrite = partnerLandingRewritePath(req.nextUrl.pathname);
+    return rewrite ? NextResponse.rewrite(new URL(rewrite, req.url)) : NextResponse.next({ request: req });
+  }
 
   let response = NextResponse.next({ request: req });
   const { pathname } = req.nextUrl;
