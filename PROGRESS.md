@@ -1,5 +1,10 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-04 — 인플루언서 랜딩 운영 확인 완료
+
+- 테스트 파트너 test01(40%/30%)을 DB 에 등록해 확인: 랜딩 32,000→19,200 · 체크아웃 '파트너 특가(40%)' 최종 19,200원·결제 버튼 19,200원 · 방문 집계 2회 · 결제창 19,200원(사용자 확인). 확인 후 test01 비활성화.
+- 남은 일: 실제 도메인 확정 → Vercel 도메인 연결·PARTNER_SITE_HOSTS 설정 · 브랜드 문구/로고 · 카카오 미리보기 봇 판별(후속).
+
 ## 2026-10-04 — 마이그레이션 090(partners·partner_visits) 운영 적용
 
 - 사용자 승인 후 supabase-ganji 로 적용. 확인: 두 테이블 RLS 켜짐(정책 없음 = service 전용, 기존 테이블과 같은 INFO만) · increment_partner_visit 실행권한 anon·authenticated 없음, service_role 있음 · get_advisors 에 새 경고 없음.
