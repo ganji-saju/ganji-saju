@@ -28,7 +28,7 @@ import {
   hasTodayFortunePremiumAccess,
   hasTodayFortunePremiumAccessByReading,
 } from '@/lib/credits/detail-report-access';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 // 2026-05-16 PR (B1) — funnel 단계 기록. admin/payment-funnel 대시보드 데이터 source.
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
@@ -47,6 +47,7 @@ import {
   couponEnvForHost,
   resolveChargeForUser,
 } from '@/lib/coupons/coupon-charge';
+import { PARTNER_COOKIE, PARTNER_PACKAGE_ID, getActivePartner } from '@/lib/partners/partner';
 import { couponRejectMessage, type CouponRejectReason } from '@/lib/coupons/discount-coupon';
 
 function readString(data: Record<string, unknown>, key: string) {
@@ -431,8 +432,15 @@ export async function POST(req: NextRequest) {
   const couponInput = readString(payload, 'couponCode') || null;
   // 체크아웃 화면이 표시한 최종 금액. 🔴 **대조에만** 쓴다 — 가격 계산에 쓰는 순간 클라이언트가 금액을 정한다.
   const expectedAmount = typeof payload.expectedAmount === 'number' ? payload.expectedAmount : null;
+  // 2026-10-04 — 파트너판은 쿠키의 활성 파트너로만 할인된다. 쿠키가 사라졌으면 quote 가 정가(32,000)가 되어
+  //   아래 expectedAmount 대조가 'amount_changed' 로 멈춘다(정가 청구 없음).
+  const partner =
+    pkg.id === PARTNER_PACKAGE_ID
+      ? await getActivePartner(await createServiceClient(), req.cookies.get(PARTNER_COOKIE)?.value)
+      : null;
   const quote = await resolveChargeForUser(pkg, user, couponInput, {
     env: couponEnvForHost(req.headers.get('host')),
+    partner,
   });
   const userId = user.id;
   // 사유는 퍼널에만 남기고 응답엔 문구만 싣는다 — 사유 코드를 내보내면 화면이 일부러 뭉갠 구분을 API 가 알려 준다.
@@ -440,6 +448,12 @@ export async function POST(req: NextRequest) {
     await logPaymentFunnelEvent(supabase, { stage: 'prepare_blocked', userId, packageId, reason });
     return NextResponse.json({ ok: false, authenticated: true, error }, { status: 409 });
   };
+
+  // 🔴 파트너판인데 활성 파트너가 없으면(쿠키 만료·파트너 비활성) 멈춘다. expectedAmount 를 안 보내는 옛 클라이언트는
+  //   아래 대조를 건너뛰어 정가(32,000)로 청구될 수 있다 — 그 구멍을 여기서 막는다.
+  if (pkg.id === PARTNER_PACKAGE_ID && !quote.partner) {
+    return blockPrepare('partner_missing', '할인 링크가 만료되었습니다. 링크로 다시 들어와 주세요. 결제는 진행되지 않았습니다.');
+  }
 
   // 🔴 화면이 할인을 보여 줬으면 그 코드가 여기로 온다. 그 코드가 지금 적용되지 않으면
   //   **조용히 정가로 청구하지 않고 멈춘다**(클라이언트 금액 폴백을 지운 것과 같은 원칙).
@@ -490,6 +504,7 @@ export async function POST(req: NextRequest) {
     memberPercent: coupon ? 0 : quote.memberPercent,
     // 전단지 공용 코드 — 쿠폰 귀속이 없는 경로(claim=null)라 coupon 과 겹치지 않는다.
     promo: coupon ? null : (quote.promo ?? null),
+    partner: quote.partner ?? null,
     slug,
     scope,
     product,

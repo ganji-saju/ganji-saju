@@ -13,6 +13,7 @@ import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { MEMBER_DISCOUNT_PERCENT_BY_PACKAGE, pickBetterDiscount } from '@/lib/payments/member-discount';
 import { isPremiumMember } from '@/lib/subscription';
 import { applyPromoPrice, findPromoCode, type PromoCode } from './promo-code';
+import { PARTNER_PACKAGE_ID, applyPartnerPrice, type PartnerTerms } from '@/lib/partners/partner';
 import { after } from 'next/server';
 import { readPaymentOrigin, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
 import { dailyPeriodKey } from '@/lib/credits/member-benefits';
@@ -197,6 +198,8 @@ export interface ChargeQuote {
   memberPercent: number;
   /** 2026-10-02 — 적용된 전단지 공용 코드(promo-code.ts). 쿠폰·멤버십과 겹치지 않는다. prepare 는 이 값을 createPaymentOrder 로 넘긴다. */
   promo?: PromoCode | null;
+  /** 2026-10-04 — 적용된 인플루언서 파트너(파트너판 전용). 쿠폰·멤버십·공용 코드와 겹치지 않는다. */
+  partner?: PartnerTerms | null;
 }
 
 /**
@@ -261,9 +264,17 @@ export async function resolveChargeForUser(
     now?: Date;
     /** 테스트 주입용. 기본은 구독 테이블을 읽는 isPremiumMember. */
     isPremiumMember?: (userId: string) => Promise<boolean>;
+    /** 2026-10-04 — 파트너 쿠키로 조회한 활성 파트너(getActivePartner). 파트너판에만 쓰인다. */
+    partner?: PartnerTerms | null;
   }
 ): Promise<ChargeQuote> {
   const listAmount = await resolvePackagePrice(pkg.id);
+  // 2026-10-04 — 파트너판은 파트너 할인만 붙는다(쿠폰·공용 코드·멤버십 없음). 로그인 전에도 같은 금액(추측 위험 없음).
+  if (pkg.id === PARTNER_PACKAGE_ID) {
+    if (!opts.partner) return { listAmount, discountWon: 0, chargeAmount: listAmount, percent: 0, couponCode: null, reason: null, claim: null, memberPercent: 0 };
+    const p = applyPartnerPrice(listAmount, opts.partner);
+    return { listAmount, discountWon: p.discountWon, chargeAmount: p.chargeAmount, percent: p.percent, couponCode: null, reason: null, claim: null, memberPercent: 0, partner: opts.partner };
+  }
   const noDiscount = (reason: CouponRejectReason | null): ChargeQuote => ({
     listAmount,
     discountWon: 0,

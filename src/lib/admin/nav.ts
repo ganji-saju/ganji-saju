@@ -97,6 +97,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         minRole: 'super_admin',
       },
       {
+        href: '/admin/partners',
+        label: '인플루언서',
+        description: '등록·방문·판매·환불·수수료',
+        minRole: 'super_admin',
+      },
+      {
         href: '/admin/policies',
         label: '약관·정책',
         description: '정책 버전·게시 상태',

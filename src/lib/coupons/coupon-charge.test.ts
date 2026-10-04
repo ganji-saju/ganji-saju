@@ -818,3 +818,31 @@ test('coupon-charge — 전단지 공용 코드는 로그인 전에도 9,900원�
   assert.equal(plain.chargeAmount, 19900, '일반 쿠폰은 종전대로 로그인 뒤에만');
   assert.equal(db.updates, 0);
 });
+
+test('coupon-charge — 파트너판: 32,000 → 19,200, 화면 = 주문, coupon_code 비움, 수수료율 스냅샷', async () => {
+  const pkg = getPackage('taste_new_year_2027_partner')!;
+  const partner = { code: 'mina', name: '미나', discountPercent: 40, commissionPercent: 30 };
+  for (const viewer of [null, { id: 'u1' }]) {
+    const db = fakeDb();
+    const quote = await resolveChargeForUser(pkg, viewer, '간지사주50', { ...opts(db), partner, isPremiumMember: async () => true });
+    assert.equal(quote.chargeAmount, 19200, '쿠폰·공용 코드·멤버십은 파트너판에 안 붙는다');
+    assert.equal(quote.partner?.code, 'mina');
+    if (!viewer) continue;
+    await createPaymentOrder(
+      { userId: 'u1', pkg, listAmount: quote.listAmount, partner: quote.partner, acceptedKinds: [], recordedPolicyVersionIds: [] },
+      db.client
+    );
+    const inserted = db.inserted.at(-1)!;
+    assert.equal(inserted.amount, 19200);
+    assert.equal(inserted.coupon_code, null);
+    assert.equal((inserted.metadata as Record<string, unknown>).partnerCode, 'mina');
+    assert.equal((inserted.metadata as Record<string, unknown>).partnerCommissionPercent, 30);
+  }
+});
+
+test('coupon-charge — 파트너 없이 파트너판이면 정가(prepare 의 표시 금액 대조가 막는다)', async () => {
+  const db = fakeDb();
+  const quote = await resolveChargeForUser(getPackage('taste_new_year_2027_partner')!, { id: 'u1' }, null, { ...opts(db), partner: null });
+  assert.equal(quote.chargeAmount, 32000);
+  assert.equal(quote.partner ?? null, null);
+});
