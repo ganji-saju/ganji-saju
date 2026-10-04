@@ -610,7 +610,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     </p>
                   ) : null}
                   {/* 쿠폰은 로그인 계정에 붙는다(B 결정) — 비로그인이면 조회하지 않아 사유 문구가 없다. 안 알리면 "넣었는데 반응 없음"이 된다. */}
-                  {!viewer && couponInput ? (
+                  {!viewer && couponInput && !quote?.promo ? (
                     <p className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
                       로그인하면 넣은 쿠폰이 적용돼요. 결제하기를 누르면 로그인 화면으로 이동합니다.
                     </p>
@@ -620,6 +620,16 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     쿠폰은 이 화면의 카드·간편결제에만 적용돼요. 전으로 여는 경우엔 적용되지 않아요.
                   </p>
                 </details>
+              ) : null}
+              {/* 2026-10-04 — 전단지 공용 코드가 붙으면 확인 문구(사용자 요청 문구 그대로). 입력칸은 적용 뒤 접히므로 바깥에 둔다. */}
+              {quote?.promo ? (
+                <p className="pt-2 text-[14.4px] font-bold leading-[1.6] text-[var(--app-pink-strong)]" role="status">
+                  적용되었습니다.
+                  <br />
+                  결제 시 {formatWon(quote.chargeAmount)}으로 진행됩니다.
+                  <br />
+                  계속 진행해 주세요.
+                </p>
               ) : null}
               {quote?.reason ? (
                 <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">

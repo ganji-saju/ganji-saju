@@ -277,7 +277,14 @@ export async function resolveChargeForUser(
 
   // 쿠폰은 로그인 계정에 붙는다(B 결정). 비로그인은 조회 자체를 하지 않는다 — 익명 추측 창구를 열지 않는다.
   //   Supabase 익명 로그인(is_anonymous)도 같다 — 지금은 꺼져 있지만 켜지는 순간 무료 계정 공장이 된다.
-  if (!viewer || viewer.is_anonymous) return noDiscount(null);
+  // 2026-10-04 — 전단지 공용 코드는 누구나 같은 코드라 추측 위험이 없다 → 로그인 전에도 할인가를 보여 준다
+  //   (전단지 손님은 대부분 로그인 전에 들어온다). 실제 청구(prepare)는 로그인 뒤 아래 같은 계산으로 다시 낸다.
+  if (!viewer || viewer.is_anonymous) {
+    const anonPromo = findPromoCode(couponInput, pkg.id, listAmount);
+    if (!anonPromo) return noDiscount(null);
+    const p = applyPromoPrice(listAmount, anonPromo);
+    return { listAmount, discountWon: p.discountWon, chargeAmount: p.chargeAmount, percent: p.percent, couponCode: anonPromo.code, reason: null, claim: null, memberPercent: 0, promo: anonPromo };
+  }
   const userId = viewer.id;
 
   // 멤버십 할인(신년운세 50%) — 판정 오류는 정가(할인 과다 지급보다 안전, 스펙 §6).

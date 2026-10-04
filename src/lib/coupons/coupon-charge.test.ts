@@ -807,3 +807,14 @@ test('coupon-charge — 전단지 공용 코드: 신년운세 9,900원, 화면 =
     assert.equal((inserted.metadata as Record<string, unknown>).promoCode, '간지사주50');
   }
 });
+
+test('coupon-charge — 전단지 공용 코드는 로그인 전에도 9,900원을 보여 주고 DB 는 건드리지 않는다', async () => {
+  const db = fakeDb();
+  const pkg = getPackage('taste_new_year_2027')!;
+  const quote = await resolveChargeForUser(pkg, null, '간지사주50', opts(db));
+  assert.equal(quote.chargeAmount, 9900);
+  assert.equal(quote.promo?.code, '간지사주50');
+  const plain = await resolveChargeForUser(pkg, null, 'ganji-50-0001', opts(db));
+  assert.equal(plain.chargeAmount, 19900, '일반 쿠폰은 종전대로 로그인 뒤에만');
+  assert.equal(db.updates, 0);
+});
