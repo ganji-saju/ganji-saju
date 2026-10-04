@@ -57,3 +57,10 @@ test('validatePriceInput: previousPrice 빈값이면 null 허용', () => {
   assert.equal(r.ok, true);
   if (r.ok) assert.equal(r.value.previousPrice, null);
 });
+
+test('listProductPrices: 신년운세 일반판과 인플루언서 파트너판이 이름으로 구분된다', async () => {
+  const rows = await listProductPrices(fakeList([]));
+  assert.equal(rows.find((r) => r.packageId === 'taste_new_year_2027')?.name, '2027 신년운세');
+  assert.equal(rows.find((r) => r.packageId === 'taste_new_year_2027_partner')?.name, '2027 신년운세 (인플루언서 전용)');
+  assert.equal(getPackage('taste_new_year_2027_partner')?.name, '2027 신년운세', '손님에게 보이는 이름(결제창·결제내역)은 그대로');
+});
