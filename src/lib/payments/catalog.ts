@@ -206,6 +206,17 @@ export const PAYMENT_PACKAGES = [
     requiresSlug: true,
   },
   {
+    // 2026-10-04 — 인플루언서 랜딩 전용(숨김). 정가 32,000 · 파트너 할인으로만 판다. 이용권은 일반 신년운세와 같다.
+    //   ⚠️ 정가 표시는 사용자 결정(표시광고법 위험 고지 완료). 메뉴·가격표·사이트맵에 넣지 않는다.
+    id: 'taste_new_year_2027_partner',
+    name: '2027 신년운세',
+    credits: 0,
+    price: 32000,
+    kind: 'taste_product',
+    tasteProductId: 'new-year',
+    requiresSlug: true,
+  },
+  {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
     //   2026-06-07 — score-total 로 통합되어 신규 노출 없음(grandfather 조회용 inert).
     id: 'taste_score_factor',

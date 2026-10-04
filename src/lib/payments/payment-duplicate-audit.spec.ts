@@ -45,8 +45,11 @@ describe('Payment catalog 정합성', () => {
     const ids = all.map((pkg) => pkg.id);
     expect(new Set(ids).size).toBe(ids.length);
 
+    // 2026-10-04 — 파트너판(taste_new_year_2027_partner)은 일반 신년운세와 같은 tasteProductId('new-year')를
+    //   의도적으로 공유한다(같은 이용권). 일반 체크아웃은 TASTE_PACKAGE_BY_PRODUCT 로 일반 상품만 고르므로 유일성 검사에서 제외.
     const tasteIds = all
       .filter(isTasteProductPackage)
+      .filter((pkg) => pkg.id !== 'taste_new_year_2027_partner')
       .map((pkg) => pkg.tasteProductId);
     expect(new Set(tasteIds).size).toBe(tasteIds.length);
   });
