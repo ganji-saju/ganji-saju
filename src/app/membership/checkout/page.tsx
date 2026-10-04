@@ -574,7 +574,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {couponInputMode ? (
                 <details
                   className="group border-b border-[var(--app-line)] py-2"
-                  open={couponInputMode === 'enter' && Boolean(couponInput || quote?.reason)}
+                  // 2026-10-04 — 전단지 할인코드 손님이 바로 넣을 수 있게 입력 모드는 늘 펼친다(사용자 요청). 코드가 적용된 뒤(change)만 접는다.
+                  open={couponInputMode === 'enter'}
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14.4px] text-[var(--app-copy)] [&::-webkit-details-marker]:hidden">
                     <span>{couponInputMode === 'change' ? '다른 쿠폰 코드 쓰기' : '쿠폰·할인코드가 있으신가요?'}</span>
@@ -589,8 +590,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     <input
                       name="coupon"
                       defaultValue={couponInputMode === 'change' ? '' : (couponInput ?? '')}
-                      placeholder="ganji-10-0000"
-                      aria-label="쿠폰 코드"
+                      aria-label="쿠폰·할인코드"
                       autoComplete="off"
                       autoCapitalize="none"
                       spellCheck={false}
