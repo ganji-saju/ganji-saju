@@ -6,6 +6,7 @@
 //   참고: docs/payment-nicepay-migration.md §2·§3
 //
 // ⚠️ 스캐폴드 — 게재 전 샌드박스 E2E 로 콜백 필드명/서명/금액 포맷 확정(docs §6).
+import { nicepayFailMessage } from '@/lib/payments/nicepay-fail-message';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   approveNicepayPayment,
@@ -166,7 +167,7 @@ export async function POST(req: NextRequest) {
       orderId,
       amount: Number.isFinite(amount) ? amount : null,
     });
-    return failRedirect('결제 인증에 실패했습니다.', readRetryPath(failedOrder?.metadata));
+    return failRedirect(nicepayFailMessage('auth', authResultCode, authResultMsg), readRetryPath(failedOrder?.metadata));
   }
   if (!tid || !orderId || !Number.isFinite(amount)) {
     const failedOrder = await lookupOrder(orderId);
@@ -281,7 +282,10 @@ export async function POST(req: NextRequest) {
       reason,
     });
     // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
-    return failRedirect('결제 승인에 실패했습니다.', readRetryPath(order.metadata));
+    return failRedirect(
+      nicepayFailMessage('approve', (err as { resultCode?: string } | null)?.resultCode, err instanceof Error ? err.message : null),
+      readRetryPath(order.metadata)
+    );
   }
 
   // 5) TossPaymentObject 호환 어댑팅 — 기존 fulfillment/order-ledger 무변경 재사용.
