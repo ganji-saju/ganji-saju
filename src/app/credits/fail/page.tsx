@@ -39,7 +39,7 @@ export default async function CreditsFailPage({
             결제가 완료되지 않았어요
           </h1>
           <p className="mt-2 text-[15px] leading-relaxed" style={{ color: '#6b6b76', wordBreak: 'keep-all' }}>
-            {reason} 결제 금액은 청구되지 않았습니다. 잠시 후 다시 시도해 주세요.
+            {reason} 결제 금액은 청구되지 않았습니다.
           </p>
           <div className="mt-6 grid w-full gap-2">
             <Link
