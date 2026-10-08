@@ -1,5 +1,11 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-08 — 개발용 패키지 보안 경고 해소(가능한 범위)
+
+- npm audit fix(강제 아님): @modelcontextprotocol/sdk 1.32.1 · proxy-addr 2.0.8(위험) · undici 7.30.0 · brace-expansion 5.0.12 · fast-uri · ip-address · shadcn 4.21.4. libc 항목 20개 원본에서 복원.
+- 남은 경고: shadcn 의존 체인(braces·micromatch·fast-glob·ts-morph) — 고침 버전이 없거나 shadcn 1.0.0 으로 메이저 하향만 가능, shadcn 은 globals.css 가 불러 써서 제거 불가. 운영 번들 미포함·CI 점검 대상 아님.
+- 검증: npm test fail 0 · test:spec 537 · tsc 0 · build 성공 · 운영 패키지 audit 0.
+
 ## 2026-10-08 — 결제 실패 원인 확인 · 실패 안내 문구 원인별로
 
 - 실측(운영 DB 읽기 전용, 개인정보 미조회): '4명 중 3명 실패'는 한 손님이 4번 시도한 것 — 인증 취소(9991) 2회 · 탈회카드(EP07/N019) 1회 실패 후 다른 카드로 9,900원(간지사주50) 성공. 시스템 오류 없음. 같은 시각 다른 1명은 로그인 화면에서 멈춤.
