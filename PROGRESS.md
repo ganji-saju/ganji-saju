@@ -1,5 +1,12 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — 올해운 노트 구매 흐름 구현 계획(실행 전 승인 대기)
+
+- 계획: docs/superpowers/plans/2026-10-09-partner-theme-flow.md — Task 1 테마 셸(inline CSS 변수·대비 가드) · 2 /partner/go→/partner/start · 3 생년월일 입력 · 4 로그인 · 5 결제 페이지 · 6 랜딩 테마화 · 7 제목 글꼴(사용자 확정 후) · 8 전체 검증·실화면.
+- 실측으로 정한 것: 코랄 #F26B5B 는 글자 대비 2.80(미달) → 장식만, 글자·버튼은 #C8443A(4.53)·딥네이비. 파트너 입력→사주 주소가 간지사주 /saju/new 경로와 같음(음력·양력·시간 모름 3건, 임시 vitest). 루트 제목 템플릿 `%s | 간지사주` 때문에 title absolute 필수(기존 랜딩 탭 제목에도 간지사주가 붙어 있었음).
+- 알려진 한계(사용자 확인): 결제 실패·취소 시 나이스페이 복귀는 기존 /membership/checkout(간지사주 화면).
+- 브랜치에 origin/main 병합(PROGRESS 충돌은 이 브랜치 10-04 섹션을 main 의 10-04 묶음 앞에 끼워 해소). 코드 변경 없음.
+
 ## 2026-10-09 — 알림 크론 중단(P0) 패치 적용·검증(Claude Code, 아래 claude.ai 인계 후속)
 
 - 보고서 주장 실측 확인: Vercel 프로덕션 로그에 dispatch 크론마다 `Attempted to call getHonorificLabel() from the server ...` 예외(10/8 19:00 ~ 10/9 12:00 연속). 운영 DB `notification_delivery_logs` 에 dispatch 슬롯(오늘운세 정시·별자리·타로·띠·만료·컴백) 발송 기록이 크론 복구(#634, 7/10) 이후 **0건** — 있는 행은 test 라우트·llm-quota-alert 뿐. 알림 켠 사용자 80명.
