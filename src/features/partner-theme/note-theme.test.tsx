@@ -48,4 +48,10 @@ describe('NoteShell', () => {
     expect(html).toContain('body{');
     expect(html).toContain('--app-pink:#C8443A');
   });
+
+  it('제목 글꼴은 Gmarket Sans(셀프호스팅)를 먼저, 없으면 Pretendard', () => {
+    // next/font/local 은 vitest 에서 test/next-font-local-stub.ts 로 바뀐다(variable = --font-note-title).
+    expect(html).toContain('--note-title-font:var(--font-note-title), var(--font-dalbit-sans), sans-serif');
+    expect(html).toContain('next-font-stub-variable');
+  });
 });
