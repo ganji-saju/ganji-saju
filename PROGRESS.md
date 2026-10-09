@@ -1,5 +1,14 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — 알림 크론 복구 실측 · 올해운 노트 운영 실화면 · 제목 글꼴 Gmarket Sans
+
+- 알림 크론(#930 후속) 운영 실측: 19:00 dispatch 정상(오류 0, 컴백 대상자 없어 발송 0) · **20:00 띠 알림 실제 발송 — 웹푸시 3건·이메일 1건 sent, 오류 0**(크론이 돌기 시작한 7/10 이후 정시 알림 첫 발송). 알림 켠 80명 중 대부분은 푸시 구독·이메일 수신이 없어 대상이 적다.
+- 올해운 노트 운영 실화면(390px, headless Chrome): 랜딩 32,000→19,200(40%) · /partner/go 쿠키 test01 → 입력 화면(음력 없는 날짜 안내 확인) → 사주 생성 → /partner/login(next=결제 페이지) 통과. 결제 페이지·결제창 19,200원은 사용자 실기기 확인. 확인용으로 test01 을 잠시 켰다가 다시 끔(운영 DB, 사용자 승인). 확인 중 익명 사주 1건 생성.
+- 제목 글꼴 Gmarket Sans Bold(사용자 확정): 공식 배포(corp.gmarket.com/fonts) TTF→WOFF2 형식만 변환 590KB, src/app/fonts + 라이선스 파일(SIL OFL 1.1, 글꼴 이름표에도 원문 유지 확인). next/font/local, 이 흐름에서만 로드(preload 끔). vitest 는 next/font/local 대역(test/next-font-local-stub.ts).
+  - ⚠️ OFL 예약 글꼴 이름(Gmarket Sans Font) — 형식 변환을 "수정본"으로 볼지 해석 여지. 사용자에게 보이는 글꼴 이름이 아니라 위험 낮다고 판단(리뷰어 동의). 무위험을 원하면 이베이코리아 문의.
+- 문자 경보: OPS_ALERT_PHONES 등록(사용자) 후 운영 재배포(vercel redeploy) 완료.
+- 검증: test:spec 593 · npm test fail 0 · tsc 0(글꼴).
+
 ## 2026-10-09 — LLM 장애 긴급 경보를 문자로도(10/9 후속 재발 방지 ②)
 
 - 긴급(critical) 경보 때 메일에 더해 Solapi 일반 문자(SMS/LMS) 발송: "[긴급] 간지사주 AI 장애: <요약> / 신규 결제는 자동 보류 중 / 확인 주소". 중복 방지는 메일과 같은 규칙(같은 단계 KST 하루 한 번). 문자 실패는 메일 결과를 바꾸지 않음(outcome 꼬리표 sms:*).
