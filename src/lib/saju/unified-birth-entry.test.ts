@@ -118,3 +118,14 @@ test('unified birth resolver converts lunar input before handing it to the share
   assert.equal(lunarResolved.normalizedBirthDraft.month, String(expectedSolar.getMonth()));
   assert.equal(lunarResolved.normalizedBirthDraft.day, String(expectedSolar.getDay()));
 });
+
+test('음력에 없는 날짜는 던지지 않고 실패 결과를 돌려준다', () => {
+  for (const [month, day] of [['4', '30'], ['5', '31'], ['13', '1']]) {
+    const result = resolveUnifiedBirthInput({ ...solarDraft, calendarType: 'lunar', year: '1990', month, day }, { requireGender: true });
+    assert.equal(result.ok, false);
+    if (!result.ok) {
+      assert.equal(result.error, '생년월일을 다시 확인해 주세요.');
+      assert.equal(result.calendarType, 'lunar');
+    }
+  }
+});

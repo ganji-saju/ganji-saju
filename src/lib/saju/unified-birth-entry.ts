@@ -106,7 +106,19 @@ export function resolveUnifiedBirthInput(
   draft: UnifiedBirthEntryDraft,
   options: Parameters<typeof parseBirthInputDraft>[1] = {}
 ): ResolvedUnifiedBirthInput {
-  const normalizedBirthDraft = toBirthInputDraftFromUnifiedEntry(draft);
+  let normalizedBirthDraft: BirthInputDraft;
+  try {
+    normalizedBirthDraft = toBirthInputDraftFromUnifiedEntry(draft);
+  } catch {
+    // 음력에 없는 날짜(예: 1990-4-30)는 Lunar.fromYmd 가 던진다 — 변환 못 한 입력 그대로의 초안으로 실패를 돌려준다.
+    return {
+      ok: false,
+      error: '생년월일을 다시 확인해 주세요.',
+      calendarType: draft.calendarType,
+      timeRule: draft.timeRule,
+      normalizedBirthDraft: toBirthInputDraftFromUnifiedEntry({ ...draft, calendarType: 'solar' }),
+    };
+  }
   const parsed = parseBirthInputDraft(normalizedBirthDraft, options);
 
   if (!parsed.ok) {
