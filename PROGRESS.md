@@ -1,5 +1,13 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — LLM 장애 중 결제 보류(P1, 10/9 크레딧 소진 후속)
+
+- prepare 가 주문 생성 전에 LLM 장애를 확인: 마지막 한도 초과 실패가 30분 안이고 그 뒤 성공 호출이 없으면 503("결제를 받지 않았어요") · 퍼널 prepare_blocked reason=llm_outage_hold. 판정은 기존 경보(llm-quota-alert.ts readActivitySignals) 재사용, 조회 실패는 통과(fail-open).
+- 결정: 상품별 LLM 의존 목록 대신 전 상품 보류(목록이 틀리면 조용히 새고, 장애는 드물고 짧다). 경보 activeNow(2시간)는 복구 뒤에도 켜져 있어 쓰지 않음.
+- 10/9 영향 실측(운영 DB 읽기 전용·건수만): 장애 06:41~16:12 KST, 총평 폴백 198건, 장애 중 결제 0건, 신년운세 폴백 고정 0건 → 재생성 불필요(총평 폴백은 캐시에 저장되지 않음).
+- P3 package-lock: npm ci --dry-run 이 Node 22·24(npm 11.9) 모두 통과, CI 도 통과 — 재현 안 됨(typescript ^4 는 토스 타입 패키지의 optional peer). npm install 로 "고치지" 말 것(libc 항목 소실).
+- 검증: npm test 전체 통과(새 3건) · test:spec 543/543(새 1건) · tsc 0.
+
 ## 2026-10-09 — 알림 크론 중단(P0) 패치 적용·검증(Claude Code, 아래 claude.ai 인계 후속)
 
 - 보고서 주장 실측 확인: Vercel 프로덕션 로그에 dispatch 크론마다 `Attempted to call getHonorificLabel() from the server ...` 예외(10/8 19:00 ~ 10/9 12:00 연속). 운영 DB `notification_delivery_logs` 에 dispatch 슬롯(오늘운세 정시·별자리·타로·띠·만료·컴백) 발송 기록이 크론 복구(#634, 7/10) 이후 **0건** — 있는 행은 test 라우트·llm-quota-alert 뿐. 알림 켠 사용자 80명.
