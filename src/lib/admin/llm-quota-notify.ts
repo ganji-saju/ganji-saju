@@ -10,6 +10,8 @@ import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/serve
 import { getLlmQuotaAlert, kstDateKey, type LlmQuotaAlert, type LlmQuotaAlertLevel } from './llm-quota-alert';
 import { getOpsAlertRecipients, sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 import { isEmailNotificationConfigured } from '@/lib/email/notification-email';
+import { normalizeKoreanMobile } from '@/lib/kakao/phone';
+import { solapiSendText } from '@/lib/kakao/vendor';
 
 export const LLM_QUOTA_ALERT_SLOT_KEY = 'llm-quota-alert';
 
@@ -28,6 +30,36 @@ export function shouldSendLlmQuotaAlert(
   if (!last) return true;
   if (last.level !== alert.level) return true;
   return kstDateKey(new Date(last.sentAt)) !== kstDateKey(now);
+}
+
+// 2026-10-09 — 긴급(critical)은 문자로도 보낸다. 10/9 크레딧 소진 때 메일은 07:20 에 갔지만 대응은 16:28 이었다.
+//   알림톡은 운영 경보용 템플릿 심사가 따로 필요해 일반 문자(Solapi, 템플릿 없음)로 간다. 수신 번호는 OPS_ALERT_PHONES(쉼표).
+//   중복 방지는 메일과 같은 규칙·같은 로그(같은 단계 KST 하루 한 번)를 탄다.
+export function shouldSendOpsSms(alert: Pick<LlmQuotaAlert, 'level'>): boolean {
+  return alert.level === 'critical';
+}
+
+export function getOpsAlertPhones(env: Record<string, string | undefined> = process.env): string[] {
+  return (env.OPS_ALERT_PHONES ?? '')
+    .split(',')
+    .map((raw) => normalizeKoreanMobile(raw))
+    .filter((phone): phone is string => Boolean(phone));
+}
+
+export function buildLlmOutageSms(alert: Pick<LlmQuotaAlert, 'headline'>): string {
+  return `[긴급] 간지사주 AI 장애: ${alert.headline}\n신규 결제는 자동 보류 중입니다(복구되면 자동 해제).\n확인: https://ganjisaju.kr/admin/llm-cost`;
+}
+
+/** 문자는 보조 경로 — 실패해도 메일 결과를 바꾸지 않는다. 결과는 outcome 꼬리표로만 남긴다. */
+async function sendOpsSms(alert: LlmQuotaAlert): Promise<string> {
+  if (!shouldSendOpsSms(alert)) return 'sms:skipped';
+  const phones = getOpsAlertPhones();
+  if (phones.length === 0) return 'sms:no_phones';
+  const text = buildLlmOutageSms(alert);
+  const results = await Promise.all(phones.map((to) => solapiSendText({ to, text })));
+  const failed = results.filter((r) => !r.ok);
+  if (failed.length > 0) console.error('[llm-quota-notify] 문자 발송 실패', failed.map((r) => r.error));
+  return failed.length === 0 ? `sms:sent(${phones.length})` : `sms:failed(${failed.length}/${phones.length})`;
 }
 
 export interface LlmQuotaNotifyResult {
@@ -98,11 +130,11 @@ export async function runLlmQuotaNotification(now: Date = new Date()): Promise<L
       url: '/admin/llm-cost',
     }, { to: recipients });
     await writeLog(alert, 'sent', 200);
-    return { alert, outcome: 'sent', recipients };
+    return { alert, outcome: `sent ${await sendOpsSms(alert)}`, recipients };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[llm-quota-notify] 발송 실패', { level: alert.level, message });
     await writeLog(alert, 'failed', null);
-    return { alert, outcome: `failed:${message}`, recipients };
+    return { alert, outcome: `failed:${message} ${await sendOpsSms(alert)}`, recipients };
   }
 }

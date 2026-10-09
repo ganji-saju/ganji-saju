@@ -38,7 +38,8 @@ function solapiAuthHeader(): string {
   return `HMAC-SHA256 apiKey=${kakaoConfig.apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
 }
 
-export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<VendorSendResult> {
+/** 메시지 1건 발송 + 응답 판정. 알림톡·문자가 같은 판정(HTTP·errorCount·statusCode 2000)을 쓴다. */
+async function postSolapiMessage(message: Record<string, unknown>): Promise<VendorSendResult> {
   try {
     const res = await fetch(SOLAPI_SEND_DETAIL_URL, {
       method: 'POST',
@@ -46,21 +47,7 @@ export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<Vend
         'Content-Type': 'application/json',
         Authorization: solapiAuthHeader(),
       },
-      body: JSON.stringify({
-        messages: [
-          {
-            to: input.to,
-            ...(kakaoConfig.sender ? { from: kakaoConfig.sender } : {}),
-            kakaoOptions: {
-              pfId: kakaoConfig.pfId,
-              templateId: input.templateCode,
-              variables: input.variables,
-              disableSms: !(input.enableSmsFallback ?? false),
-            },
-          },
-        ],
-        showMessageList: true,
-      }),
+      body: JSON.stringify({ messages: [message], showMessageList: true }),
     });
     const data = (await res.json().catch(() => null)) as
       | {
@@ -99,6 +86,28 @@ export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<Vend
   } catch (e) {
     return { ok: false, status: 'failed', error: (e as Error).message };
   }
+}
+
+export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<VendorSendResult> {
+  return postSolapiMessage({
+    to: input.to,
+    ...(kakaoConfig.sender ? { from: kakaoConfig.sender } : {}),
+    kakaoOptions: {
+      pfId: kakaoConfig.pfId,
+      templateId: input.templateCode,
+      variables: input.variables,
+      disableSms: !(input.enableSmsFallback ?? false),
+    },
+  });
+}
+
+/**
+ * 2026-10-09 — 운영 경보용 일반 문자. 템플릿 심사가 없어 바로 쓸 수 있다(알림톡은 템플릿 승인 필요).
+ *   type 을 지정하지 않으면 Solapi 가 길이로 SMS/LMS 를 고른다. 발신번호(SOLAPI_SENDER)는 사전 등록 필수.
+ */
+export async function solapiSendText(input: { to: string; text: string }): Promise<VendorSendResult> {
+  if (!kakaoConfig.sender) return { ok: false, status: 'failed', error: 'sender_not_configured' };
+  return postSolapiMessage({ to: input.to, from: kakaoConfig.sender, text: input.text });
 }
 
 export interface SendFriendtalkInput {

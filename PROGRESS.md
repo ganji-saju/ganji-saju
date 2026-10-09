@@ -1,5 +1,13 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — LLM 장애 긴급 경보를 문자로도(10/9 후속 재발 방지 ②)
+
+- 긴급(critical) 경보 때 메일에 더해 Solapi 일반 문자(SMS/LMS) 발송: "[긴급] 간지사주 AI 장애: <요약> / 신규 결제는 자동 보류 중 / 확인 주소". 중복 방지는 메일과 같은 규칙(같은 단계 KST 하루 한 번). 문자 실패는 메일 결과를 바꾸지 않음(outcome 꼬리표 sms:*).
+- 알림톡이 아니라 문자인 이유: 알림톡은 운영 경보용 템플릿 심사가 별도로 필요(승인 템플릿은 결제완료·멤버십만료·가입 3종뿐). 문자는 운영에 이미 있는 발신번호(SOLAPI_SENDER)로 바로 가능.
+- vendor.ts: 알림톡·문자가 같은 발송·응답 판정 함수(postSolapiMessage)를 쓰도록 정리 + solapiSendText 추가.
+- **켜는 법(사용자): Vercel Production 에 `OPS_ALERT_PHONES=010xxxxxxxx[,010…]` 추가 후 재배포.** 없으면 sms:no_phones 로 조용히 건너뜀.
+- 검증: npm test fail 0(새 3건) · test:spec 592 · tsc 0. ⚠️ 실제 문자 수신은 env 등록 후 첫 critical 때(또는 수동 경보 점검) 확인 필요.
+
 ## 2026-10-09 — 올해운 노트 구매 흐름 구현(PR, 작업별 구현자·검토자 분리)
 
 - 구현: 테마 셸 NoteShell(색 inline 변수 + body 변수로 결제 하단 바까지 테마) · /partner/go→/partner/start · 생년월일 입력(간지사주와 같은 해석기·같은 사주 주소) · /partner/login(카카오·구글, next 는 /partner 안만) · /partner/checkout(resolveNewYearAccess·resolveChargeForUser·TossMembershipCheckout 재사용, 파트너 할인 빠지면 결제 버튼 없음) · 랜딩 테마화(B안 문구 유지).
