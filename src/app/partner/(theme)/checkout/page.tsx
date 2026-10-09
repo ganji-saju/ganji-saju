@@ -54,7 +54,7 @@ export default async function PartnerCheckoutPage({ searchParams }: { searchPara
     <>
       <h1 style={NOTE_TITLE_STYLE} className="text-[26px] font-extrabold leading-[1.35]">2027 운세</h1>
       <section className={`${NOTE_CARD} mt-5`}>
-        <p className="text-[15px] text-[var(--note-muted)] line-through">{formatWon(pkg.price)}</p>
+        <p className="text-[15px] text-[var(--note-muted)] line-through">{formatWon(quote.listAmount)}</p>
         <p className="text-[28px] font-extrabold">
           {formatWon(quote.chargeAmount)} <span className="text-[16px] text-[var(--note-coral-ink)]">({quote.percent}% 할인)</span>
         </p>

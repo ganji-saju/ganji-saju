@@ -288,6 +288,7 @@ test('정가·할인 스냅샷(list_amount·discount_won·coupon_percent)을 읽
       'src/app/admin/coupons/coupon-admin-client.tsx',
       'src/app/api/payments/prepare/route.ts',
       'src/app/membership/checkout/page.tsx',
+      'src/app/partner/(theme)/checkout/page.tsx', // 2026-10-09 올해운 노트 결제 페이지 — 취소선 정가 표시(membership/checkout 과 같은 quote)
       'src/app/saju/[slug]/new-year/[year]/page.tsx',
       'src/lib/coupons/coupon-admin.ts',
       'src/lib/coupons/coupon-charge.ts',
