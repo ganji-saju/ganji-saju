@@ -1,6 +1,6 @@
 import webPush from 'web-push';
 import type { NotificationSlotKey } from '@/content/moonlight';
-import { getHonorificLabel } from '@/features/saju-intake/onboarding-storage';
+import { getHonorificLabel } from '@/lib/honorific';
 import type { PushSubscriptionInput } from '@/lib/notification-preferences';
 
 export interface PushPayload {
