@@ -47,6 +47,7 @@ describe('/partner/checkout', () => {
     expect(html).toContain('data-slug="s1"');
     expect(html).toContain('data-from="partner"');
     expect(html).toContain('결제·풀이 제공: 간지사주(푸꼬컴퍼니)');
+    expect(html).toContain('aria-hidden="true" class="h-40"');
     expect(html).not.toMatch(/[一-鿿]/);
   });
 

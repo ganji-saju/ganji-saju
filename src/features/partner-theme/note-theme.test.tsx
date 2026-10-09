@@ -35,4 +35,17 @@ describe('NoteShell', () => {
     expect(NOTE_METADATA.openGraph?.siteName).toBe('올해운 노트');
     expect(NOTE_METADATA.robots).toEqual({ index: false, follow: false });
   });
+
+  it('공유 미리보기·설명에 간지사주가 새지 않는다(루트 레이아웃 상속 차단)', () => {
+    expect(JSON.stringify(NOTE_METADATA)).not.toContain('간지사주');
+    expect(NOTE_METADATA.description).toBe('생년월일만 넣으면 2027년 한 해가 달별로 정리돼요.');
+    expect(NOTE_METADATA.openGraph?.description).toBe(NOTE_METADATA.description);
+    expect(NOTE_METADATA.twitter).toMatchObject({ title: '올해운 노트', description: NOTE_METADATA.description, images: [] });
+    expect(NOTE_METADATA.openGraph).toMatchObject({ images: [] });
+  });
+
+  it('body 에도 테마 변수를 심는다(body 로 포털되는 결제 하단 바용)', () => {
+    expect(html).toContain('body{');
+    expect(html).toContain('--app-pink:#C8443A');
+  });
 });

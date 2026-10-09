@@ -16,6 +16,16 @@ export const NOTE_COLORS = {
   card: '#FFFFFF',
 } as const;
 
+const APP_VARS = {
+  '--app-pink': NOTE_COLORS.coralInk,
+  '--app-pink-strong': NOTE_COLORS.coralInk,
+  '--app-pink-soft': '#FDECE9',
+  '--app-ink': NOTE_COLORS.ink,
+  '--app-line': NOTE_COLORS.line,
+  '--app-copy-muted': NOTE_COLORS.muted,
+  '--app-copy-soft': NOTE_COLORS.muted,
+};
+
 const THEME_VARS = {
   '--note-bg': NOTE_COLORS.bg,
   '--note-ink': NOTE_COLORS.ink,
@@ -26,24 +36,26 @@ const THEME_VARS = {
   '--note-card': NOTE_COLORS.card,
   // 제목 글꼴 — 둥근 고딕 확정 전까지 Pretendard. 확정 시 Task 7 에서 이 줄만 바꾼다.
   '--note-title-font': 'var(--font-dalbit-sans), sans-serif',
-  '--app-pink': NOTE_COLORS.coralInk,
-  '--app-pink-strong': NOTE_COLORS.coralInk,
-  '--app-pink-soft': '#FDECE9',
-  '--app-ink': NOTE_COLORS.ink,
-  '--app-line': NOTE_COLORS.line,
-  '--app-copy-muted': NOTE_COLORS.muted,
-  '--app-copy-soft': NOTE_COLORS.muted,
+  ...APP_VARS,
 } as CSSProperties;
+
+// body 로 포털되는 컴포넌트(결제 하단 바)에도 닿도록 같은 값을 body 규칙으로도 심는다.
+const BODY_VARS_CSS = `body{${Object.entries(APP_VARS).map(([k, v]) => `${k}:${v}`).join(';')}}`;
 
 export const NOTE_TITLE_STYLE: CSSProperties = { fontFamily: 'var(--note-title-font)' };
 export const NOTE_PRIMARY_BUTTON =
   'block w-full rounded-[14px] bg-[var(--note-ink)] py-3.5 text-center text-[17px] font-extrabold text-white';
 export const NOTE_CARD = 'rounded-[18px] border border-[var(--note-line)] bg-[var(--note-card)] p-5';
 
+// 루트 레이아웃의 description·openGraph·twitter 는 필드별로 상속되므로(간지사주 문구·이미지) 전부 직접 지정한다.
+const NOTE_DESCRIPTION = '생년월일만 넣으면 2027년 한 해가 달별로 정리돼요.';
 export const NOTE_METADATA: Metadata = {
   title: { absolute: '올해운 노트' },
+  description: NOTE_DESCRIPTION,
+  applicationName: '올해운 노트',
   robots: { index: false, follow: false },
-  openGraph: { siteName: '올해운 노트', title: '올해운 노트' },
+  openGraph: { siteName: '올해운 노트', title: '올해운 노트', description: NOTE_DESCRIPTION, images: [] },
+  twitter: { card: 'summary', title: '올해운 노트', description: NOTE_DESCRIPTION, images: [] },
 };
 
 // 법정 표기 정본은 BUSINESS_INFO(site-footer.tsx 와 같은 데이터). 그 컴포넌트는 간지사주 링크가 섞인 클라이언트라 데이터만 쓴다.
@@ -63,6 +75,7 @@ const BUSINESS_LINES: string[] = [
 export function NoteShell({ children }: { children: ReactNode }) {
   return (
     <div style={THEME_VARS} className="min-h-screen bg-[var(--note-bg)] text-[var(--note-ink)]">
+      <style>{BODY_VARS_CSS}</style>
       <div className="mx-auto max-w-[480px] px-4 pb-16 pt-6">
         <header className="flex items-center gap-2">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-[var(--note-coral)]" />

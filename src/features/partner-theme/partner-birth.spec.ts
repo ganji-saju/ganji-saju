@@ -52,3 +52,9 @@ describe('toPartnerBirthInput', () => {
     expect(toPartnerBirthInput({ ...base, gender: '' }).ok).toBe(false);
   });
 });
+
+describe('음력 없는 날짜', () => {
+  it('음력 1990-4-30 은 던지지 않고 다시 확인 안내', () => {
+    expect(toPartnerBirthInput({ ...base, month: '4', day: '30' })).toEqual({ ok: false, error: '생년월일을 다시 확인해 주세요.' });
+  });
+});

@@ -11,7 +11,13 @@ import { CANONICAL_SITE_URL } from '@/lib/site';
 import { shouldCountPartnerVisit } from '@/lib/partners/partner-host';
 import { NOTE_CARD, NOTE_METADATA, NOTE_PRIMARY_BUTTON, NOTE_TITLE_STYLE, NoteNotice, NoteShell } from '@/features/partner-theme/note-theme';
 
-export const metadata: Metadata = { ...NOTE_METADATA, title: { absolute: '올해운 노트 — 2027 운세' } };
+const LANDING_TITLE = '올해운 노트 — 2027 운세';
+export const metadata: Metadata = {
+  ...NOTE_METADATA,
+  title: { absolute: LANDING_TITLE },
+  openGraph: { ...NOTE_METADATA.openGraph, title: LANDING_TITLE },
+  twitter: { ...NOTE_METADATA.twitter, title: LANDING_TITLE },
+};
 export const dynamic = 'force-dynamic';
 
 export default async function PartnerLandingPage({ params }: { params: Promise<{ code: string }> }) {

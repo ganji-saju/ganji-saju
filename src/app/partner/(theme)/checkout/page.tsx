@@ -74,6 +74,8 @@ export default async function PartnerCheckoutPage({ searchParams }: { searchPara
           결제·풀이 제공: 간지사주(푸꼬컴퍼니) — 결제창과 카드 명세서에 이 이름이 표시됩니다.
         </p>
       </section>
+      {/* 화면 하단에 고정되는 결제 바(약 130px)가 사업자 정보를 덮지 않도록 */}
+      <div aria-hidden className="h-40" />
     </>
   );
 }

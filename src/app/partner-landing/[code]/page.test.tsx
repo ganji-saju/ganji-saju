@@ -36,5 +36,8 @@ describe('올해운 노트 랜딩', () => {
   it('탭 제목에 간지사주 템플릿이 붙지 않는다', () => {
     expect(metadata.title).toEqual({ absolute: '올해운 노트 — 2027 운세' });
     expect(metadata.openGraph?.siteName).toBe('올해운 노트');
+    expect(metadata.openGraph?.title).toBe('올해운 노트 — 2027 운세');
+    expect(metadata.twitter?.title).toBe('올해운 노트 — 2027 운세');
+    expect(JSON.stringify(metadata)).not.toContain('간지사주');
   });
 });

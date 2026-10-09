@@ -19,6 +19,7 @@ export function PartnerBirthFormView() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (!form.unknownBirthTime && form.hour === '') return setError("태어난 시간을 고르거나 '태어난 시간을 몰라요'를 눌러 주세요.");
     const parsed = toPartnerBirthInput(form);
     if (!parsed.ok) return setError(parsed.error);
     setError('');
@@ -33,7 +34,8 @@ export function PartnerBirthFormView() {
     const data = (await response.json().catch(() => ({}))) as { id?: string; error?: string };
     if (!response.ok || !data.id) {
       setBusy(false);
-      return setError(data.error ?? '사주를 만들지 못했어요. 잠시 후 다시 시도해 주세요.');
+      // 서버 원문 오류는 5xx 에서 노출하지 않는다.
+      return setError(response.status >= 500 || !data.error ? '사주를 만들지 못했어요. 잠시 후 다시 시도해 주세요.' : data.error);
     }
     location.assign(checkoutHref(data.id));
   }
