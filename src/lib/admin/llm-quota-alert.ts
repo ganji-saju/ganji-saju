@@ -247,6 +247,28 @@ async function readActivitySignals(now: Date): Promise<ActivitySignals | null> {
   }
 }
 
+/** 이 시간 안에 한도 실패가 있고 그 뒤 성공이 없으면 결제를 보류한다. */
+export const PAYMENT_HOLD_WINDOW_MINUTES = 30;
+
+/**
+ * 2026-10-09 — LLM 장애 중 결제 보류(P1). 10/9 크레딧 소진 9시간 동안 결제를 받고 폴백 글을 납품할 뻔했다.
+ *   경보의 activeNow(2시간 안 실패 건수)는 복구 뒤에도 2시간 켜져 있어 결제 판정에 쓰면 정상 매출을 막는다 —
+ *   여기선 "실패 뒤 성공 호출이 있으면 복구" 를 같이 본다. 신호 조회 실패(null)는 보류하지 않는다(fail-open).
+ */
+export function shouldHoldPaymentsForLlm(
+  signals: Pick<ActivitySignals, 'lastQuotaFailAt' | 'lastSuccessAt'> | null,
+  now: Date
+): boolean {
+  const failAt = signals?.lastQuotaFailAt ? Date.parse(signals.lastQuotaFailAt) : NaN;
+  if (!Number.isFinite(failAt) || now.getTime() - failAt > PAYMENT_HOLD_WINDOW_MINUTES * 60_000) return false;
+  const successAt = signals?.lastSuccessAt ? Date.parse(signals.lastSuccessAt) : NaN;
+  return !(successAt > failAt);
+}
+
+export async function isLlmPaymentHoldActive(now: Date = new Date()): Promise<boolean> {
+  return shouldHoldPaymentsForLlm(await readActivitySignals(now), now);
+}
+
 /** 이번 달(KST 1일~오늘) 집계 + 원본 최신 행으로 경보를 만든다. service env 없으면 신호 없음으로 degrade. */
 export async function getLlmQuotaAlert(now: Date = new Date()): Promise<LlmQuotaAlert> {
   const todayKey = kstDateKey(now);

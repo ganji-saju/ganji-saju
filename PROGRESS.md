@@ -1,11 +1,27 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — 올해운 노트 구매 흐름 구현(PR, 작업별 구현자·검토자 분리)
+
+- 구현: 테마 셸 NoteShell(색 inline 변수 + body 변수로 결제 하단 바까지 테마) · /partner/go→/partner/start · 생년월일 입력(간지사주와 같은 해석기·같은 사주 주소) · /partner/login(카카오·구글, next 는 /partner 안만) · /partner/checkout(resolveNewYearAccess·resolveChargeForUser·TossMembershipCheckout 재사용, 파트너 할인 빠지면 결제 버튼 없음) · 랜딩 테마화(B안 문구 유지).
+- 최종 검토로 고친 것: 공유 미리보기(description·og·twitter)에 간지사주 새던 것 · 결제 하단 바가 body 포털이라 테마 밖·하단 정보 가림 · **음력 없는 날짜(예 음력 1990-4-30)에서 resolveUnifiedBirthInput 이 예외를 던지던 공용 버그** — 간지사주 입력·/api/readings 도 같이 고쳐짐 · 시간 미선택 무음 처리 · 5xx 원문 노출.
+- 판정 기록: 정가 취소선은 quote.listAmount(관리자 가격 덮어쓰기 반영) + 쿠폰 초크포인트 표시 허용 목록에 추가. Task 7(제목 글꼴) 사용자 확정 전까지 보류(Pretendard).
+- 검증: npm test fail 0 · test:spec 591 통과 · tsc 0 · 간지사주 화면 파일(membership·components·layout·globals) 변경 없음. 로컬 build 는 워크트리 심링크 제약으로 CI 빌드로 대체.
+- 남은 일: 운영 실화면(390px, 결제창 19,200원은 사용자 확인) · 인스타 인앱에서 구글 로그인 차단·외부 브라우저 전환 시 파트너 쿠키 유실 실기기 확인 · 제목 글꼴 확정.
+
 ## 2026-10-09 — 올해운 노트 구매 흐름 구현 계획(실행 전 승인 대기)
 
 - 계획: docs/superpowers/plans/2026-10-09-partner-theme-flow.md — Task 1 테마 셸(inline CSS 변수·대비 가드) · 2 /partner/go→/partner/start · 3 생년월일 입력 · 4 로그인 · 5 결제 페이지 · 6 랜딩 테마화 · 7 제목 글꼴(사용자 확정 후) · 8 전체 검증·실화면.
 - 실측으로 정한 것: 코랄 #F26B5B 는 글자 대비 2.80(미달) → 장식만, 글자·버튼은 #C8443A(4.53)·딥네이비. 파트너 입력→사주 주소가 간지사주 /saju/new 경로와 같음(음력·양력·시간 모름 3건, 임시 vitest). 루트 제목 템플릿 `%s | 간지사주` 때문에 title absolute 필수(기존 랜딩 탭 제목에도 간지사주가 붙어 있었음).
 - 알려진 한계(사용자 확인): 결제 실패·취소 시 나이스페이 복귀는 기존 /membership/checkout(간지사주 화면).
 - 브랜치에 origin/main 병합(PROGRESS 충돌은 이 브랜치 10-04 섹션을 main 의 10-04 묶음 앞에 끼워 해소). 코드 변경 없음.
+
+## 2026-10-09 — LLM 장애 중 결제 보류(P1, 10/9 크레딧 소진 후속)
+
+- prepare 가 주문 생성 전에 LLM 장애를 확인: 마지막 한도 초과 실패가 30분 안이고 그 뒤 성공 호출이 없으면 503("결제를 받지 않았어요") · 퍼널 prepare_blocked reason=llm_outage_hold. 판정은 기존 경보(llm-quota-alert.ts readActivitySignals) 재사용, 조회 실패는 통과(fail-open).
+- 결정: 상품별 LLM 의존 목록 대신 전 상품 보류(목록이 틀리면 조용히 새고, 장애는 드물고 짧다). 경보 activeNow(2시간)는 복구 뒤에도 켜져 있어 쓰지 않음.
+- 10/9 영향 실측(운영 DB 읽기 전용·건수만): 장애 06:41~16:12 KST, 총평 폴백 198건, 장애 중 결제 0건, 신년운세 폴백 고정 0건 → 재생성 불필요(총평 폴백은 캐시에 저장되지 않음).
+- P3 package-lock: npm ci --dry-run 이 Node 22·24(npm 11.9) 모두 통과, CI 도 통과 — 재현 안 됨(typescript ^4 는 토스 타입 패키지의 optional peer). npm install 로 "고치지" 말 것(libc 항목 소실).
+- 검증: npm test 전체 통과(새 3건) · test:spec 543/543(새 1건) · tsc 0.
 
 ## 2026-10-09 — 알림 크론 중단(P0) 패치 적용·검증(Claude Code, 아래 claude.ai 인계 후속)
 
