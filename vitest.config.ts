@@ -11,6 +11,8 @@ export default defineConfig({
       // 서버 전용 모듈도 단위 테스트할 수 있게 한다 — 'server-only' 는 번들 가드일 뿐
       //   런타임 동작이 없어 no-op 로 대체해도 검증 내용이 달라지지 않는다.
       'server-only': path.resolve(__dirname, 'test/server-only-stub.ts'),
+      // 2026-10-09 — next/font/local 은 빌드 밖에서 부르면 예외를 던진다(올해운 노트 제목 글꼴). 테스트용 대역으로 바꾼다.
+      'next/font/local': path.resolve(__dirname, 'test/next-font-local-stub.ts'),
     },
   },
   test: {

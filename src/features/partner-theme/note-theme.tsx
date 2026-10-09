@@ -3,8 +3,19 @@
 //   --app-* 덮어쓰기: 재사용하는 간지사주 컴포넌트(결제 버튼·동의 체크)가 이 안에서 테마 색으로 보인다.
 //   ⚠️ 코랄(#F26B5B)은 글자 대비 미달 — 장식만. 글자·버튼은 coralInk 또는 ink.
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import type { CSSProperties, ReactNode } from 'react';
 import { BUSINESS_INFO } from '@/lib/business-info';
+
+// 제목 글꼴 Gmarket Sans Bold(2026-10-09 사용자 확정) — SIL OFL 1.1, 원본 출처·라이선스: src/app/fonts/GmarketSans-LICENSE.txt.
+//   이 흐름에서만 불러온다(preload 끔 — 간지사주 다른 화면은 내려받지 않는다).
+const noteTitleFont = localFont({
+  src: '../../app/fonts/GmarketSansBold.woff2',
+  display: 'swap',
+  preload: false,
+  weight: '700',
+  variable: '--font-note-title',
+});
 
 export const NOTE_COLORS = {
   bg: '#FBF7F0',
@@ -34,8 +45,8 @@ const THEME_VARS = {
   '--note-coral-ink': NOTE_COLORS.coralInk,
   '--note-line': NOTE_COLORS.line,
   '--note-card': NOTE_COLORS.card,
-  // 제목 글꼴 — 둥근 고딕 확정 전까지 Pretendard. 확정 시 Task 7 에서 이 줄만 바꾼다.
-  '--note-title-font': 'var(--font-dalbit-sans), sans-serif',
+  // 제목 글꼴 — Gmarket Sans, 받기 전·실패 시 Pretendard.
+  '--note-title-font': 'var(--font-note-title), var(--font-dalbit-sans), sans-serif',
   ...APP_VARS,
 } as CSSProperties;
 
@@ -74,7 +85,7 @@ const BUSINESS_LINES: string[] = [
 
 export function NoteShell({ children }: { children: ReactNode }) {
   return (
-    <div style={THEME_VARS} className="min-h-screen bg-[var(--note-bg)] text-[var(--note-ink)]">
+    <div style={THEME_VARS} className={`${noteTitleFont.variable} min-h-screen bg-[var(--note-bg)] text-[var(--note-ink)]`}>
       <style>{BODY_VARS_CSS}</style>
       <div className="mx-auto max-w-[480px] px-4 pb-16 pt-6">
         <header className="flex items-center gap-2">
