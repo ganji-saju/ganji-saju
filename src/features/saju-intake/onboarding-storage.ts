@@ -1,6 +1,7 @@
 'use client';
 
 import { ONBOARDING_CONSENTS } from '@/content/moonlight';
+import { getHonorificLabel } from '@/lib/honorific';
 
 export type OnboardingSpeechTone = 'friendly' | 'polite' | 'standard';
 export type OnboardingProfileSource = 'manual' | 'self' | 'family';
@@ -279,12 +280,7 @@ export function saveAcceptedRequiredConsents() {
   } catch {}
 }
 
-export function getHonorificLabel(nickname: string) {
-  const trimmed = nickname.trim();
-  if (!trimmed) return '선생님';
-  if (trimmed.endsWith('님') || trimmed.endsWith('선생님')) return trimmed;
-  return `${trimmed} 선생님`;
-}
+export { getHonorificLabel } from '@/lib/honorific';
 
 export function shouldAutoSavePersonalProfile(source: OnboardingProfileSource) {
   return source !== 'family';

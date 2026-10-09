@@ -1,5 +1,38 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-09 — 알림 크론 중단(P0) 패치 적용·검증(Claude Code, 아래 claude.ai 인계 후속)
+
+- 보고서 주장 실측 확인: Vercel 프로덕션 로그에 dispatch 크론마다 `Attempted to call getHonorificLabel() from the server ...` 예외(10/8 19:00 ~ 10/9 12:00 연속). 운영 DB `notification_delivery_logs` 에 dispatch 슬롯(오늘운세 정시·별자리·타로·띠·만료·컴백) 발송 기록이 크론 복구(#634, 7/10) 이후 **0건** — 있는 행은 test 라우트·llm-quota-alert 뿐. 알림 켠 사용자 80명.
+- 정정: import 자체는 4월부터 있었다. "7/12부터"는 크론이 #634로 처음 돌기 시작한 시점이라서이고, dispatch 는 한 번도 성공한 적이 없다.
+- 같은 함정 전수 스캔(서버 route·lib 가 'use client' 모듈을 값 import): web-push.ts 1곳뿐.
+- 패치 `git am` 적용(브랜치 fix/notifications-honorific). 검증: npm test 196/196 · test:spec 542/542(신규 honorific.spec 5) · tsc 오류 0. 패치 파일은 커밋하지 않음.
+- 남은 일: 배포 후 다음 dispatch 크론 에러 소멸 확인 · 영향 범위 SQL(건수만) · P1 결제 서킷 브레이커/P3 lock 불일치 해결안(구현은 승인 후).
+
+## 2026-10-09 — LLM 크레딧 소진 장애 점검 · 알림 크론 3개월 중단 원인 수정(claude.ai 세션, 미커밋 인계)
+
+- 장애 실측(Vercel 로그): OpenAI 429 'no credits remaining'(선불 크레딧 소진). 10/9 06:20~07:20 KST 시작 → 16:28 복구(약 9~10시간). llm-quota-check 가 07:20 critical 메일 발송했으나 대응까지 9시간.
+- 추가 발견(P0): /api/notifications/dispatch 가 'use client' 모듈의 getHonorificLabel 을 서버에서 호출 → try 밖 예외로 첫 수신자에서 크론 전체 중단. 2026-07-12 이후 웹푸시·알림 이메일·구독 만료 안내·컴백 리마인더 미발송(하루 6회 전부 실패).
+- 수정(패치만, 이 폴더에 미적용): `docs/ops/2026-10-09-notifications-honorific.patch` — src/lib/honorific.ts 신설, onboarding-storage 는 재수출, web-push.ts 가 lib/honorific 사용, 회귀 스펙 src/lib/honorific.spec.ts. 클라우드에서 검증: npm test fail 0 · vitest src/features+src/lib 290 통과 · 신규 스펙 5 · tsc 해당 파일 오류 0. 로컬 main(ad870b9) 기준 `git apply --check` 통과.
+- 기타: 신년운세(full) keepFallback 으로 장애 중 생성분이 폴백 글로 고정됐을 가능성(P1) · 장애 중 결제 계속 접수(P1) · 저장소 public(P3) · package-lock 불일치로 npm ci 실패(P3). 상세·영향 범위 SQL: `docs/ops/incident-2026-10-09-llm-credit.md`.
+- 남은 일(Claude Code): ① 새 브랜치에서 `git am docs/ops/2026-10-09-notifications-honorific.patch` → 이 기록·incident 문서와 함께 PR(패치 파일 자체는 커밋 불필요) ② 배포 후 다음 dispatch 크론 에러 소멸 확인 ③ supabase-ganji 로 incident 문서 SQL(읽기 전용) 실행해 장애 구간 결제·신년운세 캐시 확인 → 재생성 여부는 사용자 결정 ④ OpenAI 자동 충전·critical 경보 알림톡 추가 검토.
+
+## 2026-10-08 — 개발용 패키지 보안 경고 해소(가능한 범위)
+
+- npm audit fix(강제 아님): @modelcontextprotocol/sdk 1.32.1 · proxy-addr 2.0.8(위험) · undici 7.30.0 · brace-expansion 5.0.12 · fast-uri · ip-address · shadcn 4.21.4. libc 항목 20개 원본에서 복원.
+- 남은 경고: shadcn 의존 체인(braces·micromatch·fast-glob·ts-morph) — 고침 버전이 없거나 shadcn 1.0.0 으로 메이저 하향만 가능, shadcn 은 globals.css 가 불러 써서 제거 불가. 운영 번들 미포함·CI 점검 대상 아님.
+- 검증: npm test fail 0 · test:spec 537 · tsc 0 · build 성공 · 운영 패키지 audit 0.
+
+## 2026-10-08 — 결제 실패 원인 확인 · 실패 안내 문구 원인별로
+
+- 실측(운영 DB 읽기 전용, 개인정보 미조회): '4명 중 3명 실패'는 한 손님이 4번 시도한 것 — 인증 취소(9991) 2회 · 탈회카드(EP07/N019) 1회 실패 후 다른 카드로 9,900원(간지사주50) 성공. 시스템 오류 없음. 같은 시각 다른 1명은 로그인 화면에서 멈춤.
+- 실패 화면 안내를 원인별로(`nicepayFailMessage`): 해지·정지·탈회 카드 → '사용할 수 없는 카드예요. 다른 카드로 결제해 주세요.' · 한도/잔액 · 인증 취소 → '결제 인증이 취소됐어요. 다시 시도해 주세요.' · 인증 정보 불일치 · 기본 문구. 결제사 원문은 종전대로 로그·퍼널에만. 실패 화면 뒷말 '잠시 후 다시 시도해 주세요.' 제거(원인별 문구와 충돌).
+- 검증: npm test fail 0(테스트 1 추가) · test:spec 537 · tsc 0.
+## 2026-10-08 — 운영 패키지 보안 업데이트(CI 보안 점검 실패 해소)
+
+- 2026-10-08 공개된 '높음' 취약점으로 CI 'Audit dependencies'(npm audit --omit=dev) 가 모든 PR 에서 실패 → next 16.3.6→16.3.8 · sharp →0.35.5 · source-map-js →1.2.2 만 올림(dev 쪽 shadcn·eslint 계열 경고는 CI 점검 대상 아님, 손대지 않음).
+- 잠금 파일: npm install 이 glibc/musl(libc) 항목 20개를 지워 원본에서 복원(키 단위). 추가·삭제 패키지 0, 버전 변경은 next·sharp·source-map-js 계열만.
+- 검증: npm audit --omit=dev high 0 · npm test fail 0 · test:spec 537 · tsc 0 · next build 성공.
+
 ## 2026-10-04 — 올해운 노트 구매 흐름 전용 디자인 설계서(검토 대기)
 
 - 사용자 결정: 모던 다이어리(크림·딥네이비·코랄, 둥근 고딕+Pretendard) · 범위 '나'(랜딩+생년월일 입력+로그인+결제 페이지, 결제 후 풀이는 간지사주 유지).
