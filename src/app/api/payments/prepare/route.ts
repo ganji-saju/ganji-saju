@@ -42,6 +42,7 @@ import {
   updatePaymentOrderPolicyVersions,
 } from '@/lib/payments/order-ledger';
 import { isCreditPackage } from '@/lib/payments/coin-sunset';
+import { isLlmPaymentHoldActive } from '@/lib/admin/llm-quota-alert';
 import {
   bindCouponClaim,
   couponEnvForHost,
@@ -241,6 +242,23 @@ export async function POST(req: NextRequest) {
     amount: pkg.price ?? null,
     metadata: { product, plan, slug, scope, from },
   });
+
+  // 2026-10-09 P1 — LLM 장애(한도·크레딧 소진) 중엔 신규 결제를 잠시 받지 않는다. 돈을 받고 폴백 글을 납품하지 않게.
+  //   상품별 LLM 의존 목록 대신 전 상품을 보류한다 — 목록이 틀리면 조용히 새고, 장애는 드물고 짧다.
+  //   판정·해제 규칙: llm-quota-alert.ts shouldHoldPaymentsForLlm(30분 · 실패 뒤 성공이면 해제 · 조회 실패는 통과).
+  if (await isLlmPaymentHoldActive()) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'prepare_blocked',
+      userId: user?.id ?? null,
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'llm_outage_hold',
+    });
+    return NextResponse.json(
+      { ok: false, error: '지금 풀이를 만드는 기능이 잠시 지연되고 있어 결제를 받지 않았어요. 30분쯤 뒤에 다시 시도해 주세요.' },
+      { status: 503 }
+    );
+  }
 
   const checkoutPath = buildCheckoutPath({ packageId, product, plan, slug, scope, from });
   if (!user) {

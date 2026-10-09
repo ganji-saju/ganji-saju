@@ -9,6 +9,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createServiceClient: vi.fn(async () => ({})),
   createClient: vi.fn(async () => ({ auth: { getUser: async () => ({ data: { user: { id: 'user-1' } } }) } })),
 }));
+vi.mock('@/lib/admin/llm-quota-alert', () => ({ isLlmPaymentHoldActive: vi.fn(async () => false) }));
 vi.mock('@/lib/payments/funnel-log', () => ({ logPaymentFunnelEvent: vi.fn() }));
 vi.mock('@/lib/payments/provider', () => ({ getPaymentProvider: () => 'nicepay' }));
 vi.mock('@/lib/payments/nicepay-config-audit', () => ({ auditNicepayKeyPair: () => ({}) }));
@@ -58,6 +59,7 @@ import { createPaymentOrder } from '@/lib/payments/order-ledger';
 import { bindCouponClaim, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
 import { getTasteProductEntitlement, hasNewYearEntitlementForReading } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
+import { isLlmPaymentHoldActive } from '@/lib/admin/llm-quota-alert';
 import { POST } from './route';
 
 async function prepare(body: Record<string, unknown>) {
@@ -167,5 +169,21 @@ describe('prepare — 파트너판 파트너 없음', () => {
     expect(res.status).toBe(409);
     expect((await res.json()).error).toContain('결제는 진행되지 않았습니다');
     expect(createPaymentOrder).not.toHaveBeenCalled();
+  });
+});
+
+// 2026-10-09 P1 — LLM 장애 중엔 결제를 받지 않는다(돈 받고 폴백 글 납품 방지).
+describe('prepare — LLM 장애 중 결제 보류', () => {
+  beforeEach(() => vi.clearAllMocks());
+  it('보류 중이면 503 · 주문 미생성 · 퍼널에 llm_outage_hold', async () => {
+    vi.mocked(isLlmPaymentHoldActive).mockResolvedValueOnce(true);
+    const res = await POST(new NextRequest('https://ganjisaju.kr/api/payments/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ packageId: getTasteProductPackage('today-detail')!.id, product: 'today-detail', slug: 'reading-dad', scope: 'general' }),
+    }));
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toContain('결제를 받지 않았어요');
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+    expect(vi.mocked(logPaymentFunnelEvent).mock.calls.some(([, e]) => e.stage === 'prepare_blocked' && e.reason === 'llm_outage_hold')).toBe(true);
   });
 });

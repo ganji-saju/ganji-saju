@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   evaluateLlmQuotaAlert,
+  shouldHoldPaymentsForLlm,
   kstDateKey,
   parseMonthlyBudgetUsd,
   type EvaluateLlmQuotaAlertInput,
@@ -153,4 +154,31 @@ test('parseMonthlyBudgetUsd — 빈값·0·문자는 미설정', () => {
 test('kstDateKey — UTC 15시 이후는 KST 다음날', () => {
   assert.equal(kstDateKey(new Date('2026-08-30T14:59:00Z')), '2026-08-30');
   assert.equal(kstDateKey(new Date('2026-08-30T15:00:00Z')), '2026-08-31');
+});
+
+// 2026-10-09 P1 — LLM 장애(10/9 크레딧 소진 9시간) 중에도 결제가 접수되던 문제. 결제 보류 판정.
+test('결제 보류: 마지막 한도 실패가 30분 안이고 그 뒤 성공이 없으면 보류', () => {
+  const now = new Date('2026-10-09T05:00:00Z');
+  assert.equal(shouldHoldPaymentsForLlm({ lastQuotaFailAt: '2026-10-09T04:45:00Z', lastSuccessAt: '2026-10-08T20:00:00Z' }, now), true);
+  assert.equal(shouldHoldPaymentsForLlm({ lastQuotaFailAt: '2026-10-09T04:45:00Z', lastSuccessAt: null }, now), true);
+});
+
+test('결제 보류 해제: 실패 뒤 성공 호출(복구) · 30분 지난 실패 · 실패 없음 · 신호 조회 실패(null)', () => {
+  const now = new Date('2026-10-09T05:00:00Z');
+  assert.equal(shouldHoldPaymentsForLlm({ lastQuotaFailAt: '2026-10-09T04:45:00Z', lastSuccessAt: '2026-10-09T04:50:00Z' }, now), false);
+  assert.equal(shouldHoldPaymentsForLlm({ lastQuotaFailAt: '2026-10-09T04:29:00Z', lastSuccessAt: null }, now), false);
+  assert.equal(shouldHoldPaymentsForLlm({ lastQuotaFailAt: null, lastSuccessAt: null }, now), false);
+  // 조회 실패로 결제를 막지 않는다(fail-open) — 정상 시간대 매출을 지키는 쪽.
+  assert.equal(shouldHoldPaymentsForLlm(null, now), false);
+});
+
+test('prepare 는 주문을 만들기 전에 LLM 결제 보류를 확인하고 503 으로 멈춘다', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const src = fs.readFileSync(path.resolve(__dirname, '../../app/api/payments/prepare/route.ts'), 'utf8');
+  const hold = src.indexOf('isLlmPaymentHoldActive(');
+  assert.ok(hold > 0, 'prepare 가 isLlmPaymentHoldActive 를 호출해야 한다');
+  assert.ok(hold < src.indexOf('createPaymentOrder('), '보류 판정은 주문 생성보다 앞이어야 한다');
+  assert.match(src.slice(hold, hold + 800), /status:\s*503/);
+  assert.match(src.slice(hold, hold + 800), /reason:\s*'llm_outage_hold'/);
 });
