@@ -28,6 +28,12 @@ const CATEGORY_LABEL: Record<NewYearHighlightCategory, string> = {
 const NARRATIVE_CHAPTER = '총론과 분야별 운';
 const BASE_CATEGORIES = ['work', 'wealth', 'love', 'relationship', 'health', 'move'] as const;
 
+// 계산 리포트의 월 테마 "OO 월운이 <그 달의 성격> 달이자, 나에게는 <나에게 주는 의미> 달" 을 제목 재료로 나눈다.
+function splitMonthTheme(theme: string | undefined): { season: string; personal: string } | null {
+  const match = theme?.match(/월운이\s*(.+?)\s*달이자,\s*나에게는\s*(.+?)\s*달$/);
+  return match ? { season: match[1], personal: match[2] } : null;
+}
+
 const MOMENTUM = {
   rise: { label: '상승', color: '#2f7d5b', soft: '#e6f3ec' },
   steady: { label: '유지', color: '#8a6a1f', soft: '#f7f0de' },
@@ -311,11 +317,11 @@ export function NewYearReportDocument({
       {/* ── 총론·분야별 운 (자동 쪽 나눔) ── */}
       {narrativePages.map((sections, index) => (
         <Page key={`n-${index}`} no={firstNarrative + index} total={total} data={data} narrative>
+          {/* 이어지는 쪽은 그 쪽에 실린 분야 이름을 제목으로 — "· 계속"과 같은 설명을 반복하지 않는다. */}
           <ChapterHead
             no="02"
-            titleLines={[`${year} ${yearGanji}년`, index === 0 ? NARRATIVE_CHAPTER : `${NARRATIVE_CHAPTER} · 계속`]}
-            lead="한 해의 큰 흐름과 분야 8가지(일·재물·연애·인간관계·건강·이동·가족·학업)의 핵심 장면·조심할 점·행동을 봅니다."
-
+            titleLines={[`${year} ${yearGanji}년`, index === 0 ? NARRATIVE_CHAPTER : [...new Set(sections.map((section) => section.label))].join(' · ')]}
+            lead={index === 0 ? '한 해의 큰 흐름과 분야 8가지(일·재물·연애·인간관계·건강·이동·가족·학업)의 핵심 장면·조심할 점·행동을 봅니다.' : undefined}
           />
           {sections.map((section, i) => (
             <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />
@@ -327,11 +333,19 @@ export function NewYearReportDocument({
       {monthPages.map(({ month, sections, continuation }, index) => {
         const flow = flowOf(month);
         const tone = MOMENTUM[flow?.momentum ?? 'steady'];
+        // 제목 = 그 달에 중요한 분야 + 그 달의 성격(달마다 다름). 나에게 주는 의미는 설명 줄로(계산 리포트 기준 — 화면과 같다).
+        const theme = splitMonthTheme(flow ? k(flow.theme) : undefined);
+        const areas = (flow?.relatedAreas ?? []).map((area) => CATEGORY_LABEL[area]).join(', ');
+        const ganji = flow?.monthlyGanji ? `${toHangul(flow.monthlyGanji)}월 · ` : '';
+        const lead = continuation ? undefined : [
+          `${ganji}${tone.label} 흐름${theme ? ` — 나에게는 ${theme.personal} 달입니다.` : '입니다.'}`,
+          index === 0 ? '상승은 성공 보장이 아니며, 주의는 나쁜 일이 생긴다는 뜻이 아닙니다.' : '',
+        ].filter(Boolean).join(' ');
         return (
           <Page key={`m-${month}-${continuation}`} no={monthStart + index} total={total} data={data} narrative>
             <ChapterHead no="03"
-              titleLines={['이번 달을 읽는 법', `${month}월${continuation ? ' · 계속' : ' · 무엇을 먼저 살펴볼까요?'}`]}
-              lead={`${flow?.monthlyGanji ? `${toHangul(flow.monthlyGanji)}월 · ` : ''}${tone.label} 흐름입니다. 아래 설명을 자신의 일정과 비교해보세요. 상승은 성공 보장이 아니며, 주의는 나쁜 일이 생긴다는 뜻이 아닙니다.`} />
+              titleLines={[areas ? `${month}월 · ${areas}` : `${month}월`, theme ? `${theme.season} 달` : `${tone.label} 흐름의 달`]}
+              lead={lead} />
             {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
           </Page>
         );
@@ -340,8 +354,8 @@ export function NewYearReportDocument({
       {/* ── 기대할 일 · 조심할 일 · 행동 지침 ── */}
       {closingPages.map((sections, index) => (
         <Page key={`closing-${index}`} no={closingPage + index} total={total} data={data} narrative>
-          <ChapterHead no="04" titleLines={[`${year}년에`, `기대할 일과 조심할 일${index ? ' · 계속' : ''}`]}
-            lead="언제, 어느 분야에서, 무엇을 살펴보면 좋을지 모았습니다. 필요한 내용을 달력에 적고 다시 읽어보세요." />
+          <ChapterHead no="04" titleLines={[`${year}년에`, index ? [...new Set(sections.map((section) => section.label))].join(' · ') : '기대할 일과 조심할 일']}
+            lead={index ? undefined : '언제, 어느 분야에서, 무엇을 살펴보면 좋을지 모았습니다. 필요한 내용을 달력에 적고 다시 읽어보세요.'} />
           {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
         </Page>
       ))}

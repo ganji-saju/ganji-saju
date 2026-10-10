@@ -106,7 +106,8 @@ export function ChapterHead({
 }: {
   no: string;
   titleLines: [string, string];
-  lead: string;
+  /** 이어지는 쪽에서는 생략한다(같은 설명이 쪽마다 반복되지 않게). */
+  lead?: string;
 }) {
   return (
     <div className="rp-chaphead">
@@ -116,7 +117,7 @@ export function ChapterHead({
         <br />
         {titleLines[1]}
       </h2>
-      <p className="rp-chaplead">{lead}</p>
+      {lead ? <p className="rp-chaplead">{lead}</p> : null}
     </div>
   );
 }
