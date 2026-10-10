@@ -26,6 +26,7 @@ import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section'
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { buildLifetimeReport } from '@/domain/saju/report';
+import { forwardMajorLuckCycles } from '@/domain/saju/report/build-lifetime-report';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -111,7 +112,8 @@ export default async function SajuDeepPage({ params }: Props) {
   // 2026-05-15 cleanup — 깊은 탭의 진짜 깊은 콘텐츠 = 대운 cycle 8단 풀이. 룰 기반으로
   // hook/body/mental/relationship/wealthCareer/practicalActions/closingNote 가 모두 채워진다.
   const lifetime = buildLifetimeReport(input, sajuData);
-  const cycles = lifetime.majorLuckTimeline.cycles.filter(
+  // 2026-10-11 — 지나온 대운 풀이는 싣지 않는다(이용자 공통 의견: "지금부터 앞으로가 궁금하다").
+  const cycles = forwardMajorLuckCycles(lifetime.majorLuckTimeline.cycles).filter(
     (cycle) => cycle.ganzi !== '대운 미산정'
   );
   const currentCycleIndex = cycles.findIndex((cycle) => cycle.isCurrent);

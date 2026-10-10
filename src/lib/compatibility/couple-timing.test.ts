@@ -18,10 +18,21 @@ function report() {
 
 // 2026-08-27 — 🔴 사용자 제보: "언제 어떻게 하면 좋을지, 좋은 해·달과 안 좋은 해·달이
 //   실질적으로 궁금한 내용인데 그런 설명은 하나도 없다."
-test('커플 시간축: 12개월 전부를 판정한다', () => {
+// 2026-10-11 — 이용자 공통 의견 "지금부터 앞으로가 궁금하다": 지난 달은 빼고 이번 달(8월)부터 판정한다.
+test('커플 시간축: 이번 달부터 연말까지만 판정한다(지난 달 없음)', () => {
   const r = report();
-  assert.equal(r.months.length, 12);
-  assert.deepEqual(r.months.map((m) => m.month), Array.from({ length: 12 }, (_, i) => i + 1));
+  assert.deepEqual(r.months.map((m) => m.month), [8, 9, 10, 11, 12]);
+  for (const m of [...r.bestMonths, ...r.cautionMonths, ...r.mixedMonths]) assert.ok(m.month >= 8);
+});
+
+test('커플 시간축: 1월에 보면 12개월 전부, 12월에 보면 12월만', () => {
+  const at = (iso: string) => buildCoupleTimingReport({
+    self: { name: '가나', birthInput: A, data: loadSajuDataV2(A, null, {}) },
+    partner: { name: '다라', birthInput: B, data: loadSajuDataV2(B, null, {}) },
+    now: new Date(iso),
+  });
+  assert.equal(at('2026-01-05T09:00:00+09:00').months.length, 12);
+  assert.deepEqual(at('2026-12-20T09:00:00+09:00').months.map((m) => m.month), [12]);
 });
 
 // 🔴 첫 구현은 momentum(rise/steady/caution) 교집합으로 판정했는데 12개월 중

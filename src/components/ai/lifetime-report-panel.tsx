@@ -376,7 +376,8 @@ function MajorLuckTimeline({
         style={{ background: 'var(--app-pink-line)' }}
       />
       <div className="space-y-3">
-        {report.majorLuckTimeline.cycles.map((cycle) => (
+        {/* 2026-10-11 — 지나온 대운은 숨기고 지금 대운부터(이용자 공통 의견: "지금부터 앞으로가 궁금하다"). */}
+        {report.majorLuckTimeline.cycles.slice(Math.max(0, report.majorLuckTimeline.cycles.findIndex((cycle) => cycle.isCurrent))).map((cycle) => (
           <div key={`${cycle.ageLabel}-${cycle.ganzi}`} className="relative">
             {/* dot */}
             <span

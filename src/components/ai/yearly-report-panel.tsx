@@ -867,7 +867,12 @@ function YearlyMonthlySection({
   report?: SajuYearlyReport;
   interpretation: SajuYearlyAiInterpretation;
 }) {
-  const monthlyFlows = normalizeMonthlyFlows(report, interpretation);
+  // 2026-10-11 — 올해를 보는 중이면 지난 달은 숨기고 이번 달부터(이용자 공통 의견: "지금부터 앞으로가 궁금하다").
+  //   생성·캐시는 12개월 그대로라 다음 달에 다시 열어도 같은 글이 이어진다. 내년(신년운세)은 전부 앞으로의 달.
+  const [nowYear, nowMonth] = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric' })
+    .format(new Date()).split('-').map(Number);
+  const monthlyFlows = normalizeMonthlyFlows(report, interpretation)
+    .filter((flow) => !report || report.year !== nowYear || flow.month >= nowMonth);
   const title = report ? buildMonthlySectionTitle(report) : '1월부터 12월까지 핵심 장면을 먼저 정리했습니다';
   const description = report
     ? buildMonthlySectionDescription(report)

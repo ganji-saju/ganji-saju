@@ -1370,6 +1370,12 @@ function findWonjinSlots(
   return natalBranches.filter((entry) => entry.branch === partner).map((entry) => entry.slotLabel);
 }
 
+/** 지금 대운부터의 목록(아직 첫 대운 전이면 전부). 화면·AI 본편·기본 문구는 이것만 쓴다 — 지나온 대운은 다루지 않는다. */
+export function forwardMajorLuckCycles<T extends { isCurrent: boolean }>(cycles: T[]): T[] {
+  const index = cycles.findIndex((cycle) => cycle.isCurrent);
+  return index >= 0 ? cycles.slice(index) : cycles;
+}
+
 export function buildLifetimeReport(
   input: BirthInput,
   sajuData: SajuDataV1 | SajuDataV2,
@@ -1465,6 +1471,9 @@ export function buildLifetimeReport(
     currentAge
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent);
+  // 2026-10-11 사용자 피드백(평생운세 이용자 공통 의견) — "지금부터 앞으로가 궁금하지 1세부터는 관심 없다".
+  //   대운 지도는 지금 대운부터만 보여 준다(아직 첫 대운 전이면 전부 앞으로의 대운).
+  const forwardCycles = forwardMajorLuckCycles(majorLuckCycles);
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(
     ([element, value]) =>
       `${formatElementLabel(element as Element)} ${value.percentage}% · ${formatElementState(value.state)} · ${value.score}점`
@@ -1482,7 +1491,7 @@ export function buildLifetimeReport(
   return {
     targetYear,
     pillars,
-    marriageFamily: isMinor ? null : buildMarriageFamily(sajuData, input.gender),
+    marriageFamily: isMinor ? null : buildMarriageFamily(sajuData, input.gender, targetYear - input.year),
     cover: {
       headline: `${sajuData.pillars.day.ganzi} 일주 맞춤 깊은 사주풀이`,
       oneLineSummary: `이 사주는 ${supportLabels} 기운을 삶의 바탕으로 들일 때 실력이 가장 안정적으로 오래 갑니다.`,
@@ -1587,8 +1596,8 @@ export function buildLifetimeReport(
     },
     majorLuckTimeline: {
       headline: '대운 10년 흐름 지도',
-      summary: majorLuckCycles.length
-        ? `대운은 10년 단위로 주제가 바뀌는 장기 지도입니다. 이 사주는 ${majorLuckCycles[0]?.ageLabel?.trim() ?? ''}부터 ${toKoreanGanzi(majorLuckCycles[0]?.ganzi ?? '')} 대운으로 시작해${firstCurrentCycle ? ` 지금은 ${toKoreanGanzi(firstCurrentCycle.ganzi)} 대운을 지나고 있으며` : ''}, 이전 10년의 방식 중 유지할 것과 조정할 것을 비교하는 데 활용하세요.`
+      summary: forwardCycles.length
+        ? `대운은 10년 단위로 주제가 바뀌는 장기 지도입니다. ${firstCurrentCycle ? `지금은 ${toKoreanGanzi(firstCurrentCycle.ganzi)} 대운을 지나고 있고` : `${forwardCycles[0]?.ageLabel?.trim() ?? ''}부터 ${toKoreanGanzi(forwardCycles[0]?.ganzi ?? '')} 대운이 시작되며`}${forwardCycles.length > 1 ? `, 앞으로 ${forwardCycles.slice(firstCurrentCycle ? 1 : 1, 3).map((cycle) => `${toKoreanGanzi(cycle.ganzi)}(${cycle.ageLabel.trim()})`).join('·')} 대운으로 이어집니다` : ''}. 앞으로 10년 단위로 무엇을 준비하고 어떻게 쓸지 정하는 데 활용하세요.`
         : '대운을 계산할 정보가 충분하지 않아 시작 시기와 단계는 해석하지 않습니다. 원국에서 확인한 성향을 실제 생활 조건과 비교하는 데 집중하세요.',
       currentMeaning: firstCurrentCycle
         ? `${firstCurrentCycle.ganzi} 대운은 지금 ${firstCurrentCycle.phase}의 과제가 커지는 구간입니다. ${firstCurrentCycle.summary}`
