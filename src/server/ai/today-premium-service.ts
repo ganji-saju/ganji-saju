@@ -1,6 +1,7 @@
 import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import type { NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 import { thinRepeatedTodayDeep } from '@/lib/saju/dedupe-sentences';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, getClassicReadingGrounding, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
 // 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
@@ -42,6 +43,15 @@ export interface TodayPremiumInterpretationInput {
   dailyEvidence?: string[];
   lifeStage?: TodayFortuneFreeResult['birthMeta']['lifeStage'];
   unknownBirthTime?: boolean;
+  /**
+   * 2026-10-10 — 점검 A #1: 결정론 결과에 이미 있는 계산 근거를 AI 에 넘긴다.
+   * 예전엔 요약 문장만 받아 "왜 오늘 이렇게"를 풀지 못하고 요약을 되풀이했다.
+   */
+  todayGanzi?: string | null;
+  scoreBreakdown?: string | null;
+  sinsals?: string[];
+  iljinMessages?: string[];
+  timeWindows?: string[];
 }
 
 export interface GenerateTodayPremiumDeps {
@@ -64,8 +74,9 @@ export interface AttachTodayPremiumNarrativeDeps {
   userId?: string | null;
 }
 
-const TODAY_PREMIUM_MAX_OUTPUT_TOKENS = 2400;
-const TODAY_PREMIUM_TIMEOUT_MS = 35_000;
+// 2026-10-10 — 2400 → 4000(생각 토큰 포함 상한에 걸리면 빈 응답), 분량 900~1,300자로 상향에 맞춰 시간도 40초.
+const TODAY_PREMIUM_MAX_OUTPUT_TOKENS = 4000;
+const TODAY_PREMIUM_TIMEOUT_MS = 40_000;
 
 /**
  * 플래그(기본 OFF). 코드 머지만으로 비용이 발생하지 않게 운영자가 명시적으로 켠다.
@@ -93,7 +104,7 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     '당신은 오늘 하루의 운세를 따뜻하고 차분하게 풀어주는 한국어 상담가입니다.',
     '결제한 사용자에게 보여줄 "오늘의 깊은 풀이" 한 단락을 작성하세요.',
     '구조 순서: 오늘 질문의 답 → 원국과 해당 날짜가 만나는 근거 → 공감할 수 있는 조건부 생활 장면 → 상황별 차이 → 오늘의 선택 기준.',
-    '10~14개의 짧은 문장, 600~900자를 목표로 2~3단락을 작성합니다. 오늘의 질문에 대한 답과 원국·일진 근거, 잘 풀릴 조건과 부담 조건, 서로 다른 생활 장면 2개, 선택 기준을 연결합니다. 목록·번호·소제목 없이 줄글로 쓰고 근거 부족은 반복으로 채우지 않습니다.',
+    '14~20개의 문장, 900~1,300자를 목표로 3~4단락을 작성합니다. ① 오늘의 질문에 대한 답 ② 원국과 일진이 만나는 근거(일진 간지가 나에게 어떤 십성인지, 신살, 점수가 높거나 낮은 영역) ③ 잘 풀릴 조건과 부담 조건, 서로 다른 생활 장면 2개 ④ 시간대 근거가 있으면 언제 움직이고 언제 쉬는지와 선택 기준을 연결합니다. 목록·번호·소제목 없이 줄글로 쓰고 근거 부족은 반복으로 채우지 않습니다.',
     '"오늘"은 첫 문장에 한 번만 쓰고 이후 문장에서는 되풀이하지 마세요("오늘은"으로 문장을 여러 번 시작하지 않기).',
     '아래 입력 정보를 근거로 삼되 그대로 복사하지 말고 하나의 흐름으로 풀어 씁니다.',
     '입력에 없는 직업·연애 상태·사건·상대의 마음은 지어내지 마세요. "그런 상황이라면"으로 구분하고, 조건이 다르면 어떻게 선택할지도 설명하세요.',
@@ -109,7 +120,12 @@ export function buildTodayPremiumPrompt(input: TodayPremiumInterpretationInput):
     input.classicGrounding ? `고전 해석 근거: ${JSON.stringify(input.classicGrounding)}` : null,
     input.readingDate ? `풀이 날짜: ${input.readingDate} (한국 날짜, 이 하루만 해석)` : null,
     `오늘 고민 주제: ${input.concernLabel}`,
+    input.todayGanzi ? `오늘 일진(그날의 간지): ${input.todayGanzi}` : null,
     input.reasoning ? `원국과 오늘의 관계 근거: ${input.reasoning}` : null,
+    input.scoreBreakdown ? `점수 계산 근거(영역별): ${input.scoreBreakdown}` : null,
+    input.sinsals?.length ? `오늘 작동하는 신살: ${input.sinsals.join(' / ')}` : null,
+    input.iljinMessages?.length ? `일진 풀이 단서: ${input.iljinMessages.join(' / ')}` : null,
+    input.timeWindows?.length ? `시간대 근거(계산값 — 이 범위만 사용): ${input.timeWindows.join(' / ')}` : null,
     input.dailyEvidence?.length ? `분야별 계산 근거: ${input.dailyEvidence.join(' / ')}` : null,
     input.lifeStage === 'child' ? '어린이 대상: 보호자의 돌봄·놀이 선택으로 설명. 연애·결혼·투자·계약·직장 조언 금지.'
       : input.lifeStage === 'teen' ? '미성년자 대상: 친구·학습·용돈 범위로 설명. 성인 관계·사업·투자·계약 조언 금지.' : null,
@@ -198,7 +214,29 @@ export function toTodayPremiumInterpretationInput(
     dailyEvidence: [...new Set(free.scores.flatMap((score) => score.reading ? [score.reading.evidence] : []))],
     lifeStage: free.birthMeta.lifeStage,
     unknownBirthTime: free.birthMeta.unknownBirthTime,
+    todayGanzi: free.sajuChart?.todayGanzi ? koreanizeGanzi(free.sajuChart.todayGanzi) : null,
+    scoreBreakdown: free.iljinScore ? describeBreakdown(free.iljinScore.breakdown) : null,
+    sinsals: (free.sajuChart?.detectedSinsals ?? [])
+      .filter((sinsal) => sinsal.positions.includes('iljin'))
+      .slice(0, 4)
+      .map((sinsal) => `${sinsal.name}(${sinsal.category}) — ${sinsal.hint}`),
+    iljinMessages: (premium.todayIljinReading?.messages ?? []).slice(0, 5),
+    timeWindows: [...premium.favorableWindows, ...premium.cautionWindows]
+      .map((window) => `${window.range} ${window.mood === 'favorable' ? '좋은 시간' : '주의 시간'} — ${window.title}`),
   };
+}
+
+const BREAKDOWN_LABEL: Record<string, string> = {
+  cheongan: '천간 관계', jiji: '지지 관계', ohaeng: '오행 균형', sinsal: '신살', balance: '강약 균형',
+  regulation: '조후(온도 조절)', unsung: '12운성 흐름', special: '특수 조합',
+};
+
+// 가장 높고 낮은 영역만 — 전체 숫자를 넘기면 모델이 점수를 확률처럼 읽는다.
+function describeBreakdown(breakdown: Record<string, number>): string | null {
+  const entries = Object.entries(breakdown).filter(([, value]) => Number.isFinite(value)).sort((a, b) => b[1] - a[1]);
+  if (entries.length < 2) return null;
+  const [high, low] = [entries[0], entries[entries.length - 1]];
+  return `가장 힘이 되는 영역 ${BREAKDOWN_LABEL[high[0]] ?? high[0]}, 가장 부담이 되는 영역 ${BREAKDOWN_LABEL[low[0]] ?? low[0]}`;
 }
 
 /**
