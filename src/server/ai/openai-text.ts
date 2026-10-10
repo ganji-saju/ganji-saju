@@ -226,7 +226,13 @@ async function runGenerateAiText(
           text = parsed.body.trim();
         }
       } catch {
-        // raw 가 JSON 이 아니면 그대로 사용 (validator 가 후속 처리)
+        // 2026-10-10 — 상한에 걸려 잘린 JSON({"body":"…)은 파싱이 안 돼 중괄호·따옴표째 본문으로 샜다.
+        //   본문 문자열만 꺼내 마지막 완결 문장까지 남긴다. JSON 이 아닌 응답은 그대로(validator 가 후속 처리).
+        const body = extractTruncatedJsonBody(raw);
+        if (body !== null) {
+          text = body;
+          if (!text.trim()) return fallbackResult(request, 'empty_ai_response');
+        }
       }
     }
 
@@ -278,6 +284,18 @@ async function runGenerateAiText(
  *    짧은 답을 통째로 버리면 아무 말도 안 하는 것보다 나쁘다.
  *    한국어 문장은 '다.' '요.' '까?' 로 끝나므로 . ! ? 만 봐도 충분하다.
  */
+/** 잘린 {"body":"…" 응답에서 본문만 꺼내 마지막 완결 문장까지 남긴다. 그 형태가 아니면 null. */
+export function extractTruncatedJsonBody(raw: string): string | null {
+  const partial = raw.match(/^\s*\{\s*"body"\s*:\s*"([\s\S]*)$/);
+  if (!partial) return null;
+  const unescaped = partial[1]
+    .replace(/"\s*\}\s*$/, '')
+    .replace(/\\n/g, '\n')
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\');
+  return trimToLastSentence(unescaped);
+}
+
 export function trimToLastSentence(text: string): string {
   const cut = text.match(/^[\s\S]*[.!?]/)?.[0]?.trim();
   return cut && cut.length >= Math.floor(text.length * 0.4) ? cut : text;

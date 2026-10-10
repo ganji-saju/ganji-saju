@@ -2,6 +2,7 @@ import {
   validateChapterBody,
   type ChapterValidationFailure,
 } from '@/lib/saju/chapter-validator';
+import { buildRetryCorrectionNote } from '../total-review/total-review-prompts';
 import type { ChapterId, ChapterLLMInput } from './chapter-input-types';
 import {
   CHAPTER_META,
@@ -150,7 +151,10 @@ export async function generateChapter(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     let body = '';
     try {
-      body = await client.generate(systemPrompt, userMessage);
+      // 2026-10-10 — 재시도에 폐기 사유를 붙인다(총평 2026-08-10 과 같은 처방). 같은 요청을 다시 보내면
+      //   모델은 뭘 틀렸는지 모른 채 같은 실수를 반복했다(운영 재현: 1~3장이 같은 규칙으로 세 번 폐기).
+      const note = attempt === 0 ? '' : buildRetryCorrectionNote(lastFailures.map((failure) => failure.detail));
+      body = await client.generate(systemPrompt, note ? `${userMessage}\n\n${note}` : userMessage);
     } catch (error) {
       // 2026-05-19 (다) 3차: LLM 호출 자체 실패 (API down / 인증 / 타임아웃) 시
       //   throw 를 retry/fallback 흐름으로 흡수. validation failure 로 기록.
