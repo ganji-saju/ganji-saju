@@ -10,10 +10,19 @@ vi.mock('@/lib/supabase/server', () => ({
   hasSupabaseServiceEnv: false,
 }));
 vi.mock('@/server/ai/saju-lifetime-service', () => ({ generateLifetimeInterpretation: vi.fn() }));
+vi.mock('@/server/ai/saju-yearly-service', () => ({
+  generateYearlyInterpretation: vi.fn(),
+  createInMemoryYearlyCacheStore: vi.fn(() => ({ read: vi.fn(async () => null), write: vi.fn(async () => undefined) })),
+}));
 
 import { createServiceClient } from '@/lib/supabase/server';
 import { generateLifetimeInterpretation } from '@/server/ai/saju-lifetime-service';
-import { generateExternalReport, parseExternalReportRequest, type ExternalReportRequest } from './external-report';
+import { buildYearlyReport } from '@/domain/saju/report/build-yearly-report';
+import { buildFallbackYearlyInterpretation } from '@/server/ai/saju-yearly-interpretation';
+import { generateYearlyInterpretation, type YearlyInterpretationResponsePayload } from '@/server/ai/saju-yearly-service';
+import {
+  generateExternalNewYearReport, generateExternalReport, isNewYearReportNo, parseExternalReportRequest, type ExternalReportRequest,
+} from './external-report';
 
 const draft: ExternalReportRequest = {
   name: ' 스마트 구매자 ', calendarType: 'solar', timeRule: 'standard',
@@ -68,6 +77,17 @@ describe('external report input', () => {
     expect(parseExternalReportRequest({ ...draft, timeRule: 'trueSolarTime', unknownBirthTime: true }).ok).toBe(true);
   });
 
+  it('defaults to the lifetime report, accepts new-year and rejects unknown kinds', () => {
+    expect(parseExternalReportRequest(draft)).toMatchObject({ ok: true, kind: 'lifetime' });
+    expect(parseExternalReportRequest({ ...draft, kind: 'new-year' })).toMatchObject({ ok: true, kind: 'new-year' });
+    expect(parseExternalReportRequest({ ...draft, kind: 'lifetime' })).toMatchObject({ ok: true, kind: 'lifetime' });
+    for (const kind of ['', 'yearly', 2027, null]) {
+      expect(parseExternalReportRequest({ ...draft, kind })).toEqual({ ok: false, error: '보고서 종류를 선택해 주세요.' });
+    }
+    const parsed = parseExternalReportRequest({ ...draft, kind: 'new-year' });
+    if (parsed.ok) expect(parsed.birth).not.toHaveProperty('kind');
+  });
+
   it('returns validation errors for malformed values without throwing', () => {
     for (const value of [null, [], {}, { ...draft, calendarType: 'lunar', year: '2026', month: '2', day: '30' }]) {
       expect(() => parseExternalReportRequest(value)).not.toThrow();
@@ -108,5 +128,53 @@ describe('external report generation', () => {
     expect(result.generationSource).toBe('fallback');
     expect(result.generationWarning).toContain('기본 계산 풀이');
     expect(createServiceClient).not.toHaveBeenCalled();
+  });
+});
+
+describe('external new-year report generation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(generateYearlyInterpretation).mockImplementation(async (request) => {
+      const reading = request.readingRecord!;
+      const report = buildYearlyReport(reading.input, reading.sajuData, request.targetYear);
+      const interpretation = buildFallbackYearlyInterpretation(report, 'female');
+      // 같은 문장이 두 번 들어오면 고객용 PDF처럼 한 번만 남아야 한다.
+      interpretation.opening = '올해는 차분하게 기반을 다지는 해입니다. 올해는 차분하게 기반을 다지는 해입니다.';
+      return { report, interpretation, source: 'openai' } as unknown as YearlyInterpretationResponsePayload;
+    });
+  });
+
+  it('uses the customer new-year generator with transient buyer data, an isolated cache and no DB writes', async () => {
+    const parsed = parseExternalReportRequest({ ...draft, kind: 'new-year' });
+    if (!parsed.ok) throw new Error(parsed.error);
+    const result = await generateExternalNewYearReport(parsed.input);
+    const [request] = vi.mocked(generateYearlyInterpretation).mock.calls[0];
+    expect(request).toMatchObject({ targetYear: 2027, includeNewYear: true });
+    expect(request.readingRecord?.userId).toBeNull();
+    expect(request.readingRecord?.id).toMatch(/^external-report-/);
+    expect(request.readingIdentifier).toBe(request.readingRecord?.id);
+    expect(request.cacheStore).toBeDefined();
+    expect(result.kind).toBe('new-year');
+    expect(result.year).toBe(2027);
+    expect(result.data.subjectName).toBe('스마트 구매자');
+    expect(result.data.reportNo).toMatch(/^GS-EXT-NY27-\d{8}-[A-F0-9]{8}$/);
+    expect(isNewYearReportNo(result.data.reportNo)).toBe(true);
+    expect(result.interpretation.opening).toBe('올해는 차분하게 기반을 다지는 해입니다.');
+    expect(result.generationSource).toBe('openai');
+    expect(result.generationWarning).toBeUndefined();
+    expect(createServiceClient).not.toHaveBeenCalled();
+  });
+
+  it('warns before delivery when the generator fell back', async () => {
+    vi.mocked(generateYearlyInterpretation).mockImplementationOnce(async (request) => {
+      const reading = request.readingRecord!;
+      const report = buildYearlyReport(reading.input, reading.sajuData, request.targetYear);
+      return { report, interpretation: buildFallbackYearlyInterpretation(report, 'female'), source: 'fallback' } as unknown as YearlyInterpretationResponsePayload;
+    });
+    const parsed = parseExternalReportRequest(draft);
+    if (!parsed.ok) throw new Error(parsed.error);
+    const result = await generateExternalNewYearReport(parsed.input);
+    expect(result.generationWarning).toContain('기본 계산 풀이');
+    expect(isNewYearReportNo('GS-EXT-20261010-ABCDEF12')).toBe(false);
   });
 });

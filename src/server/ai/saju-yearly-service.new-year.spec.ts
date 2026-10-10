@@ -48,6 +48,16 @@ describe('yearly service — newyear 부가 단계', () => {
 
   const calls = () => vi.mocked(generateAiText).mock.calls.map(([r]) => (isNewYearStage(r.instructions) ? 'newyear' : 'base'));
 
+  it('readingRecord 를 주면 DB 조회(resolveReading) 없이 그 사주로 생성한다(관리자 외부 주문)', async () => {
+    const reading = buildTransientReading({ ...input, name: '외부구매자' }, 'external-report-x');
+    const r = await generateYearlyInterpretation({
+      readingIdentifier: reading.id, readingRecord: reading, targetYear: 2027, includeNewYear: true, cacheStore: createInMemoryYearlyCacheStore(),
+    });
+    expect(resolveReading).not.toHaveBeenCalled();
+    expect(r?.resolvedReadingId).toBe('external-report-x');
+    expect(r?.interpretation.newYear).toBeDefined();
+  });
+
   it('basic(includeNewYear 없음)은 2단계만, newYear 없음', async () => {
     const r = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, cacheStore: createInMemoryYearlyCacheStore() });
     expect(calls()).toEqual(['base', 'base']);

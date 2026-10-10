@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { externalReportPrintTitle } from '../report-view';
 
-export function HistoryPrintButton({ subjectName }: { subjectName: string }) {
+export function HistoryPrintButton({ subjectName, kind = 'lifetime', year }: {
+  subjectName: string; kind?: 'lifetime' | 'new-year'; year?: number;
+}) {
   const pending = useRef(false);
   const mounted = useRef(true);
   const [printing, setPrinting] = useState(false);
@@ -22,7 +25,7 @@ export function HistoryPrintButton({ subjectName }: { subjectName: string }) {
     try {
       await document.fonts?.ready;
       if (!mounted.current) return;
-      document.title = `간지사주_깊은사주풀이_${subjectName.replace(/[\\/:*?"<>|]/g, '').slice(0, 40)}`;
+      document.title = externalReportPrintTitle(kind, subjectName, year);
       window.print();
     } catch {
       if (mounted.current) setError('인쇄 창을 열지 못했습니다. 다시 시도해 주세요.');

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { ReportDocument, type PdfReportModel } from '@/components/report/report-document';
+import type { ExternalReportKind, ExternalReportSnapshot } from '@/lib/admin/external-report';
 import type { BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import {
@@ -10,15 +10,14 @@ import {
   type UnifiedBirthEntryDraft,
 } from '@/lib/saju/unified-birth-entry';
 import styles from './external-report.module.css';
+import { ExternalReportView, externalReportPrintTitle } from './report-view';
 
-interface GeneratedReport {
-  recordId: string;
-  createdAt: string;
-  data: PdfReportModel;
-  issuedAt: string;
-  generationSource: 'openai' | 'fallback';
-  generationWarning?: string;
-}
+type GeneratedReport = ExternalReportSnapshot & { recordId: string; createdAt: string };
+
+const KIND_LABEL: Record<ExternalReportKind, string> = {
+  lifetime: '깊은 사주풀이(종합)',
+  'new-year': '2027 신년운세',
+};
 
 const EMPTY_DRAFT: UnifiedBirthEntryDraft = {
   calendarType: 'solar',
@@ -38,6 +37,7 @@ const EMPTY_DRAFT: UnifiedBirthEntryDraft = {
 
 export function ExternalReportClient() {
   const [name, setName] = useState('');
+  const [kind, setKind] = useState<ExternalReportKind>('lifetime');
   const [draft, setDraft] = useState<UnifiedBirthEntryDraft>({ ...EMPTY_DRAFT });
   const [result, setResult] = useState<GeneratedReport | null>(null);
   const [busy, setBusy] = useState(false);
@@ -186,7 +186,7 @@ export function ExternalReportClient() {
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
         signal: controller.signal,
-        body: JSON.stringify({ name: trimmedName, ...draft }),
+        body: JSON.stringify({ name: trimmedName, kind, ...draft }),
       });
       const body = await response.json().catch(() => null) as
         | ({ ok: true } & GeneratedReport)
@@ -218,8 +218,8 @@ export function ExternalReportClient() {
     try {
       await document.fonts?.ready;
       if (currentRevision !== revision.current) return;
-      const filenameName = result.data.subjectName.replace(/[\\/:*?"<>|]/g, '').slice(0, 40);
-      document.title = `간지사주_깊은사주풀이_${filenameName}`;
+      document.title = externalReportPrintTitle(result.kind ?? 'lifetime', result.data.subjectName,
+        result.kind === 'new-year' ? result.year : undefined);
       window.print();
     } finally {
       if (currentRevision === revision.current) {
@@ -244,6 +244,21 @@ export function ExternalReportClient() {
         <form onSubmit={generate} autoComplete="off" className={styles.form}>
           <fieldset disabled={busy || printing} className={styles.fields}>
             <legend>구매자 출생 정보</legend>
+            <div className={styles.field} role="radiogroup" aria-label="보고서 종류">
+              보고서 종류
+              <div className={styles.actions}>
+                {(Object.keys(KIND_LABEL) as ExternalReportKind[]).map((value) => (
+                  <label key={value} className={styles.checkbox}>
+                    <input type="radio" name="external-report-kind" value={value} checked={kind === value}
+                      onChange={() => {
+                        invalidateReport();
+                        setKind(value);
+                      }} />
+                    {KIND_LABEL[value]}
+                  </label>
+                ))}
+              </div>
+            </div>
             <div className={styles.grid}>
               <label className={styles.field} htmlFor="external-report-name">
                 보고서에 표시할 이름
@@ -388,20 +403,22 @@ export function ExternalReportClient() {
           {error ? <p role="alert" className={styles.error}>{error}</p> : null}
           <div className={styles.actions}>
             <button type="submit" className={styles.primary} disabled={busy || printing}>
-              {busy ? '깊은 사주풀이 생성 중…' : result ? '보고서 다시 생성' : '보고서 생성'}
+              {busy ? `${KIND_LABEL[kind]} 생성 중…` : result ? '보고서 다시 생성' : '보고서 생성'}
             </button>
             <button type="button" className={styles.secondary} onClick={resetBuyer} disabled={printing}>
               {busy ? '생성 취소 · 입력 초기화' : '다음 구매자 · 입력 초기화'}
             </button>
           </div>
           <p className={styles.hint}>완료된 보고서와 사주 입력 정보는 <Link href="/admin/external-report/history" className="underline underline-offset-4">PDF 생성 기록</Link>에 저장됩니다. 입력을 초기화해도 저장된 기록에서 다시 내려받을 수 있습니다.</p>
-          {busy ? <p role="status" className={styles.hint}>생애 연도별 풀이와 대운 전환기를 구성하고 있습니다. 완료될 때까지 화면을 유지해 주세요.</p> : null}
+          {busy ? <p role="status" className={styles.hint}>{kind === 'new-year'
+            ? '2027년 총론·분야별 운·월별 흐름을 구성하고 있습니다. 완료될 때까지 화면을 유지해 주세요.'
+            : '생애 연도별 풀이와 대운 전환기를 구성하고 있습니다. 완료될 때까지 화면을 유지해 주세요.'}</p> : null}
         </form>
 
         {result ? (
           <div className={styles.ready} role="status">
             <div>
-              <h3>{result.data.subjectName}님의 보고서가 준비되었습니다</h3>
+              <h3>{result.data.subjectName}님의 {KIND_LABEL[result.kind ?? 'lifetime']} 보고서가 준비되었습니다</h3>
               <p>생성 기록에 저장했습니다. 내용과 출생 정보를 확인한 뒤 인쇄 창에서 ‘PDF로 저장’을 선택하면 파일로 보관할 수 있습니다.</p>
               {result.generationWarning ? <p className={styles.warning}>{result.generationWarning}</p> : null}
             </div>
@@ -419,7 +436,7 @@ export function ExternalReportClient() {
       </div>
       {result ? (
         <div className="external-report-preview" ref={preview}>
-          <ReportDocument data={result.data} issuedAt={result.issuedAt} showRecommendations={false} />
+          <ExternalReportView report={result} />
         </div>
       ) : null}
     </>

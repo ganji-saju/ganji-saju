@@ -58,6 +58,7 @@ export default async function ExternalReportHistoryPage({ searchParams }: {
               <tr key={item.id}>
                 <th scope="row" className="px-4 py-4 align-top font-normal">
                   <span className="font-bold">{item.subjectName}</span>
+                  <span className="mt-1 block text-xs font-bold">{item.kind === 'new-year' ? '2027 신년운세' : '깊은 사주풀이'}</span>
                   <span className="mt-1 block text-xs text-[var(--app-copy-soft)]">{item.reportNo}</span>
                   {item.generationSource === 'fallback' ? <span className="mt-1 block text-xs text-amber-800">기본 계산 풀이 · 내용 확인 필요</span> : null}
                 </th>

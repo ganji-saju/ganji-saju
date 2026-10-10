@@ -74,7 +74,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       {
         href: '/admin/external-report',
         label: '외부 주문 PDF',
-        description: '스마트스토어 구매자 깊은 사주풀이 생성',
+        description: '스마트스토어 구매자 깊은 사주풀이·2027 신년운세 생성',
         minRole: 'super_admin',
       },
       {

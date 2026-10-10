@@ -8,11 +8,12 @@ vi.mock('@/lib/admin/external-report-history', () => ({ saveExternalReport: vi.f
 vi.mock('@/lib/admin/external-report', async (original) => ({
   ...await original<typeof import('@/lib/admin/external-report')>(),
   generateExternalReport: vi.fn(),
+  generateExternalNewYearReport: vi.fn(),
 }));
 
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { logAdminAccess } from '@/lib/admin/access-log';
-import { generateExternalReport, type ExternalReportResult } from '@/lib/admin/external-report';
+import { generateExternalNewYearReport, generateExternalReport, type ExternalNewYearReportResult, type ExternalReportResult } from '@/lib/admin/external-report';
 import { saveExternalReport } from '@/lib/admin/external-report-history';
 import { POST } from './route';
 
@@ -70,8 +71,27 @@ describe('POST /api/admin/external-report', () => {
     expect(await response.json()).toEqual({ ok: true, ...generated, recordId: saved.id, createdAt: saved.createdAt });
     expect(generateExternalReport).toHaveBeenCalledWith(expect.objectContaining({ name: '구매자', year: 1982, gender: 'male' }), { signal: expect.any(AbortSignal) });
     expect(saveExternalReport).toHaveBeenCalledWith({ actorId: 'admin', birth: valid, report: generated });
-    expect(logAdminAccess).toHaveBeenCalledWith({ actorId: 'admin', actorRole: 'super_admin', action: 'generate_external_report', targetUser: null, meta: { reportNo: 'GS-EXT-TEST', generationSource: 'fallback', recordId: saved.id } });
+    expect(logAdminAccess).toHaveBeenCalledWith({ actorId: 'admin', actorRole: 'super_admin', action: 'generate_external_report', targetUser: null, meta: { kind: 'lifetime', reportNo: 'GS-EXT-TEST', generationSource: 'fallback', recordId: saved.id } });
     expect(vi.mocked(saveExternalReport).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(logAdminAccess).mock.invocationCallOrder[0]);
+    expect(generateExternalNewYearReport).not.toHaveBeenCalled();
+  });
+
+  it('generates, saves and audits the new-year report only when kind is new-year', async () => {
+    const newYear = { kind: 'new-year', year: 2027, data: { reportNo: 'GS-EXT-NY27-TEST' }, issuedAt: '2026.10.10', generationSource: 'openai' } as ExternalNewYearReportResult;
+    vi.mocked(generateExternalNewYearReport).mockResolvedValue(newYear);
+    const response = await POST(request({ ...valid, kind: 'new-year' }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, ...newYear, recordId: saved.id, createdAt: saved.createdAt });
+    expect(generateExternalReport).not.toHaveBeenCalled();
+    expect(generateExternalNewYearReport).toHaveBeenCalledWith(expect.objectContaining({ name: '구매자' }), { signal: expect.any(AbortSignal) });
+    expect(saveExternalReport).toHaveBeenCalledWith({ actorId: 'admin', birth: valid, report: newYear });
+    expect(logAdminAccess).toHaveBeenCalledWith(expect.objectContaining({ meta: { kind: 'new-year', reportNo: 'GS-EXT-NY27-TEST', generationSource: 'openai', recordId: saved.id } }));
+  });
+
+  it('rejects an unknown report kind before generating', async () => {
+    expect((await POST(request({ ...valid, kind: 'yearly' }))).status).toBe(400);
+    expect(generateExternalReport).not.toHaveBeenCalled();
+    expect(generateExternalNewYearReport).not.toHaveBeenCalled();
   });
 
   it('rejects a simultaneous second generation and releases its guard afterwards', async () => {

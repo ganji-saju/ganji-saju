@@ -11,6 +11,11 @@ vi.mock('@/components/report/report-document', () => ({
     </article>
   ),
 }));
+vi.mock('@/components/report/new-year-report-document', () => ({
+  NewYearReportDocument: ({ data, year }: { data: { subjectName: string }; year: number }) => (
+    <article data-testid="generated-new-year">{data.subjectName} {year} 신년운세</article>
+  ),
+}));
 
 let host: HTMLDivElement;
 let root: Root;
@@ -149,7 +154,7 @@ describe('외부 주문 PDF 입력과 미리보기', () => {
     expect(options.method).toBe('POST');
     expect(options.cache).toBe('no-store');
     expect(JSON.parse(options.body)).toMatchObject({
-      name: '테스트고객', year: '1990', month: '5', day: '15', gender: 'female', unknownBirthTime: true,
+      name: '테스트고객', kind: 'lifetime', year: '1990', month: '5', day: '15', gender: 'female', unknownBirthTime: true,
     });
     expect(storageWrite).not.toHaveBeenCalled();
     expect(host.querySelector('[data-testid="generated-report"]')?.getAttribute('data-recommendations')).toBe('false');
@@ -160,6 +165,30 @@ describe('외부 주문 PDF 입력과 미리보기', () => {
     await act(async () => button('PDF로 저장').click());
     expect(printedTitle).toBe('간지사주_깊은사주풀이_테스트고객');
     expect(document.title).toBe('관리자');
+  });
+
+  it('2027 신년운세를 고르면 종류를 요청에 싣고 신년운세 문서·파일명으로 출력한다', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({
+      ok: true, kind: 'new-year', year: 2027, recordId: '6a4f0d1e-df2e-4f76-89d3-6b51590336fb',
+      createdAt: '2026-10-10T03:00:00.000Z', data: { subjectName: '테스트고객' }, report: {}, interpretation: {},
+      issuedAt: '2026.10.10', generationSource: 'openai',
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    await fillBuyer();
+    await act(async () => host.querySelector<HTMLInputElement>('input[value="new-year"]')!.click());
+    await submit();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ kind: 'new-year', name: '테스트고객' });
+    expect(host.querySelector('[data-testid="generated-new-year"]')?.textContent).toBe('테스트고객 2027 신년운세');
+    expect(host.querySelector('[data-testid="generated-report"]')).toBeNull();
+    expect(host.textContent).toContain('2027 신년운세 보고서가 준비되었습니다');
+
+    let printedTitle = '';
+    vi.spyOn(window, 'print').mockImplementation(() => { printedTitle = document.title; });
+    await act(async () => button('PDF로 저장').click());
+    expect(printedTitle).toBe('간지사주_2027신년운세_테스트고객');
+
+    // 종류를 바꾸면 이전 보고서를 지운다(다른 상품을 잘못 발송하지 않도록).
+    await act(async () => host.querySelector<HTMLInputElement>('input[value="lifetime"]')!.click());
+    expect(host.querySelector('[data-testid="generated-new-year"]')).toBeNull();
   });
 
   it('글꼴 대기 중 저장 기록 화면으로 이동하면 인쇄와 이전 제목 복원을 건너뛴다', async () => {
