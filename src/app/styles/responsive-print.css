@@ -2672,6 +2672,44 @@
     page-break-after: auto;
   }
 
+  /* 2026-10-10 — 신년운세 본문 흐름 인쇄(사용자: "운마다 한 쪽씩이라 공백이 많다, 글에 따라 유동적으로").
+     큰 장 시작(rp-flow-start)만 새 장에서, 나머지는 앞 내용에 이어 흐른다. 단락은 쪽 경계에서 자르지 않는다. */
+  .report-page:has(+ .rp-flow-next),
+  .report-page:has(+ .rp-flow-more) {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .rp-flow-start {
+    break-before: page;
+    page-break-before: always;
+  }
+  .rp-flow-next,
+  .rp-flow-more {
+    padding-top: 0 !important;
+  }
+  .rp-flow-next .rp-chaphead {
+    margin-top: 10mm;
+  }
+  .rp-flow-more .rp-chaphead {
+    display: none !important;
+  }
+  .rp-flow-start .rp-deep-sec,
+  .rp-flow-next .rp-deep-sec,
+  .rp-flow-more .rp-deep-sec {
+    break-inside: auto;
+  }
+  .rp-flow-start .rp-deep-sec p,
+  .rp-flow-next .rp-deep-sec p,
+  .rp-flow-more .rp-deep-sec p {
+    break-inside: avoid;
+  }
+  .rp-flow-start .rp-deep-head,
+  .rp-flow-next .rp-deep-head,
+  .rp-flow-next .rp-chaphead,
+  .rp-flow-start .rp-chaphead {
+    break-after: avoid;
+  }
+
   /* 긴 본문은 모델에서 나누고 각 섹션은 페이지 안에서 함께 배치한다. */
   .rp-narrative-page .rp-deep-sec,
   .rp-narrative-page .rp-deep-rules {

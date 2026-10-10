@@ -64,6 +64,9 @@ function splitOversized(section: PdfNarrativeSection): PdfNarrativeSection[] {
   return section.text.length <= 850 ? [section] : paginatePdfNarrative([section], { maxItems: 1 }).flat();
 }
 
+/** 앞 쪽들에 실린 섹션 수 — 장 안에서 번호를 이어 매긴다. */
+const sectionOffset = (pages: unknown[][], index: number) => pages.slice(0, index).reduce((sum, page) => sum + page.length, 0);
+
 // 한자 전면 금지(2026-09-27 사용자 결정 — 명식 포함). 명식 한 글자(甲·子)도 한글로.
 const toHangul = (text: string) => koreanizeGanzi(text);
 
@@ -73,6 +76,7 @@ function Page({
   data,
   children,
   narrative = false,
+  flow,
 }: {
   no: number;
   total: number;
@@ -80,9 +84,15 @@ function Page({
   children: ReactNode;
   /** 평생 PDF 와 같은 클래스 — 인쇄 CSS 가 .rp-deep-sec 를 쪽 가운데서 자르지 않는다(break-inside: avoid). */
   narrative?: boolean;
+  /**
+   * 2026-10-10 사용자 피드백 "운마다 한 쪽씩이라 공백이 너무 많다" — 인쇄에서는 본문을 이어 흘린다.
+   * start = 큰 장 시작(새 장에서), next = 이어서(제목 유지 — 다음 달), more = 같은 내용이 이어지는 쪽(제목 숨김).
+   */
+  flow?: 'start' | 'next' | 'more';
 }) {
+  const classes = ['report-page', narrative && 'rp-narrative-page', flow && `rp-flow-${flow}`].filter(Boolean).join(' ');
   return (
-    <section className={narrative ? 'report-page rp-narrative-page' : 'report-page'} data-page={no}>
+    <section className={classes} data-page={no}>
       <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} mark="간지" />
       {children}
       <PageFooter page={no} total={total} />
@@ -142,7 +152,13 @@ export function NewYearReportDocument({
       // 2026-10-10 — 6항목(총운·분야별·먼저 볼 것·조심·실천 3·보완 포인트). 화면과 같은 구성(yearly-month-view).
       ...buildMonthView(flowOf(month.month), month, month.month).sections.map((section) => ({ label: section.label, text: monthSectionText(section) })),
     ];
-    return paginateWholeSections(sections, 1600).map((sections, continuation) => ({ month: month.month, sections, continuation }));
+    // offset — 같은 달이 여러 쪽에 걸쳐도 섹션 번호를 이어 매긴다(인쇄에서는 한 흐름으로 읽힌다).
+    let offset = 0;
+    return paginateWholeSections(sections, 1600).map((sections, continuation) => {
+      const page = { month: month.month, sections, continuation, offset };
+      offset += sections.length;
+      return page;
+    });
   });
 
   const firstNarrative = 3;
@@ -309,7 +325,7 @@ export function NewYearReportDocument({
 
       {/* ── 총론·분야별 운 (자동 쪽 나눔) ── */}
       {narrativePages.map((sections, index) => (
-        <Page key={`n-${index}`} no={firstNarrative + index} total={total} data={data} narrative>
+        <Page key={`n-${index}`} no={firstNarrative + index} total={total} data={data} narrative flow={index === 0 ? 'start' : 'more'}>
           {/* 이어지는 쪽은 그 쪽에 실린 분야 이름을 제목으로 — "· 계속"과 같은 설명을 반복하지 않는다. */}
           <ChapterHead
             no="02"
@@ -317,13 +333,13 @@ export function NewYearReportDocument({
             lead={index === 0 ? '한 해의 큰 흐름과 분야 8가지(일·재물·연애·인간관계·건강·이동·가족·학업)의 핵심 장면·조심할 점·행동을 봅니다.' : undefined}
           />
           {sections.map((section, i) => (
-            <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />
+            <DeepSection key={`${section.label}-${i}`} no={sectionOffset(narrativePages, index) + i + 1} label={section.label} text={section.text} />
           ))}
         </Page>
       ))}
 
       {/* ── 한 달씩 읽는 월별 풀이 ── */}
-      {monthPages.map(({ month, sections, continuation }, index) => {
+      {monthPages.map(({ month, sections, continuation, offset }, index) => {
         // 제목 = 그 달에 중요한 분야 + 그 달의 성격(달마다 다름). 나에게 주는 의미는 설명 줄로 — 화면과 같은 구성.
         const view = buildMonthView(flowOf(month), interpretation.monthlyFlows.find((m) => m.month === month), month);
         const lead = continuation ? undefined : [
@@ -331,19 +347,20 @@ export function NewYearReportDocument({
           index === 0 ? '상승은 성공 보장이 아니며, 주의는 나쁜 일이 생긴다는 뜻이 아닙니다.' : '',
         ].filter(Boolean).join(' ');
         return (
-          <Page key={`m-${month}-${continuation}`} no={monthStart + index} total={total} data={data} narrative>
+          <Page key={`m-${month}-${continuation}`} no={monthStart + index} total={total} data={data} narrative
+            flow={index === 0 ? 'start' : continuation ? 'more' : 'next'}>
             <ChapterHead no="03" titleLines={[view.titleTop, view.titleBottom]} lead={lead} />
-            {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
+            {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={offset + i + 1} label={section.label} text={section.text} />)}
           </Page>
         );
       })}
 
       {/* ── 기대할 일 · 조심할 일 · 행동 지침 ── */}
       {closingPages.map((sections, index) => (
-        <Page key={`closing-${index}`} no={closingPage + index} total={total} data={data} narrative>
+        <Page key={`closing-${index}`} no={closingPage + index} total={total} data={data} narrative flow={index === 0 ? 'start' : 'more'}>
           <ChapterHead no="04" titleLines={[`${year}년에`, index ? [...new Set(sections.map((section) => section.label))].join(' · ') : '기대할 일과 조심할 일']}
             lead={index ? undefined : '언제, 어느 분야에서, 무엇을 살펴보면 좋을지 모았습니다. 필요한 내용을 달력에 적고 다시 읽어보세요.'} />
-          {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
+          {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={sectionOffset(closingPages, index) + i + 1} label={section.label} text={section.text} />)}
         </Page>
       ))}
     </article>
