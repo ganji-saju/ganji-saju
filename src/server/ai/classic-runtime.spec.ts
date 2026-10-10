@@ -118,7 +118,8 @@ describe('classic evidence reaches actual generation entry points without paid c
     expect(getClassicReadingGrounding).toHaveBeenCalledTimes(1);
     expect(getClassicReadingGrounding).toHaveBeenCalledWith(expect.anything(), 'yearly');
     const prompts = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
-    expect(prompts).toHaveLength(2);
+    // 총론 1회 + 월별 2개월씩 6회(2026-10-10 분할 생성).
+    expect(prompts).toHaveLength(7);
     prompts.forEach(assertPrompt);
     expect(prompts.every((prompt) => prompt.instructions.includes('연간 풀이:'))).toBe(true);
   });
@@ -126,7 +127,7 @@ describe('classic evidence reaches actual generation entry points without paid c
   it('2027 new-year extras retain their year and monthly evidence alongside narrative and monthly passes', async () => {
     await generateYearlyInterpretation({ readingIdentifier: 'fixture-reading', targetYear: 2027, includeNewYear: true });
     const prompts = vi.mocked(generateAiText).mock.calls.map(([request]) => request);
-    expect(prompts).toHaveLength(3);
+    expect(prompts).toHaveLength(8);
     for (const prompt of prompts) {
       assertPrompt(prompt);
       expect(prompt.instructions).toContain('연간 풀이:');

@@ -28,6 +28,8 @@ const DEEP_CHAPTER_LEADS: Record<string, string> = {
 
 /** 문장 경계로 끊어 2문장씩 묶는다. 문장부호가 없으면 통째로 한 덩어리(안전). */
 function splitIntoParagraphs(text: string, perParagraph = 2): string[] {
+  // 빈 줄은 작성자가 정한 문단 경계(분야별 운·실천 목록) — 그 안에서만 두 문장씩 묶는다.
+  if (/\n\s*\n/.test(text)) return text.split(/\n\s*\n/).flatMap((chunk) => splitIntoParagraphs(chunk, perParagraph));
   const sentences = text
     .split(/(?<=[.!?。])\s+/)
     .map((s) => s.trim())
@@ -106,7 +108,8 @@ export function ChapterHead({
 }: {
   no: string;
   titleLines: [string, string];
-  lead: string;
+  /** 이어지는 쪽에서는 생략한다(같은 설명이 쪽마다 반복되지 않게). */
+  lead?: string;
 }) {
   return (
     <div className="rp-chaphead">
@@ -116,7 +119,7 @@ export function ChapterHead({
         <br />
         {titleLines[1]}
       </h2>
-      <p className="rp-chaplead">{lead}</p>
+      {lead ? <p className="rp-chaplead">{lead}</p> : null}
     </div>
   );
 }

@@ -48,6 +48,34 @@ describe('yearly service — newyear 부가 단계', () => {
 
   const calls = () => vi.mocked(generateAiText).mock.calls.map(([r]) => (isNewYearStage(r.instructions) ? 'newyear' : 'base'));
 
+  it('월별은 2개월씩 6번 나눠 부르고, 한 묶음이 실패하면 그 두 달만 기본 풀이로 채운다', async () => {
+    vi.mocked(generateAiText).mockImplementation(async (request) => {
+      if (isNewYearStage(request.instructions)) return { source: 'openai', model: 'test-model', fallbackReason: null, errorMessage: null, text: JSON.stringify(goodExtras) };
+      const months = request.instructions.match(/이번 응답은 ([\d·]+)월만 맡습니다/)?.[1].split('·').map(Number);
+      if (!months) return { source: 'openai', model: 'test-model', fallbackReason: null, errorMessage: null, text: request.fallbackText };
+      if (months[0] === 5) return { source: 'fallback', model: 'test-model', fallbackReason: 'openai_error', errorMessage: 'timeout', text: request.fallbackText };
+      return {
+        source: 'openai', model: 'test-model', fallbackReason: null, errorMessage: null,
+        text: JSON.stringify({ monthlyFlows: months.map((month) => ({
+          month, summary: `${month}월 AI 총운입니다.`, focus: 'f', caution: 'c',
+          areas: { wealth: 'w', work: 'k', love: 'l', health: 'h' }, actions: ['a1', 'a2', 'a3'],
+        })) }),
+      };
+    });
+    const r = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, cacheStore: createInMemoryYearlyCacheStore() });
+    const monthPrompts = vi.mocked(generateAiText).mock.calls.filter(([req]) => req.instructions.includes('월만 맡습니다'));
+    expect(monthPrompts).toHaveLength(6);
+    for (const [req] of monthPrompts) expect(JSON.parse(req.input).yearlyEvidence.monthlyFlows).toHaveLength(2);
+    expect(r?.interpretation.monthlyFlows.map((f) => f.month)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(r?.interpretation.monthlyFlows[0]).toMatchObject({ summary: '1월 AI 총운입니다.', actions: ['a1', 'a2', 'a3'], areas: { wealth: 'w' } });
+    // 실패한 5·6월은 기본 풀이(6항목)로 채워지고, 전체 출처는 fallback 으로 표시된다.
+    const may = r!.interpretation.monthlyFlows[4];
+    expect(may.summary).not.toContain('AI 총운');
+    expect(Object.keys(may.areas ?? {})).toEqual(['wealth', 'work', 'love', 'health']);
+    expect(may.actions).toHaveLength(3);
+    expect(r?.stageResults.find((s) => s.key === 'monthly')?.source).toBe('fallback');
+  });
+
   it('readingRecord 를 주면 DB 조회(resolveReading) 없이 그 사주로 생성한다(관리자 외부 주문)', async () => {
     const reading = buildTransientReading({ ...input, name: '외부구매자' }, 'external-report-x');
     const r = await generateYearlyInterpretation({
@@ -60,14 +88,15 @@ describe('yearly service — newyear 부가 단계', () => {
 
   it('basic(includeNewYear 없음)은 2단계만, newYear 없음', async () => {
     const r = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, cacheStore: createInMemoryYearlyCacheStore() });
-    expect(calls()).toEqual(['base', 'base']);
+    // 총론 1 + 월별 6분할(2026-10-10).
+    expect(calls()).toEqual(Array(7).fill('base'));
     expect(r?.interpretation.newYear).toBeUndefined();
   });
 
   it('full 은 3단계, newYear 가 붙고 캐시에도 저장된다', async () => {
     const store = createInMemoryYearlyCacheStore();
     const r = await generateYearlyInterpretation({ readingIdentifier: 'fixture', targetYear: 2027, includeNewYear: true, cacheStore: store });
-    expect(calls().sort()).toEqual(['base', 'base', 'newyear']);
+    expect(calls().sort()).toEqual([...Array(7).fill('base'), 'newyear']);
     expect(r?.interpretation.newYear?.expectations[0].category).toBe('family');
     expect(r?.interpretation.newYear?._version).toBe(SAJU_NEW_YEAR_EXTRAS_PROMPT_VERSION);
   });
