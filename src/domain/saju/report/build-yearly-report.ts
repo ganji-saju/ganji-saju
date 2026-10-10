@@ -24,6 +24,8 @@ import type { FocusTopic, ReportScore, SajuReport } from './types';
 //   yearly-report 시스템엔 적용 안 됐던 회귀 차단.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
+import { ELEMENT_COLORS_MAIN, ELEMENT_DIRECTIONS } from '@/lib/today-fortune/lucky-package';
+import { computeMonthSignals } from './monthly-signals';
 import type {
   SajuYearlyReport,
   YearlyActionGuide,
@@ -768,21 +770,39 @@ function monthRelationLead(month: number, dayElement: Element | undefined, month
   ][step];
 }
 
+// 그 달 월운 오행에 없는 내 보완 기운을 먼저 고른다(같은 색이 매달 반복되지 않게).
+function monthSupplement(supportElements: Element[], monthlyElements: Element[]) {
+  const element = supportElements.find((e) => !monthlyElements.includes(e)) ?? supportElements[0];
+  return element ? { element, colors: ELEMENT_COLORS_MAIN[element], directions: ELEMENT_DIRECTIONS[element] } : null;
+}
+
 function createMonthlyFlow(
   monthly: MonthlyEvidenceBundle
 ): YearlyMonthFlow {
   const plan = MONTH_AREA_PLAN[monthly.month];
   const guide = MONTH_DECISION_GUIDE[monthly.month];
   const momentum = getMonthlyMomentum(monthly);
-  const primary = monthly.categories[plan.relatedAreas[0]];
-  const secondary = monthly.categories[plan.relatedAreas[1]];
   const monthlyGanji = monthly.data.currentLuck?.wolwoon?.ganzi ?? null;
+  // 2026-10-10 — 그 달에 볼 분야를 고정표(모두에게 같음) 대신 그 달 십성·원국 합충으로 고른다. 고정표는 근거가 없을 때만.
+  const signals = computeMonthSignals({
+    year: Number(monthly.referenceDate.slice(0, 4)),
+    month: monthly.month,
+    monthlyGanji,
+    yearlyGanji: monthly.data.currentLuck?.saewoon?.ganzi ?? monthly.context.yearGanji,
+    dayMasterStem: monthly.data.dayMaster.stem,
+    pillars: monthly.data.pillars,
+    yongsin: monthly.data.yongsin,
+    fallbackAreas: [...plan.relatedAreas],
+  });
+  const relatedAreas = signals.focusAreas;
+  const primary = monthly.categories[relatedAreas[0]];
+  const secondary = monthly.categories[relatedAreas[1]];
   const monthStemElement = monthlyGanji ? STEM_ELEMENT_MAP[Array.from(monthlyGanji)[0] as Stem] : undefined;
   const step = monthRelationStep(monthly.data.dayMaster.element, monthStemElement);
   const monthlyElements = getGanziElements(monthlyGanji);
   const monthlyElementLabel = formatElementList(monthlyElements);
   const yearlyGanji = monthly.data.currentLuck?.saewoon?.ganzi ?? monthly.context.yearGanji;
-  const focusLabel = plan.relatedAreas.map((area) => YEARLY_CATEGORY_LABEL[area]).join(' · ');
+  const focusLabel = relatedAreas.map((area) => YEARLY_CATEGORY_LABEL[area]).join(' · ');
   const theme =
     monthlyGanji && monthlyElementLabel
       ? `${koreanizeGanzi(monthlyGanji)} 월운이 ${plan.theme}${step === null ? '' : `이자, 나에게는 ${MONTH_RELATION_SHORT[step]} 달`}`
@@ -824,8 +844,10 @@ function createMonthlyFlow(
       maxSentences: 1,
       maxLength: 76,
     }),
-    relatedAreas: plan.relatedAreas,
+    relatedAreas,
     relationStep: step,
+    signals,
+    supplement: monthSupplement(monthly.context.supportElements, monthlyElements),
     basis: compactStrings([
       monthlyGanji ? `월운: ${monthlyGanji}` : null,
       monthlyElementLabel ? `월운 오행: ${monthlyElementLabel}` : null,

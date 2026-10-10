@@ -8,6 +8,7 @@ import { PDF_ELEMENT_COLORS } from '@/lib/saju/pdf-report-maps';
 import { paginatePdfNarrative, type PdfNarrativeSection } from '@/lib/saju/pdf-report-pages';
 import type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 import { koreanizeGanzi } from '@/lib/saju/terminology';
+import { buildMonthView, monthSectionText } from '@/lib/saju/yearly-month-view';
 import type { SajuYearlyReport } from '@/domain/saju/report';
 import type {
   NewYearHighlightCategory,
@@ -27,12 +28,6 @@ const CATEGORY_LABEL: Record<NewYearHighlightCategory, string> = {
 // 총론과 관련 분야를 묶어 읽고, 긴 본문은 추가 쪽에 보존한다.
 const NARRATIVE_CHAPTER = '총론과 분야별 운';
 const BASE_CATEGORIES = ['work', 'wealth', 'love', 'relationship', 'health', 'move'] as const;
-
-// 계산 리포트의 월 테마 "OO 월운이 <그 달의 성격> 달이자, 나에게는 <나에게 주는 의미> 달" 을 제목 재료로 나눈다.
-function splitMonthTheme(theme: string | undefined): { season: string; personal: string } | null {
-  const match = theme?.match(/월운이\s*(.+?)\s*달이자,\s*나에게는\s*(.+?)\s*달$/);
-  return match ? { season: match[1], personal: match[2] } : null;
-}
 
 const MOMENTUM = {
   rise: { label: '상승', color: '#2f7d5b', soft: '#e6f3ec' },
@@ -144,10 +139,8 @@ export function NewYearReportDocument({
     const sections = [
       ...(half ? [half] : []),
       ...(quarter ? [{ label: `${quarter.quarter}분기 · 먼저 볼 분야 ${CATEGORY_LABEL[quarter.focusCategory]}`, text: k(quarter.summary) }] : []),
-      { label: '이번 달의 흐름', text: k(month.summary) },
-      { label: '먼저 살펴볼 것', text: k(month.focus ?? '') },
-      { label: '조심할 점', text: k(month.caution ?? '') },
-      { label: '이렇게 해보세요', text: k(month.action ?? '') },
+      // 2026-10-10 — 6항목(총운·분야별·먼저 볼 것·조심·실천 3·보완 포인트). 화면과 같은 구성(yearly-month-view).
+      ...buildMonthView(flowOf(month.month), month, month.month).sections.map((section) => ({ label: section.label, text: monthSectionText(section) })),
     ];
     return paginateWholeSections(sections, 1600).map((sections, continuation) => ({ month: month.month, sections, continuation }));
   });
@@ -331,21 +324,15 @@ export function NewYearReportDocument({
 
       {/* ── 한 달씩 읽는 월별 풀이 ── */}
       {monthPages.map(({ month, sections, continuation }, index) => {
-        const flow = flowOf(month);
-        const tone = MOMENTUM[flow?.momentum ?? 'steady'];
-        // 제목 = 그 달에 중요한 분야 + 그 달의 성격(달마다 다름). 나에게 주는 의미는 설명 줄로(계산 리포트 기준 — 화면과 같다).
-        const theme = splitMonthTheme(flow ? k(flow.theme) : undefined);
-        const areas = (flow?.relatedAreas ?? []).map((area) => CATEGORY_LABEL[area]).join(', ');
-        const ganji = flow?.monthlyGanji ? `${toHangul(flow.monthlyGanji)}월 · ` : '';
+        // 제목 = 그 달에 중요한 분야 + 그 달의 성격(달마다 다름). 나에게 주는 의미는 설명 줄로 — 화면과 같은 구성.
+        const view = buildMonthView(flowOf(month), interpretation.monthlyFlows.find((m) => m.month === month), month);
         const lead = continuation ? undefined : [
-          `${ganji}${tone.label} 흐름${theme ? ` — 나에게는 ${theme.personal} 달입니다.` : '입니다.'}`,
+          view.lead,
           index === 0 ? '상승은 성공 보장이 아니며, 주의는 나쁜 일이 생긴다는 뜻이 아닙니다.' : '',
         ].filter(Boolean).join(' ');
         return (
           <Page key={`m-${month}-${continuation}`} no={monthStart + index} total={total} data={data} narrative>
-            <ChapterHead no="03"
-              titleLines={[areas ? `${month}월 · ${areas}` : `${month}월`, theme ? `${theme.season} 달` : `${tone.label} 흐름의 달`]}
-              lead={lead} />
+            <ChapterHead no="03" titleLines={[view.titleTop, view.titleBottom]} lead={lead} />
             {sections.map((section, i) => <DeepSection key={`${section.label}-${i}`} no={i + 1} label={section.label} text={section.text} />)}
           </Page>
         );

@@ -12,7 +12,7 @@ import type { TodayLuckyPackage, TodayLuckyNumberCircle } from './types';
 
 type Elem = '목' | '화' | '토' | '금' | '수';
 
-const ELEMENT_COLORS_MAIN: Record<Elem, string[]> = {
+export const ELEMENT_COLORS_MAIN: Record<Elem, string[]> = {
   목: ['초록색', '연두색'],
   화: ['빨강색', '진분홍색'],
   토: ['노란색', '베이지'],
@@ -37,7 +37,7 @@ const ELEMENT_NUMBERS: Record<Elem, number[]> = {
   수: [1, 6],
 };
 
-const ELEMENT_DIRECTIONS: Record<Elem, string[]> = {
+export const ELEMENT_DIRECTIONS: Record<Elem, string[]> = {
   목: ['정동', '동남'],
   화: ['정남', '동남'],
   토: ['중앙', '서남'],

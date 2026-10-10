@@ -1,5 +1,6 @@
 import type { Element } from '@/lib/saju/types';
 import type { ReportMetadata } from '@/lib/saju/report-contract';
+import type { MonthSignals } from './monthly-signals';
 import type {
   ReportEvidenceCard,
   ReportScore,
@@ -88,6 +89,10 @@ export interface YearlyMonthFlow {
   relationStep?: number | null;
   /** 2026-05-15 PR 5 — Peak/Pitfall 시각 강조. 1년 중 1 peak + 1 pitfall 까지만. */
   peakKind?: YearlyPeakKind;
+  /** 2026-10-10 — 그 달 월운 근거(십성·원국 합충·용신 적합·절기 기간). 옛 캐시에는 없다. */
+  signals?: MonthSignals;
+  /** 그 달에 채우면 좋은 기운과 그 색·방향(용신 기준). */
+  supplement?: { element: Element; colors: string[]; directions: string[] } | null;
 }
 
 export interface YearlyTimingWindow {

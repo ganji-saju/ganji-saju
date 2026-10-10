@@ -36,6 +36,7 @@ import type {
   SajuYearlyAiMonthlyFlow,
 } from '@/server/ai/saju-yearly-interpretation';
 import { toHangulDisplay } from '@/lib/saju/terminology';
+import { buildMonthView } from '@/lib/saju/yearly-month-view';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { NewYearExtrasSection } from '@/components/ai/new-year-extras-section';
@@ -415,14 +416,17 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
 
 function MonthlyFlowCard({
   flow,
+  prose,
   defaultOpen = false,
 }: {
   flow: YearlyMonthFlow;
+  prose?: SajuYearlyAiMonthlyFlow;
   defaultOpen?: boolean;
 }) {
   const momentumMeta = MOMENTUM_META[flow.momentum];
-  const areaLabel = flow.relatedAreas.map((area) => YEARLY_AREA_LABEL[area]).join(' · ');
   const MomentumIcon = momentumMeta.icon;
+  // 2026-10-10 — PDF 와 같은 6항목(yearly-month-view). 예전엔 두 줄짜리 카드 4개였다.
+  const view = buildMonthView(flow, prose, flow.month);
 
   return (
     <details
@@ -467,9 +471,9 @@ function MonthlyFlowCard({
               className="mt-2 text-[16.1px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              {toHangulDisplay(flow.summary)}
+              {view.titleBottom}
             </p>
-            <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{areaLabel}</div>
+            <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{view.titleTop} · {view.lead}</div>
           </div>
           <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-[8px] border px-2.5 text-[12.1px] font-extrabold ${momentumMeta.badgeClassName}`}>
             <MomentumIcon className="h-3 w-3" aria-hidden="true" />
@@ -479,59 +483,30 @@ function MonthlyFlowCard({
       </summary>
 
       <div className="mt-3 grid gap-2">
-        <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
-          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
-            이번 달 바로 할 일
-          </div>
-          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
-            {toHangulDisplay(flow.action)}
-          </p>
-        </div>
-        <div
-          className="rounded-[14px] border bg-white px-3.5 py-3"
-          style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
-        >
-          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            먼저 볼 질문
-          </div>
-          <p
-            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
-            style={{ wordBreak: 'keep-all' }}
+        {view.sections.map((section) => (
+          <div
+            key={section.key}
+            className={`rounded-[14px] border px-3.5 py-3 ${section.key === 'focus' ? 'yearly-tone-good' : section.key === 'caution' ? 'yearly-tone-caution' : 'bg-white'}`}
+            style={section.key === 'focus' || section.key === 'caution' ? undefined : {
+              borderColor: section.key === 'overview' ? 'var(--app-pink-line)' : 'var(--app-line)',
+              background: section.key === 'overview' ? 'var(--app-pink-soft)' : undefined,
+            }}
           >
-            {simplifySajuCopy(flow.focusQuestion)}
-          </p>
-        </div>
-        <div
-          className="rounded-[14px] border bg-white px-3.5 py-3"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            진행해볼 것
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              {section.label}
+            </div>
+            {section.paragraphs.filter(Boolean).map((paragraph) => (
+              <p key={paragraph.slice(0, 24)} className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
+                {toHangulDisplay(paragraph)}
+              </p>
+            ))}
+            {section.list?.length ? (
+              <ol className="mt-1.5 list-decimal space-y-1 pl-5 text-[15px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
+                {section.list.map((item) => <li key={item.slice(0, 24)}>{toHangulDisplay(item)}</li>)}
+              </ol>
+            ) : null}
           </div>
-          <p
-            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
-            style={{ wordBreak: 'keep-all' }}
-          >
-            {toHangulDisplay(flow.opportunity)}
-          </p>
-        </div>
-        <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
-          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
-            한 번 더 확인할 것
-          </div>
-          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
-            {toHangulDisplay(flow.caution)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <span
-          className="rounded-[12px] border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          {flow.monthlyGanji ?? `${flow.month}월`}
-        </span>
+        ))}
       </div>
 
       {flow.basis.length > 0 ? (
@@ -910,7 +885,8 @@ function YearlyMonthlySection({
 
       <div className="mt-3 grid gap-2">
         {monthlyFlows.map((flow) => (
-          <MonthlyFlowCard key={`${flow.month}-${flow.summary.slice(0, 12)}`} flow={flow} defaultOpen={flow.month === 1} />
+          <MonthlyFlowCard key={`${flow.month}-${flow.summary.slice(0, 12)}`} flow={flow}
+            prose={interpretation.monthlyFlows.find((item) => item.month === flow.month)} defaultOpen={flow.month === 1} />
         ))}
       </div>
     </section>

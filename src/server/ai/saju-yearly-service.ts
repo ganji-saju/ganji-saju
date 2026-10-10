@@ -140,7 +140,8 @@ interface CacheKeyParts {
 const YEARLY_NARRATIVE_TIMEOUT_MS = 65_000;
 const YEARLY_MONTHLY_TIMEOUT_MS = 60_000;
 const YEARLY_NARRATIVE_OUTPUT_TOKENS = 10000;
-const YEARLY_MONTHLY_OUTPUT_TOKENS = 8000;
+const YEARLY_MONTHLY_OUTPUT_TOKENS = 5000;
+const MONTHLY_CHUNKS: number[][] = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]];
 const YEARLY_NEW_YEAR_TIMEOUT_MS = 45_000;
 const YEARLY_NEW_YEAR_OUTPUT_TOKENS = 6000;
 
@@ -382,14 +383,15 @@ export async function generateYearlyInterpretation(
     recentFeedbackSummary,
     classicGrounding
   );
-  const monthlyPrompt = createYearlyInterpretationPrompt(
-    reading,
-    yearlyReport,
-    counselorId,
-    'monthly',
-    recentFeedbackSummary,
-    classicGrounding
-  );
+  // 2026-10-10 — 한 달 A4 한 쪽 분량이라 12개월을 한 번에 쓰면 시간 상한·잘림에 걸린다(실측 약 98토큰/초).
+  //   2개월씩 6번 동시에 부르고, 실패한 묶음만 그 달 기본 풀이로 채운다.
+  const monthChunks = MONTHLY_CHUNKS.map((months) => ({
+    months,
+    prompt: createYearlyInterpretationPrompt(
+      reading, yearlyReport, counselorId, 'monthly', recentFeedbackSummary, classicGrounding, { months }
+    ),
+    fallback: fallbackMonthly.filter((flow) => months.includes(flow.month)),
+  }));
 
   const newYearTask = request.includeNewYear
     ? generateNewYearExtras(reading, yearlyReport, counselorId, recentFeedbackSummary, classicGrounding)
@@ -407,14 +409,25 @@ export async function generateYearlyInterpretation(
       })
     ),
     runTimedAiStage(
-      generateAiText({
-        ...monthlyPrompt,
-        fallbackText: JSON.stringify({ monthlyFlows: fallbackMonthly }),
-        model,
-        maxOutputTokens: YEARLY_MONTHLY_OUTPUT_TOKENS,
-        timeoutMs: YEARLY_MONTHLY_TIMEOUT_MS,
-        feature: 'yearly',
-        userId: reading.userId,
+      Promise.all(monthChunks.map(async (chunk) => {
+        const result = await generateAiText({
+          ...chunk.prompt,
+          fallbackText: JSON.stringify({ monthlyFlows: chunk.fallback }),
+          model,
+          maxOutputTokens: YEARLY_MONTHLY_OUTPUT_TOKENS,
+          timeoutMs: YEARLY_MONTHLY_TIMEOUT_MS,
+          feature: 'yearly',
+          userId: reading.userId,
+        });
+        return { result, parsed: parseYearlyMonthlyFlowsText(result.text, chunk.fallback, chunk.months) };
+      })).then((chunks) => {
+        const failed = chunks.find((chunk) => chunk.result.source !== 'openai' || !chunk.parsed.ok);
+        return {
+          source: (failed ? 'fallback' : 'openai') as AiGenerationSource,
+          fallbackReason: failed ? failed.result.fallbackReason ?? 'empty_ai_response' : null,
+          errorMessage: failed ? failed.result.errorMessage ?? failed.parsed.errorMessage : null,
+          monthlyFlows: chunks.flatMap((chunk) => chunk.parsed.monthlyFlows).sort((a, b) => a.month - b.month),
+        };
       })
     ),
     newYearTask,
@@ -426,10 +439,7 @@ export async function generateYearlyInterpretation(
     narrativeResult.text,
     fallbackNarrative
   );
-  const monthlyParsed = parseYearlyMonthlyFlowsText(
-    monthlyResult.text,
-    fallbackMonthly
-  );
+  const monthlyParsed = { ok: monthlyResult.source === 'openai', monthlyFlows: monthlyResult.monthlyFlows, errorMessage: monthlyResult.errorMessage };
 
   const interpretation: SajuYearlyAiInterpretation = {
     ...mergeYearlyInterpretationSections(narrativeParsed.interpretation, monthlyParsed.monthlyFlows),
