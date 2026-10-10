@@ -8,7 +8,10 @@ import type {
   Stem,
   UserSituation,
 } from '@/lib/saju/types';
-import { ELEMENT_INFO } from '@/lib/saju/elements';
+import { ELEMENT_INFO, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
+import { PALACE, relationOf, type PillarKey } from '@/domain/saju/report/monthly-signals';
+import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
+import { ganziIndexOf } from '@/lib/saju/pdf-report-model';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 import { CHAPTER_META } from './chapter-prompts';
@@ -109,7 +112,7 @@ export function buildChapter1Input(
     fiveElements: {
       dominant: elementLabel(fiveElements.dominant),
       weakest: elementLabel(fiveElements.weakest),
-      supportElements: [], // 2026-05-19: getLuckyElementsFromSajuData 통합은 후속 PR
+      supportElements: getLuckyElementsFromSajuData(sajuData).map(elementLabel),
       distribution: {
         // 2026-05-19: SajuFiveElements.byElement[el].percentage 0~100 → 0~1 비율로
         목: (fiveElements.byElement?.목?.percentage ?? 0) / 100,
@@ -139,8 +142,10 @@ export function buildChapter1Input(
             .map(([code]) => code)
         : [],
     },
-    notableSinsals: [], // 2026-05-19: 신살 매핑은 후속 PR (sajuData 의 sinsals 구조 확인 후)
+    notableSinsals: natalSinsals(sajuData),
     natalEvidence: buildNatalReadingEvidence(sajuData),
+    natalStructure: natalStructure(sajuData),
+    luck: luckCycles(sajuData),
   };
 
   const userContext: ChapterUserContext = {
@@ -149,6 +154,7 @@ export function buildChapter1Input(
     relationshipStatus: userSituation?.relationshipStatus ?? null,
     occupation: narrowOccupation(userSituation?.occupation),
     currentConcern: narrowConcern(userSituation?.currentConcern),
+    gender: sajuData.input.gender ?? null,
   };
 
   return {
@@ -159,5 +165,55 @@ export function buildChapter1Input(
     ...(priorChapterDigests && priorChapterDigests.length > 0
       ? { priorChapterDigests }
       : {}),
+  };
+}
+
+// 2026-10-10 — 점검 B #1: 장 입력에 신살·원국 합충·대운이 빠져 "이 사람만의 차이"의 근거가 없었다.
+const PILLAR_ORDER: PillarKey[] = ['year', 'month', 'day', 'hour'];
+const PILLAR_NAME: Record<PillarKey, string> = { year: '태어난 해', month: '태어난 달', day: '태어난 날', hour: '태어난 시' };
+
+function natalPillars(sajuData: SajuDataV1 | SajuDataV2) {
+  return PILLAR_ORDER.flatMap((key) => {
+    const pillar = key === 'hour' && !sajuData.input.hourKnown ? null : sajuData.pillars[key];
+    return pillar ? [{ key, pillar }] : [];
+  });
+}
+
+function natalSinsals(sajuData: SajuDataV1 | SajuDataV2) {
+  const { pillars, dayMaster } = sajuData;
+  const hour = sajuData.input.hourKnown ? pillars.hour : null;
+  return detectComprehensiveSinsals({
+    dayMaster: dayMaster.stem,
+    yearBranch: pillars.year.branch,
+    monthBranch: pillars.month.branch,
+    dayBranch: pillars.day.branch,
+    hourBranch: hour?.branch ?? null,
+    dayGanziIndex: ganziIndexOf(pillars.day.stem, pillars.day.branch),
+  }).slice(0, 6).map((hit) => ({ name: hit.name, plainCue: hit.hint }));
+}
+
+function natalStructure(sajuData: SajuDataV1 | SajuDataV2) {
+  const list = natalPillars(sajuData);
+  const relations: Array<{ kind: string; between: string; meaning: string }> = [];
+  for (let i = 0; i < list.length; i += 1) {
+    for (let j = i + 1; j < list.length; j += 1) {
+      const kind = relationOf(list[i].pillar.branch, list[j].pillar.branch);
+      if (!kind) continue;
+      relations.push({
+        kind,
+        between: `${PILLAR_NAME[list[i].key]}·${PILLAR_NAME[list[j].key]}`,
+        meaning: `${PALACE[list[i].key]} ↔ ${PALACE[list[j].key]}`,
+      });
+    }
+  }
+  return { palaces: PALACE, relations };
+}
+
+function luckCycles(sajuData: SajuDataV1 | SajuDataV2) {
+  const ages = (start: number | null, end: number | null) => (start === null ? '나이 미산정' : `${start}~${end ?? start + 9}세`);
+  const current = sajuData.currentLuck?.currentMajorLuck;
+  return {
+    current: current ? { ganji: toKoreanGanzi(current.ganzi), ages: ages(current.startAge, current.endAge) } : null,
+    cycles: (sajuData.majorLuck ?? []).slice(0, 9).map((cycle) => ({ ganji: toKoreanGanzi(cycle.ganzi), ages: ages(cycle.startAge, cycle.endAge) })),
   };
 }

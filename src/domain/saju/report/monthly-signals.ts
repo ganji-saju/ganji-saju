@@ -46,7 +46,7 @@ export interface MonthSignals {
   focusAreas: YearlyCategoryKey[];
 }
 
-const PALACE: Record<PillarKey, string> = {
+export const PALACE: Record<PillarKey, string> = {
   year: '집안 어른·바깥 사회',
   month: '부모·직장·사회 활동',
   day: '나 자신과 배우자·연인',
@@ -72,7 +72,7 @@ const RELATION_CHECKS: Array<[BranchRelationKind, (a: string, b: string) => bool
   ['형', isBranchHyung], ['원진', isBranchWonjin], ['해', isBranchHae], ['파', isBranchPa],
 ];
 
-function relationOf(a: string, b: string): BranchRelationKind | null {
+export function relationOf(a: string, b: string): BranchRelationKind | null {
   return RELATION_CHECKS.find(([, check]) => check(a, b))?.[0] ?? null;
 }
 

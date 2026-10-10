@@ -575,6 +575,18 @@ export function ReportDocument({
                     <div key={age}><strong>{age === 0 ? '출생~9세' : age === 100 ? '100세' : `${age}~${age + 9}세`}</strong><span>{birthYear + age}년부터 · {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.age === age))}쪽</span></div>
                   ))}
                 </div>
+                {data.keyPeriods?.length ? (
+                  <div className="rp-guide-copy">
+                    <h3>인생 주요 시기</h3>
+                    {data.keyPeriods.map((period) => (
+                      <p key={`${period.year}-${period.kind}`}>
+                        <strong>{period.year}년({period.age}세) · {period.kind}</strong> — {period.reason}
+                        {' '}· {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.year === period.year))}쪽
+                      </p>
+                    ))}
+                    <p>좋은 시기는 조건이 맞물리는 해, 조심할 시기는 속도를 조절하면 좋은 해라는 뜻이며 특정 사건을 예고하지 않습니다.</p>
+                  </div>
+                ) : null}
                 <div className="rp-guide-note">{data.timeline.notes.map((note) => <p key={note}>{note}</p>)}</div>
 
                 <PageFooter page={guidePage + 1} total={totalPages} />

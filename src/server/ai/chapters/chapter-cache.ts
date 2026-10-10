@@ -7,7 +7,8 @@ import type { ChapterUserContext } from './chapter-input-types';
 
 export const CHAPTER_CACHE_TTL_DAYS = 30;
 // Bump when the chapter's content contract changes; old envelopes remain readable.
-const CHAPTER_CONTENT_VERSION = 'lifetime-natal-evidence-v4-rich';
+// v5(2026-10-10): 신살·원국 합충·대운·성별 입력 추가 + 검증기 완화 — 고정 문구로 대체됐던 장도 다시 만든다.
+const CHAPTER_CONTENT_VERSION = 'lifetime-natal-evidence-v5-structure';
 
 /**
  * 챕터 LLM 결과 캐시 키.

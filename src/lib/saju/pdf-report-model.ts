@@ -1,6 +1,7 @@
 import { hangulizeDeep } from '@/lib/saju/terminology';
 // Server-side assembly; ReportDocument imports this module only as a type.
 import { buildLifetimePdfTimeline } from '@/lib/saju/lifetime-pdf-timeline';
+import { buildLifetimeKeyPeriods } from '@/lib/saju/lifetime-key-periods';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
 import type { SajuLifetimeReport } from '@/domain/saju/report';
 import type { ReadingRecord } from '@/lib/saju/readings';
@@ -430,6 +431,8 @@ export function buildPdfModel(
     nextProducts,
     deepReading,
     timeline,
+    // 2026-10-10 — 인생 주요 시기 요약(좋은 시기·조심할 시기·대운 전환). 옛 저장본(관리자 기록)에는 없다.
+    keyPeriods: timeline.years.length ? buildLifetimeKeyPeriods(sajuData, timeline.years[0].year, targetYear) : [],
   });
 }
 
@@ -460,7 +463,7 @@ function ELEMENT_INFO_NAME(el: Element): string {
 // 60갑자 인덱스 (甲子=0). 천간 10 / 지지 12 의 최소공배수 60 주기에서 유일 해.
 const SINSAL_STEMS: Stem[] = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 const SINSAL_BRANCHES: Branch[] = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
-function ganziIndexOf(stem: Stem, branch: Branch): number {
+export function ganziIndexOf(stem: Stem, branch: Branch): number {
   const s = SINSAL_STEMS.indexOf(stem);
   const b = SINSAL_BRANCHES.indexOf(branch);
   for (let i = 0; i < 60; i += 1) {

@@ -74,6 +74,19 @@ export interface ChapterSaju {
   notableSinsals: ChapterNotableSinsal[];
   /** Engine facts, not an invitation for the model to recalculate a chart. */
   natalEvidence?: NatalReadingEvidence;
+  /**
+   * 2026-10-10 — 타고난 사주 안의 지지 관계(합·충·형 등)와 각 자리(궁)의 생활 영역.
+   *   "이 사람만의 차이"의 근거(점검 B #1). 계산값 — 모델이 다시 계산하지 않는다.
+   */
+  natalStructure?: {
+    palaces: Record<'year' | 'month' | 'day' | 'hour', string>;
+    relations: Array<{ kind: string; between: string; meaning: string }>;
+  };
+  /** 지금 대운과 앞뒤 대운(10년 단위 큰 흐름). 사건 예고가 아니라 시기 조건의 근거. */
+  luck?: {
+    current: { ganji: string; ages: string } | null;
+    cycles: Array<{ ganji: string; ages: string }>;
+  };
 }
 
 export interface ChapterUserContext {
@@ -82,6 +95,8 @@ export interface ChapterUserContext {
   relationshipStatus: 'single' | 'dating' | 'married' | 'separated' | null;
   occupation: 'employee' | 'self-employed' | 'job-seeking' | 'student' | null;
   currentConcern: 'business' | 'love' | 'wealth' | 'health' | 'relationship' | null;
+  /** 2026-10-10 — 대운 순역·배우자 별(남성 재성/여성 관성) 해석에 필요. */
+  gender?: 'male' | 'female' | null;
 }
 
 export interface ChapterPriorDigest {
