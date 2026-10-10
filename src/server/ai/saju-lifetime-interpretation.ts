@@ -10,7 +10,8 @@ import { koreanizeGanzi } from '@/lib/saju/terminology';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 // 2026-09-26 v3 — 가족 관계·학업과 배움 두 장 추가(버전이 바뀌어 기존 구매자도 다음 열람에 새로 만든다).
-export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v5-rich-reading';
+// v6(2026-10-10): 결혼·배우자·자녀 섹션 추가.
+export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v6-marriage-family';
 
 export type SajuLifetimeAiSectionKey =
   | 'coreIdentity'
@@ -18,6 +19,7 @@ export type SajuLifetimeAiSectionKey =
   | 'patternAndYongsin'
   | 'relationshipPattern'
   | 'familyPattern'
+  | 'marriageFamily'
   | 'wealthStyle'
   | 'careerDirection'
   | 'studyPath'
@@ -46,6 +48,7 @@ const SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string }> = [
   { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
   { key: 'relationshipPattern', label: '관계 패턴' },
   { key: 'familyPattern', label: '가족 관계' },
+  { key: 'marriageFamily', label: '결혼·배우자·자녀' },
   { key: 'wealthStyle', label: '재물 감각' },
   { key: 'careerDirection', label: '직업 방향' },
   { key: 'studyPath', label: '학업과 배움' },
@@ -61,6 +64,8 @@ const MAX_SECTION_LENGTH = 3200;
 const MAX_REMEMBER_LENGTH = 220;
 const MAX_SUMMARY_LENGTH = 220;
 const CORE_SECTION_KEYS = ['wealthStyle', 'careerDirection', 'relationshipPattern'] as const;
+// 2026-10-10 — 새로 넣은 섹션은 AI 가 빠뜨려도 본편 전체를 폴백시키지 않고 그 섹션만 계산 문단으로 채운다(미성년은 빈 칸).
+const OPTIONAL_SECTION_KEYS: SajuLifetimeAiSectionKey[] = ['marriageFamily'];
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
@@ -105,7 +110,7 @@ function normalizeSectionMap(value: unknown) {
     return acc;
   }, {} as Record<SajuLifetimeAiSectionKey, string>);
 
-  return SECTION_ORDER.every((entry) => sections[entry.key].length > 0)
+  return SECTION_ORDER.every((entry) => OPTIONAL_SECTION_KEYS.includes(entry.key) || sections[entry.key].length > 0)
     ? sections
     : null;
 }
@@ -248,6 +253,9 @@ function buildSectionFallback(
         report.careerDirection.recognitionStyle,
       ].join(' ');
     // 2026-09-26 — 가족·학업은 전용 계산 블록이 없어 관계·직업·대운 근거에서 조립한다(AI 가 실패했을 때만 쓰인다).
+    // 2026-10-10 — 결혼·배우자·자녀: 배우자 자리·배우자 별·자녀 자리·관계 조건 대운(계산 블록). 미성년은 빈 칸.
+    case 'marriageFamily':
+      return report.marriageFamily?.summary ?? '';
     case 'familyPattern':
       return joinDistinctSentences([
         `가족 안에서는 ${report.relationshipPattern.distanceStyle}`,
@@ -344,6 +352,9 @@ export function parseLifetimeInterpretationText(
     const keywords = normalizeStringArray(parsed.keywords, MAX_KEYWORD_LENGTH, 3, 5);
     const lifetimeRule = cleanText(parsed.lifetimeRule, MAX_RULE_LENGTH);
     const sections = normalizeSectionMap(parsed.sections);
+    for (const key of OPTIONAL_SECTION_KEYS) {
+      if (sections && !sections[key]) sections[key] = fallback.sections[key] ?? '';
+    }
     const rememberRules = normalizeStringArray(parsed.rememberRules, MAX_REMEMBER_LENGTH, 5, 6);
     const oneLineSummary = cleanText(parsed.oneLineSummary, MAX_SUMMARY_LENGTH);
 
@@ -507,6 +518,7 @@ export function createLifetimeInterpretationPrompt(
       '    "patternAndYongsin": string,',
       '    "relationshipPattern": string,',
       '    "familyPattern": string,',
+      '    "marriageFamily": string,',
       '    "wealthStyle": string,',
       '    "careerDirection": string,',
       '    "studyPath": string,',
@@ -520,6 +532,7 @@ export function createLifetimeInterpretationPrompt(
       CLASSIC_READING_INSTRUCTIONS,
       READING_SCOPE_INSTRUCTIONS.natal,
       '규칙:',
+      '- marriageFamily 는 lifetimeEvidence.marriageFamily(배우자 자리·배우자 별·자녀 자리·windows)를 근거로 ① 어떤 관계에서 편안한가 ② 가까운 관계에서 조율할 점 ③ 관계 조건이 맞물리는 대운 구간 ④ 자녀·아랫사람과의 관계 방식을 500~800자로 쓴다. 결혼·출산·이별·재혼을 예고하거나 배우자 수·외모·조건을 말하지 않는다. 결혼하지 않는 삶도 동등하게 존중하고 입력한 관계 상태를 따른다. lifetimeEvidence.marriageFamily 가 null 이면(미성년) 빈 문자열을 쓴다.',
       '- familyPattern 은 부모·배우자·자녀와 반복되는 역할과 거리감, 조율법을 쓴다. 가족 개인의 운명을 단정하지 않는다. studyPath 는 맞는 공부 방식과 배움이 열리는 대운 시기를 쓰고 합격을 단정하지 않는다.',
       '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',
       '- 명리 용어는 정관·편관·신강·신약·격국·용신처럼 정확한 한글 원어를 유지하고, 처음 등장할 때만 짧은 생활 언어 설명을 붙인다. 서로 다른 용어를 하나의 뜻으로 뭉개지 않는다. 한자와 factJson·evidenceJson 같은 구현 용어는 본문에 쓰지 않는다.',
@@ -528,8 +541,8 @@ export function createLifetimeInterpretationPrompt(
       '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 문구는 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
-      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 지정된 11개 section 키를 빠짐없이 유지한다.',
-      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 600~900자, 나머지 8개 장도 각 350~600자를 목표로 쓴다. 다른 장의 조언을 반복하지 말고 각 분야의 근거·조건·생활 장면을 설명한 뒤 JSON을 완성한다. 근거가 부족한 장은 억지로 분량을 채우지 않는다.',
+      '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 지정된 12개 section 키를 빠짐없이 유지한다.',
+      '- 분량은 재물·직업·관계 3개 핵심 장에 우선 배정한다. wealthStyle, careerDirection, relationshipPattern은 각 600~900자, 나머지 장도 각 350~600자(marriageFamily 는 500~800자)를 목표로 쓴다. 다른 장의 조언을 반복하지 말고 각 분야의 근거·조건·생활 장면을 설명한 뒤 JSON을 완성한다. 근거가 부족한 장은 억지로 분량을 채우지 않는다.',
       '- 재물 장은 ① 무엇을 어떤 조건으로 대가에 연결하는가 ② 벌어도 남지 않는 패턴은 무엇인가 ③ 큰 결정을 앞두고 어떤 조건을 비교할 것인가에 답한다. lifetimeEvidence.wealthStyle의 네 상세 필드를 근거로 사용한다.',
       '- 직업 장은 ① 어떤 역할과 환경에서 실력이 드러나는가 ② 잘하지만 소진되는 일은 무엇인가 ③ 조직·독립을 고를 때 어떤 조건이 필요한가에 답한다. 직업명 목록 대신 실제로 맡는 과정·권한·평가 조건을 비교한다.',
       '- 관계 장은 ① 편안하게 가까워지는 방식은 무엇인가 ② 표현과 기대가 어긋나는 장면은 무엇인가 ③ 오래 가는 관계를 위해 어떤 합의가 필요한가에 답한다. 입력한 현재 관계 상태만 사용한다.',
