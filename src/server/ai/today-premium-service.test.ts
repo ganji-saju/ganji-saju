@@ -230,3 +230,16 @@ test('today premium maps the same dated personal evidence and rejects determinis
     assert.equal(out, null);
   }
 });
+
+// 2026-10-10 — 점검 A #1: 결정론 결과의 계산 근거(일진 간지·점수 영역·신살·일진 메시지·시간대)를 AI 입력에 넘긴다.
+test('toTodayPremiumInterpretationInput: 일진 간지(한글)·점수 영역·시간대 근거를 넘기고 프롬프트에 싣는다', () => {
+  const { free, premium } = fixtureFreeAndPremium();
+  const dto = toTodayPremiumInterpretationInput(free, premium);
+  if (free.sajuChart?.todayGanzi) assert.ok(dto.todayGanzi && !/[㐀-鿿]/.test(dto.todayGanzi), '일진 간지는 한글');
+  if (free.iljinScore) assert.match(dto.scoreBreakdown ?? '', /가장 힘이 되는 영역 .+, 가장 부담이 되는 영역 .+/);
+  assert.equal(dto.timeWindows?.length, premium.favorableWindows.length + premium.cautionWindows.length);
+  const prompt = buildTodayPremiumPrompt(dto);
+  assert.ok(prompt.instructions.includes('900~1,300자'));
+  if (dto.todayGanzi) assert.ok(prompt.input.includes(`오늘 일진(그날의 간지): ${dto.todayGanzi}`));
+  if (dto.timeWindows?.length) assert.ok(prompt.input.includes('시간대 근거(계산값 — 이 범위만 사용)'));
+});
