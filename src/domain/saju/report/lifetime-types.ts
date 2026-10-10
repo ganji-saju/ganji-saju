@@ -1,3 +1,4 @@
+import type { LifetimeMarriageFamilySection } from './marriage-family';
 import type { ReportEvidenceCard } from './types';
 import type { ReportMetadata } from '@/lib/saju/report-contract';
 
@@ -191,6 +192,8 @@ export interface SajuLifetimeReport {
   strengthBalance: LifetimeStrengthBalanceSection;
   patternAndYongsin: LifetimePatternAndYongsinSection;
   relationshipPattern: LifetimeRelationshipPatternSection;
+  /** 2026-10-10 — 결혼·배우자·자녀(배우자 자리·배우자 별·자녀 자리·관계 조건 대운). 미성년자는 null. */
+  marriageFamily?: LifetimeMarriageFamilySection | null;
   wealthStyle: LifetimeWealthStyleSection;
   careerDirection: LifetimeCareerDirectionSection;
   healthRhythm: LifetimeHealthRhythmSection;

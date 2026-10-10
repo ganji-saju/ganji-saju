@@ -26,6 +26,7 @@ import { getCycleSipsin } from '@/lib/saju/cycle-sipsin';
 // 2026-05-19 P0d: 본문 한자 ganzi (丙申) → 한글 (병신) 변환.
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { buildSajuReport } from './build-report';
+import { buildMarriageFamily } from './marriage-family';
 import { buildYearlyReport } from './build-yearly-report';
 import { buildLifetimeCoreReadings } from './lifetime-core-readings';
 import type {
@@ -1481,6 +1482,7 @@ export function buildLifetimeReport(
   return {
     targetYear,
     pillars,
+    marriageFamily: isMinor ? null : buildMarriageFamily(sajuData, input.gender),
     cover: {
       headline: `${sajuData.pillars.day.ganzi} 일주 맞춤 깊은 사주풀이`,
       oneLineSummary: `이 사주는 ${supportLabels} 기운을 삶의 바탕으로 들일 때 실력이 가장 안정적으로 오래 갑니다.`,

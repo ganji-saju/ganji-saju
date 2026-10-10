@@ -75,6 +75,8 @@ const SECTION_META = [
   { key: 'relationshipPattern', label: '연애와 가까운 관계', tone: 'coral', chapterId: 4 },
   // 2026-09-26 — 가족·학업 장. 챕터 피드백(1~9)엔 대응 id 가 없어 카드를 그리지 않는다.
   { key: 'familyPattern', label: '가족 관계', tone: 'coral', chapterId: null },
+  // 2026-10-10 — 결혼·배우자·자녀. 미성년·옛 저장본은 본문이 비어 숨긴다(visibleSections).
+  { key: 'marriageFamily', label: '결혼·배우자·자녀', tone: 'coral', chapterId: null },
   { key: 'strengthBalance', label: '부담과 회복의 균형', tone: 'jade', chapterId: 2 },
   { key: 'patternAndYongsin', label: '내 선택을 돕는 기준', tone: 'amber', chapterId: 3 },
   { key: 'healthRhythm', label: '생활과 회복의 방식', tone: 'jade', chapterId: 7 },
@@ -192,9 +194,10 @@ function getLifetimeBasisLines(
 
 // 2026-09-26 — 가족·학업 장은 계산 블록이 따로 없다. 근거는 관계·직업 블록에서 가져오고, 제목은 장 고유 문구를 쓴다
 //   (관계 장의 headline 을 그대로 쓰면 같은 제목이 두 번 나온다).
-const DERIVED_SECTION_SOURCE = { familyPattern: 'relationshipPattern', studyPath: 'careerDirection' } as const;
+const DERIVED_SECTION_SOURCE = { familyPattern: 'relationshipPattern', studyPath: 'careerDirection', marriageFamily: 'relationshipPattern' } as const;
 const DERIVED_SECTION_HEADLINE: Record<keyof typeof DERIVED_SECTION_SOURCE, string> = {
   familyPattern: '가족 안에서 반복되는 역할과 거리',
+  marriageFamily: '배우자 자리와 자녀 자리로 본 가까운 관계',
   studyPath: '나에게 맞는 공부 방식과 배움의 때',
 };
 
@@ -1161,7 +1164,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           필요한 장으로 바로 이동합니다
         </h3>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {SECTION_META.map((section, index) => {
+          {SECTION_META.filter((item) => item.key !== 'marriageFamily' || interpretation.sections.marriageFamily).map((section, index) => {
             const palette = TONES[section.tone];
             return (
               <Link
@@ -1187,7 +1190,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       </section>
 
       {/* §9개 챕터 */}
-      {SECTION_META.map((section, index) => {
+      {SECTION_META.filter((item) => item.key !== 'marriageFamily' || interpretation.sections.marriageFamily).map((section, index) => {
         const basisLines = getLifetimeBasisLines(section.key, report);
         const palette = TONES[section.tone];
 

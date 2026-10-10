@@ -38,6 +38,7 @@ const DEEP_SECTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'studyPath', label: '학업과 배움' },
   { key: 'relationshipPattern', label: '연애와 가까운 관계' },
   { key: 'familyPattern', label: '가족 관계' },
+  { key: 'marriageFamily', label: '결혼·배우자·자녀' },
   { key: 'strengthBalance', label: '부담과 회복의 균형' },
   { key: 'patternAndYongsin', label: '내 선택을 돕는 기준' },
   { key: 'healthRhythm', label: '생활과 회복의 방식' },
@@ -381,7 +382,9 @@ export function buildPdfModel(
   };
   const sections: PdfNarrativeSection[] = DEEP_SECTION_LABELS.flatMap(({ key, label: defaultLabel }) => {
     const label = isMinor && questions[key] ? report[key as 'wealthStyle' | 'careerDirection' | 'relationshipPattern'].headline : defaultLabel;
-    const text = (fullReading.sections as Record<string, string>)[key]?.trim() ?? '';
+    // 옛 캐시 본편에는 marriageFamily 가 없다 → 계산 문단으로 채운다(미성년은 null 이라 빠진다).
+    const text = (fullReading.sections as Record<string, string>)[key]?.trim()
+      || (key === 'marriageFamily' ? report.marriageFamily?.summary ?? '' : '');
     if (!questions[key]) return text ? [{ label, text, chapter: label }] : [];
     const answers = questions[key].map(([question, answer]) => ({ label: question, text: answer, chapter: label }));
     // 정형 폴백과 정확히 같은 문장은 이미 질문의 답에 담겼다. 고유한 AI 해설은 모두 유지한다.
