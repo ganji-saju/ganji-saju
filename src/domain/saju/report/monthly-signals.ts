@@ -100,6 +100,23 @@ export function monthLuckPeriod(year: number, month: number): string | null {
   }
 }
 
+export type LuckGanjiAnalysis = Pick<MonthSignals, 'stemTenGod' | 'branchTenGod' | 'tenGodTheme' | 'natalRelations' | 'yongsinFit'>;
+
+/** 운(세운·월운) 간지 하나를 일간·원국·용신에 비춰 읽는다 — 월운과 세운이 같은 규칙을 쓴다. */
+export function analyzeLuckGanji(input: {
+  ganji: string | null;
+  dayMasterStem: Stem;
+  pillars: SajuPillars;
+  yongsin: SajuYongsin | null | undefined;
+}): LuckGanjiAnalysis {
+  const signals = computeMonthSignals({
+    year: 2000, month: 1, monthlyGanji: input.ganji, yearlyGanji: null,
+    dayMasterStem: input.dayMasterStem, pillars: input.pillars, yongsin: input.yongsin, fallbackAreas: [],
+  });
+  const { stemTenGod, branchTenGod, tenGodTheme, natalRelations, yongsinFit } = signals;
+  return { stemTenGod, branchTenGod, tenGodTheme, natalRelations, yongsinFit };
+}
+
 export function computeMonthSignals(input: {
   year: number;
   month: number;
@@ -169,24 +186,30 @@ const RELATION_PLAIN: Record<BranchRelationKind, string> = {
   파: '계획이 한 번 깨졌다 다시 맞춰지는',
 };
 
-const FIT_PLAIN: Record<MonthSignals['yongsinFit'], string> = {
-  support: '내 사주에 필요한 기운이 들어오는 달이라 힘을 쓰기 좋습니다.',
-  burden: '내 사주에 이미 넘치는 기운이 더해지는 달이라 속도를 조절하는 편이 좋습니다.',
-  mixed: '필요한 기운과 부담되는 기운이 함께 들어오는 달이라 일을 골라서 쓰는 편이 좋습니다.',
-  neutral: '내 사주의 균형을 크게 흔들지 않는 달이라 하던 흐름을 이어가기 좋습니다.',
+const FIT_PLAIN: Record<MonthSignals['yongsinFit'], (unit: string) => string> = {
+  support: (unit) => `내 사주에 필요한 기운이 들어오는 ${unit}라 힘을 쓰기 좋습니다.`,
+  burden: (unit) => `내 사주에 이미 넘치는 기운이 더해지는 ${unit}라 속도를 조절하는 편이 좋습니다.`,
+  mixed: (unit) => `필요한 기운과 부담되는 기운이 함께 들어오는 ${unit}라 일을 골라서 쓰는 편이 좋습니다.`,
+  neutral: (unit) => `내 사주의 균형을 크게 흔들지 않는 ${unit}라 하던 흐름을 이어가기 좋습니다.`,
 };
 
 /** 월운 근거를 쉬운 문장으로(명리 용어는 괄호로 남긴다). 한자 없음 — 간지는 호출부가 한글로 넘긴다. */
-export function describeMonthSignals(signals: MonthSignals, ganjiLabel: string | null): string[] {
+export function describeMonthSignals(
+  signals: Pick<MonthSignals, 'stemTenGod' | 'branchTenGod' | 'tenGodTheme' | 'natalRelations' | 'yongsinFit'>,
+  ganjiLabel: string | null,
+  /** 월운이면 '달', 세운이면 '해'. */
+  unit: '달' | '해' = '달'
+): string[] {
   const lines: string[] = [];
+  const [suffix, self, that] = unit === '달' ? ['월은', '이달은', '그 달'] : ['년은', '올해는', '올해'];
   if (signals.stemTenGod && signals.tenGodTheme) {
     const gods = [signals.stemTenGod, signals.branchTenGod].filter((g, i, all) => g && all.indexOf(g) === i).join('·');
-    lines.push(`${ganjiLabel ? `${ganjiLabel}월은 ` : '이달은 '}나에게 ${gods} 자리의 기운이 들어와 ${signals.tenGodTheme}이 앞에 나옵니다.`);
+    lines.push(`${ganjiLabel ? `${ganjiLabel}${suffix} ` : `${self} `}나에게 ${gods} 자리의 기운이 들어와 ${signals.tenGodTheme}이 앞에 나옵니다.`);
   }
   const strongest = signals.natalRelations[0];
   if (strongest) {
-    lines.push(`그 달 글자가 내 사주의 ${strongest.palace} 자리와 ${RELATION_PLAIN[strongest.kind]} 관계(${strongest.kind})라, 이 영역에서 변화가 먼저 느껴질 수 있습니다.`);
+    lines.push(`${that} 글자가 내 사주의 ${strongest.palace} 자리와 ${RELATION_PLAIN[strongest.kind]} 관계(${strongest.kind})라, 이 영역에서 변화가 먼저 느껴질 수 있습니다.`);
   }
-  lines.push(FIT_PLAIN[signals.yongsinFit]);
+  lines.push(FIT_PLAIN[signals.yongsinFit](unit));
   return lines;
 }

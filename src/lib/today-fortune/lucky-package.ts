@@ -29,7 +29,7 @@ const ELEMENT_HEX: Record<Elem, string> = {
 };
 
 // 河圖洛書 수리: 1·6=水, 2·7=火, 3·8=木, 4·9=金, 5·10=土.
-const ELEMENT_NUMBERS: Record<Elem, number[]> = {
+export const ELEMENT_NUMBERS: Record<Elem, number[]> = {
   목: [3, 8],
   화: [2, 7],
   토: [5, 10],

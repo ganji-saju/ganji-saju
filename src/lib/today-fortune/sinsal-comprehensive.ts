@@ -38,7 +38,7 @@ interface IljinInput {
 }
 
 // 일간별 천을귀인 지지.
-const CHEONEUL_GWIIN: Record<Stem, Branch[]> = {
+export const CHEONEUL_GWIIN: Record<Stem, Branch[]> = {
   甲: ['丑', '未'], 戊: ['丑', '未'], 庚: ['丑', '未'],
   乙: ['子', '申'], 己: ['子', '申'],
   丙: ['亥', '酉'], 丁: ['亥', '酉'],
@@ -146,7 +146,7 @@ function isGwimun(a: string, b: string): boolean {
 }
 
 // 띠 원칙 삼재 들어오는 3년 지지.
-const SAMJAE: Record<string, Branch[]> = {
+export const SAMJAE: Record<string, Branch[]> = {
   申: ['寅', '卯', '辰'], 子: ['寅', '卯', '辰'], 辰: ['寅', '卯', '辰'],
   亥: ['巳', '午', '未'], 卯: ['巳', '午', '未'], 未: ['巳', '午', '未'],
   寅: ['申', '酉', '戌'], 午: ['申', '酉', '戌'], 戌: ['申', '酉', '戌'],

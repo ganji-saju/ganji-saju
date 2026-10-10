@@ -10,8 +10,8 @@ import type { ReadingRecord } from '@/lib/saju/readings';
 import { describeMonthSignals } from '@/domain/saju/report/monthly-signals';
 import { buildFallbackMonthlyFlows, MONTHLY_AREA_KEYS, type MonthlyAreaKey } from './yearly-monthly-fallback';
 
-// v10(2026-10-10): 월별 6항목·월운 근거·2개월 분할 생성. 버전이 바뀌면 기존 구매자도 다음 열람 때 새로 만든다(사용자 결정).
-export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v10-monthly-detail';
+// v11(2026-10-10): 총론에 세운 근거 팩(세운 십성·원국 합충·대운·삼재·귀인). v10: 월별 6항목·월운 근거·2개월 분할 생성. 버전이 바뀌면 기존 구매자도 다음 열람 때 새로 만든다(사용자 결정).
+export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v11-year-signals';
 
 const YEARLY_CATEGORY_ORDER: YearlyCategoryKey[] = [
   'work',
@@ -558,6 +558,7 @@ export function buildFallbackYearlyInterpretation(
   return dedupeSentencesDeep({
     opening: [
       introPrefix,
+      ...(report.yearSignals?.summary ?? []),
       report.overview.summary,
       `${report.firstHalf.summary} ${report.secondHalf.summary}`,
       `올해는 ${report.annualContext.yearGanji} 흐름과 ${
@@ -838,6 +839,8 @@ function createNarrativeGrounding(
     yearlyEvidence: {
       computation: report.computation,
       annualContext: report.annualContext,
+      // 2026-10-10 — 세운 십성·원국 합충·용신 적합·대운 관계·삼재·귀인 달(쉬운 문장 summary 포함).
+      yearSignals: report.yearSignals ?? null,
       overview: report.overview,
       coreKeywords: report.coreKeywords,
       firstHalf: report.firstHalf,
@@ -996,7 +999,8 @@ export function createYearlyInterpretationPrompt(
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
       'JSON 스키마:',
       schemaLine,
-      'opening은 제목 없이 바로 시작되는 첫 문단이며, 흡입력 있게 시작해야 합니다.',
+      'opening은 제목 없이 바로 시작되는 첫 문단이며, 흡입력 있게 시작해야 합니다. 8~10문장(700~1,000자)으로, yearlyEvidence.yearSignals 의 근거(올해 기운이 나에게 어떤 자리인지, 타고난 사주의 어느 자리와 맞물리거나 부딪히는지, 필요한 기운인지, 지금 대운과의 관계)를 생활 장면으로 풀어 한 해의 큰 그림을 그립니다.',
+      'yearSignals.samjae 가 있으면 opening 이나 cautionPeriods 에서 한 번만 다루고, "옛 풍습으로 보는 조심할 때"라는 뜻으로만 씁니다. 불행·사고를 예고하지 않습니다. yearSignals.gwiinMonths 가 있으면 goodPeriods 에서 "도움을 청하기 좋은 달"로 연결합니다. 행운 색·숫자·방향은 본문에서 다루지 않습니다(화면이 따로 보여 줌).',
       'keywords는 3~5개입니다. 각 항목은 한 해의 핵심 키워드와 그 이유를 함께 담습니다.',
       'firstHalf와 secondHalf는 각각 5~7문장으로 근거와 대비되는 상황을 설명하고, 기회와 리스크와 첫 행동이 겹치지 않게 나눕니다.',
       'categories의 6개 분야는 각 분야마다 "질문의 답 / 확인된 연간 근거 / 유리한 조건과 부담 조건 / 생활 선택"을 7~10개의 짧은 문장(400~650자 목표)으로 설명합니다. 분야마다 다른 근거와 장면을 사용하고 근거가 없으면 보류합니다.',

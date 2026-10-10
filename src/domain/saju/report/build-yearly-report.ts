@@ -26,6 +26,7 @@ import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortun
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import { ELEMENT_COLORS_MAIN, ELEMENT_DIRECTIONS } from '@/lib/today-fortune/lucky-package';
 import { computeMonthSignals } from './monthly-signals';
+import { computeYearSignals } from './year-signals';
 import type {
   SajuYearlyReport,
   YearlyActionGuide,
@@ -1064,6 +1065,16 @@ export function buildYearlyReport(
   // 2026-05-15 PR 5 — Peak/Pitfall 마킹. 1년 중 가장 흐름이 좋은 'rise' 1개 + 가장
   // 흔들리는 'caution' 1개 선택 (없으면 마킹 X). 동률은 가장 빠른 달 우선.
   markPeakAndPitfall(monthlyFlows);
+  // 2026-10-10 — 신년 총론 근거 팩(세운 십성·원국 합충·대운 관계·삼재·귀인 달·행운).
+  const yearSignals = computeYearSignals({
+    yearGanji: targetData.currentLuck?.saewoon?.ganzi ?? annualContext.yearGanji,
+    majorLuckGanji: targetData.currentLuck?.currentMajorLuck?.ganzi ?? null,
+    dayMasterStem: targetData.dayMaster.stem,
+    pillars: targetData.pillars,
+    yongsin: targetData.yongsin,
+    luckyElements: annualContext.supportElements,
+    monthlyGanji: monthlyFlows.map((flow) => ({ month: flow.month, ganji: flow.monthlyGanji })),
+  });
   const firstHalf = createHalfFlow(
     'firstHalf',
     monthlyFlows.filter((flow) => flow.month <= 6),
@@ -1080,6 +1091,7 @@ export function buildYearlyReport(
     yearLabel: `${targetYear}년 ${annualContext.yearGanji}`,
     computation: createComputationMeta(targetYear, timezone),
     annualContext,
+    yearSignals,
     overview: createOverview(annualContext, reports, targetData),
     coreKeywords: createYearlyKeywords(annualContext, targetData),
     firstHalf,
