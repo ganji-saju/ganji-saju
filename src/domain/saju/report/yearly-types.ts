@@ -1,6 +1,7 @@
 import type { Element } from '@/lib/saju/types';
 import type { ReportMetadata } from '@/lib/saju/report-contract';
 import type { MonthSignals } from './monthly-signals';
+import type { YearSignals } from './year-signals';
 import type {
   ReportEvidenceCard,
   ReportScore,
@@ -140,6 +141,8 @@ export interface SajuYearlyReport {
   yearLabel: string;
   computation: YearlyComputationMeta;
   annualContext: YearlyFlowContext;
+  /** 2026-10-10 — 신년 총론 근거 팩. 옛 캐시 리포트에는 없다(리포트는 매번 계산이라 실제로는 항상 있음). */
+  yearSignals?: YearSignals;
   overview: YearlyOverviewBlock;
   coreKeywords: YearlyKeyword[];
   firstHalf: YearlyHalfFlow;

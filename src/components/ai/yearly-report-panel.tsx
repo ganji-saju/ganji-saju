@@ -36,7 +36,7 @@ import type {
   SajuYearlyAiMonthlyFlow,
 } from '@/server/ai/saju-yearly-interpretation';
 import { toHangulDisplay } from '@/lib/saju/terminology';
-import { buildMonthView } from '@/lib/saju/yearly-month-view';
+import { buildMonthView, buildYearPoints } from '@/lib/saju/yearly-month-view';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { NewYearExtrasSection } from '@/components/ai/new-year-extras-section';
@@ -411,6 +411,26 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
         </p>
       </section>
     </div>
+  );
+}
+
+// 2026-10-10 — 올해의 사주 포인트(계산 근거). PDF 와 같은 항목(yearly-month-view.buildYearPoints).
+function YearPointsCard({ points }: { points: Array<{ label: string; value: string }> }) {
+  if (!points.length) return null;
+  return (
+    <section className="rounded-[18px] border bg-white p-5" style={{ borderColor: 'var(--app-line)' }}>
+      <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        올해의 사주 포인트
+      </div>
+      <dl className="mt-3 grid gap-2">
+        {points.map((point) => (
+          <div key={point.label} className="rounded-[12px] border px-3.5 py-2.5" style={{ borderColor: 'var(--app-line)' }}>
+            <dt className="text-[12.6px] font-extrabold text-[var(--app-copy-muted)]">{point.label}</dt>
+            <dd className="mt-0.5 text-[15px] leading-[1.6] text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>{point.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -1350,6 +1370,8 @@ export default function YearlyReportPanel({ slug, targetYear, mode = 'default' }
             </p>
             <div className="mt-3 space-y-2">{renderReadingParagraphs(interpretation.opening)}</div>
           </article>
+
+          <YearPointsCard points={buildYearPoints(data.report?.yearSignals)} />
 
           <YearlyVisualMap report={data.report} />
 

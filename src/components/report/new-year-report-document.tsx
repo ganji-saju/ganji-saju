@@ -8,7 +8,7 @@ import { PDF_ELEMENT_COLORS } from '@/lib/saju/pdf-report-maps';
 import { paginatePdfNarrative, type PdfNarrativeSection } from '@/lib/saju/pdf-report-pages';
 import type { PdfReportModel } from '@/lib/saju/pdf-report-model';
 import { koreanizeGanzi } from '@/lib/saju/terminology';
-import { buildMonthView, monthSectionText } from '@/lib/saju/yearly-month-view';
+import { buildMonthView, buildYearPoints, monthSectionText } from '@/lib/saju/yearly-month-view';
 import type { SajuYearlyReport } from '@/domain/saju/report';
 import type {
   NewYearHighlightCategory,
@@ -119,7 +119,10 @@ export function NewYearReportDocument({
   const yearGanji = koreanizeGanzi(report.annualContext.yearGanji);
 
   // 총론·분야별 풀이는 길이가 모델마다 달라 고정 쪽에 담으면 넘친다 → 평생 PDF 와 같은 쪽 나눔.
+  // 2026-10-10 — 올해의 사주 포인트(계산 근거 — 화면과 같은 항목)를 총론 앞에 둔다.
+  const yearPoints = buildYearPoints(report.yearSignals);
   const narrativeSections: PdfNarrativeSection[] = [
+    ...(yearPoints.length ? [{ label: '올해의 사주 포인트', text: yearPoints.map((point) => `${point.label} — ${point.value}`).join('\n\n'), chapter: NARRATIVE_CHAPTER }] : []),
     { label: `${year}년 총론`, text: k(interpretation.opening), chapter: NARRATIVE_CHAPTER },
     ...BASE_CATEGORIES.map((key) => ({ label: CATEGORY_LABEL[key], text: k(interpretation.categories[key]), chapter: NARRATIVE_CHAPTER })),
     ...(extras
@@ -129,13 +132,8 @@ export function NewYearReportDocument({
         ]
       : []),
   ];
-  const narrativePages = [
-    narrativeSections.slice(0, 1),
-    narrativeSections.slice(1, 3),
-    narrativeSections.slice(3, 5),
-    narrativeSections.slice(5, 7),
-    narrativeSections.slice(7),
-  ].filter((sections) => sections.length).flatMap((sections) => paginateWholeSections(sections));
+  // 2026-10-10 — 인쇄는 이어 흘리므로 강제 묶음(1·2·2·2…) 대신 분량으로만 나눈다.
+  const narrativePages = paginateWholeSections(narrativeSections);
   const halves = [
     { label: '상반기 먼저 볼 것', text: k(interpretation.firstHalf) },
     { label: '하반기 먼저 볼 것', text: k(interpretation.secondHalf) },

@@ -148,7 +148,7 @@ test('createYearlyInterpretationPrompt grounds narrative and monthly passes on y
   const narrativeGrounding = JSON.parse(narrativePrompt.input) as Record<string, unknown>;
   const monthlyGrounding = JSON.parse(monthlyPrompt.input) as Record<string, unknown>;
 
-  assert.equal(getYearlyInterpretationPromptVersion('male'), 'saju-yearly-interpret-v10-monthly-detail-male');
+  assert.equal(getYearlyInterpretationPromptVersion('male'), 'saju-yearly-interpret-v11-year-signals-male');
   assert.match(narrativePrompt.instructions, /한 해 흐름을 쉽게 이해하도록 정리하는 생활 조언 에디터/);
   assert.match(narrativePrompt.instructions, /남선생/);
   assert.match(monthlyPrompt.instructions, /monthlyFlows만 작성/);
