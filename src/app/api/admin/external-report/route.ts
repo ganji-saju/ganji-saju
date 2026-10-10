@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase/server';
 import { logAdminAccess } from '@/lib/admin/access-log';
-import { generateExternalReport, parseExternalReportRequest } from '@/lib/admin/external-report';
+import { generateExternalNewYearReport, generateExternalReport, parseExternalReportRequest } from '@/lib/admin/external-report';
 import { saveExternalReport } from '@/lib/admin/external-report-history';
 
 export const runtime = 'nodejs';
@@ -51,7 +51,9 @@ export async function POST(req: NextRequest) {
   const token = Symbol();
   running.set(check.userId, { token, expiresAt: Date.now() + maxDuration * 1000 });
   try {
-    const result = await generateExternalReport(parsed.input, { signal: req.signal });
+    const result = parsed.kind === 'new-year'
+      ? await generateExternalNewYearReport(parsed.input, { signal: req.signal })
+      : await generateExternalReport(parsed.input, { signal: req.signal });
     req.signal.throwIfAborted();
     const saved = await saveExternalReport({ actorId: check.userId, birth: parsed.birth, report: result });
     await logAdminAccess({
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
       actorRole: check.role,
       action: 'generate_external_report',
       targetUser: null,
-      meta: { reportNo: result.data.reportNo, generationSource: result.generationSource, recordId: saved.id },
+      meta: { kind: parsed.kind, reportNo: result.data.reportNo, generationSource: result.generationSource, recordId: saved.id },
     });
     return json({ ok: true, ...result, recordId: saved.id, createdAt: saved.createdAt });
   } catch {

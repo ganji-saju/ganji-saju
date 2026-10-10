@@ -20,7 +20,7 @@ export default async function ExternalReportPage() {
   return (
     <AdminPage
       title="외부 주문 PDF 생성"
-      description="스마트스토어 등 외부 구매자의 깊은 사주풀이를 생성하고 PDF로 저장합니다."
+      description="스마트스토어 등 외부 구매자의 깊은 사주풀이 또는 2027 신년운세를 생성하고 PDF로 저장합니다."
       className="external-report-workspace"
     >
       <ExternalReportClient />

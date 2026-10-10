@@ -7,7 +7,7 @@ import ExternalReportHistoryPage from './page';
 import SavedExternalReportPage from './[id]/page';
 import { HistoryPrintButton } from './history-print-button';
 
-const mocks = vi.hoisted(() => ({ guard: vi.fn(), list: vi.fn(), get: vi.fn(), report: vi.fn() }));
+const mocks = vi.hoisted(() => ({ guard: vi.fn(), list: vi.fn(), get: vi.fn(), report: vi.fn(), newYear: vi.fn() }));
 vi.mock('@/lib/admin-auth', () => ({ getCurrentAdminRole: mocks.guard }));
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({})) }));
 vi.mock('@/lib/admin/external-report-history', () => ({ listExternalReports: mocks.list, getExternalReport: mocks.get }));
@@ -17,6 +17,9 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('@/components/report/report-document', () => ({
   ReportDocument: (props: unknown) => { mocks.report(props); return <article>저장된 보고서</article>; },
+}));
+vi.mock('@/components/report/new-year-report-document', () => ({
+  NewYearReportDocument: (props: unknown) => { mocks.newYear(props); return <article>저장된 신년운세</article>; },
 }));
 
 const saved = {
@@ -46,6 +49,7 @@ beforeEach(() => {
   mocks.list.mockReset().mockResolvedValue({ items: [saved], hasMore: true, page: 2 });
   mocks.get.mockReset().mockResolvedValue(saved);
   mocks.report.mockReset();
+  mocks.newYear.mockReset();
   fontsDescriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
 });
 
@@ -115,6 +119,25 @@ describe('관리자 PDF 생성 기록', () => {
     for (const cls of ['external-report-workspace', 'external-report-controls', 'external-report-preview']) expect(html).toContain(cls);
   });
 
+  it('신년운세 기록은 종류를 표시하고 저장된 신년운세 문서·인쇄 파일명으로 다시 연다', async () => {
+    const newYear = {
+      ...saved, kind: 'new-year', reportNo: 'GS-EXT-NY27-20261010-ABCDEF12',
+      report: { ...saved.report, kind: 'new-year', year: 2027, report: { targetYear: 2027 }, interpretation: { opening: '저장된 신년 풀이' } },
+    };
+    mocks.list.mockResolvedValue({ items: [newYear, { ...saved, kind: 'lifetime' }], hasMore: false, page: 1 });
+    const list = renderToStaticMarkup(await ExternalReportHistoryPage({ searchParams: Promise.resolve({}) }));
+    expect(list).toContain('2027 신년운세');
+    expect(list).toContain('깊은 사주풀이');
+    mocks.get.mockResolvedValue(newYear);
+    const html = renderToStaticMarkup(await SavedExternalReportPage({ params: Promise.resolve({ id: saved.id }) }));
+    expect(mocks.report).not.toHaveBeenCalled();
+    expect(mocks.newYear).toHaveBeenCalledWith({
+      data: newYear.report.data, report: newYear.report.report, interpretation: newYear.report.interpretation,
+      issuedAt: newYear.report.issuedAt, year: 2027,
+    });
+    expect(html).toContain('테스트고객님의 2027 신년운세');
+  });
+
   it('상세 조회 장애를 404로 숨기지 않고 찾을 수 없는 기록만 404로 처리한다', async () => {
     mocks.get.mockRejectedValueOnce(new Error('private-db-failure'));
     const html = renderToStaticMarkup(await SavedExternalReportPage({ params: Promise.resolve({ id: saved.id }) }));
@@ -142,6 +165,17 @@ describe('관리자 PDF 생성 기록', () => {
     expect(printedTitle).toBe('간지사주_깊은사주풀이_홍길동');
     expect(document.title).toBe('관리자 기록');
     expect(host.querySelector('button')!.disabled).toBe(false);
+  });
+
+  it('신년운세 기록은 신년운세 파일명으로 인쇄한다', async () => {
+    let printedTitle = '';
+    vi.spyOn(window, 'print').mockImplementation(() => { printedTitle = document.title; });
+    host = document.createElement('div');
+    document.body.append(host);
+    root = createRoot(host);
+    await act(async () => root!.render(<HistoryPrintButton subjectName="테스트고객" kind="new-year" year={2027} />));
+    await act(async () => host!.querySelector('button')!.click());
+    expect(printedTitle).toBe('간지사주_2027신년운세_테스트고객');
   });
 
   it('대기 중 다른 페이지로 이동하면 늦은 인쇄를 실행하지 않는다', async () => {

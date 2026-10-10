@@ -57,7 +57,7 @@ describe('external report history persistence', () => {
     expect(result.items).toHaveLength(20);
     expect(result.items[0]).toEqual({
       id: 'record-0', createdAt: row.created_at, reportNo: row.report_no,
-      subjectName: '구매자', birth, generationSource: 'fallback',
+      subjectName: '구매자', birth, generationSource: 'fallback', kind: 'lifetime',
     });
     expect(query.select).toHaveBeenCalledWith('id,created_at,report_no,subject_name,birth_input,generation_source');
     expect(query.order.mock.calls).toEqual([['created_at', { ascending: false }], ['id', { ascending: false }]]);

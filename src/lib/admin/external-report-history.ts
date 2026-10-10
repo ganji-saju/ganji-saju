@@ -1,6 +1,6 @@
 import 'server-only';
 import { createServiceClient } from '@/lib/supabase/server';
-import type { ExternalReportRequest, ExternalReportResult } from './external-report';
+import { isNewYearReportNo, type ExternalReportKind, type ExternalReportRequest, type ExternalReportSnapshot } from './external-report';
 
 export interface ExternalReportHistoryItem {
   id: string;
@@ -9,10 +9,11 @@ export interface ExternalReportHistoryItem {
   subjectName: string;
   birth: ExternalReportRequest;
   generationSource: 'openai' | 'fallback';
+  kind: ExternalReportKind;
 }
 
 export interface SavedExternalReport extends ExternalReportHistoryItem {
-  report: ExternalReportResult;
+  report: ExternalReportSnapshot;
 }
 
 interface HistoryRow {
@@ -22,7 +23,7 @@ interface HistoryRow {
   subject_name: string;
   birth_input: ExternalReportRequest;
   generation_source: 'openai' | 'fallback';
-  snapshot?: ExternalReportResult;
+  snapshot?: ExternalReportSnapshot;
 }
 
 const TABLE = 'admin_external_reports';
@@ -33,12 +34,13 @@ function historyItem(row: HistoryRow): ExternalReportHistoryItem {
   return {
     id: row.id, createdAt: row.created_at, reportNo: row.report_no,
     subjectName: row.subject_name, birth: row.birth_input, generationSource: row.generation_source,
+    kind: isNewYearReportNo(row.report_no) ? 'new-year' : 'lifetime',
   };
 }
 
 /** 호출하는 페이지/API에서 최고 관리자 확인 후 사용한다. 일반 클라이언트는 RLS로 차단한다. */
 export async function saveExternalReport({ actorId, birth, report }: {
-  actorId: string; birth: ExternalReportRequest; report: ExternalReportResult;
+  actorId: string; birth: ExternalReportRequest; report: ExternalReportSnapshot;
 }): Promise<{ id: string; createdAt: string }> {
   const service = await createServiceClient();
   const { data, error } = await service.from(TABLE).insert({
@@ -77,5 +79,8 @@ export async function getExternalReport(id: string): Promise<SavedExternalReport
   if (!data) return null;
   const row = data as HistoryRow;
   if (!row.snapshot?.data || !row.snapshot.issuedAt) throw new Error('external_report_snapshot_invalid');
+  if (row.snapshot.kind === 'new-year' && (!row.snapshot.report || !row.snapshot.interpretation)) {
+    throw new Error('external_report_snapshot_invalid');
+  }
   return { ...historyItem(row), report: row.snapshot };
 }

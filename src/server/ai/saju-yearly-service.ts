@@ -12,7 +12,7 @@ import {
 } from '@/lib/counselors';
 import { getUserProfileById } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
-import { isReadingId, resolveReading } from '@/lib/saju/readings';
+import { isReadingId, resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { buildSajuReportRuntimeMetadata, type SajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import {
@@ -68,6 +68,8 @@ export interface GenerateYearlyInterpretationRequest {
   includeNewYear?: boolean;
   /** 테스트 주입용 캐시. 기본은 ai_yearly_interpretations 테이블. */
   cacheStore?: YearlyCacheStore;
+  /** DB에 없는 임시 사주(관리자 외부 주문 PDF). 주면 resolveReading 을 건너뛴다. */
+  readingRecord?: ReadingRecord | null;
 }
 
 type CacheWriteInput = Parameters<typeof writeCachedInterpretation>[0];
@@ -280,7 +282,7 @@ async function generateNewYearExtras(
 export async function generateYearlyInterpretation(
   request: GenerateYearlyInterpretationRequest
 ): Promise<YearlyInterpretationResponsePayload | null> {
-  const reading = await resolveReading(request.readingIdentifier);
+  const reading = request.readingRecord ?? (await resolveReading(request.readingIdentifier));
   if (!reading) return null;
 
   const startedAt = Date.now();
