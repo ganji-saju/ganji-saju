@@ -1,6 +1,6 @@
 import { hangulizeDeep } from '@/lib/saju/terminology';
 // Server-side assembly; ReportDocument imports this module only as a type.
-import { buildLifetimePdfTimeline } from '@/lib/saju/lifetime-pdf-timeline';
+import { buildLifetimePdfTimeline, forwardLifetimeTimeline } from '@/lib/saju/lifetime-pdf-timeline';
 import { buildLifetimeKeyPeriods } from '@/lib/saju/lifetime-key-periods';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
 import type { SajuLifetimeReport } from '@/domain/saju/report';
@@ -295,7 +295,7 @@ export function buildPdfModel(
   );
   const traits = buildPersonalityTraits(dayElement, elementCounts);
 
-  const timeline = buildLifetimePdfTimeline(reading, report, targetYear);
+  const timeline = forwardLifetimeTimeline(buildLifetimePdfTimeline(reading, report, targetYear), targetYear);
 
   // ── 분야별 종합 (P5) ─────────────────────────────
   const { wealthStyle: wealth, careerDirection: career, relationshipPattern: relationship } = report;
@@ -435,7 +435,7 @@ export function buildPdfModel(
     deepReading,
     timeline,
     // 2026-10-10 — 인생 주요 시기 요약(좋은 시기·조심할 시기·대운 전환). 옛 저장본(관리자 기록)에는 없다.
-    keyPeriods: timeline.years.length ? buildLifetimeKeyPeriods(sajuData, timeline.years[0].year, targetYear) : [],
+    keyPeriods: buildLifetimeKeyPeriods(sajuData, reading.input.year, targetYear),
   });
 }
 

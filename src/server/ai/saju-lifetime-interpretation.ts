@@ -1,3 +1,4 @@
+import { forwardMajorLuckCycles } from '@/domain/saju/report/build-lifetime-report';
 import { dedupeSentencesDeep } from '@/lib/saju/dedupe-sentences';
 import { READING_SCOPE_INSTRUCTIONS, CLASSIC_READING_INSTRUCTIONS, type ClassicReadingGrounding } from '@/server/classics/reading-grounding';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
@@ -280,7 +281,7 @@ function buildSectionFallback(
       return [
         withOpener(report.majorLuckTimeline.summary),
         report.majorLuckTimeline.currentMeaning,
-        ...report.majorLuckTimeline.cycles
+        ...forwardMajorLuckCycles(report.majorLuckTimeline.cycles)
           .filter((cycle) => cycle.ganzi !== '대운 미산정')
           .slice(0, 3)
           .map((cycle) => `${cycle.ageLabel} ${cycle.ganzi} 흐름은 ${cycle.phase} 쪽으로 읽고 ${cycle.summary}`),
@@ -488,7 +489,8 @@ function createGrounding(
       },
     },
     kasiComparison: record.kasiComparison,
-    lifetimeEvidence: report,
+    // 2026-10-11 — 지나온 대운은 근거에서 뺀다(지금부터 앞으로만 풀이).
+    lifetimeEvidence: { ...report, majorLuckTimeline: { ...report.majorLuckTimeline, cycles: forwardMajorLuckCycles(report.majorLuckTimeline.cycles) } },
   };
 }
 
@@ -539,6 +541,7 @@ export function createLifetimeInterpretationPrompt(
       '- 기둥·자리 이름(연지·월지·일지·시지·연주·일주 등)은 쓰지 않고 그 자리의 뜻으로 바꿔 쓴다: 태어난 해 자리=집안 어른·바깥 사회, 태어난 달 자리=부모·직장·사회 활동, 태어난 날 자리=나 자신과 배우자·연인, 태어난 시 자리=자녀·아랫사람·앞으로의 계획. "원국"은 "타고난 사주"로 쓴다.',
       '- 계산 과정, 원칙 설명, 점수 설명을 반복하지 말고 결론, 조심할 패턴, 생활에서 적용할 선택을 먼저 쓴다.',
       '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
+      '- 지나온 시기는 다루지 않는다(사용자 공통 의견: "지금부터 앞으로가 궁금하다"). 대운·연도·시기는 지금 대운과 앞으로의 것만 쓰고, "어릴 때는·젊은 시절에는"처럼 지난 나이를 회고하는 문장을 쓰지 않는다. 타고난 성향은 지금과 앞으로의 선택에 어떻게 쓰이는지로 설명한다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 문구는 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
       '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다. 지정된 12개 section 키를 빠짐없이 유지한다.',
