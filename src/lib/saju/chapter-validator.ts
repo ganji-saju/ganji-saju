@@ -120,7 +120,10 @@ const GYEOL_STANDALONE_PATTERN =
  * 한 문장 길이 한도 — 65자 (60자 안팎 spec 의 5자 buffer).
  *   문장 분리는 마침표/물음표/느낌표 + 줄바꿈 원칙.
  */
-const SENTENCE_LENGTH_MAX = 65;
+// 2026-10-10 — 65 → 120. 운영 재현: 평생 1~3장이 70~110자 문장 하나 때문에 세 번 모두 폐기 → 고정 문구로 대체,
+//   재시도가 제한 시간(240초)까지 잡아먹었다. 한국어 근거 설명 문장은 70~110자가 보통이다.
+//   짧게 쓰라는 안내는 프롬프트에 두고, 검증기는 읽을 수 없게 늘어진 문장만 거른다(오늘운세 무료·상세도 같은 검증기).
+const SENTENCE_LENGTH_MAX = 120;
 
 /**
  * 막연한 위로 패턴 — *데이터 근거 없는* 위로 말. 진단서 §3 ⑧ 규칙.
@@ -289,7 +292,7 @@ export function validateChapterBody(
     }
   }
 
-  // 8. 문장 길이 — 한 문장 65자 초과 시 fail (가독성 가드, 60자 안팎 spec)
+  // 8. 문장 길이 — 한 문장 120자 초과 시 fail (늘어진 문장만 거른다)
   if (!skip.has('sentence-length')) {
     const sentences = body
       .split(/(?<=[.?!])\s+|\n+/u)

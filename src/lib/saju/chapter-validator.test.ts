@@ -165,13 +165,20 @@ test('"결단/결과/결정" 같은 복합어는 "결" 빈도 카운트에 포�
   );
 });
 
-test('한 문장 65자 초과 시 sentence-length rule fail', () => {
-  // 80자짜리 한 문장
+test('한 문장 120자 초과 시 sentence-length rule fail', () => {
+  // 130자 넘는 한 문장
   const body =
-    '이 사주는 토 기운이 강하고 금 기운이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬는 것이 중요합니다.';
+    '이 사주는 토 기운이 강하고 금 기운이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬고 주변 사람의 의견을 한 번 더 들어 본 뒤에 천천히 결정을 내리는 습관을 들이는 것이 무엇보다 중요합니다.';
   const result = validateChapterBody(body);
   const lenFail = result.failures.find((f) => f.rule === 'sentence-length');
   assert.ok(lenFail, '긴 문장이 fail 로 잡혀야 함');
+});
+
+test('근거를 설명하는 80자 안팎 문장은 통과(2026-10-10 — 65자 상한이 평생 장을 모두 폐기시켰다)', () => {
+  const body =
+    '이 사주는 토 기운이 강하고 금 기운이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬는 것이 중요합니다.';
+  const result = validateChapterBody(body);
+  assert.ok(!result.failures.find((f) => f.rule === 'sentence-length'), '80자 문장 통과');
 });
 
 test('짧은 문장들은 sentence-length 통과', () => {
@@ -205,7 +212,7 @@ test('데이터 근거 있는 위로 표현은 통과', () => {
 test('skipRules — 특정 룰만 비활성화 가능', () => {
   // sentence-length 룰 위반 본문이지만 skipRules 로 스킵
   const longBody =
-    '이 사주는 토 기운이 강하고 금 기운이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬는 것이 중요합니다.';
+    '이 사주는 토 기운이 강하고 금 기운이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬고 주변 사람의 의견을 한 번 더 들어 본 뒤에 천천히 결정을 내리는 습관을 들이는 것이 무엇보다 중요합니다.';
   const skipped = validateChapterBody(longBody, { skipRules: ['sentence-length'] });
   assert.ok(
     !skipped.failures.find((f) => f.rule === 'sentence-length'),

@@ -217,3 +217,20 @@ test('generateChapter — punch-copy 중복 rule: 두 챕터 동일 punch-copy �
   assert.equal(result.retries, 1, '재생성 1회');
   assert.equal(result.source, 'llm');
 });
+
+// 2026-10-10 — 재시도에 폐기 사유를 붙인다(운영 재현: 1~3장이 같은 규칙으로 세 번 폐기 → 고정 문구).
+test('generateChapter: 재시도 요청 끝에 직전 폐기 사유가 붙고, 첫 요청에는 없다', async () => {
+  const messages: string[] = [];
+  const client: ChapterLLMClient = {
+    async generate(_system, user) {
+      messages.push(user);
+      return messages.length === 1 ? '무조건 잘 될 거예요. 100% 확실합니다.' : CLEAN_BODY;
+    },
+  };
+  const out = await generateChapter(baseInput, client);
+  assert.equal(out.source, 'llm');
+  assert.equal(messages.length, 2);
+  assert.ok(!messages[0].includes('재작성 지시'));
+  assert.ok(messages[1].startsWith(messages[0]), '앞부분은 그대로(프롬프트 캐시 유지)');
+  assert.ok(messages[1].includes('재작성 지시'));
+});

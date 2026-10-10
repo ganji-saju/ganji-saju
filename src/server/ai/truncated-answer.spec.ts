@@ -7,7 +7,7 @@
 //   🔴 상한을 올리는 것만으로는 안 끝난다 — 더 긴 답이면 또 걸린다.
 //      **잘린 응답을 마지막 완결 문장까지 자르는 것**이 실제 방어선이다.
 import { describe, expect, it } from 'vitest';
-import { trimToLastSentence } from './openai-text';
+import { extractTruncatedJsonBody, trimToLastSentence } from './openai-text';
 
 describe('잘린 답변 다듬기', () => {
   it('실제 제보 문장 — 단어 중간 절단을 잘라낸다', () => {
@@ -38,5 +38,17 @@ describe('잘린 답변 다듬기', () => {
     // 앞부분에만 마침표가 있고 뒤가 대부분이면, 잘랐을 때 답이 사라진 것과 다름없다.
     const mostlyAfter = '네. ' + '뒤에 이어지는 아주 긴 설명이 계속됩니다'.repeat(4);
     expect(trimToLastSentence(mostlyAfter)).toBe(mostlyAfter);
+  });
+});
+
+// 2026-10-10 — 장별 풀이(JSON {body}) 가 상한에 걸려 잘리면 파싱이 안 돼 중괄호·따옴표째 본문으로 샜다.
+describe('잘린 JSON 본문 꺼내기', () => {
+  it('본문 문자열만 꺼내 마지막 완결 문장까지 남긴다', () => {
+    const raw = '{"body":"첫 문장입니다.\\n두 번째 \\"인용\\" 문장입니다. 세 번째는 잘';
+    expect(extractTruncatedJsonBody(raw)).toBe('첫 문장입니다.\n두 번째 "인용" 문장입니다.');
+  });
+
+  it('JSON 본문 형태가 아니면 null — 일반 텍스트는 건드리지 않는다', () => {
+    expect(extractTruncatedJsonBody('그냥 문장입니다.')).toBeNull();
   });
 });

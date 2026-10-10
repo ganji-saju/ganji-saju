@@ -89,7 +89,9 @@ export class OpenAIChapterClient implements ChapterLLMClient {
       // throw 로 알려서 retry/fallback 흐름으로.
       fallbackText: '',
       model: this.options.model ?? getOpenAIInterpretationModel(),
-      maxOutputTokens: this.options.maxOutputTokens ?? 2200,
+      // 2026-10-10 — 2200 → 4000. 이 모델은 생각하는 토큰도 출력 상한에서 쓴다 — 실측 출력 900~1,450토큰,
+      //   상한에 닿으면 본문 없이 끝나 empty_ai_response(운영 최근 9건 중 6건).
+      maxOutputTokens: this.options.maxOutputTokens ?? 4000,
       // temperature 는 명시 시에만 전달 (미설정=undefined=미전달). GPT-5.x 미지원 대응.
       temperature: this.options.temperature,
       timeoutMs: remainingMs === undefined
