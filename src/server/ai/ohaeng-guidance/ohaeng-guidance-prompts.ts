@@ -29,7 +29,7 @@ export function buildOhaengGuidanceUserMessage(input: OhaengGuidanceInput): stri
   const lack = input.lack.length ? input.lack.map((e) => input.labels[e]).join(', ') : '없음';
   const excess = input.excess.length ? input.excess.map((e) => input.labels[e]).join(', ') : '없음';
   return [
-    '다섯 기운 분포(제공된 글자 ${Object.values(input.counts).reduce((sum, count) => sum + count, 0)}개):',
+    `다섯 기운 분포(제공된 글자 ${Object.values(input.counts).reduce((sum, count) => sum + count, 0)}개):`,
     ...lines,
     `강한 기운: ${input.labels[input.dominant]}`,
     `부족한 기운: ${lack}`,

@@ -5,6 +5,7 @@ import { generateOhaengGuidance } from './generate-ohaeng-guidance';
 import { createInMemoryOhaengGuidanceCacheStore } from './ohaeng-guidance-cache-store';
 import { buildOhaengGuidanceCacheKey } from './ohaeng-guidance-cache';
 import { buildOhaengGuidanceInput } from './ohaeng-guidance-content';
+import { buildOhaengGuidanceUserMessage } from './ohaeng-guidance-prompts';
 
 // 2026-05-21 — 오행 가이드 오케스트레이터(Phase 5). DI mock client 로 플래그/검증/fallback 검증.
 
@@ -135,4 +136,11 @@ test('generateOhaengGuidance: 플래그 ON + fallback(한자) → 캐시 미저�
     null,
     'fallback 은 캐시하지 않음'
   );
+});
+
+// 2026-10-10 — 작은따옴표 안의 ${...} 가 계산되지 않고 모델에 글자 그대로 전달되던 버그(점검 B #5).
+test('buildOhaengGuidanceUserMessage: 글자 수가 계산된 숫자로 들어가고 코드 조각이 새지 않는다', () => {
+  const message = buildOhaengGuidanceUserMessage(buildOhaengGuidanceInput(chart()));
+  assert.ok(message.includes('제공된 글자 8개'), message);
+  assert.ok(!message.includes('${'), message);
 });
