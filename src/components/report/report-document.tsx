@@ -170,7 +170,7 @@ export function ReportDocument({
   const startAge = firstYear?.age ?? 0;
   const finderDecades = Array.from({ length: 11 }, (_, i) => i * 10).filter((age) => age + 9 >= startAge);
   return (
-            <article className={`report-doc${questionEdition ? ' rp-question-edition' : ''}`} aria-label="사주 리포트 PDF 미리보기">
+            <article className={`report-doc rp-lifetime-flow${questionEdition ? ' rp-question-edition' : ''}`} aria-label="사주 리포트 PDF 미리보기">
               <OrderedPages>
               {/* ─────────────── PAGE 1 · 표지 / 요약 ─────────────── */}
               <section className="report-page" data-page="1">
