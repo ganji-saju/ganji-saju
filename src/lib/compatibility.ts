@@ -17,9 +17,6 @@ import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
 function stemKo(stem: Stem): string {
   return stemCharToKorean(stem);
 }
-function branchKo(branch: Branch): string {
-  return branchCharToKorean(branch);
-}
 
 const STEM_SEQUENCE: Stem[] = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 const BRANCH_SEQUENCE: Branch[] = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
@@ -425,15 +422,16 @@ export function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
 // 2026-08-27 export — 위와 같은 이유로 totalScore·supportive·caution 만 재사용할 것.
 export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   const pairKey = canonicalPairKey(selfBranch, partnerBranch, BRANCH_SEQUENCE);
-  const selfKo = branchKo(selfBranch);
-  const partnerKo = branchKo(partnerBranch);
+  // 2026-10-11 — 지지 이름("해와 사는 충") 대신 자리의 뜻으로. 이 문장이 화면과 궁합 AI 입력에 그대로 들어가
+  //   AI 본문에도 "해와 사의 충" 이 남았다.
+  const pair = '두 분은 가까운 사람을 보는 자리(태어난 날)가';
   const items: Array<{ label: string; detail: string; score: number }> = [];
 
   const sixHarmony = BRANCH_SIX_HARMONIES.get(pairKey);
   if (sixHarmony) {
     items.push({
       label: '육합',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 육합으로 묶여 기본 정이 이어지는 편입니다.`,
+      detail: `${pair} 육합으로 맞물려, 기본 정이 오래 이어지는 편입니다.`,
       score: 12,
     });
   }
@@ -441,7 +439,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
   if (BRANCH_CLASHES.has(pairKey)) {
     items.push({
       label: '충',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 충이 있어 부딪힐 때 정면으로 맞서는 경향이 있습니다.`,
+      detail: `${pair} 서로 부딪히는 충이라, 의견이 갈릴 때 정면으로 맞서기 쉽습니다.`,
       score: -14,
     });
   }
@@ -449,7 +447,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
   if (BRANCH_PUNISHMENTS.has(pairKey)) {
     items.push({
       label: '형',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 형 관계가 있어 긴장과 압박이 누적되기 쉽습니다.`,
+      detail: `${pair} 긴장을 만드는 형 관계라, 압박이 쌓이기 쉽습니다.`,
       score: -10,
     });
   }
@@ -457,7 +455,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
   if (BRANCH_BREAKS.has(pairKey)) {
     items.push({
       label: '파',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 파 관계라 기대가 어긋날 때 틈이 크게 느껴질 수 있습니다.`,
+      detail: `${pair} 맞춰 둔 것이 한 번씩 틀어지는 파 관계라, 기대가 어긋날 때 틈이 크게 느껴질 수 있습니다.`,
       score: -8,
     });
   }
@@ -465,7 +463,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
   if (BRANCH_HARMS.has(pairKey)) {
     items.push({
       label: '해',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 해 관계로 겉보다 속피로가 오래 남기 쉽습니다.`,
+      detail: `${pair} 작게 어긋나는 해 관계라, 겉보다 속피로가 오래 남기 쉽습니다.`,
       score: -8,
     });
   }
@@ -474,7 +472,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
   if (halfHarmony) {
     items.push({
       label: '반합',
-      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} ${halfHarmony}으로 이어져, 함께 움직일 때 자연스러운 합이 생길 수 있습니다.`,
+      detail: `${pair} ${halfHarmony}으로 이어져, 함께 움직일 때 자연스럽게 힘이 모일 수 있습니다.`,
       score: 8,
     });
   }
@@ -484,7 +482,7 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
       totalScore: 0,
       supportive: null,
       caution: null,
-      body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 큰 합충보다 생활 리듬과 말투 차이가 더 중요하게 작동하는 관계입니다.`,
+      body: `두 분은 가까운 사람을 보는 자리(태어난 날)에 큰 합충이 없어, 생활 리듬과 말투 차이가 더 중요하게 작동합니다.`,
     };
   }
 
@@ -492,7 +490,8 @@ export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Br
     totalScore: items.reduce((sum, item) => sum + item.score, 0),
     supportive: items.find((item) => item.score > 0) ?? null,
     caution: items.find((item) => item.score < 0) ?? null,
-    body: items.map((item) => `${item.label}: ${item.detail}`).join(' '),
+    // 관계가 둘 이상이면 긴 주어를 반복하지 않는다(detail 단독 노출용으로는 주어를 유지).
+    body: items.map((item, n) => `${item.label}: ${n ? item.detail.replace(pair, '같은 자리가') : item.detail}`).join(' '),
   };
 }
 

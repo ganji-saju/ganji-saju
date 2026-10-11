@@ -113,11 +113,17 @@ export async function generateCompatibilityInterpretation(
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildCompatibilityInterpretationUserMessage(input);
   let lastReasons: string[] = [];
+  // 모델에게 되돌려 줄 사유는 출력 자체의 문제(형식·검증)만 — 호출 오류 문구는 넘기지 않는다.
+  let feedback: string[] = [];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     let raw = '';
     try {
-      raw = await client.generate(COMPATIBILITY_INTERPRETATION_SYSTEM_PROMPT, userMessage);
+      // 재시도는 직전 탈락 사유를 같이 넘긴다 — 같은 입력만 다시 보내면 같은 실수를 반복한다.
+      const message = feedback.length
+        ? `${userMessage}\n\n직전 출력이 아래 이유로 탈락했습니다. 고쳐서 다시 작성하세요:\n${feedback.map((r) => `- ${r}`).join('\n')}`
+        : userMessage;
+      raw = await client.generate(COMPATIBILITY_INTERPRETATION_SYSTEM_PROMPT, message);
     } catch (error) {
       lastReasons = [`LLM 호출 실패: ${error instanceof Error ? error.message : String(error)}`];
       continue;
@@ -126,6 +132,7 @@ export async function generateCompatibilityInterpretation(
     const parsed = parseCompatibilitySections(raw);
     if (!parsed) {
       lastReasons = ['JSON 파싱 실패'];
+      feedback = ['JSON 형식이 아님 — 지정한 JSON 객체 하나만 출력'];
       continue;
     }
 
@@ -137,6 +144,7 @@ export async function generateCompatibilityInterpretation(
       return { source: 'llm', sections, reasons: [], meta };
     }
     lastReasons = validation.reasons;
+    feedback = validation.reasons;
   }
 
   // 관측성: OpenAI 호출은 됐으나 파싱·검증 실패로 결정론 fallback 으로 떨어진 경우.

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { buildCompatibilityInterpretation, type CompatibilityPerson } from '@/lib/compatibility';
+import { buildCompatibilityInterpretation, summarizeBranchInteraction, type CompatibilityPerson } from '@/lib/compatibility';
 import type { ChapterLLMClient } from '../chapters/generate-chapter';
 import { buildCompatibilityInterpretationInput } from './compatibility-interpretation-content';
 import { buildCompatibilityInterpretationCacheKey } from './compatibility-interpretation-cache';
@@ -234,4 +234,71 @@ test('궁합의 근거와 조건을 풀어 쓴 긴 본문을 짧은 폴백으로
   parsed.sections = parsed.sections.map((section: { title: string; body: string }) => ({ ...section, body: Array.from({ length: 20 }, (_, index) => `${index + 1}번째 대화에서는 상대에게 필요한 도움과 내가 맡을 범위를 함께 확인해보세요.`).join(' ') }));
   const result = validateCompatibilitySections(parsed.sections);
   assert.equal(result.ok, true, JSON.stringify(result.reasons));
+});
+
+// 2026-10-11 — "해와 사의 충" 처럼 지지 이름이 본문에 남던 문제.
+test('compat interpretation: AI 입력에 지지 글자를 넘기지 않고, 본문의 지지 이름 관계를 거부한다', () => {
+  const input = buildCompatibilityInterpretationInput(interp('lover'), '가영', '나준');
+  const message = buildCompatibilityInterpretationUserMessage(input);
+  assert.doesNotMatch(message, /"branch"|"ganzi"/);
+  assert.match(message, /hiddenStems/); // 나머지 원국 근거는 그대로
+  // 결정론 문장(조심할 지점·4축·추가 단서)에서도 지지 이름 관계가 넘어가지 않는다 — 실제 유입 경로였다.
+  for (const [a, b] of [['1990-04-12', '1991-10-18'], ['1993-01-20', '1991-07-08']]) {
+    const [ay, am, ad] = a.split('-').map(Number);
+    const [by, bm, bd] = b.split('-').map(Number);
+    const r = interp('lover', { name: '가영', birthInput: { year: ay, month: am, day: ad, hour: 9, gender: 'female' } }, { name: '나준', birthInput: { year: by, month: bm, day: bd, hour: 14, gender: 'male' } });
+    const msg = buildCompatibilityInterpretationUserMessage(buildCompatibilityInterpretationInput(r, '가영', '나준'));
+    assert.doesNotMatch(msg, /[자축인묘진사오미신유술해][와과] [자축인묘진사오미신유술해][은는] /, `${a}·${b}`);
+  }
+
+  const base = JSON.parse(validLlmJson()).sections as Array<{ title: string; body: string }>;
+  assert.equal(validateCompatibilitySections(base).ok, true);
+  for (const leak of ['두 분은 해와 사의 충이 있어', '해와 사는 충이 있어', '사·해 충이 있어', '사해충이 있어', '“사해충”보다는', '자묘형 관계', '자축 합으로', '자와 축의 육합으로']) {
+    const bad = base.map((s, i) => (i === 0 ? { ...s, body: `${leak} ${s.body}` } : s));
+    const result = validateCompatibilitySections(bad);
+    assert.equal(result.ok, false, leak);
+    assert.ok(result.reasons.some((r) => r.includes('지지 이름')), leak);
+  }
+  // 흔한 말은 걸리지 않는다(해충·오해·자신과 미래).
+  const plain = base.map((s, i) => (i === 0 ? { ...s, body: `오해와 서운함은 자신과 미래의 계획을 나누면 줄어듭니다. 인사충원처럼 큰일도, 해충 이야기처럼 작은 일도, 자유형 수영처럼 취미도 해와 사는 충분히 함께 정할 수 있습니다. ${s.body}` } : s));
+  assert.equal(validateCompatibilitySections(plain).ok, true);
+});
+
+test('compat interpretation: 재시도는 직전 탈락 사유를 함께 보낸다', async () => {
+  const messages: string[] = [];
+  const bad = JSON.stringify({ sections: JSON.parse(validLlmJson()).sections.map((s: { title: string; body: string }) => ({ ...s, body: `해와 사의 충이 있어 ${s.body}` })) });
+  const result = await generateCompatibilityInterpretation({
+    interpretation: interp('lover'),
+    selfName: '가영',
+    partnerName: '나준',
+    env: { OPENAI_INTERPRET_COMPATIBILITY: '1' } as unknown as NodeJS.ProcessEnv,
+    client: { async generate(_system: string, user: string) { messages.push(user); return messages.length === 1 ? bad : validLlmJson(); } },
+    cacheStore: createInMemoryCompatibilityInterpretationCacheStore(),
+    maxRetries: 1,
+  });
+  assert.equal(result.source, 'llm');
+  assert.doesNotMatch(messages[0], /직전 출력이/);
+  assert.match(messages[1], /직전 출력이[\s\S]*지지 이름 사용: "해와 사의 충"/);
+});
+
+test('compat interpretation: 호출 오류 문구는 재시도 프롬프트에 넣지 않는다', async () => {
+  const messages: string[] = [];
+  await generateCompatibilityInterpretation({
+    interpretation: interp('lover'),
+    selfName: '가영',
+    partnerName: '나준',
+    env: { OPENAI_INTERPRET_COMPATIBILITY: '1' } as unknown as NodeJS.ProcessEnv,
+    client: { async generate(_system: string, user: string) { messages.push(user); if (messages.length === 1) throw new Error('Request timed out.'); return validLlmJson(); } },
+    cacheStore: createInMemoryCompatibilityInterpretationCacheStore(),
+    maxRetries: 1,
+  });
+  assert.doesNotMatch(messages[1], /직전 출력이|timed out/);
+});
+
+test('summarizeBranchInteraction: 관계 문장에 지지 이름을 쓰지 않는다', () => {
+  const branches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'] as const;
+  for (const a of branches) for (const b of branches) {
+    const r = summarizeBranchInteraction(a, b);
+    assert.doesNotMatch(r.body, /[자축인묘진사오미신유술해][와과] /, `${a}${b}: ${r.body}`);
+  }
 });
