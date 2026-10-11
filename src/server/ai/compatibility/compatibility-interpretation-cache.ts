@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import type { CompatibilityInterpretationInput } from './compatibility-interpretation-types';
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
-export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v3-rich-reading';
+// v4(2026-10-11): 두 사람 관계 근거(pairSignals)·섹션 5~6개.
+export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v4-pair-signals';
 
 export const COMPATIBILITY_INTERPRETATION_CACHE_TTL_DAYS = 30;
 

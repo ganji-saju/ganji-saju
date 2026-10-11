@@ -1,3 +1,5 @@
+import { Solar } from 'lunar-typescript';
+import { computePairSignals } from '@/lib/compatibility/pair-signals';
 import { buildNatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
 // 2026-05-23 — 궁합 깊은 풀이 입력 빌더(②-b). 결정론 CompatibilityInterpretation → LLM grounding.
 //   fallbackSections = lib 의 결정론 deepSections 를 그대로 사용(플래그 OFF·LLM 실패 시 노출).
@@ -27,6 +29,14 @@ export function buildCompatibilityInterpretationInput(
 ): CompatibilityInterpretationInput {
   return {
     natalEvidence: { self: buildNatalReadingEvidence(interpretation.selfData), partner: buildNatalReadingEvidence(interpretation.partnerData) },
+    pairSignals: computePairSignals({
+      self: interpretation.selfData,
+      partner: interpretation.partnerData,
+      selfName,
+      partnerName,
+      romantic: interpretation.relationship === 'lover',
+      currentYearGanji: currentYearGanji(),
+    }).lines,
     relationship: interpretation.relationship,
     relationshipLabel: RELATIONSHIP_LABELS[interpretation.relationship],
     selfName,
@@ -52,4 +62,14 @@ export function buildCompatibilityInterpretationInput(
       body: section.body,
     })),
   };
+}
+
+/** 한국 시간 기준 올해의 세운 간지(입춘 이후 대표일). */
+function currentYearGanji(): string | null {
+  try {
+    const year = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', year: 'numeric' }).format(new Date()));
+    return Solar.fromYmd(year, 6, 15).getLunar().getYearInGanZhi();
+  } catch {
+    return null;
+  }
 }
