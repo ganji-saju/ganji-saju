@@ -493,6 +493,18 @@ function annualFieldReadings(reading: ReadingRecord, ganzi: string, age: number,
 }
 
 /** PDF-only, synchronous, no DB/LLM or daily/monthly report generation. */
+/**
+ * 2026-10-11 사용자 피드백(평생운세 이용자 공통 의견) — "지금부터 앞으로가 궁금하지 1세부터는 관심 없다".
+ * 계산은 0~100세 전체로 하고(경계·나이 검증 유지), PDF 에는 올해 이후 연도와 지금·앞으로의 대운만 싣는다.
+ */
+export function forwardLifetimeTimeline(timeline: LifetimePdfTimeline, targetYear: number): LifetimePdfTimeline {
+  return {
+    ...timeline,
+    years: timeline.years.filter((year) => year.year >= targetYear),
+    cycles: timeline.cycles.filter((cycle) => cycle.endYear >= targetYear),
+  };
+}
+
 export function buildLifetimePdfTimeline(
   reading: ReadingRecord,
   report: SajuLifetimeReport,
@@ -568,7 +580,7 @@ export function buildLifetimePdfTimeline(
     '나이는 출생한 양력 연도를 0세로 두는 연도 나이로, 생일 기준 만 나이와 다를 수 있습니다.',
     '연간 간지는 입춘 이후 기준이며 입춘 전에는 전년도 세운도 함께 봅니다. 연도 경계는 사건 발생일을 뜻하지 않습니다.',
     '대운은 생시·자시·출생지 보정을 반영합니다. 연간 기록은 100세까지이며 마지막 대운은 실제 경계를 보존해 그 이후까지 이어질 수 있습니다.',
-    '과거는 회고, 미래는 선택의 참고입니다. 간지·십성·합충은 계산 근거이며, 천간을 주제와 지지 본기를 점검 방법으로 연결한 생활 조언은 간지사주의 해석입니다. 사건의 발생이나 적중을 입증하는 정보는 아닙니다.',
+    '이 보고서는 올해부터 앞으로의 흐름을 다룹니다. 간지·십성·합충은 계산 근거이며, 천간을 주제와 지지 본기를 점검 방법으로 연결한 생활 조언은 간지사주의 해석입니다. 사건의 발생이나 적중을 입증하는 정보는 아닙니다.',
     '원국의 합과 충이 함께 보이면 협력할 부분과 조정할 부분을 나누어 읽습니다. 해가 바뀌어도 같은 근거가 이어질 수 있으며, 합을 합화의 완성이나 충을 손실·이별로 단정하지 않습니다.',
     '생활 조언은 지지 접점을 먼저 살피고 천간 합충을 함께 참고합니다. 이는 설명의 초점을 정하는 방식이며 다른 접점이 사라진다는 뜻은 아닙니다. 0–5세의 과제는 아이에게 요구하지 않고 보호자의 놀이 준비와 돌봄 조율에 적용합니다.',
     '대운의 단계는 장기 계획의 점검 순서입니다. 풀이가 결과나 건강을 보장하지 않으며, 몸의 변화나 불편함은 실제 상태에 맞는 도움을 받으세요.',

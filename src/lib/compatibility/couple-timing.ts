@@ -283,17 +283,20 @@ export function buildCoupleTimingReport(input: {
   const selfYearly = buildYearlyReport(input.self.birthInput, input.self.data, year);
   const partnerYearly = buildYearlyReport(input.partner.birthInput, input.partner.data, year);
 
+  // 2026-10-11 — 이미 지난 달은 빼고 이번 달부터(이용자 공통 의견: "지금부터 앞으로가 궁금하다").
+  //   순위도 남은 달 안에서 매긴다. 한국 시간 기준 이번 달. 내년 이후는 아래 연 전망(years)이 다룬다.
+  const thisMonth = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'numeric' }).format(now));
   const metrics = selfYearly.monthlyFlows.map((flow) =>
     scoreMonth(flow, input.self, input.partner)
   );
   const verdicts = assignVerdicts(
     selfYearly.monthlyFlows.map((flow, index) => {
       const m = metrics[index];
-      return m ? { month: flow.month, score: m.score, gap: m.gap } : null;
+      return m && flow.month >= thisMonth ? { month: flow.month, score: m.score, gap: m.gap } : null;
     })
   );
 
-  const months = selfYearly.monthlyFlows.map((selfFlow, index) =>
+  const allMonths = selfYearly.monthlyFlows.map((selfFlow, index) =>
     buildMonth(
       input.self.name,
       input.partner.name,
@@ -303,6 +306,8 @@ export function buildCoupleTimingReport(input: {
       metrics[index]
     )
   );
+
+  const months = allMonths.filter((m) => m.month >= thisMonth);
 
   const yearCount = Math.max(1, input.yearCount ?? 3);
   const years = Array.from({ length: yearCount }, (_, offset) =>

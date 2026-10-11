@@ -25,7 +25,8 @@ export function buildLifetimeKeyPeriods(
   birthYear: number,
   currentYear: number,
 ): LifetimeKeyPeriod[] {
-  const from = Math.max(birthYear, currentYear - 5);
+  // 2026-10-11 사용자 피드백 — 지나온 해는 다루지 않는다(올해부터 앞으로).
+  const from = Math.max(birthYear, currentYear);
   const to = birthYear + 85;
   const scored: Array<LifetimeKeyPeriod & { score: number }> = [];
   for (let year = from; year <= to; year += 1) {

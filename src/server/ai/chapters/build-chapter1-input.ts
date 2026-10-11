@@ -214,6 +214,11 @@ function luckCycles(sajuData: SajuDataV1 | SajuDataV2) {
   const current = sajuData.currentLuck?.currentMajorLuck;
   return {
     current: current ? { ganji: toKoreanGanzi(current.ganzi), ages: ages(current.startAge, current.endAge) } : null,
-    cycles: (sajuData.majorLuck ?? []).slice(0, 9).map((cycle) => ({ ganji: toKoreanGanzi(cycle.ganzi), ages: ages(cycle.startAge, cycle.endAge) })),
+    // 2026-10-11 — 지나온 대운은 빼고 지금 대운부터(이용자 공통 의견: "지금부터 앞으로가 궁금하다").
+    cycles: (() => {
+      const all = sajuData.majorLuck ?? [];
+      const index = current ? all.findIndex((cycle) => cycle.ganzi === current.ganzi && cycle.startAge === current.startAge) : -1;
+      return all.slice(Math.max(0, index)).slice(0, 6).map((cycle) => ({ ganji: toKoreanGanzi(cycle.ganzi), ages: ages(cycle.startAge, cycle.endAge) }));
+    })(),
   };
 }

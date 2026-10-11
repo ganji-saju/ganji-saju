@@ -57,6 +57,8 @@ const sum = (byType: Record<TenGodCode, number> | undefined, gods: TenGodCode[])
 export function buildMarriageFamily(
   sajuData: SajuDataV1 | SajuDataV2,
   gender: 'male' | 'female' | null | undefined,
+  /** 지금 나이 — 이미 지난 대운 구간은 고르지 않는다(2026-10-11, 지금부터 앞으로). */
+  currentAge = 0,
 ): LifetimeMarriageFamilySection {
   const dayMaster = sajuData.dayMaster.stem as Stem;
   const day = sajuData.pillars.day;
@@ -94,7 +96,8 @@ export function buildMarriageFamily(
     : '태어난 시간을 몰라 자녀·아랫사람을 보는 자리는 풀이에서 제외했습니다.';
 
   const windows = (sajuData.majorLuck ?? [])
-    .filter((cycle) => cycle.startAge !== null && cycle.startAge >= 18 && cycle.startAge <= 55)
+    .filter((cycle) => cycle.startAge !== null && cycle.startAge >= 18 && cycle.startAge <= 55
+      && (cycle.endAge ?? cycle.startAge + 9) >= currentAge)
     .flatMap((cycle) => {
       const [stem, branch] = Array.from(cycle.ganzi) as [Stem, string];
       const god = getTenGodHangul(dayMaster, stem);

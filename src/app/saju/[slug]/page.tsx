@@ -58,6 +58,7 @@ import { TodayFortuneDetailClient } from '@/features/today-fortune/today-fortune
 import { GuardianAssignmentCard } from '@/components/saju/guardian-assignment-card';
 import { guardianFromYearBranch } from '@/lib/guardians';
 import { buildLifetimeReport } from '@/domain/saju/report';
+import { forwardMajorLuckCycles } from '@/domain/saju/report/build-lifetime-report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { getViewerMemberTier } from '@/lib/subscription';
@@ -465,7 +466,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   2026-08-25 단일 페이지화 — 같은 빌더 결과를 대운 섹션(DaewoonSection)도 쓰므로 1회만 계산.
   let lifetimeCycles: LifetimeMajorLuckCycle[] = [];
   try {
-    lifetimeCycles = buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles.filter(
+    // 2026-10-11 — 지나온 대운 풀이는 싣지 않는다(이용자 공통 의견: "지금부터 앞으로가 궁금하다").
+    lifetimeCycles = forwardMajorLuckCycles(buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles).filter(
       (cycle) => cycle.ganzi !== '대운 미산정'
     );
   } catch {

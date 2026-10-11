@@ -130,7 +130,7 @@ function OrderedPages({ children }: { children: ReactNode }) {
   return <>{Children.toArray(children).sort((a, b) => pageNumber(a) - pageNumber(b))}</>;
 }
 
-/** 공통 생애 보고서: 성향, 대운 심층 분석, 출생~100세 연도별 풀이. */
+/** 공통 생애 보고서: 성향, 대운 심층 분석, 올해~100세 연도별 풀이(2026-10-11 — 지나온 해는 싣지 않는다). */
 export function ReportDocument({
   data,
   issuedAt,
@@ -164,7 +164,11 @@ export function ReportDocument({
     else ranges.push({ title, start: narrativeStartPage + index, end: narrativeStartPage + index });
     return ranges;
   }, []);
-  const birthYear = data.timeline.years[0].year;
+  // 연도표는 올해부터 시작한다 — 첫 행의 연도·나이로 출생 연도와 시작 나이를 구한다.
+  const firstYear = data.timeline.years[0];
+  const birthYear = firstYear ? firstYear.year - firstYear.age : 0;
+  const startAge = firstYear?.age ?? 0;
+  const finderDecades = Array.from({ length: 11 }, (_, i) => i * 10).filter((age) => age + 9 >= startAge);
   return (
             <article className={`report-doc${questionEdition ? ' rp-question-edition' : ''}`} aria-label="사주 리포트 PDF 미리보기">
               <OrderedPages>
@@ -555,25 +559,28 @@ export function ReportDocument({
               <section className="report-page rp-contents-page" data-page={guidePage}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead no={questionEdition ? '목차' : '07'} titleLines={['생애 보고서 안내', '필요한 질문부터 찾아 읽기']}
-                  lead={`${birthYear}년부터 ${birthYear + 100}년까지 101개 연도를 한 해씩 살펴봅니다. 100세까지라는 범위는 보고서의 분석 기간이며 수명을 뜻하지 않습니다.`} />
+                  lead={`${birthYear + startAge}년(${startAge}세)부터 ${birthYear + 100}년(100세)까지 ${data.timeline.years.length}개 연도를 한 해씩 살펴봅니다. 100세까지라는 범위는 보고서의 분석 기간이며 수명을 뜻하지 않습니다.`} />
                 <div className="rp-guide-contents">
                   <div><strong>{questionEdition ? '핵심 요약과 나의 성향' : '타고난 성향과 사주의 구조'}</strong><span>{questionEdition ? '4–5쪽' : '1–6쪽'}</span></div>
                   {questionEdition ? chapterRanges.map((chapter) => <div key={chapter.title}><strong>{chapter.title}</strong><span>{chapter.start === chapter.end ? chapter.start : `${chapter.start}–${chapter.end}`}쪽</span></div>) : narrativePages.length > 0 && <div><strong>깊은 사주풀이 전문</strong><span>9–{cycleStartPage - 1}쪽</span></div>}
                   {data.timeline.cycles.length > 0 && <div><strong>대운별 심층 풀이와 전환기</strong><span>{questionEdition ? cycleIndexPage : cycleStartPage}–{annualStartPage - 1}쪽</span></div>}
-                  <div><strong>출생부터 100세까지 연도별 풀이</strong><span>{annualStartPage}–{annualEndPage}쪽</span></div>
+                  <div><strong>올해부터 100세까지 연도별 풀이</strong><span>{annualStartPage}–{annualEndPage}쪽</span></div>
                   {questionEdition && <div><strong>참고 · 사주의 구조와 용어</strong><span>{tenGodPage}–{patternPage}쪽</span></div>}
                   <div><strong>마무리와 활용 방법</strong><span>{totalPages}쪽</span></div>
                 </div>
-                <div className="rp-guide-copy"><h3>이렇게 활용해보세요</h3><p>먼저 올해의 풀이를 읽고, 해당 대운의 전환기 조언을 확인하세요. 과거 연도는 실제 경험을 돌아보는 질문으로, 미래 연도는 선택을 준비하는 참고로 활용할 수 있습니다. 같은 세운이 돌아와도 생애 단계와 대운이 달라 풀이의 초점은 달라집니다.</p></div>
+                <div className="rp-guide-copy"><h3>이렇게 활용해보세요</h3><p>먼저 올해의 풀이를 읽고, 지금 대운과 다음 대운의 전환기 조언을 확인하세요. 앞으로의 연도는 선택을 준비하는 참고로 활용할 수 있습니다. 같은 세운이 돌아와도 생애 단계와 대운이 달라 풀이의 초점은 달라집니다.</p></div>
                 <PageFooter page={guidePage} total={totalPages} />
               </section>
               <section className="report-page rp-contents-page" data-page={guidePage + 1}>
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
-                <ChapterHead no="읽는 법" titleLines={['내 나이에 맞는 풀이', '찾아보고 활용하기']} lead="아래에서 궁금한 나이를 찾아 해당 쪽을 펼쳐보세요. 지나온 시기는 경험과 비교하고, 앞으로의 시기는 선택을 준비할 때 참고하세요." />
+                <ChapterHead no="읽는 법" titleLines={['내 나이에 맞는 풀이', '찾아보고 활용하기']} lead="아래에서 궁금한 나이를 찾아 해당 쪽을 펼쳐보세요. 앞으로의 시기를 미리 읽고 선택을 준비할 때 참고하세요." />
                 <div className="rp-year-finder">
-                  {Array.from({ length: 11 }, (_, i) => i * 10).map((age) => (
-                    <div key={age}><strong>{age === 0 ? '출생~9세' : age === 100 ? '100세' : `${age}~${age + 9}세`}</strong><span>{birthYear + age}년부터 · {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.age === age))}쪽</span></div>
-                  ))}
+                  {finderDecades.map((decade) => {
+                    const from = Math.max(decade, startAge);
+                    return (
+                      <div key={decade}><strong>{decade === 100 ? '100세' : from === 0 ? '출생~9세' : `${from}~${decade + 9}세`}</strong><span>{birthYear + from}년부터 · {annualStartPage + annualPages.findIndex((page) => page.some((year) => year.age === from))}쪽</span></div>
+                    );
+                  })}
                 </div>
                 {data.keyPeriods?.length ? (
                   <div className="rp-guide-copy">
