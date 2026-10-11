@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import {
+  dailyTableDays,
   getAdminDashboardParts,
   type AdminAnalyticsPart,
   type AdminDashboardParts,
@@ -469,11 +470,20 @@ async function ActivityCard({
   );
 }
 
-async function DailyTableSection({ analytics }: { analytics: Promise<AdminAnalyticsPart | null> }) {
+async function DailyTableSection({
+  analytics,
+  period,
+}: {
+  analytics: Promise<AdminAnalyticsPart | null>;
+  period: AdminPeriod;
+}) {
   const inflow = await analytics;
   // 실측 시작일 이전(집계가 사람을 못 세던 구간)은 /admin/analytics 와 같은 규칙으로 자른다.
   const visibleDaily = (inflow?.daily ?? []).filter((d) => d.date >= VISIT_TRACKING_START_KEY);
-  return <MetricsPeriodTable rows={visibleDaily} title="날짜별 · 주별 상세" />;
+  // 기간보다 넓게 보여 줄 때는 실제 표시 범위를 제목에 밝힌다 — 위 카드(선택 기간) 숫자와 헷갈리지 않게.
+  const widened = dailyTableDays(period, kstTodayKey()) > period.days && visibleDaily.length > 0;
+  const range = widened ? ` (${visibleDaily[0]!.date}~${visibleDaily[visibleDaily.length - 1]!.date})` : '';
+  return <MetricsPeriodTable rows={visibleDaily} title={`날짜별 · 주별 상세${range}`} />;
 }
 
 export default async function AdminDashboardPage({
@@ -598,7 +608,7 @@ export default async function AdminDashboardPage({
           일별은 날짜+요일, 주별은 달력 주(월~일)로 묶는다. 표 컴포넌트는
           /admin/analytics 와 **같은 것**을 쓴다 — 주 경계와 비율 계산이 갈라지면 안 된다. */}
       <Suspense fallback={<CardSkeleton title="날짜별 · 주별 상세" lines={4} />}>
-        <DailyTableSection analytics={parts.analytics} />
+        <DailyTableSection analytics={parts.analytics} period={period} />
       </Suspense>
 
       {/* 사용자 검색 + 대기 작업 */}

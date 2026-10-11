@@ -100,10 +100,10 @@ test('getDailyMetrics: 데이터 없으면 hasData=false, 그래도 축은 채�
   assert.deepEqual(snap.topReferrers, []);
 });
 
-test('getDailyMetrics: windowDays 범위 클램프(1..365)', async () => {
+test('getDailyMetrics: windowDays 범위 클램프(1..366, 윤년 1년)', async () => {
   const big = await getDailyMetrics(fakeService([]), 9999, NOW);
-  assert.equal(big.windowDays, 365);
-  assert.equal(big.daily.length, 365);
+  assert.equal(big.windowDays, 366);
+  assert.equal(big.daily.length, 366);
   const small = await getDailyMetrics(fakeService([]), 0, NOW);
   assert.equal(small.windowDays, 30); // 0 → 기본 30
 });

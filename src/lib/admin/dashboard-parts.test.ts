@@ -5,7 +5,7 @@
 //   누군가 다시 await 해서 하나로 합치면 화면은 조용히 예전으로 돌아간다 — 여기서 막는다.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { getAdminDashboardParts } from './dashboard-summary';
+import { dailyTableDays, getAdminDashboardParts } from './dashboard-summary';
 import { resolveAdminPeriod } from './metric-periods';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
@@ -50,4 +50,14 @@ test('/admin 화면은 통짜 await(getAdminDashboardSummary) 로 돌아가지 �
     '통짜 await 로 되돌리면 첫 픽셀이 다시 마지막 쿼리를 기다린다'
   );
   assert.ok(page.includes('<Suspense'), 'Suspense 경계가 사라지면 스트리밍도 사라진다');
+});
+
+// 2026-10-11 — 맨 위 날짜별·주별 표는 기간이 '오늘'이어도 최근 4주를 보여 준다(한 줄짜리 표 방지).
+test('dailyTableDays: 짧은 기간은 28일로 넓히고 긴 기간·미래 기간은 그대로', () => {
+  const today = '2026-10-11';
+  assert.equal(dailyTableDays({ days: 1, startKey: today }, today), 28);
+  assert.equal(dailyTableDays({ days: 7, startKey: '2026-10-05' }, today), 28);
+  assert.equal(dailyTableDays({ days: 92, startKey: '2026-07-01' }, today), 92);
+  // 미래 시작(주소 직접 입력) — 넓히면 과거 실적이 미래 칸과 섞인다.
+  assert.equal(dailyTableDays({ days: 1, startKey: '2026-10-12' }, today), 1);
 });
