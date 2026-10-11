@@ -243,3 +243,12 @@ test('toTodayPremiumInterpretationInput: 일진 간지(한글)·점수 영역·�
   if (dto.todayGanzi) assert.ok(prompt.input.includes(`오늘 일진(그날의 간지): ${dto.todayGanzi}`));
   if (dto.timeWindows?.length) assert.ok(prompt.input.includes('시간대 근거(계산값 — 이 범위만 사용)'));
 });
+
+// 2026-10-11 — 사용자 요청 "오늘운세 상세 전문 용어 줄여줘".
+test('buildTodayPremiumPrompt: 전문 용어 절제 지시(서너 개·계산 용어 금지·원국→타고난 사주)', () => {
+  const { free, premium } = fixtureFreeAndPremium();
+  const { instructions } = buildTodayPremiumPrompt(toTodayPremiumInterpretationInput(free, premium));
+  assert.ok(instructions.includes('서너 개까지만'));
+  assert.ok(instructions.includes('조후용신·억부'));
+  assert.ok(instructions.includes('"원국"은 "타고난 사주"로'));
+});
