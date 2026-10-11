@@ -82,6 +82,24 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
   // 2026-07-03 공유 전수감사 — 공유 링크는 "해석 확정된 스프레드"에서 canonical 재조립.
   //   (질문 시드 폴백은 KST 날짜 종속이라 raw URL 공유 시 다음 날 다른 3장이 됨.
   //    변조·중복 URL 도 항상 정규화된 3장으로 공유.) shared=1 은 수신자 저장 게이트.
+  // 2026-10-11 — 카드별 '질문에 대한 답'·'마음의 흐름'. 앞 카드에 나온 문장은 빼서 반복을 막는다(점검 A #5).
+  const seenSentences = new Set<string>();
+  const cardNotes = spread.positions.map((entry) =>
+    [
+      { label: '질문에 대한 답', text: entry.reading.answer },
+      { label: entry.reading.psychologyLabel || '마음의 흐름', text: entry.reading.psychology },
+    ]
+      .map((item) => ({
+        ...item,
+        text: (item.text ?? '').split(/(?<=[.!?])\s+/).filter((sentence) => {
+          const key = sentence.trim();
+          if (!key || seenSentences.has(key)) return false;
+          seenSentences.add(key);
+          return true;
+        }).join(' '),
+      }))
+      .filter((item) => item.text),
+  );
   const shareQuery = new URLSearchParams({
     question: currentQuestion,
     cards: spread.positions.map((p) => p.reading.card.name_short).join(','),
@@ -170,6 +188,16 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
                     {entry.reading.cardMeaning}
                   </p>
                 </div>
+                {/* 2026-10-11 — 계산은 해 두고 보여 주지 않던 질문별 해석(점검 A #5). 사주 연결 문구는 실제 사주 계산이 아니라 제외. */}
+                {/*   세 카드가 같은 꼬리 문장을 공유해 반복이 됐다 → 앞 카드에 나온 문장은 빼고, 틀에 박힌 '해 볼 일'은 넣지 않는다. */}
+                <dl className="mt-2 grid gap-2">
+                  {(cardNotes[index] ?? []).map((item) => (
+                    <div key={item.label} className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
+                      <dt className="text-[11.5px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">{item.label}</dt>
+                      <dd className="mt-1 text-[14.4px] leading-[1.7] text-[var(--app-copy)]">{item.text}</dd>
+                    </div>
+                  ))}
+                </dl>
               </article>
             ))}
           </section>
