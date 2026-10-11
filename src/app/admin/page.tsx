@@ -593,6 +593,14 @@ export default async function AdminDashboardPage({
         </div>
       </header>
 
+      {/* 2026-10-11 사용자 지시 — 맨 아래에 있던 날짜별·주별 상세를 헤더 바로 아래로.
+          2026-08-27 사용자 지시 — 하단 '바로가기' 자리에 날짜별 데이터.
+          일별은 날짜+요일, 주별은 달력 주(월~일)로 묶는다. 표 컴포넌트는
+          /admin/analytics 와 **같은 것**을 쓴다 — 주 경계와 비율 계산이 갈라지면 안 된다. */}
+      <Suspense fallback={<CardSkeleton title="날짜별 · 주별 상세" lines={4} />}>
+        <DailyTableSection analytics={parts.analytics} />
+      </Suspense>
+
       {/* 사용자 검색 + 대기 작업 */}
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
         <form action="/admin/users" method="get" className="flex gap-2">
@@ -656,12 +664,6 @@ export default async function AdminDashboardPage({
         <ActivityCard recentActivity={parts.recentActivity} />
       </Suspense>
 
-      {/* 2026-08-27 사용자 지시 — 하단 '바로가기' 자리에 날짜별 데이터.
-          일별은 날짜+요일, 주별은 달력 주(월~일)로 묶는다. 표 컴포넌트는
-          /admin/analytics 와 **같은 것**을 쓴다 — 주 경계와 비율 계산이 갈라지면 안 된다. */}
-      <Suspense fallback={<CardSkeleton title="날짜별 · 주별 상세" lines={4} />}>
-        <DailyTableSection analytics={parts.analytics} />
-      </Suspense>
     </main>
   );
 }
