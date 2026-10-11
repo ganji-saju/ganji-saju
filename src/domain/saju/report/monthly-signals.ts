@@ -76,6 +76,11 @@ export function relationOf(a: string, b: string): BranchRelationKind | null {
   return RELATION_CHECKS.find(([, check]) => check(a, b))?.[0] ?? null;
 }
 
+/** 두 지지가 이루는 관계 전부(인사 = 형·해처럼 겹칠 수 있다). */
+export function relationsOf(a: string, b: string): BranchRelationKind[] {
+  return RELATION_CHECKS.filter(([, check]) => check(a, b)).map(([kind]) => kind);
+}
+
 function yongsinElements(yongsin: SajuYongsin | null | undefined) {
   const toElement = (ref: { type: string; value: string }): Element | null =>
     ref.type === 'element' ? (ref.value as Element)

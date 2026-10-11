@@ -16,6 +16,16 @@ const RELATIONSHIP_LABELS: Record<CompatibilityRelationshipSlug, string> = {
   partner: '동업·파트너',
 };
 
+/**
+ * 2026-10-11 — 궁합 AI 에는 기둥의 지지 글자(branch·ganzi)를 넘기지 않는다. 넘기면 관계 근거의 "충" 을 보고
+ *   기둥에서 글자를 찾아 "해와 사의 충" 처럼 지지 이름을 본문에 쓴다. 두 사람 사이 합충은 pairSignals 가 뜻으로 전달한다.
+ */
+export function compatNatalEvidence(data: SajuDataV1 | SajuDataV2) {
+  const evidence = buildNatalReadingEvidence(data);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return { ...evidence, pillars: evidence.pillars.map(({ branch, ganzi, ...rest }) => rest) };
+}
+
 /** 두 명식의 안정적 식별 문자열(네 기둥 간지). 캐시 키 산출에만 사용 — 사용자 노출 없음. */
 function chartKey(data: SajuDataV1 | SajuDataV2): string {
   const p = data.pillars;
@@ -28,7 +38,7 @@ export function buildCompatibilityInterpretationInput(
   partnerName: string
 ): CompatibilityInterpretationInput {
   return {
-    natalEvidence: { self: buildNatalReadingEvidence(interpretation.selfData), partner: buildNatalReadingEvidence(interpretation.partnerData) },
+    natalEvidence: { self: compatNatalEvidence(interpretation.selfData), partner: compatNatalEvidence(interpretation.partnerData) },
     pairSignals: computePairSignals({
       self: interpretation.selfData,
       partner: interpretation.partnerData,

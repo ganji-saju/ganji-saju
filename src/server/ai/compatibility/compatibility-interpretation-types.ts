@@ -1,4 +1,6 @@
-import type { NatalReadingEvidence } from '@/domain/saju/report/natal-reading-evidence';
+import type { compatNatalEvidence } from './compatibility-interpretation-content';
+
+type CompatNatalEvidence = ReturnType<typeof compatNatalEvidence>;
 // 2026-05-23 — 궁합 LLM 깊은 풀이 타입(②-b). ohaeng-guidance 패턴.
 //   유료 §8 deepSections 를 LLM 으로 더 깊게 생성. 플래그 OFF 기본 → 결정론 fallback.
 import type { CompatibilityRelationshipSlug } from '@/content/moonlight';
@@ -12,7 +14,7 @@ export interface CompatibilityInterpretationSection {
 
 /** LLM/캐시 입력 — 결정론 궁합 해석에서 파생한 자체 완결 grounding. */
 export interface CompatibilityInterpretationInput {
-  natalEvidence?: { self: NatalReadingEvidence; partner: NatalReadingEvidence };
+  natalEvidence?: { self: CompatNatalEvidence; partner: CompatNatalEvidence };
   /** 2026-10-11 — 두 사람 사이의 관계 근거(서로의 십성 역할·천간합·배우자 자리 합충·교차 합충·보완·지금 대운). */
   pairSignals?: string[];
   relationship: CompatibilityRelationshipSlug;
