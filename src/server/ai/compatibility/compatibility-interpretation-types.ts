@@ -13,6 +13,8 @@ export interface CompatibilityInterpretationSection {
 /** LLM/캐시 입력 — 결정론 궁합 해석에서 파생한 자체 완결 grounding. */
 export interface CompatibilityInterpretationInput {
   natalEvidence?: { self: NatalReadingEvidence; partner: NatalReadingEvidence };
+  /** 2026-10-11 — 두 사람 사이의 관계 근거(서로의 십성 역할·천간합·배우자 자리 합충·교차 합충·보완·지금 대운). */
+  pairSignals?: string[];
   relationship: CompatibilityRelationshipSlug;
   relationshipLabel: string;
   selfName: string;

@@ -4,7 +4,7 @@ import { CLASSIC_READING_INSTRUCTIONS, READING_SCOPE_INSTRUCTIONS } from '@/serv
 import type { CompatibilityInterpretationInput } from './compatibility-interpretation-types';
 
 export const COMPATIBILITY_INTERPRETATION_MIN_SECTIONS = 3;
-export const COMPATIBILITY_INTERPRETATION_MAX_SECTIONS = 5;
+export const COMPATIBILITY_INTERPRETATION_MAX_SECTIONS = 6;
 export const COMPATIBILITY_INTERPRETATION_MIN_BODY = 60;
 export const COMPATIBILITY_INTERPRETATION_MAX_BODY = 1200;
 
@@ -25,6 +25,7 @@ ${READING_SCOPE_INSTRUCTIONS.compatibility}
 - 제공된 점수·잘 맞는 지점·조심할 지점·4축(갈등/대화/돈/거리) 자료를 근거로, 결정론 요약보다 한 단계 더 깊고 구체적인 해석을 쓴다.
 - 두 사람의 이름을 자연스럽게 부르며, 조건부 장면(연락·서운함·돈 결정·거리 등)을 예로 든다. 실제로 그런 일이 있었다고 단정하지 않는다.
 - 각 섹션은 "확인된 두 사람의 차이 → 잘 맞을 조건과 부담 조건 → 서로 확인할 질문"의 흐름으로 쓴다.
+- 섹션 주제(2026-10-11, 5~6개): ① 서로에게 어떤 존재인가(관계 근거의 십성 역할) ② 끌림과 편안함(천간합·배우자 자리 합충·보완 기운) ③ 부딪히는 장면과 푸는 법(충·형·원진 근거) ④ 돈과 생활을 함께할 때 ⑤ 앞으로 함께할 시기(두 사람의 지금 대운과 올해 흐름 — 사건 예고 금지) ⑥ 서로에게 건넬 대화 문장. 관계 근거(pairSignals)에 있는 사실만 쓰고, 사주 자리 이름(연지·일지 등) 대신 그 자리의 뜻으로 쓴다. 지나온 시기는 다루지 않는다.
 
 [출력 — JSON 만]
 다음 형식의 JSON 객체 하나만 출력한다. 머리말·코드펜스·설명 없이 JSON 만:
@@ -43,6 +44,7 @@ export function buildCompatibilityInterpretationUserMessage(
 
   return [
     input.natalEvidence ? `각 사람의 원국 근거: ${JSON.stringify(input.natalEvidence)}` : '원국 상세 근거 없음: 제공된 비교 근거 안에서만 설명',
+    input.pairSignals?.length ? `두 사람 사이의 관계 근거(계산값):\n${input.pairSignals.map((line) => `- ${line}`).join('\n')}` : '',
     `관계 유형: ${input.relationshipLabel}`,
     `두 사람: ${input.selfName}(${input.selfElementLabel}) · ${input.partnerName}(${input.partnerElementLabel})`,
     `궁합 점수: ${input.score}점 (${input.scoreLabel}, 내부 비교 지표이며 성공·결혼 확률이 아님)`,
