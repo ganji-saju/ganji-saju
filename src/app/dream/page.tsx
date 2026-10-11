@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { DreamSituationPicker } from '@/components/dream/dream-situation-picker';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -236,6 +237,8 @@ export default function DreamPage() {
                   ))}
                 </div>
               </article>
+
+              <DreamSituationPicker key={meaning.keyword} meaning={meaning} />
 
               {/* 행동 가이드 — 꿈을 떠올린 직후 가볍게 해볼 한 문장 */}
               {meaning.action ? (
