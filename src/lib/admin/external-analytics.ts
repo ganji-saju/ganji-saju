@@ -3,6 +3,7 @@
 //   source별 configured/ok/error 상태와 null gap-fill 을 명시한다.
 import { createSign } from 'node:crypto';
 import { recentKstDateKeys, shiftDateKey } from './analytics-rollup';
+import { ADMIN_PERIOD_MAX_DAYS } from './metric-periods';
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_ANALYTICS_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
@@ -475,7 +476,7 @@ export async function getExternalAnalyticsSnapshot(
   env: EnvMap = process.env,
   fetcher: FetchLike = fetch
 ): Promise<ExternalAnalyticsSnapshot> {
-  const days = Math.max(1, Math.min(365, Math.floor(windowDays) || 30));
+  const days = Math.max(1, Math.min(ADMIN_PERIOD_MAX_DAYS, Math.floor(windowDays) || 30));
   const axis = recentKstDateKeys(days, axisEnd);
   // '지금' 이 필요한 자리(생성시각·미래날짜 clamp)는 실제 시계를 쓴다.
   const generatedAt = new Date();

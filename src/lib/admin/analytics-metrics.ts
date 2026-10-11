@@ -9,6 +9,7 @@ import {
   type InflowUtm,
 } from './analytics-rollup';
 import { groupReferrers } from './referrer-labels';
+import { ADMIN_PERIOD_MAX_DAYS } from './metric-periods';
 
 export interface DailyMetricPoint {
   date: string;
@@ -164,7 +165,8 @@ export async function getDailyMetrics(
   windowDays: number,
   now: Date = new Date()
 ): Promise<AnalyticsSnapshot> {
-  const days = Math.max(1, Math.min(365, Math.floor(windowDays) || 30));
+  // 윤년 1년(366일)이 마지막 하루를 잃지 않게 기간 모듈의 공통 상한을 쓴다.
+  const days = Math.max(1, Math.min(ADMIN_PERIOD_MAX_DAYS, Math.floor(windowDays) || 30));
   const axis = recentKstDateKeys(days, now);
   const fromKey = axis[0]!;
   const toKey = axis[axis.length - 1]!;

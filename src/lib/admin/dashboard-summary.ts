@@ -16,6 +16,7 @@ import {
 import type { AdminAction } from '@/lib/admin/access-log';
 import {
   kstNoonDate,
+  kstTodayKey,
   resolveAdminPeriod,
   type AdminPeriod,
 } from './metric-periods';
@@ -103,7 +104,15 @@ export function labelForAdminAction(action: string): string {
 /** 종전 호출 계약(오늘까지 N일). 새 코드는 AdminPeriod 를 넘긴다. */
 export type DashboardWindow = number;
 
-/** 유입·일별 지표 묶음(getDailyMetrics 1회 결과에서 화면이 쓰는 부분만). */
+/** 날짜별·주별 표의 최소 일수(4주). 선택 기간이 더 길면 그 기간을 쓴다. */
+export const DAILY_TABLE_MIN_DAYS = 28;
+/** 미래에서 시작하는 기간(주소 직접 입력)은 넓히지 않는다 — 과거 실적이 미래 칸과 섞인다. */
+export function dailyTableDays(period: Pick<AdminPeriod, 'days' | 'startKey'>, todayKey: string): number {
+  if (period.startKey > todayKey) return period.days;
+  return Math.max(period.days, DAILY_TABLE_MIN_DAYS);
+}
+
+/** 유입·일별 지표 묶음. daily 는 표용이라 dailyTableDays(기간) 만큼이다(유입 상위는 선택 기간). */
 export interface AdminAnalyticsPart {
   topReferrers: InflowAggEntry[];
   topUtm: InflowAggEntry[];
@@ -184,8 +193,18 @@ export function getAdminDashboardParts(
     analytics: withClient(
       'analytics(inflow)',
       async (c) => {
-        const snap = await getDailyMetrics(c, windowDays, kstNoonDate(endKey));
-        return { topReferrers: snap.topReferrers, topUtm: snap.topUtm, daily: snap.daily };
+        // 2026-10-11 — 표(날짜별·주별)는 기간이 짧아도 최근 4주를 보여 준다. 기본 기간이 '오늘'이라
+        //   맨 위로 올린 표가 한 줄뿐이었다. 유입 상위는 선택 기간 그대로(창이 다르면 따로 1회 더 조회).
+        const tableDays = dailyTableDays(period, kstTodayKey());
+        const [snap, tableSnap] = await Promise.all([
+          getDailyMetrics(c, windowDays, kstNoonDate(endKey)),
+          tableDays === windowDays ? null : getDailyMetrics(c, tableDays, kstNoonDate(endKey)),
+        ]);
+        return {
+          topReferrers: snap.topReferrers,
+          topUtm: snap.topUtm,
+          daily: (tableSnap ?? snap).daily,
+        };
       },
       null
     ),
