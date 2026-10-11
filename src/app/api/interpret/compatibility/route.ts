@@ -11,7 +11,8 @@ import { createClient } from '@/lib/supabase/server';
 import { generateCompatibilityInterpretation } from '@/server/ai/compatibility/generate-compatibility-interpretation';
 
 export const runtime = 'nodejs';
-export const maxDuration = 120;
+// 2026-10-12 — 120→180. 풀이 1회 27~35초 × 검증 재시도 최대 3회(generate 의 시간 예산 160초 + 앞뒤 여유 20초).
+export const maxDuration = 180;
 
 const RELATIONSHIPS: CompatibilityRelationshipSlug[] = ['lover', 'family', 'friend', 'partner'];
 

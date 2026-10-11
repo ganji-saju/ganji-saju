@@ -49,6 +49,15 @@ export interface GenerateCompatibilityInterpretationArgs {
 }
 
 const MAX_OUTPUT_TOKENS = 6000;
+// 2026-10-12 — 섹션 6개 풀이는 1회 27~30초라 30초 제한에 자주 걸렸다(로컬 실측 8회 중 3회). 호출 제한은 55초로,
+//   대신 route maxDuration(180초) 안에서 끝나도록(예산 160초 + 앞뒤 여유 20초) 남은 시간이 한 번의 호출보다 짧으면 다시 시도하지 않는다.
+export const COMPATIBILITY_LLM_TIMEOUT_MS = 55_000;
+export const COMPATIBILITY_LLM_BUDGET_MS = 160_000;
+
+/** 지금까지 쓴 시간으로 다음 호출을 시작해도 되는지(최악의 경우에도 예산 안에서 끝나는지). */
+export function canStartCompatibilityAttempt(elapsedMs: number): boolean {
+  return elapsedMs + COMPATIBILITY_LLM_TIMEOUT_MS <= COMPATIBILITY_LLM_BUDGET_MS;
+}
 
 function toSections(
   parsed: { title: string; body: string }[]
@@ -63,6 +72,8 @@ function toSections(
 export async function generateCompatibilityInterpretation(
   args: GenerateCompatibilityInterpretationArgs
 ): Promise<CompatibilityInterpretationResult> {
+  // 시간 예산은 함수 진입부터 잰다(캐시 조회 포함) — route 인증 등 앞단 몇 초와 끝의 저장·기록은 예산 밖 여유(20초)로 둔다.
+  const startedAt = Date.now();
   const env = args.env ?? process.env;
   const recordRun = args.recordRun ?? recordLlmRun;
   const userId = args.userId ?? null;
@@ -109,7 +120,7 @@ export async function generateCompatibilityInterpretation(
 
   const client =
     args.client ??
-    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, timeoutMs: 30_000, feature: 'compatibility', userId });
+    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, timeoutMs: COMPATIBILITY_LLM_TIMEOUT_MS, feature: 'compatibility', userId });
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildCompatibilityInterpretationUserMessage(input);
   let lastReasons: string[] = [];
@@ -117,6 +128,10 @@ export async function generateCompatibilityInterpretation(
   let feedback: string[] = [];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (!canStartCompatibilityAttempt(Date.now() - startedAt)) {
+      lastReasons = [...lastReasons, '시간 예산 초과로 재시도 중단'];
+      break;
+    }
     let raw = '';
     try {
       // 재시도는 직전 탈락 사유를 같이 넘긴다 — 같은 입력만 다시 보내면 같은 실수를 반복한다.

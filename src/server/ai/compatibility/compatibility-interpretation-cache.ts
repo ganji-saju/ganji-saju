@@ -5,7 +5,7 @@ import type { CompatibilityInterpretationInput } from './compatibility-interpret
 
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
 // v4(2026-10-11): 두 사람 관계 근거(pairSignals)·섹션 5~6개.
-export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v5-no-branch-names';
+export const COMPATIBILITY_INTERPRETATION_PROMPT_VERSION = 'compatibility-interpretation/v6-half-harmony-fix';
 
 export const COMPATIBILITY_INTERPRETATION_CACHE_TTL_DAYS = 30;
 
