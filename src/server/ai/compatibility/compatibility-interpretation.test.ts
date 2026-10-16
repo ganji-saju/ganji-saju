@@ -8,7 +8,7 @@ import {
   parseCompatibilitySections,
   validateCompatibilitySections,
 } from './compatibility-interpretation-validator';
-import { generateCompatibilityInterpretation } from './generate-compatibility-interpretation';
+import { canStartCompatibilityAttempt, generateCompatibilityInterpretation } from './generate-compatibility-interpretation';
 import { createInMemoryCompatibilityInterpretationCacheStore } from './compatibility-interpretation-cache-store';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
@@ -301,4 +301,19 @@ test('summarizeBranchInteraction: 관계 문장에 지지 이름을 쓰지 않�
     const r = summarizeBranchInteraction(a, b);
     assert.doesNotMatch(r.body, /[자축인묘진사오미신유술해][와과] /, `${a}${b}: ${r.body}`);
   }
+});
+
+// 2026-10-12 — 관계표 키 순서가 거꾸로라 판정되지 않던 짝(반합 3·파 1). 두 순서 모두 잡혀야 한다.
+test('summarizeBranchInteraction: 신자·해묘·유축 반합과 축진 파를 두 순서 모두 판정한다', () => {
+  for (const [a, b, label] of [['申', '子', '반합'], ['亥', '卯', '반합'], ['酉', '丑', '반합'], ['辰', '丑', '파']] as const) {
+    for (const [x, y] of [[a, b], [b, a]] as const) {
+      assert.match(summarizeBranchInteraction(x, y).body, new RegExp(`${label}:`), `${x}${y}`);
+    }
+  }
+});
+
+test('canStartCompatibilityAttempt: 최악의 경우에도 route 시간(180초) 안에 끝나는 시도만 시작한다', () => {
+  assert.equal(canStartCompatibilityAttempt(0), true);
+  assert.equal(canStartCompatibilityAttempt(65_000), true); // 30초짜리 두 번 탈락해도 세 번째
+  assert.equal(canStartCompatibilityAttempt(106_000), false); // 55초 시간 초과 두 번 뒤엔 멈춘다
 });

@@ -42,7 +42,7 @@ const BRANCH_SIX_HARMONIES = new Map<string, string>([
 
 const BRANCH_CLASHES = new Set<string>(['子-午', '丑-未', '寅-申', '卯-酉', '辰-戌', '巳-亥']);
 const BRANCH_HARMS = new Set<string>(['子-未', '丑-午', '寅-巳', '卯-辰', '申-亥', '酉-戌']);
-const BRANCH_BREAKS = new Set<string>(['子-酉', '卯-午', '辰-丑', '未-戌', '寅-亥', '巳-申']);
+const BRANCH_BREAKS = new Set<string>(['子-酉', '卯-午', '丑-辰', '未-戌', '寅-亥', '巳-申']);
 const BRANCH_PUNISHMENTS = new Set<string>([
   '寅-巳',
   '巳-申',
@@ -57,15 +57,16 @@ const BRANCH_PUNISHMENTS = new Set<string>([
   '亥-亥',
 ]);
 
+// 2026-10-12 — 키는 canonicalPairKey 순서(자축인묘…)여야 한다. 申-子·亥-卯·酉-丑·辰-丑(파) 가 거꾸로 적혀 한 번도 판정되지 않았다.
 const HALF_HARMONIES = new Map<string, string>([
-  ['申-子', '수 반합'],
+  ['子-申', '수 반합'],
   ['子-辰', '수 반합'],
-  ['亥-卯', '목 반합'],
+  ['卯-亥', '목 반합'],
   ['卯-未', '목 반합'],
   ['寅-午', '화 반합'],
   ['午-戌', '화 반합'],
   ['巳-酉', '금 반합'],
-  ['酉-丑', '금 반합'],
+  ['丑-酉', '금 반합'],
 ]);
 
 const RELATIONSHIP_LENS: Record<
