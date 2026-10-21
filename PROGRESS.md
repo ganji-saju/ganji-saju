@@ -1,5 +1,10 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — #965(shadcn 필요 시 실행) 머지·배포 확인
+
+- PR #965 최신 커밋 2d766ffc 검사 7종 전부 통과(CI·Playwright E2E·CodeQL 요약 포함) → squash 머지 ed059b2a → staging 전용 커밋 0건 확인 후 fast-forward(1f004454..ed059b2a).
+- 배포: ed059b2a Production·Preview(staging) success. `vercel inspect ganjisaju.kr` 가 새 배포(dpl_4m4NhFamGzbZMTSjS5KM6A3y4oum)를 가리킴. 운영 `/`·`/saju-report` 의 CSS 파일 7개 이름이 배포 전과 **전부 동일**(파일명=내용 기준이라 CSS 무변화). `/`·`/saju-report`·`/privacy`·`/pricing` 200. dependabot 열린 경고 0.
+
 ## 2026-10-21 — shadcn 을 설치 의존성에서 빼고 필요할 때만 npx 로 실행 (#965)
 
 - 이유: shadcn CLI(devDependency)가 MCP 서버 묶음(hono·express 등)을 끌어와 dependabot 경고·업데이트 PR 이 반복(#30·#31). 2026-09-03 제거 시도는 `globals.css` 의 `@import "shadcn/tailwind.css"`(패키지 export) 때문에 빌드가 깨져 되돌렸었다.
