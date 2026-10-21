@@ -1,5 +1,13 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — 개인정보처리방침 v1.0.5 발행 + 무통장 계좌 반영
+
+- 무통장 계좌: 사용자가 Vercel env `REPORT_BANK_NAME`·`REPORT_BANK_ACCOUNT`·`REPORT_BANK_HOLDER` 입력(Production·Preview·Development, 이름만 확인·값 미조회) → 운영·staging 재배포(`vercel redeploy --scope ganji-sajus-projects`, 기본 scope 가 다른 팀이라 지정 필요) → 운영 `/saju-report` 에 "무통장 입금" 선택지 노출 확인.
+- 개인정보처리방침: 사용자 승인으로 DB `policy_versions` privacy **v1.0.5**(시행 2026-10-21) 발행. v1.0.4 본문을 DB 에서 그대로 이어받아 5곳만 치환(각 앵커 1회 등장 확인): 비회원 주문 수집 항목 · 이용 목적 · 위탁(Solapi 문자 추가, Resend 이메일) · 국외이전(Resend) · 보유기간(1년 삭제, 거래기록 5년). 번들(v1.0.4)은 건드리지 않음. 렌더된 `/privacy` 에서 v1.0.5·새 문장·기존 상호/NICEPAY/탈퇴 후 보관 문단 유지 확인.
+- 보안 경고(dependabot #30, vite 8.2.0~8.2.3 launch-editor 윈도우 `%` 미이스케이프, 개발용 간접 의존·운영 무관): dependabot PR #960(vite 8.3.5) 검사 전부 통과·lock libc 블록 20→26(삭제 없음) 확인 후 머지 → staging 동기화·운영/staging 배포 성공 → 경고 fixed. #957(일반 업데이트 12개)은 손대지 않음.
+- 결정(사용자, 2026-10-21): 홈 `/` 은 그대로 두고 랜딩은 `/saju-report` 주소로만 운영.
+- 남은 일(사용자): 거래기록 5년·현금영수증 의무 발행 업종 여부 ⚠️ 검증필요 · 후기 원문 · 실제 무통장 신청 1건으로 안내 문구·접수 문자 확인.
+
 ## 2026-10-21 — 한 장짜리 랜딩 머지·배포 확인 (#958)
 
 - 수행: 091 운영 적용(위 섹션 참고) → PR #958 최신 커밋 be665b35 검사 전부 통과(CodeQL 요약 포함) → main 스쿼시 머지 08ffb7f5 → staging 전용 커밋 0건 확인 후 fast-forward(94b26b0f..08ffb7f5).
