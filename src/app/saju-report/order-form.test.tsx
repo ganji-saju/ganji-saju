@@ -119,6 +119,17 @@ describe('랜딩 주문서', () => {
     expect(host.textContent).toContain('휴대폰 번호를 확인해 주세요.');
   });
 
+  it('음력을 고르면 윤달 표시가 나오고 요청에 실린다', async () => {
+    await mount(true);
+    expect(host.querySelector('#report-order-leap')).toBeNull();
+    await fillAll();
+    await click('#report-order-calendar-lunar');
+    await click('#report-order-leap');
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: 'x' }), { status: 400 }));
+    await submit();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ calendarType: 'lunar', lunarLeap: true });
+  });
+
   it('주소의 #order-new-year 로 들어오면 신년운세가 골라져 있다', async () => {
     window.location.hash = '#order-new-year';
     await mount(true);

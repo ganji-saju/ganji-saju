@@ -117,3 +117,24 @@ describe('이름 글자 제한(문자 악용 방지)', () => {
     expect(parseReportOrderForm({ ...base, name: 'Kim Minji' }).ok).toBe(true);
   });
 });
+
+describe('음력 윤달', () => {
+  it('윤달을 고르면 윤달 날짜를 양력으로 바꿔 넘긴다', async () => {
+    const { Lunar } = await import('lunar-typescript');
+    const { parseReportOrderForm } = await import('./parse-report-order');
+    const solar = Lunar.fromYmd(2023, -2, 1).getSolar();
+    const result = parseReportOrderForm({ ...base, calendarType: 'lunar', lunarLeap: true, year: '2023', month: '2', day: '1' });
+    expect(result.ok && result.order.birth).toMatchObject({
+      calendarType: 'solar', year: String(solar.getYear()), month: String(solar.getMonth()), day: String(solar.getDay()),
+    });
+  });
+  it('그 해에 없는 윤달이면 안내', async () => {
+    const { parseReportOrderForm } = await import('./parse-report-order');
+    expect(parseReportOrderForm({ ...base, calendarType: 'lunar', lunarLeap: true, year: '1990', month: '4', day: '1' }))
+      .toEqual({ ok: false, error: '그 해에는 그 달의 윤달이 없어요. 윤달 표시를 확인해 주세요.' });
+  });
+  it('양력에는 윤달 표시가 무시된다', async () => {
+    const { parseReportOrderForm } = await import('./parse-report-order');
+    expect(parseReportOrderForm({ ...base, lunarLeap: true }).ok && true).toBe(true);
+  });
+});

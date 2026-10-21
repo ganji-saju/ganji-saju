@@ -1,4 +1,5 @@
 // 랜딩 주문서 검증(서버). 풀이는 관리자 외부 주문 PDF 생성기로 만들므로 생년월일 입력은 그 생성기의 형식으로 바꿔 저장한다.
+import { Lunar } from 'lunar-typescript';
 import { parseExternalReportRequest, type ExternalReportRequest } from '@/lib/admin/external-report';
 import { HOUR_SLOTS, type ReportPayMethod, type ReportProduct } from './report-order';
 
@@ -41,15 +42,26 @@ export function parseReportOrderForm(payload: unknown): ParsedReportOrder {
   if (p.consentPrivacy !== true || p.consentTerms !== true) return invalid('개인정보 수집·이용과 이용약관에 동의해 주세요.');
 
   const unknownBirthTime = slot.id === 'unknown';
+  let calendarType: 'solar' | 'lunar' = p.calendarType === 'lunar' ? 'lunar' : 'solar';
+  let [year, month, day] = [str(p.year), str(p.month), str(p.day)];
+  // 윤달: 생성기 입력은 윤달 칸이 없으므로 여기서 양력으로 바꿔 넘긴다(lunar-typescript 는 음수 달 = 윤달).
+  if (calendarType === 'lunar' && p.lunarLeap === true) {
+    try {
+      const solar = Lunar.fromYmd(Number(year), -Number(month), Number(day)).getSolar();
+      [calendarType, year, month, day] = ['solar', String(solar.getYear()), String(solar.getMonth()), String(solar.getDay())];
+    } catch {
+      return invalid('그 해에는 그 달의 윤달이 없어요. 윤달 표시를 확인해 주세요.');
+    }
+  }
   const parsed = parseExternalReportRequest({
     kind: product,
     name,
     gender: p.gender,
-    calendarType: p.calendarType === 'lunar' ? 'lunar' : 'solar',
+    calendarType,
     timeRule: 'standard',
-    year: str(p.year),
-    month: str(p.month),
-    day: str(p.day),
+    year,
+    month,
+    day,
     hour: slot.hour,
     minute: slot.minute,
     unknownBirthTime,

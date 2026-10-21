@@ -47,6 +47,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar'>('solar');
+  const [lunarLeap, setLunarLeap] = useState(false);
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
   const [day, setDay] = useState('');
@@ -101,7 +102,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product, payMethod, name, gender, calendarType, year, month, day, hourSlot, phone, email, memo,
+          product, payMethod, name, gender, calendarType, lunarLeap: calendarType === 'lunar' && lunarLeap, year, month, day, hourSlot, phone, email, memo,
           cashReceipt: payMethod === 'bank' && cashReceipt, consentPrivacy, consentTerms, source,
         }),
       });
@@ -190,6 +191,12 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
             </label>
           ))}
         </div>
+        {calendarType === 'lunar' ? (
+          <label className={styles.check} htmlFor="report-order-leap">
+            <input id="report-order-leap" type="checkbox" checked={lunarLeap} onChange={(e) => setLunarLeap(e.target.checked)} />
+            윤달에 태어났어요
+          </label>
+        ) : null}
         <div className={styles.row}>
           <select id="report-order-year" aria-label="태어난 해" className={styles.select} value={year} onChange={(e) => setYear(e.target.value)}>
             <option value="">년</option>
