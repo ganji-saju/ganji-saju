@@ -101,3 +101,13 @@ describe('getReportOrderByToken', () => {
     expect(service.from).not.toHaveBeenCalled();
   });
 });
+
+describe('sumConfirmedBankDeposits', () => {
+  it('기간 안 입금 확인된 무통장 주문만 합산(환불·취소 제외)', async () => {
+    const { sumConfirmedBankDeposits } = await import('./report-order-store');
+    (query as Record<string, unknown>).gte = vi.fn().mockReturnThis();
+    query.in.mockResolvedValueOnce({ data: [{ amount: 29900 }, { amount: 19900 }], error: null } as never);
+    await expect(sumConfirmedBankDeposits('2026-10-01T00:00:00+09:00')).resolves.toEqual({ count: 2, amount: 49800 });
+    expect(query.in).toHaveBeenCalledWith('status', ['paid', 'generated', 'sent']);
+  });
+});

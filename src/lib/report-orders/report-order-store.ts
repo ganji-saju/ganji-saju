@@ -175,3 +175,15 @@ export async function listReportOrders(filter: ReportOrderFilter, page = 1): Pro
   const rows = (data ?? []) as Row[];
   return { items: rows.slice(0, PAGE_SIZE).map(mapRow), hasMore: rows.length > PAGE_SIZE };
 }
+
+/** 관리자 목록 상단: 기간 안에 입금 확인된 무통장 금액 합계(대시보드 매출엔 카드만 잡힌다). */
+export async function sumConfirmedBankDeposits(sinceIso: string): Promise<{ count: number; amount: number }> {
+  const service = await createServiceClient();
+  const { data, error } = await service.from(TABLE).select('amount')
+    .eq('pay_method', 'bank')
+    .gte('deposit_confirmed_at', sinceIso)
+    .in('status', ['paid', 'generated', 'sent']);
+  if (error) throw new Error('report_order_read_failed');
+  const rows = (data ?? []) as { amount: number }[];
+  return { count: rows.length, amount: rows.reduce((sum, r) => sum + Number(r.amount), 0) };
+}

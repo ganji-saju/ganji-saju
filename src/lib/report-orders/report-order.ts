@@ -17,6 +17,16 @@ export const REPORT_PACKAGE_BY_PRODUCT = {
   'new-year': 'report_new_year',
 } as const satisfies Record<ReportProduct, string>;
 
+export const REPORT_STATUS_LABEL: Record<ReportOrderStatus, string> = {
+  pending_payment: '결제 전',
+  awaiting_deposit: '입금 대기',
+  paid: '결제 완료',
+  generated: '풀이 생성됨',
+  sent: '발송 완료',
+  cancelled: '취소',
+  refunded: '환불',
+};
+
 export const REPORT_PRODUCT_LABEL: Record<ReportProduct, string> = {
   lifetime: '종합사주',
   'new-year': '2027 신년운세',

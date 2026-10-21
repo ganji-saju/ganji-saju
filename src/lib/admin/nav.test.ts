@@ -112,3 +112,11 @@ test('내비: PDF 생성 기록은 생성 메뉴 바로 아래에 있고 상세�
   assert.equal(getActiveNavHref('/admin/external-report/history'), '/admin/external-report/history');
   assert.equal(getActiveNavHref('/admin/external-report/history/saved-id'), '/admin/external-report/history');
 });
+
+test('내비: 랜딩 주문은 super_admin 에게만, 상세도 같은 메뉴를 활성화한다', () => {
+  const admin = flattenNavItems(getVisibleNavGroups('admin')).map((item) => item.href);
+  const superAdmin = flattenNavItems(getVisibleNavGroups('super_admin')).map((item) => item.href);
+  assert.ok(!admin.includes('/admin/report-orders'));
+  assert.ok(superAdmin.includes('/admin/report-orders'));
+  assert.equal(getActiveNavHref('/admin/report-orders/some-id'), '/admin/report-orders');
+});

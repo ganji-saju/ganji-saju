@@ -1,6 +1,8 @@
 import 'server-only';
 import { solapiSendText } from '@/lib/kakao/vendor';
 import { formatWon } from '@/lib/payments/catalog';
+import { isEmailNotificationConfigured, sendNotificationEmail } from '@/lib/email/notification-email';
+import { CANONICAL_SITE_URL } from '@/lib/site';
 import { getReportBankAccount } from './bank-account';
 import { REPORT_PRODUCT_LABEL } from './report-order';
 import type { ReportOrderRow } from './report-order-store';
@@ -27,4 +29,28 @@ export async function sendOrderReceivedText(order: ReportOrderRow): Promise<void
   } catch (error) {
     console.error('[report-orders] 접수 문자 실패', { orderNo: order.orderNo, error: error instanceof Error ? error.message : 'unknown' });
   }
+}
+
+/** 상담사 확인 뒤 결과 링크 발송(문자 + 이메일). 하나라도 성공하면 발송으로 본다 — 결과는 주문에 남긴다. */
+export async function sendReportReadyMessages(order: ReportOrderRow): Promise<{ sms: boolean; email: boolean }> {
+  if (!order.resultToken || !order.name) return { sms: false, email: false };
+  const product = REPORT_PRODUCT_LABEL[order.product];
+  const url = `${CANONICAL_SITE_URL}/r/${order.resultToken}`;
+  const sms = order.phone
+    ? await solapiSendText({
+        to: order.phone,
+        text: `[간지사주] ${order.name}님, 요청하신 ${product} 풀이가 준비됐어요.\n${url}\n링크를 열면 풀이를 보고 PDF로 저장할 수 있어요. 링크는 1년간 열 수 있어요.`,
+      }).then((r) => r.ok, () => false)
+    : false;
+  const email = order.email && isEmailNotificationConfigured()
+    ? await sendNotificationEmail({
+        to: order.email,
+        displayName: order.name,
+        title: `${product} 풀이가 준비됐어요`,
+        body: '아래 버튼으로 풀이를 보고 PDF로 저장할 수 있어요. 링크는 1년간 열 수 있어요.',
+        url,
+      }).then(() => true, () => false)
+    : false;
+  if (!sms || !email) console.error('[report-orders] 결과 발송 일부 실패', { orderNo: order.orderNo, sms, email });
+  return { sms, email };
 }
