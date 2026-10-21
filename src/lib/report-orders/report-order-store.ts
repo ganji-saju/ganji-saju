@@ -1,5 +1,5 @@
 import 'server-only';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { ExternalReportRequest } from '@/lib/admin/external-report';
 import { canTransition, type ReportOrderStatus, type ReportPayMethod, type ReportProduct } from './report-order';
@@ -54,7 +54,7 @@ function buildOrderNo(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 3600_000).toISOString();
   const ymd = kst.slice(2, 4) + kst.slice(5, 7) + kst.slice(8, 10);
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const tail = [...randomBytes(4)].map((b) => alphabet[b % alphabet.length]).join('');
+  const tail = Array.from({ length: 4 }, () => alphabet[randomInt(alphabet.length)]).join('');
   return `GS-R-${ymd}-${tail}`;
 }
 
