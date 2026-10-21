@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { HOUR_SLOTS, canTransition, maskName, parseReportOrderForm } from './report-order';
+import { HOUR_SLOTS, canTransition, maskName } from './report-order';
+import { parseReportOrderForm } from './parse-report-order';
 
 const base = {
   product: 'lifetime',

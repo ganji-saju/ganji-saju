@@ -2,7 +2,8 @@ import 'server-only';
 import { randomBytes } from 'node:crypto';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { ExternalReportRequest } from '@/lib/admin/external-report';
-import { canTransition, type ReportOrderInput, type ReportOrderStatus, type ReportPayMethod, type ReportProduct } from './report-order';
+import { canTransition, type ReportOrderStatus, type ReportPayMethod, type ReportProduct } from './report-order';
+import type { ReportOrderInput } from './parse-report-order';
 
 const TABLE = 'report_orders';
 const DEPOSIT_DAYS = 3;

@@ -5,7 +5,7 @@ vi.mock('@/lib/supabase/server', () => ({ createServiceClient: vi.fn() }));
 
 import { createServiceClient } from '@/lib/supabase/server';
 import { getPackage } from '@/lib/payments/catalog';
-import type { ReportOrderInput } from './report-order';
+import type { ReportOrderInput } from './parse-report-order';
 import {
   createReportOrder,
   getReportOrderByToken,

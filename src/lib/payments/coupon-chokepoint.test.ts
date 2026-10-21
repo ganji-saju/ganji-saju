@@ -50,7 +50,8 @@ test('PG 결제창을 여는 컴포넌트는 체크아웃 1곳뿐', () => {
       /requestNicepayPayment\s*\(|loadTossPayments\s*\(|\bAUTHNICE\b|^import (?!type\b)[^;]*from\s*['"]@tosspayments\//m.test(f.text) &&
       !f.rel.endsWith('nicepay-checkout.ts')
   ).map((f) => f.rel);
-  assert.deepEqual(hits, ['src/components/membership/toss-membership-checkout.tsx'], hits.join(', '));
+  // 2026-10-21 — 랜딩 주문서(saju-report)는 주문 API 가 돌려준 amount 로만 결제창을 연다(order-form.test.tsx 가 고정).
+  assert.deepEqual(hits.sort(), ['src/app/saju-report/order-form.tsx', 'src/components/membership/toss-membership-checkout.tsx'], hits.join(', '));
 });
 
 // 🔴 타입이 못 잡는 자리. 여기가 어긋나면 confirm:66 / nicepay-return:216 의 금액 대조에서
