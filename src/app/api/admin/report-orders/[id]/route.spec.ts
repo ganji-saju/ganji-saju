@@ -16,7 +16,7 @@ vi.mock('@/lib/admin/external-report', async (orig) => ({
   generateExternalReport: vi.fn(async () => ({ data: { reportNo: 'GS-EXT-1', subjectName: '김민지' }, generationSource: 'openai' })),
   generateExternalNewYearReport: vi.fn(async () => ({ data: { reportNo: 'GS-EXT-NY27-1', subjectName: '김민지' }, generationSource: 'openai' })),
 }));
-vi.mock('@/lib/admin/external-report-history', () => ({ saveExternalReport: vi.fn(async () => ({ id: 'ext-1', createdAt: 'now' })) }));
+vi.mock('@/lib/admin/external-report-history', () => ({ saveExternalReport: vi.fn(async () => ({ id: 'ext-new', createdAt: 'now' })), deleteExternalReport: vi.fn(async () => undefined) }));
 vi.mock('@/lib/payments/order-ledger', () => ({ getPaymentOrderByOrderId: vi.fn(), markPaymentOrderRefunded: vi.fn() }));
 vi.mock('@/lib/payments/nicepay', () => ({ cancelNicepayPayment: vi.fn(async () => ({ resultCode: '0000' })), getNicepayPayment: vi.fn() }));
 vi.mock('@/lib/payments/fulfillment', () => ({ fulfillPaymentOrder: vi.fn(async () => ({ success: true })) }));
@@ -25,6 +25,7 @@ vi.mock('@/lib/report-orders/notify', () => ({ sendReportReadyMessages: vi.fn() 
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult } from '@/lib/report-orders/report-order-store';
 import { generateExternalNewYearReport, generateExternalReport } from '@/lib/admin/external-report';
+import { deleteExternalReport } from '@/lib/admin/external-report-history';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded } from '@/lib/payments/order-ledger';
 import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
 import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
@@ -82,7 +83,7 @@ describe('관리자 랜딩 주문 처리', () => {
     expect(res.status).toBe(200);
     expect(generateExternalReport).toHaveBeenCalled();
     expect(generateExternalNewYearReport).not.toHaveBeenCalled();
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.objectContaining({ external_report_id: 'ext-1' }));
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.objectContaining({ external_report_id: 'ext-new' }));
     vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, product: 'new-year' } as never);
     await call({ action: 'generate' });
     expect(generateExternalNewYearReport).toHaveBeenCalled();
@@ -175,5 +176,18 @@ describe('카드 결제 대기 주문', () => {
     vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 100, tid: 'tid_1' } as never);
     expect((await call({ action: 'confirm_card' })).status).toBe(409);
     expect(fulfillPaymentOrder).not.toHaveBeenCalled();
+  });
+});
+
+describe('풀이 원본이 고아로 남지 않게', () => {
+  it('다시 만들기 성공 → 이전 원본 삭제', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, status: 'generated', externalReportId: 'ext-old' } as never);
+    expect((await call({ action: 'generate' })).status).toBe(200);
+    expect(deleteExternalReport).toHaveBeenCalledWith('ext-old');
+  });
+  it('생성 중 환불 등으로 상태가 바뀌어 저장 실패 → 방금 만든 원본 삭제', async () => {
+    vi.mocked(transitionReportOrder).mockRejectedValueOnce(new Error('report_order_conflict'));
+    expect((await call({ action: 'generate' })).status).toBe(409);
+    expect(deleteExternalReport).toHaveBeenCalledWith('ext-new');
   });
 });

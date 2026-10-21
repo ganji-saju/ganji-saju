@@ -194,29 +194,43 @@ export async function sumConfirmedBankDeposits(sinceIso: string): Promise<{ coun
 
 const RETENTION_DAYS = 365;
 
-/** 보관 기간(발송·종료 후 1년)이 지난 주문의 개인정보·결과 링크를 비우고 풀이 원본을 지운다. 거래 기록 칸은 남긴다. */
+/** 보관 기간(발송·종료·접수 후 1년)이 지난 주문의 풀이 원본을 지우고 개인정보·결과 링크를 비운다. 거래 기록 칸은 남긴다.
+ *  원본을 먼저 지운다 — 실패하면 purged_at 을 찍기 전이라 다음 크론이 다시 시도한다. */
 export async function purgeExpiredReportOrders(now = new Date()): Promise<{ orders: number; reports: number }> {
   const service = await createServiceClient();
   const cutoff = new Date(now.getTime() - RETENTION_DAYS * 86400_000).toISOString();
   const { data, error } = await service.from(TABLE).select('id,external_report_id')
     .is('purged_at', null)
-    .or(`and(status.eq.sent,sent_at.lt.${cutoff}),and(status.in.(cancelled,refunded,pending_payment),updated_at.lt.${cutoff})`);
+    .or([
+      `and(status.eq.sent,sent_at.lt.${cutoff})`,
+      `and(status.in.(cancelled,refunded,pending_payment),updated_at.lt.${cutoff})`,
+      `and(status.in.(awaiting_deposit,paid,generated),created_at.lt.${cutoff})`,
+    ].join(','));
   if (error) throw new Error('report_order_purge_read_failed');
   const rows = (data ?? []) as { id: string; external_report_id: string | null }[];
   if (rows.length === 0) return { orders: 0, reports: 0 };
-
-  const purgedAt = now.toISOString();
-  const { error: updateError } = await service.from(TABLE)
-    .update({ name: null, phone: null, email: null, birth_input: null, memo: null, result_token: null, external_report_id: null, purged_at: purgedAt, updated_at: purgedAt })
-    .in('id', rows.map((r) => r.id));
-  if (updateError) throw new Error('report_order_purge_update_failed');
 
   const reportIds = rows.map((r) => r.external_report_id).filter((id): id is string => Boolean(id));
   if (reportIds.length > 0) {
     const { error: deleteError } = await service.from('admin_external_reports').delete().in('id', reportIds);
     if (deleteError) throw new Error('report_order_purge_delete_failed');
   }
+
+  const purgedAt = now.toISOString();
+  const { error: updateError } = await service.from(TABLE)
+    .update({ name: null, phone: null, email: null, birth_input: null, memo: null, result_token: null, external_report_id: null, purged_at: purgedAt, updated_at: purgedAt })
+    .in('id', rows.map((r) => r.id));
+  if (updateError) throw new Error('report_order_purge_update_failed');
   return { orders: rows.length, reports: reportIds.length };
+}
+
+/** 발송 결과 기록(상태는 바꾸지 않는다 — 발송·다시 보내기 공용). */
+export async function recordReportOrderSendResult(id: string, result: { sms: boolean; email: boolean }): Promise<void> {
+  const service = await createServiceClient();
+  const { error } = await service.from(TABLE)
+    .update({ send_result: { ...result, at: new Date().toISOString() }, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error('report_order_update_failed');
 }
 
 /** 같은 휴대폰 번호로 기간 안에 들어온 주문 수(로그인 없는 주문의 문자 악용 제한 — 인스턴스와 무관한 DB 기준). */
@@ -227,13 +241,4 @@ export async function countRecentReportOrdersByPhone(phone: string, sinceIso: st
     .gte('created_at', sinceIso);
   if (error) throw new Error('report_order_read_failed');
   return count ?? 0;
-}
-
-/** 발송 결과 기록(상태는 바꾸지 않는다 — 발송·다시 보내기 공용). */
-export async function recordReportOrderSendResult(id: string, result: { sms: boolean; email: boolean }): Promise<void> {
-  const service = await createServiceClient();
-  const { error } = await service.from(TABLE)
-    .update({ send_result: { ...result, at: new Date().toISOString() }, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) throw new Error('report_order_update_failed');
 }

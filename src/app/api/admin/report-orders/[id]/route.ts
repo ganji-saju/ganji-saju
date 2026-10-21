@@ -5,7 +5,7 @@ import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase/server';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { generateExternalNewYearReport, generateExternalReport, parseExternalReportRequest } from '@/lib/admin/external-report';
-import { saveExternalReport } from '@/lib/admin/external-report-history';
+import { deleteExternalReport, saveExternalReport } from '@/lib/admin/external-report-history';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded, type TossPaymentObject } from '@/lib/payments/order-ledger';
 import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
 import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
@@ -66,7 +66,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             ? await generateExternalNewYearReport(parsed.input, { signal: req.signal })
             : await generateExternalReport(parsed.input, { signal: req.signal });
           const saved = await saveExternalReport({ actorId: actor, birth: parsed.birth, report });
-          status = (await transitionReportOrder(id, 'generated', { external_report_id: saved.id, generated_at: now() })).status;
+          try {
+            status = (await transitionReportOrder(id, 'generated', { external_report_id: saved.id, generated_at: now() })).status;
+          } catch (error) {
+            // 생성 중 환불·다른 탭 생성 등으로 상태가 바뀌었다 — 연결되지 못한 원본(이름·생년월일 포함)을 남기지 않는다.
+            await deleteExternalReport(saved.id).catch(() => undefined);
+            throw error;
+          }
+          // 다시 만들기: 이전 원본은 더 이상 어디에도 연결되지 않으므로 지운다(보관 기간 삭제 크론은 현재 원본만 본다).
+          if (order.externalReportId && order.externalReportId !== saved.id) {
+            await deleteExternalReport(order.externalReportId).catch(() => undefined);
+          }
           await logAdminAccess({
             actorId: actor, actorRole: check.role, action: 'generate_report_order', targetUser: null,
             meta: { orderNo: order.orderNo, reportNo: report.data.reportNo, generationSource: report.generationSource },
