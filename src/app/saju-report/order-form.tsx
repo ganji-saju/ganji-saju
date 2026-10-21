@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
+import { readConsent } from '@/components/analytics/analytics-consent';
 import { HOUR_SLOTS, type ReportProduct } from '@/lib/report-orders/report-order';
 import styles from './saju-report.module.css';
 
@@ -104,6 +105,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
         body: JSON.stringify({
           product, payMethod, name, gender, calendarType, lunarLeap: calendarType === 'lunar' && lunarLeap, year, month, day, hourSlot, phone, email, memo,
           cashReceipt: payMethod === 'bank' && cashReceipt, consentPrivacy, consentTerms, source,
+          analyticsConsent: readConsent(),
         }),
       });
       const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;

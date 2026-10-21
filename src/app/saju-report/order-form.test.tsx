@@ -91,6 +91,7 @@ describe('랜딩 주문서', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body).toMatchObject({ product: 'lifetime', payMethod: 'card', name: '김민지', hourSlot: 'chuk', consentPrivacy: true, consentTerms: true });
     expect(body.amount).toBeUndefined();
+    expect(body).toHaveProperty('analyticsConsent');
     expect(requestNicepayPayment).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ord_1', amount: 29900, goodsName: '종합사주 1인', method: 'card' }));
   });
 

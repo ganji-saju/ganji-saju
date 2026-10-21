@@ -102,3 +102,15 @@ describe('같은 휴대폰 번호 하루 제한', () => {
     expect(createReportOrder).not.toHaveBeenCalled();
   });
 });
+
+describe('GA 구매 귀속', () => {
+  it('카드 주문에 GA 쿠키 식별자와 손님이 고른 분석 동의를 싣는다(동의를 임의로 주지 않는다)', async () => {
+    const res = await POST(request({ ...form, analyticsConsent: 'granted' }, { cookie: '_ga=GA1.1.111.222' }, '7.7.7.7'));
+    expect(res.status).toBe(200);
+    expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ gaClientId: '111.222', analyticsConsent: 'granted' }));
+  });
+  it('동의 값이 없거나 이상하면 null', async () => {
+    await POST(request({ ...form, analyticsConsent: 'yes' }, {}, '6.6.6.6'));
+    expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ analyticsConsent: null }));
+  });
+});

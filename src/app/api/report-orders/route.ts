@@ -10,6 +10,8 @@ import { createPaymentOrder } from '@/lib/payments/order-ledger';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
+import { readGaIdentifiers } from '@/lib/analytics/ga-identifiers';
+import { GA4_MEASUREMENT_ID } from '@/lib/analytics/ga-config';
 import { REPORT_PACKAGE_BY_PRODUCT } from '@/lib/report-orders/report-order';
 import { parseReportOrderForm } from '@/lib/report-orders/parse-report-order';
 import { countRecentReportOrdersByPhone, createReportOrder } from '@/lib/report-orders/report-order-store';
@@ -61,8 +63,15 @@ export async function POST(req: NextRequest) {
 
   try {
     if (order.payMethod === 'card') {
+      // GA4 구매 전환 귀속: 식별자는 요청 쿠키에서, 동의는 손님 브라우저 값 그대로(없으면 null — 임의로 주지 않는다).
+      const { clientId: gaClientId, sessionId: gaSessionId } = readGaIdentifiers(req.headers.get('cookie'), GA4_MEASUREMENT_ID);
+      const consentRaw = (payload as Record<string, unknown>).analyticsConsent;
+      const analyticsConsent = consentRaw === 'granted' || consentRaw === 'denied' ? consentRaw : null;
       const paymentOrder = await createPaymentOrder({
         userId: null,
+        gaClientId,
+        gaSessionId,
+        analyticsConsent,
         pkg,
         listAmount: price,
         entrySource: 'saju-report',
