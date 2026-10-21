@@ -1,0 +1,52 @@
+// @vitest-environment node
+import { renderToStaticMarkup } from 'react-dom/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
+const notFoundError = new Error('NEXT_NOT_FOUND');
+vi.mock('next/navigation', () => ({ notFound: vi.fn(() => { throw notFoundError; }) }));
+vi.mock('@/lib/report-orders/report-order-store', () => ({ getReportOrderByToken: vi.fn() }));
+vi.mock('@/lib/admin/external-report-history', () => ({ getExternalReport: vi.fn() }));
+vi.mock('@/app/admin/external-report/report-view', () => ({
+  ExternalReportView: ({ report }: { report: { data: { subjectName: string } } }) => <article data-testid="doc">{report.data.subjectName} 풀이</article>,
+  externalReportPrintTitle: () => '간지사주_깊은사주풀이_김민지',
+}));
+
+import { getReportOrderByToken } from '@/lib/report-orders/report-order-store';
+import { getExternalReport } from '@/lib/admin/external-report-history';
+import Page, { generateMetadata } from './page';
+
+const token = 'a'.repeat(43);
+const render = async () => renderToStaticMarkup(await Page({ params: Promise.resolve({ token }) }));
+const sentOrder = { status: 'sent', product: 'lifetime', externalReportId: 'ext-1', purgedAt: null, name: '김민지' };
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(getExternalReport).mockResolvedValue({ report: { kind: 'lifetime', data: { subjectName: '김민지' } } } as never);
+});
+
+describe('/r/[token] 손님 결과 화면', () => {
+  it('발송된 주문이면 풀이와 PDF 저장 버튼', async () => {
+    vi.mocked(getReportOrderByToken).mockResolvedValueOnce(sentOrder as never);
+    const html = await render();
+    expect(html).toContain('김민지 풀이');
+    expect(html).toContain('PDF로 저장');
+    expect(html).toContain('href="/ai-disclaimer"');
+  });
+
+  it.each([
+    ['없는 토큰', null],
+    ['아직 발송 전', { ...sentOrder, status: 'generated' }],
+    ['보관 기간 지남', { ...sentOrder, purgedAt: '2027-10-21' }],
+    ['환불됨', { ...sentOrder, status: 'refunded' }],
+  ])('%s → 모두 같은 찾을 수 없음', async (_label, order) => {
+    vi.mocked(getReportOrderByToken).mockResolvedValueOnce(order as never);
+    await expect(render()).rejects.toBe(notFoundError);
+  });
+
+  it('검색 노출 금지, 공유 미리보기에 이름 없음', async () => {
+    const meta = await generateMetadata();
+    expect(meta.robots).toEqual({ index: false, follow: false });
+    expect(JSON.stringify(meta)).not.toContain('김민지');
+  });
+});
