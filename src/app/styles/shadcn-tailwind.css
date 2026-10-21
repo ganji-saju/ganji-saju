@@ -2,7 +2,10 @@
    2026-10-21 — shadcn 을 설치 의존성에서 빼려고 저장소로 옮겼다. 이 CSS 때문에 패키지가 빌드에 필요했고,
    패키지는 쓰지 않는 서버 부품(hono·express 등)을 끌어와 보안 경고가 반복됐다.
    컴포넌트 추가는 `npm run shadcn -- add <이름>` 으로 필요할 때만 실행한다(package.json 의 CLI 버전과 이 파일 버전을 맞춘다).
-   CLI 버전을 올리면 그 버전의 dist/tailwind.css 로 이 파일도 갱신한다 — 새 컴포넌트가 여기 없는 유틸리티를 쓸 수 있다. */
+   CLI 버전을 올리면 그 버전의 dist/tailwind.css 로 이 파일도 갱신한다 — 새 컴포넌트가 여기 없는 유틸리티를 쓸 수 있다.
+   CLI 를 돌린 뒤엔 diff 를 확인한다(2026-10-21 실측, 4.22.0): 기존 컴포넌트의 클래스와 import 를 바꾸고
+   (`@/lib/utils` → shadcn 의 `cn` 패키지) 그 의존성을 설치하며, macOS 의 npm 은 lock 의 libc 항목을 지운다.
+   shadcn 자체를 다시 설치하거나 globals.css 에 `@import "shadcn/tailwind.css"` 를 되돌려 넣지는 않는다. */
 
 @theme inline {
   @keyframes accordion-down {
