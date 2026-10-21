@@ -47,6 +47,7 @@ describe('/r/[token] 손님 결과 화면', () => {
   it('검색 노출 금지, 공유 미리보기에 이름 없음', async () => {
     const meta = await generateMetadata();
     expect(meta.robots).toEqual({ index: false, follow: false });
+    expect(meta.referrer).toBe('no-referrer');
     expect(JSON.stringify(meta)).not.toContain('김민지');
   });
 });

@@ -45,3 +45,9 @@ test('sanitizeQuery 빈 쿼리 처리', () => {
   assert.equal(sanitizeQuery(''), '');
   assert.equal(sanitizeQuery('?'), '');
 });
+
+// 2026-10-21 — 랜딩 주문 결과 링크(/r/<토큰>)는 토큰 자체가 열람 열쇠다. 분석 도구로 보내면 GA 를 보는 누구나 풀이를 연다.
+test('sanitizePath 결과 링크 토큰을 가린다', () => {
+  assert.equal(sanitizePath('/r/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'), '/r/redacted');
+  assert.equal(sanitizePath('/r'), '/r');
+});

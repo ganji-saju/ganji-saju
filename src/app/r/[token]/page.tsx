@@ -13,6 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: '간지사주 풀이' },
     robots: { index: false, follow: false },
+    // 링크를 눌러 다른 사이트·페이지로 갈 때 주소(= 열람 열쇠)를 리퍼러로 넘기지 않는다.
+    referrer: 'no-referrer',
     openGraph: { title: '간지사주 풀이' },
   };
 }
