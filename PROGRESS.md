@@ -1,5 +1,15 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — 한 장짜리 랜딩(/saju-report) + 비회원 주문(종합사주·2027 신년운세) (Claude 제작 → Codex 검증 2회 + 별도 리뷰어)
+
+- 근거: 대표 수정 요청서(2026-10-20 PPT 14장). 설계 `docs/superpowers/specs/2026-10-21-one-page-landing-design.md`, 계획 `docs/superpowers/plans/2026-10-21-one-page-landing.md`, 검토 기록 `docs/ai-review/2026-10-21-one-page-landing/`.
+- 사용자 결정: 간지사주 카드결제(나이스페이) + 무통장 입금 둘 다 · 정가 60,000/40,000 취소선과 "이번 달 특별 할인가" 유지(⚠️ 표시광고법 위험 고지함) · 대표 본인이 풀이 확인 후 발송(수정 기능 없음) · PPT 사진 그대로(⚠️ AI 생성 그림·한자 포함, "이미지는 연출 사진입니다" 표기) · 후기는 대표가 원문 제공(받기 전 후기 칸 숨김) · 무통장 계좌는 사용자가 env 로 입력.
+- 만든 것: `/saju-report` 랜딩(PPT 순서·문구, 50대 기준 큰 글씨) · 로그인 없는 주문서(시간대 14칸·자시 2칸·윤달) · `POST /api/report-orders`(서버 가격만, IP 10분 5건·번호 하루 3건) · 카드 주문은 payment_orders(user_id NULL) 로 기존 나이스 승인·취소 통보 재사용, fulfill 은 report_order 를 지급 없이 paid · `/admin/report-orders`(입금 확인·결제 확인·풀이 만들기=외부 주문 PDF 생성기·확인 후 발송·다시 보내기·환불) · `/r/[token]` 결과 링크(발송분만, 첫 발송 1년) · 문자(Solapi)+이메일(Resend) · 보관 1년 삭제 크론(`/api/admin/report-orders/purge`, 매일 04:20 KST) · 마이그레이션 091(report_orders, payment_orders.user_id NULL 허용, admin_external_reports 삭제 권한).
+- 문구는 사실에 맞게 수정: "전문가들이 정성을 다해 풀이"→"상담사가 풀이를 직접 확인", FAQ 계좌이체→"카드·간편결제와 무통장 입금", 종합 "80장"→"70쪽 이상"(실측 74), 신년 "30장"→"20쪽 이상"(실측 20/26), AI 작성 고지 한 줄.
+- 검토: Codex 1차 "배포 보류"(치명 2: 나이스 정산 미복구·결과 토큰 분석 유출) + 별도 리뷰어 "수정 후 머지" → 반영 9건. Codex 2차 "보류" → 2차 지적 9건 추가 반영(재검토 없음 = 작성 도구 권고). 남은 이견은 decision.md.
+- 검증: node 단위 0 실패 · vitest 735/735 · tsc 0 · next build 성공 · 390px 실화면(Playwright·설치된 Chrome) 가로 넘침 0, 전 구간 스크린샷 확인. ⚠️ 실결제·실문자·실메일·DB 경로는 091 미적용이라 미검증.
+- 남은 일(사용자): ① 마이그레이션 091 운영 적용 승인(앱 배포보다 먼저) ② Vercel env `REPORT_BANK_NAME`·`REPORT_BANK_ACCOUNT`·`REPORT_BANK_HOLDER` 입력 ③ 후기 원문 ④ 개인정보처리방침 추가안(`docs/ops/2026-10-21-privacy-report-orders.md`) DB 새 버전 발행 승인 ⑤ 머지 여부 ⑥ staging 확인 뒤 `/` 를 랜딩으로 바꿀지 ⑦ 나이스 정산 크론 별도 PR(광고비 늘리기 전 권고) ⑧ 이메일 필수 유지 여부.
+
 ## 2026-10-12 — 궁합 반합 판정 누락 수정 + 궁합 AI 시간 초과 대응 (Claude 제작 → Codex 검증 2회)
 
 - ① 관계표 키 순서 오류: 반합 申子·亥卯·酉丑, 파 丑辰 이 한 번도 판정되지 않았다(키 전수 검사로 파 1건 추가 발견). 정정 → 해당 커플 점수 ±8·문장·용도별 적합도·연도 전망 변동, 공유 링크도 재계산. 이용권 키 불변.
