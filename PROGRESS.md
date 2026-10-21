@@ -1,5 +1,12 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — 의존성 업데이트 #957(12개, Next 16.4.2)·#962(hono) 머지 + 보안 경고 #31 해결
+
+- #957(patch-and-minor 12개: next 16.3.8→16.4.2, react 19.3.1, supabase-js 2.118.0, resend 6.34.1, lucide-react 1.59.0, base-ui 1.9.0, toss sdk 2.9.0, playwright·vitest·shadcn 등): dependabot PR 은 시크릿이 없어 E2E 를 건너뛰므로 같은 커밋(b4be2cb3)으로 검증용 초안 PR #963 을 올려 E2E 포함 전부 통과 확인 후 닫음. E2E 목록에 `/saju-report` 가 없어 새 버전 미리보기와 운영을 390px 로 비교(높이 9489·이미지 8장 깨짐 0·하단 고정 버튼·무통장 선택지·가격 4종·콘솔 오류 0 모두 동일, 픽셀 차이는 예시 이미지 한 블록뿐이고 육안 동일). base-ui 의 actionsRef 변경은 코드 사용처 0, resend 이름 변경은 inboxes 기능만(우리는 발송만). 확인한 커밋 그대로 squash 머지 21291940.
+- #962(hono 4.13.7→4.13.13, 경고 #31 serveStatic 이중 디코딩 — shadcn→@modelcontextprotocol/sdk 경유 개발용 간접 의존, 운영 무관): 첫 빌드 실패는 next/font/google 글꼴 해석 오류(hono 무관)로 실패 작업만 재실행해 통과. #957 머지 뒤 `@dependabot rebase` 로 최신 main 기준 재생성(35bb249e) → 검사 통과·lock 3줄만 변경·libc 26 유지·의존 범위(^4.11.4, ^4) 충족 확인 후 머지 17e6b961.
+- 배포: 21291940·17e6b961 모두 Production·Preview(staging) success, staging fast-forward(전용 커밋 0). main 17e6b961 CI·Playwright E2E·CodeQL 성공. 운영 `/`·`/saju-report`·`/privacy`·`/pricing`·`/today-fortune` 200. dependabot 열린 경고 0.
+- 논의거리(미적용): shadcn CLI 가 devDependency 로 MCP 서버 묶음(hono 등)을 끌어와 경고가 반복 — 필요할 때 `npx shadcn` 으로만 쓰면 줄어든다.
+
 ## 2026-10-21 — 개인정보처리방침 v1.0.5 발행 + 무통장 계좌 반영
 
 - 무통장 계좌: 사용자가 Vercel env `REPORT_BANK_NAME`·`REPORT_BANK_ACCOUNT`·`REPORT_BANK_HOLDER` 입력(Production·Preview·Development, 이름만 확인·값 미조회) → 운영·staging 재배포(`vercel redeploy --scope ganji-sajus-projects`, 기본 scope 가 다른 팀이라 지정 필요) → 운영 `/saju-report` 에 "무통장 입금" 선택지 노출 확인.
