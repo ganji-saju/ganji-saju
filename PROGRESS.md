@@ -1,5 +1,12 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — 한 장짜리 랜딩 머지·배포 확인 (#958)
+
+- 수행: 091 운영 적용(위 섹션 참고) → PR #958 최신 커밋 be665b35 검사 전부 통과(CodeQL 요약 포함) → main 스쿼시 머지 08ffb7f5 → staging 전용 커밋 0건 확인 후 fast-forward(94b26b0f..08ffb7f5).
+- 배포 확인: 08ffb7f5 Production·Preview(staging) 모두 success. 운영 응답 `/saju-report` 200(29,900·19,900·정가 60,000·40,000·"이번 달 특별 할인가" 표시) · `/saju-report/complete` 200 · `/` 200 · `/r/view` 쿠키 없으면 404(설계대로) · `/admin/report-orders` 비로그인 307→로그인 · `POST /api/report-orders` 다른 출처 403.
+- 미검증: 실결제·실문자·실메일·관리자 발송 흐름(무통장 계좌 env 미입력 상태).
+- 남은 일(사용자): 무통장 계좌 env 3개 입력·재배포, 후기 원문, 개인정보처리방침 추가안 발행 승인, `/` 를 랜딩으로 바꿀지, 나이스 정산 크론 별도 PR, 이메일 필수 유지 여부.
+
 ## 2026-10-21 — 한 장짜리 랜딩(/saju-report) + 비회원 주문(종합사주·2027 신년운세) (Claude 제작 → Codex 검증 2회 + 별도 리뷰어)
 
 - 근거: 대표 수정 요청서(2026-10-20 PPT 14장). 설계 `docs/superpowers/specs/2026-10-21-one-page-landing-design.md`, 계획 `docs/superpowers/plans/2026-10-21-one-page-landing.md`, 검토 기록 `docs/ai-review/2026-10-21-one-page-landing/`.
