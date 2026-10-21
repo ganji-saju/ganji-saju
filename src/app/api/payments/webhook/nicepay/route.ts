@@ -35,6 +35,7 @@ import {
 } from '@/lib/payments/cancellation';
 import { revokeEntitlementsOfPayment } from '@/lib/product-entitlements';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
+import { markReportOrderRefundedByPaymentOrder } from '@/lib/report-orders/report-order-store';
 
 export const runtime = 'nodejs';
 
@@ -238,6 +239,13 @@ export async function POST(req: NextRequest) {
         error: '나이스페이 결제 취소(통보)',
         source: 'webhook',
       });
+    }
+
+    // 2026-10-21 — 랜딩 비회원 주문: 회수할 이용권·전이 없다(user 도 없다 — 회수 조회가 매번 실패해 재전송이 끝나지 않는다).
+    if (pkg?.kind === 'report_order') {
+      await markReportOrderRefundedByPaymentOrder(order.orderId, '나이스페이 결제 취소(통보)');
+      await markPaymentWebhookEvent({ eventHash, status: 'processed', error: withSig(null) });
+      return ok();
     }
 
     // 8) 이용권 회수 실패가 취소 통보 처리(원장 전이)를 막지 않게 try — 결제키가 없으면 넓게 지우지 않고 던진다.

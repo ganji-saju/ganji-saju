@@ -123,3 +123,8 @@ export function maskName(name: string): string {
   if (chars.length === 2) return `${chars[0]}*`;
   return `${chars[0]}${'*'.repeat(chars.length - 2)}${chars[chars.length - 1]}`;
 }
+
+/** 나이스페이 승인 뒤 이동할 화면. 랜딩 비회원 주문이 아니면 null(기존 상품별 분기를 탄다). */
+export function reportOrderResultHref(pkg: { kind: string }, paymentOrderId: string): string | null {
+  return pkg.kind === 'report_order' ? `/saju-report/complete?order=${encodeURIComponent(paymentOrderId)}` : null;
+}

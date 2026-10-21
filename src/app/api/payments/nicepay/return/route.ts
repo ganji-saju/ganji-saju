@@ -45,6 +45,7 @@ import {
   type PaymentFunnelEventInput,
 } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
+import { reportOrderResultHref } from '@/lib/report-orders/report-order';
 
 // 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
 //   우선순위: ① taste_product(today-detail/궁합/캘린더) ② 사주 premium·lifetime 풀이
@@ -63,6 +64,9 @@ function resolveNicepayResultHref(opts: {
   fulfillment?: PaymentFulfillmentResult | null;
 }): string {
   const { pkg, order, orderId, fulfillment } = opts;
+  // 2026-10-21 — 랜딩 비회원 주문은 이용권 화면이 없다 → 접수 완료 화면.
+  const reportHref = reportOrderResultHref(pkg, orderId);
+  if (reportHref) return reportHref;
   // 2026-06-27 — order.product/plan(주문에 저장된 사용자 실제 선택)을 1순위로. fulfillment/pkg 는 폴백.
   //   bundle 등은 fulfillment.product 가 null 이라 order.product 없이는 결과 라우팅이 샜다.
   const product =

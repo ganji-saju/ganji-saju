@@ -144,6 +144,7 @@ vi.mock('@/lib/payments/nicepay', async (importOriginal) => {
 });
 
 vi.mock('@/lib/email/ops-alert-email', () => ({ sendOpsAlertEmail: vi.fn(async () => undefined) }));
+vi.mock('@/lib/report-orders/report-order-store', () => ({ markReportOrderRefundedByPaymentOrder: vi.fn(async () => undefined) }));
 
 vi.mock('@/lib/product-entitlements', () => ({
   revokeEntitlementsOfPayment: vi.fn(async (_userId: string, paymentKey: string | null) => {
@@ -161,6 +162,7 @@ import { getPaymentOrderByPaymentKey, hashWebhookPayload } from '@/lib/payments/
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 import { nicepaySha256Hex } from '@/lib/payments/nicepay';
 import { revokeEntitlementsOfPayment } from '@/lib/product-entitlements';
+import { markReportOrderRefundedByPaymentOrder } from '@/lib/report-orders/report-order-store';
 import { POST } from './route';
 
 // 대화상담(전 3개 지급)을 산 주문 — 전·이용권 둘 다 회수 대상.
@@ -553,5 +555,19 @@ describe('나이스 취소 통보 위조 가드 — tid 로 주문 · 재조회 
   it('일부 취소의 거래가 재조회 cancels[] 에 없으면 거부(금액을 통보 본문에서 믿지 않는다)', async () => {
     world.lookupPatch = { status: 'partialCancelled', balanceAmt: 2300, cancels: [{ tid: 'ctid_other', amount: 1000 }] };
     await expectRejected(PARTIAL, 'cancel_not_in_lookup');
+  });
+});
+
+// 2026-10-21 — 랜딩 비회원 주문은 user 가 없다. 회수(user uuid '' 조회)를 타면 매번 실패 → 재전송 무한 반복.
+describe('랜딩 비회원 주문 전액 취소 통보', () => {
+  it('회수 없이 원장 refunded + 랜딩 주문 refunded, OK', async () => {
+    world.order = { ...PAID_ORDER, userId: '', packageId: 'report_lifetime', amount: 29900 };
+    const cancel = { ...CANCEL, amount: 29900 };
+    await expectOk(await deliver(cancel));
+    expect(world.order!.status).toBe('refunded');
+    expect(creditRevokes()).toHaveLength(0);
+    expect(revokeEntitlementsOfPayment).not.toHaveBeenCalled();
+    expect(markReportOrderRefundedByPaymentOrder).toHaveBeenCalledWith('ord_1', expect.any(String));
+    expect(eventOf(cancel)?.processing_status).toBe('processed');
   });
 });

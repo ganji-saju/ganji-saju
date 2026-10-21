@@ -99,3 +99,11 @@ describe('maskName', () => {
     expect(maskName('남궁민수')).toBe('남**수');
   });
 });
+
+describe('reportOrderResultHref', () => {
+  it('랜딩 상품이면 완료 화면, 아니면 null', async () => {
+    const { reportOrderResultHref } = await import('./report-order');
+    expect(reportOrderResultHref({ kind: 'report_order' }, 'ord_1')).toBe('/saju-report/complete?order=ord_1');
+    expect(reportOrderResultHref({ kind: 'taste_product' }, 'ord_1')).toBeNull();
+  });
+});

@@ -36,6 +36,8 @@ import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-sna
 import { activateMembershipSubscription, getManagedSubscription, MEMBERSHIP_PERIOD_DAYS } from '@/lib/subscription';
 import { DIALOGUE_QUESTION_CREDITS, shouldGrantCredits } from '@/lib/payments/coin-sunset';
 import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
+import { getReportOrderByPaymentOrder, markReportOrderPaidByPaymentOrder } from '@/lib/report-orders/report-order-store';
+import { sendOrderReceivedText } from '@/lib/report-orders/notify';
 
 async function attachOwnedReading(
   paymentScope: PaymentProductScope | null,
@@ -178,6 +180,26 @@ export async function fulfillPaymentOrder(input: {
       payment: input.payment,
     });
     throw new Error('결제 상품을 찾지 못했습니다.');
+  }
+
+  // 2026-10-21 — 랜딩 비회원 주문: 이용권·전 지급이 없다(user 도 없다). 결제 확정 = 랜딩 주문 paid + 접수 문자.
+  //   승인 return·정산 크론 어느 경로로 와도 여기를 지난다.
+  if (pkg.kind === 'report_order') {
+    try {
+      await markReportOrderPaidByPaymentOrder(claimed.orderId);
+      await markPaymentOrderFulfilled({ orderId: claimed.orderId, payment: input.payment, source: input.source });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '랜딩 주문 결제 확정 실패';
+      await markPaymentOrderFailed({ orderId: claimed.orderId, status: 'fulfillment_failed', error: message, source: input.source, payment: input.payment });
+      throw error;
+    }
+    const reportOrder = await getReportOrderByPaymentOrder(claimed.orderId).catch(() => null);
+    if (reportOrder) await sendOrderReceivedText(reportOrder);
+    await dispatchGaPurchase(claimed.orderId);
+    return {
+      success: true, alreadyFulfilled: false, credits: 0, totalCredits: null, subscription: null,
+      entitlement: null, productEntitlement: null, bundleGrants: null, product: null, plan: null,
+    };
   }
 
   try {
