@@ -9,6 +9,7 @@ vi.mock('@/lib/report-orders/report-order-store', () => ({
   getReportOrder: vi.fn(),
   transitionReportOrder: vi.fn(async (_id: string, to: string) => ({ status: to })),
   markReportOrderRefundedByPaymentOrder: vi.fn(),
+  recordReportOrderSendResult: vi.fn(),
 }));
 vi.mock('@/lib/admin/external-report', async (orig) => ({
   ...(await orig<typeof import('@/lib/admin/external-report')>()),
@@ -22,7 +23,7 @@ vi.mock('@/lib/payments/fulfillment', () => ({ fulfillPaymentOrder: vi.fn(async 
 vi.mock('@/lib/report-orders/notify', () => ({ sendReportReadyMessages: vi.fn() }));
 
 import { getCurrentAdminRole } from '@/lib/admin-auth';
-import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder } from '@/lib/report-orders/report-order-store';
+import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult } from '@/lib/report-orders/report-order-store';
 import { generateExternalNewYearReport, generateExternalReport } from '@/lib/admin/external-report';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded } from '@/lib/payments/order-ledger';
 import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
@@ -87,19 +88,43 @@ describe('관리자 랜딩 주문 처리', () => {
     expect(generateExternalNewYearReport).toHaveBeenCalled();
   });
 
-  it('발송: 문자 실패·메일 성공이어도 sent, 둘 다 실패면 502 이고 상태 유지', async () => {
+  it('발송: 상태를 먼저 sent 로 잡은 뒤 보내고 결과를 기록한다(동시 두 번 눌러도 한 번만)', async () => {
     vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: false, email: true });
-    expect((await call({ action: 'send' })).status).toBe(200);
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.objectContaining({ reviewed_by: 'admin-1', send_result: { sms: false, email: true } }));
-    vi.mocked(transitionReportOrder).mockClear();
+    expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(200);
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.objectContaining({ reviewed_by: 'admin-1' }));
+    expect(vi.mocked(transitionReportOrder).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(sendReportReadyMessages).mock.invocationCallOrder[0]);
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: false, email: true });
+    vi.mocked(transitionReportOrder).mockRejectedValueOnce(new Error('report_order_conflict'));
+    vi.mocked(sendReportReadyMessages).mockClear();
+    expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(409);
+    expect(sendReportReadyMessages).not.toHaveBeenCalled();
+  });
+
+  it('발송: 둘 다 실패하면 502 + 실패 기록(다시 보내기로 해결)', async () => {
+    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: false, email: false });
-    expect((await call({ action: 'send' })).status).toBe(502);
+    expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(502);
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: false, email: false });
+  });
+
+  it('발송: 상담사가 본 풀이(reportId)가 지금 풀이와 다르면 409, 보내지 않는다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-2' } as never);
+    expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(409);
     expect(transitionReportOrder).not.toHaveBeenCalled();
+    expect(sendReportReadyMessages).not.toHaveBeenCalled();
+  });
+
+  it('다시 보내기: 발송 완료 주문만, 상태·발송 시각은 그대로', async () => {
+    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'sent', externalReportId: 'ext-1' } as never);
+    vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: true, email: true });
+    expect((await call({ action: 'resend' })).status).toBe(200);
+    expect(transitionReportOrder).not.toHaveBeenCalled();
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: true, email: true });
   });
 
   it('발송은 풀이를 만든 주문만(전이 검사 전에 막음)', async () => {
-    expect((await call({ action: 'send' })).status).toBe(409);
+    expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(409);
     expect(sendReportReadyMessages).not.toHaveBeenCalled();
   });
 

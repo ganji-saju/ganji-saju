@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ReportOrderStatus, ReportPayMethod } from '@/lib/report-orders/report-order';
 
-type Action = 'confirm_deposit' | 'confirm_card' | 'generate' | 'send' | 'cancel' | 'refund_card' | 'mark_refunded';
+type Action = 'confirm_deposit' | 'confirm_card' | 'generate' | 'send' | 'resend' | 'cancel' | 'refund_card' | 'mark_refunded';
 const LABEL: Record<Action, string> = {
   confirm_deposit: '입금 확인',
   confirm_card: '결제 확인',
   generate: '풀이 만들기',
   send: '확인 완료·발송',
+  resend: '다시 보내기',
   cancel: '주문 취소',
   refund_card: '결제 취소(환불)',
   mark_refunded: '환불 완료 표시',
@@ -23,12 +24,12 @@ function actionsFor(status: ReportOrderStatus, payMethod: ReportPayMethod): Acti
     case 'pending_payment': return payMethod === 'card' ? ['confirm_card'] : ['cancel'];
     case 'paid': return ['generate', refund];
     case 'generated': return ['send', 'generate', refund];
-    case 'sent': return ['send', refund];
+    case 'sent': return ['resend', refund];
     default: return [];
   }
 }
 
-export function ReportOrderActions({ id, status, payMethod }: { id: string; status: ReportOrderStatus; payMethod: ReportPayMethod }) {
+export function ReportOrderActions({ id, status, payMethod, reportId = null }: { id: string; status: ReportOrderStatus; payMethod: ReportPayMethod; reportId?: string | null }) {
   const router = useRouter();
   const [busy, setBusy] = useState<Action | null>(null);
   const [note, setNote] = useState('');
@@ -46,7 +47,7 @@ export function ReportOrderActions({ id, status, payMethod }: { id: string; stat
       const res = await fetch(`/api/admin/report-orders/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, note: note.trim() }),
+        body: JSON.stringify(action === 'send' ? { action, note: note.trim(), reportId } : { action, note: note.trim() }),
       });
       const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; generationWarning?: string | null } | null;
       if (!res.ok || !data?.ok) {

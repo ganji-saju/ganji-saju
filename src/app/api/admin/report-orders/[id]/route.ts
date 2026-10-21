@@ -9,13 +9,13 @@ import { saveExternalReport } from '@/lib/admin/external-report-history';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded, type TossPaymentObject } from '@/lib/payments/order-ledger';
 import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
 import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
-import { getReportOrder, markReportOrderRefundedByPaymentOrder, transitionReportOrder } from '@/lib/report-orders/report-order-store';
+import { getReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult, transitionReportOrder } from '@/lib/report-orders/report-order-store';
 import { sendReportReadyMessages } from '@/lib/report-orders/notify';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const ACTIONS = ['confirm_deposit', 'confirm_card', 'generate', 'send', 'cancel', 'refund_card', 'mark_refunded'] as const;
+const ACTIONS = ['confirm_deposit', 'confirm_card', 'generate', 'send', 'resend', 'cancel', 'refund_card', 'mark_refunded'] as const;
 type Action = (typeof ACTIONS)[number];
 // 같은 인스턴스에서 같은 주문 풀이를 두 번 동시에 만들지 않는다(외부 주문 PDF 라우트와 같은 방식).
 const generating = new Set<string>();
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!hasSameOrigin(req)) return json({ ok: false, error: '관리자 화면에서 다시 요청해 주세요.' }, 403);
 
   const { id } = await params;
-  const body = (await req.json().catch(() => null)) as { action?: string; note?: string } | null;
+  const body = (await req.json().catch(() => null)) as { action?: string; note?: string; reportId?: string } | null;
   const action = ACTIONS.find((a) => a === body?.action) as Action | undefined;
   if (!action) return json({ ok: false, error: '알 수 없는 작업입니다.' }, 400);
   const note = typeof body?.note === 'string' ? body.note.trim().slice(0, 200) : '';
@@ -77,12 +77,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         }
       }
       case 'send': {
-        if (order.status !== 'generated' && order.status !== 'sent') return json({ ok: false, error: '풀이를 만든 뒤 보낼 수 있습니다.' }, 409);
+        if (order.status !== 'generated') return json({ ok: false, error: '풀이를 만든 뒤 보낼 수 있습니다.' }, 409);
+        // 상담사가 미리보기로 본 그 풀이만 보낸다 — 다른 탭에서 다시 만들었으면 새로고침해서 다시 확인.
+        if (!order.externalReportId || body?.reportId !== order.externalReportId) {
+          return json({ ok: false, error: '풀이가 바뀌었습니다. 새로고침해서 다시 확인해 주세요.' }, 409);
+        }
+        // 상태를 먼저 잡는다: 동시에 두 번 눌러도 한 번만 보내고, 문자를 받은 손님이 바로 열어도 링크가 열린다.
+        status = (await transitionReportOrder(id, 'sent', { sent_at: now(), reviewed_at: now(), reviewed_by: actor })).status;
         const result = await sendReportReadyMessages(order);
-        if (!result.sms && !result.email) return json({ ok: false, error: '문자와 이메일 모두 보내지 못했습니다. 연락처를 확인해 주세요.' }, 502);
-        status = (await transitionReportOrder(id, 'sent', { sent_at: now(), reviewed_at: now(), reviewed_by: actor, send_result: result })).status;
+        await recordReportOrderSendResult(id, result);
         await logAdminAccess({ actorId: actor, actorRole: check.role, action: 'send_report_order', targetUser: null, meta: { orderNo: order.orderNo, ...result } });
+        if (!result.sms && !result.email) return json({ ok: false, error: '문자와 이메일 모두 보내지 못했습니다. 연락처를 확인하고 "다시 보내기"를 눌러 주세요.' }, 502);
         return json({ ok: true, status, ...result });
+      }
+      case 'resend': {
+        if (order.status !== 'sent') return json({ ok: false, error: '발송 완료된 주문만 다시 보냅니다.' }, 409);
+        const result = await sendReportReadyMessages(order);
+        await recordReportOrderSendResult(id, result);
+        await logAdminAccess({ actorId: actor, actorRole: check.role, action: 'send_report_order', targetUser: null, meta: { orderNo: order.orderNo, resend: true, ...result } });
+        if (!result.sms && !result.email) return json({ ok: false, error: '문자와 이메일 모두 보내지 못했습니다. 연락처를 확인해 주세요.' }, 502);
+        return json({ ok: true, status: order.status, ...result });
       }
       case 'confirm_card': {
         // 나이스페이 승인은 됐는데 확정이 실패한 카드 주문 되살리기(정산 크론은 아직 토스만 조회한다).

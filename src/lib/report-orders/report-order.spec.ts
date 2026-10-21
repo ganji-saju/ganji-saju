@@ -82,7 +82,7 @@ describe('canTransition', () => {
     ['paid', 'generated', true],
     ['generated', 'generated', true],
     ['generated', 'sent', true],
-    ['sent', 'sent', true],
+    ['sent', 'sent', false],
     ['sent', 'refunded', true],
     ['sent', 'paid', false],
     ['awaiting_deposit', 'sent', false],

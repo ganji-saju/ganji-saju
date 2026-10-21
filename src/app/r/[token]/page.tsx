@@ -3,6 +3,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getReportOrderByToken } from '@/lib/report-orders/report-order-store';
+import { isResultLinkExpired } from '@/lib/report-orders/report-order';
 import { getExternalReport } from '@/lib/admin/external-report-history';
 import { ExternalReportView } from '@/app/admin/external-report/report-view';
 import { HistoryPrintButton } from '@/app/admin/external-report/history/history-print-button';
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ReportResultPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const order = await getReportOrderByToken(token).catch(() => null);
-  if (!order || order.status !== 'sent' || order.purgedAt || !order.externalReportId) notFound();
+  if (!order || order.status !== 'sent' || order.purgedAt || !order.externalReportId || isResultLinkExpired(order.sentAt)) notFound();
   const saved = await getExternalReport(order.externalReportId).catch(() => null);
   if (!saved) notFound();
   const report = saved.report;

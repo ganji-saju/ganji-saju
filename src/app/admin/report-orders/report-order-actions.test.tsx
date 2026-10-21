@@ -47,12 +47,17 @@ describe('랜딩 주문 처리 버튼', () => {
   });
 
   it('풀이 생성됨: 확인 완료·발송을 누르면 send 를 요청하고 새로고침', async () => {
-    await mount({ id: 'r1', status: 'generated', payMethod: 'card' });
+    await mount({ id: 'r1', status: 'generated', payMethod: 'card', reportId: 'ext-1' });
     expect(buttons()).toContain('다시 만들기');
     await clickText('확인 완료·발송');
     expect(fetchMock).toHaveBeenCalledWith('/api/admin/report-orders/r1', expect.objectContaining({ method: 'POST' }));
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ action: 'send', note: '' });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ action: 'send', note: '', reportId: 'ext-1' });
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it('발송 완료: 다시 보내기 + 환불', async () => {
+    await mount({ id: 'r1', status: 'sent', payMethod: 'card', reportId: 'ext-1' });
+    expect(buttons()).toEqual(['다시 보내기', '결제 취소(환불)']);
   });
 
   it('카드 환불은 사유를 적어야 요청한다', async () => {
@@ -64,7 +69,7 @@ describe('랜딩 주문 처리 버튼', () => {
 
   it('서버 오류 문구를 보여 준다', async () => {
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: '문자와 이메일 모두 보내지 못했습니다.' }), { status: 502 }));
-    await mount({ id: 'r1', status: 'generated', payMethod: 'bank' });
+    await mount({ id: 'r1', status: 'generated', payMethod: 'bank', reportId: 'ext-1' });
     await clickText('확인 완료·발송');
     expect(host.textContent).toContain('문자와 이메일 모두 보내지 못했습니다.');
   });

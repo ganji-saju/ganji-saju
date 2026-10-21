@@ -228,3 +228,12 @@ export async function countRecentReportOrdersByPhone(phone: string, sinceIso: st
   if (error) throw new Error('report_order_read_failed');
   return count ?? 0;
 }
+
+/** 발송 결과 기록(상태는 바꾸지 않는다 — 발송·다시 보내기 공용). */
+export async function recordReportOrderSendResult(id: string, result: { sms: boolean; email: boolean }): Promise<void> {
+  const service = await createServiceClient();
+  const { error } = await service.from(TABLE)
+    .update({ send_result: { ...result, at: new Date().toISOString() }, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error('report_order_update_failed');
+}

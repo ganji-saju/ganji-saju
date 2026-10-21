@@ -18,7 +18,7 @@ import Page, { generateMetadata } from './page';
 
 const token = 'a'.repeat(43);
 const render = async () => renderToStaticMarkup(await Page({ params: Promise.resolve({ token }) }));
-const sentOrder = { status: 'sent', product: 'lifetime', externalReportId: 'ext-1', purgedAt: null, name: '김민지' };
+const sentOrder = { status: 'sent', product: 'lifetime', externalReportId: 'ext-1', purgedAt: null, name: '김민지', sentAt: new Date().toISOString() };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -39,6 +39,7 @@ describe('/r/[token] 손님 결과 화면', () => {
     ['아직 발송 전', { ...sentOrder, status: 'generated' }],
     ['보관 기간 지남', { ...sentOrder, purgedAt: '2027-10-21' }],
     ['환불됨', { ...sentOrder, status: 'refunded' }],
+    ['첫 발송 1년 지남(삭제 크론이 못 돌았어도)', { ...sentOrder, sentAt: new Date(Date.now() - 366 * 86400_000).toISOString() }],
   ])('%s → 모두 같은 찾을 수 없음', async (_label, order) => {
     vi.mocked(getReportOrderByToken).mockResolvedValueOnce(order as never);
     await expect(render()).rejects.toBe(notFoundError);

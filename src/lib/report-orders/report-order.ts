@@ -55,7 +55,7 @@ const TRANSITIONS: Record<ReportOrderStatus, readonly ReportOrderStatus[]> = {
   awaiting_deposit: ['paid', 'cancelled'],
   paid: ['generated', 'refunded'],
   generated: ['generated', 'sent', 'refunded'],
-  sent: ['sent', 'refunded'],
+  sent: ['refunded'], // 다시 보내기는 상태를 바꾸지 않는다(첫 발송 시각 = 보관 기간 기준)
   cancelled: [],
   refunded: [],
 };
@@ -74,4 +74,10 @@ export function maskName(name: string): string {
 /** 나이스페이 승인 뒤 이동할 화면. 랜딩 비회원 주문이 아니면 null(기존 상품별 분기를 탄다). */
 export function reportOrderResultHref(pkg: { kind: string }, paymentOrderId: string): string | null {
   return pkg.kind === 'report_order' ? `/saju-report/complete?order=${encodeURIComponent(paymentOrderId)}` : null;
+}
+
+/** 결과 링크 보관 기간 — 첫 발송부터 1년(삭제 크론이 못 돌아도 화면이 직접 막는다). */
+export const RESULT_LINK_DAYS = 365;
+export function isResultLinkExpired(sentAt: string | null, now = Date.now()): boolean {
+  return !sentAt || now - Date.parse(sentAt) > RESULT_LINK_DAYS * 86400_000;
 }

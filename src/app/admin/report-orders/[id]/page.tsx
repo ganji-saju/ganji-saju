@@ -53,7 +53,7 @@ export default async function ReportOrderDetailPage({ params }: { params: Promis
         {rows.map(([k, v]) => (<Fragment key={k}><dt className="font-semibold text-gray-600">{k}</dt><dd className="break-all">{v}</dd></Fragment>))}
       </dl>
       <div className="mb-6">
-        <ReportOrderActions id={order.id} status={order.status} payMethod={order.payMethod} />
+        <ReportOrderActions id={order.id} status={order.status} payMethod={order.payMethod} reportId={order.externalReportId} />
       </div>
       {order.status === 'sent' && order.resultToken ? (
         <p className="mb-6 text-sm">손님 결과 링크: <a className="underline" href={`${CANONICAL_SITE_URL}/r/${order.resultToken}`} target="_blank" rel="noreferrer">열기</a></p>
