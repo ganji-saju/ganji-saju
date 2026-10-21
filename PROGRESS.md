@@ -1,5 +1,14 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-10-21 — shadcn 을 설치 의존성에서 빼고 필요할 때만 npx 로 실행 (#965)
+
+- 이유: shadcn CLI(devDependency)가 MCP 서버 묶음(hono·express 등)을 끌어와 dependabot 경고·업데이트 PR 이 반복(#30·#31). 2026-09-03 제거 시도는 `globals.css` 의 `@import "shadcn/tailwind.css"`(패키지 export) 때문에 빌드가 깨져 되돌렸었다.
+- 수행: 그 CSS(shadcn@4.22.0 `dist/tailwind.css`, MIT)를 `src/app/styles/shadcn-tailwind.css` 로 원본 그대로 옮기고 import 경로만 변경 → `npm uninstall shadcn` → `package.json` 에 `"shadcn": "npx --yes shadcn@4.22.0"`(사용: `npm run shadcn -- add <이름>`).
+- lock: 562 → 286 항목(276개 제거, 남은 항목 버전 변경 0). macOS npm 이 `libc` 26개를 모두 지워(26→0) 원본에서 복원(libc 만 빠진 항목은 원본 항목 그대로). 6개(@playwright/test·playwright·playwright-core·@types/react·csstype·ws)는 `devOptional`→`dev` 표시만 바뀜(정상 재계산). `npm audit` 0건.
+- 검증: @tailwindcss/postcss 로 컴파일한 CSS 가 변경 전·이동 후·패키지 제거 후 **바이트 동일**(450,355 bytes) · 깨끗한 worktree 에서 `npm ci --legacy-peer-deps --engine-strict` 성공 · 빠진 패키지를 직접 import 하는 코드·스크립트 0건 · typecheck 0 · node 단위 198/198 · vitest 747/747 · `next build` 성공 · **#965 Vercel 미리보기 CSS 파일명 7개가 운영과 전부 동일**(같은 커밋의 운영·staging 도 7/7 동일 → 파일명은 내용 기준).
+- CLI 실측(worktree, `npm run shadcn -- add badge --overwrite --yes`): shadcn 재설치·옛 import 재삽입 없음. 단 4.22.0 은 기존 컴포넌트 클래스·import 를 바꾸고(`@/lib/utils` → shadcn 공식 `cn` 패키지) 의존성을 설치하며 lock 의 libc 를 지운다 → CSS 머리 주석에 "실행 뒤 diff 확인" 안내.
+- 남은 일: CLI 버전을 올릴 때 `shadcn-tailwind.css` 도 그 버전으로 갱신(자동으로 안 따라감).
+
 ## 2026-10-21 — 의존성 업데이트 #957(12개, Next 16.4.2)·#962(hono) 머지 + 보안 경고 #31 해결
 
 - #957(patch-and-minor 12개: next 16.3.8→16.4.2, react 19.3.1, supabase-js 2.118.0, resend 6.34.1, lucide-react 1.59.0, base-ui 1.9.0, toss sdk 2.9.0, playwright·vitest·shadcn 등): dependabot PR 은 시크릿이 없어 E2E 를 건너뛰므로 같은 커밋(b4be2cb3)으로 검증용 초안 PR #963 을 올려 E2E 포함 전부 통과 확인 후 닫음. E2E 목록에 `/saju-report` 가 없어 새 버전 미리보기와 운영을 390px 로 비교(높이 9489·이미지 8장 깨짐 0·하단 고정 버튼·무통장 선택지·가격 4종·콘솔 오류 0 모두 동일, 픽셀 차이는 예시 이미지 한 블록뿐이고 육안 동일). base-ui 의 actionsRef 변경은 코드 사용처 0, resend 이름 변경은 inboxes 기능만(우리는 발송만). 확인한 커밋 그대로 squash 머지 21291940.
