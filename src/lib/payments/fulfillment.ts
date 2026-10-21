@@ -36,6 +36,9 @@ import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-sna
 import { activateMembershipSubscription, getManagedSubscription, MEMBERSHIP_PERIOD_DAYS } from '@/lib/subscription';
 import { DIALOGUE_QUESTION_CREDITS, shouldGrantCredits } from '@/lib/payments/coin-sunset';
 import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
+import { getReportOrderByPaymentOrder, markReportOrderPaidByPaymentOrder } from '@/lib/report-orders/report-order-store';
+import { sendOrderReceivedText } from '@/lib/report-orders/notify';
+import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 
 async function attachOwnedReading(
   paymentScope: PaymentProductScope | null,
@@ -178,6 +181,43 @@ export async function fulfillPaymentOrder(input: {
       payment: input.payment,
     });
     throw new Error('결제 상품을 찾지 못했습니다.');
+  }
+
+  // 2026-10-21 — 랜딩 비회원 주문: 이용권·전 지급이 없다(user 도 없다). 결제 확정 = 랜딩 주문 paid + 접수 문자.
+  //   승인 return·정산 크론 어느 경로로 와도 여기를 지난다.
+  if (pkg.kind === 'report_order') {
+    let reportPaid: boolean;
+    try {
+      // 원장 먼저: 원장 확정이 실패하면 랜딩 주문은 결제 대기로 남아 관리자 '결제 확인'으로 둘 다 되살린다.
+      await markPaymentOrderFulfilled({ orderId: claimed.orderId, payment: input.payment, source: input.source });
+      reportPaid = await markReportOrderPaidByPaymentOrder(claimed.orderId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '랜딩 주문 결제 확정 실패';
+      await sendOpsAlertEmail({
+        subject: '랜딩 주문: 결제 승인 뒤 확정 실패',
+        lines: [`결제 주문번호 ${claimed.orderId}`, '손님은 결제됐을 수 있습니다. 관리자 > 랜딩 주문 상세에서 "결제 확인"을 눌러 주세요.'],
+        url: '/admin/report-orders?filter=closed',
+      }).catch(() => undefined);
+      await markPaymentOrderFailed({ orderId: claimed.orderId, status: 'fulfillment_failed', error: message, source: input.source, payment: input.payment });
+      throw error;
+    }
+    if (!reportPaid) {
+      // 결제는 됐는데 랜딩 주문이 취소·없음 — 돈만 받은 상태. 관리자가 환불하거나 되살려야 한다.
+      await sendOpsAlertEmail({
+        subject: '랜딩 주문: 결제됐지만 주문이 취소·없음 상태',
+        lines: [`결제 주문번호 ${claimed.orderId} · ${claimed.amount.toLocaleString('ko-KR')}원`, '관리자 > 랜딩 주문에서 확인 후 환불하거나 처리해 주세요.'],
+        url: '/admin/report-orders?filter=closed',
+      }).catch(() => undefined);
+    } else {
+      const reportOrder = await getReportOrderByPaymentOrder(claimed.orderId).catch(() => null);
+      if (reportOrder) await sendOrderReceivedText(reportOrder);
+      // 전달할 주문이 있을 때만 GA 구매로 잡는다.
+      await dispatchGaPurchase(claimed.orderId);
+    }
+    return {
+      success: true, alreadyFulfilled: false, credits: 0, totalCredits: null, subscription: null,
+      entitlement: null, productEntitlement: null, bundleGrants: null, product: null, plan: null,
+    };
   }
 
   try {

@@ -84,3 +84,10 @@ export async function getExternalReport(id: string): Promise<SavedExternalReport
   }
   return { ...historyItem(row), report: row.snapshot };
 }
+
+/** 랜딩 주문의 다시 만들기·보관 기간 삭제용(마이그레이션 091 이 service_role delete 권한을 준다). 없는 행은 무시. */
+export async function deleteExternalReport(id: string): Promise<void> {
+  const service = await createServiceClient();
+  const { error } = await service.from(TABLE).delete().eq('id', id);
+  if (error) throw new Error('external_report_delete_failed');
+}

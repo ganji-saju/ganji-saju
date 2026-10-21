@@ -18,7 +18,10 @@ export type AdminAction =
   // 2026-09-13 — 할인쿠폰 관리(/admin/coupons, super_admin). meta 에 코드 평문 금지(마스킹·스탬프만).
   | 'coupon_tier_update' | 'coupon_tier_toggle' | 'coupon_issue'
   | 'coupon_batch_revoke' | 'coupon_batch_restore' | 'coupon_batch_expiry'
-  | 'coupon_lookup' | 'coupon_release' | 'coupon_export';
+  | 'coupon_lookup' | 'coupon_release' | 'coupon_export'
+  // 2026-10-21 — 랜딩 비회원 주문(/admin/report-orders). meta 에 주문번호만(이름·연락처 금지).
+  | 'generate_report_order' | 'send_report_order'
+  | 'report_order_confirm_deposit' | 'report_order_confirm_card' | 'report_order_cancel' | 'report_order_refund_card' | 'report_order_mark_refunded';
 
 export interface AccessLogInput {
   actorId: string;

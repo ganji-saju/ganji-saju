@@ -152,6 +152,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-10-21 — 랜딩 비회원 주문 상품은 /api/report-orders 로만 판다(랜딩 주문 행·발송 흐름이 거기 있다).
+  //   여기로 오면 주문 행 없이 돈만 받고 아무것도 전달되지 않는다 — 쿠폰·멤버십 할인도 붙지 않게 막는다.
+  if (pkg.kind === 'report_order') {
+    const reportClient = await createClient();
+    await logPaymentFunnelEvent(reportClient, { stage: 'prepare_blocked', packageId, amount: pkg.price ?? null, reason: 'report_order_wrong_path' });
+    return NextResponse.json(
+      { ok: false, error: '이 상품은 간지사주 풀이 신청 화면(/saju-report)에서 신청해 주세요.' },
+      { status: 410 }
+    );
+  }
+
   // 2026-07-20 묶음(bundle_today_set) 판매 중단. 점수 언락을 3,300 으로 내리면서
   //   따로 사기 합계(6,600)가 묶음(9,900)보다 싸져 묶음이 오히려 손해가 됐다 → 단품 단일로 정리.
   //   ⚠️ 기존 구매자의 **열람**은 그대로다 — 여기서 막는 건 신규 결제뿐.

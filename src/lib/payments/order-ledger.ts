@@ -186,7 +186,8 @@ function mapPaymentOrder(row: PaymentOrderRow): PaymentOrder {
 
 export async function createPaymentOrder(
   input: {
-    userId: string;
+    /** null = 한 장짜리 랜딩 비회원 주문(kind 'report_order')만. 지급·회수 경로는 이 주문을 건너뛴다. */
+    userId: string | null;
     pkg: PaymentPackage;
     /**
      * 🔴 2026-09-11 — `amount` 에서 이름을 바꿨다. **정가**(리졸버 스냅샷가, 카탈로그 price 아님).

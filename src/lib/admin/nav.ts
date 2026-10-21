@@ -72,6 +72,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     title: '운영 도구',
     items: [
       {
+        href: '/admin/report-orders',
+        label: '랜딩 주문',
+        description: '한 장짜리 랜딩 비회원 주문 — 입금 확인·풀이 만들기·확인 후 발송·환불',
+        minRole: 'super_admin',
+      },
+      {
         href: '/admin/external-report',
         label: '외부 주문 PDF',
         description: '스마트스토어 구매자 깊은 사주풀이·2027 신년운세 생성',

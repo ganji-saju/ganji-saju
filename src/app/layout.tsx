@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Gowun_Batang, Noto_Serif_KR } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -24,6 +22,7 @@ import { GaPageView } from "@/components/analytics/ga-page-view";
 import { AuthEventTracker } from "@/components/analytics/auth-event-tracker";
 // 2026-07-06 — 자체 쿠키/분석 동의 배너 + Consent Mode v2 키 공유.
 import { AnalyticsConsentBanner } from "@/components/analytics/analytics-consent-banner";
+import { VercelAnalytics } from "@/components/analytics/vercel-analytics";
 import { ANALYTICS_CONSENT_KEY } from "@/components/analytics/analytics-consent";
 // 2026-07-07 Phase 2 — 전역 가격 표시 단일화. 서버에서 리졸버 맵 1회 로드 → 클라 전파.
 import { PriceProvider } from "@/components/payments/price-provider";
@@ -297,8 +296,7 @@ export default async function RootLayout({
         <KakaoSdkLoader />
         <VisitPing />
         <AppToaster />
-        <Analytics />
-        <SpeedInsights />
+        <VercelAnalytics />
       </body>
     </html>
   );

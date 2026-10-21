@@ -109,7 +109,7 @@ export async function logPaymentFunnelEvent(
   try {
     const client = hasSupabaseServiceEnv ? await createServiceClient() : supabase;
     const { error } = await client.from('payment_funnel_events').insert({
-      user_id: input.userId ?? null,
+      user_id: input.userId || null,
       stage: input.stage,
       package_id: input.packageId ?? null,
       amount: input.amount ?? null,
@@ -165,7 +165,7 @@ export async function logCheckoutStage(input: {
   try {
     const client = await createServiceClient();
     const { error } = await client.from('payment_funnel_events').insert({
-      user_id: input.userId ?? null,
+      user_id: input.userId || null,
       stage: input.stage satisfies PaymentFunnelStage,
       package_id: input.packageId,
       metadata: {
@@ -197,7 +197,7 @@ export async function logPaywallImpression(input: {
   try {
     const client = await createServiceClient();
     const { error } = await client.from('payment_funnel_events').insert({
-      user_id: input.userId ?? null,
+      user_id: input.userId || null,
       stage: 'paywall_viewed' satisfies PaymentFunnelStage,
       package_id: input.packageId,
       metadata: { surface: input.surface, slug: input.slug ?? null },

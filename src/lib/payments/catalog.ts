@@ -8,7 +8,9 @@ export type PaymentPackageKind =
   | 'subscription'
   | 'lifetime_report'
   | 'taste_product'
-  | 'bundle';
+  | 'bundle'
+  // 2026-10-21 — 한 장짜리 랜딩 비회원 주문(종합사주·신년운세 PDF). 이용권·전 지급 없음 — 결제되면 report_orders 만 paid.
+  | 'report_order';
 export type SubscriptionPlan = 'premium_monthly';
 export type CreditGrantType = 'purchase' | 'subscription';
 export type TasteProductId =
@@ -216,6 +218,10 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'new-year',
     requiresSlug: true,
   },
+  // 2026-10-21 — 한 장짜리 랜딩(/saju-report) 비회원 주문 전용. 관리자 외부 주문 PDF 를 상담사 확인 후 링크로 보낸다.
+  //   ⚠️ 정가(compareAt) 표시는 사용자 결정(표시광고법 위험 고지 완료). 메뉴·가격표·사이트맵에 넣지 않는다.
+  { id: 'report_lifetime', name: '종합사주 1인', credits: 0, price: 29900, kind: 'report_order', compareAt: 60000 },
+  { id: 'report_new_year', name: '2027 신년운세 PDF', credits: 0, price: 19900, kind: 'report_order', compareAt: 40000 },
   {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
     //   2026-06-07 — score-total 로 통합되어 신규 노출 없음(grandfather 조회용 inert).

@@ -34,13 +34,14 @@ test('payment_orders 를 insert 하는 곳은 order-ledger 1곳뿐', () => {
   assert.deepEqual(hits, ['src/lib/payments/order-ledger.ts'], hits.join(', '));
 });
 
-test('createPaymentOrder 호출부는 prepare 1곳뿐', () => {
+// 2026-10-21 — 한 장짜리 랜딩 비회원 주문(api/report-orders)이 두 번째 결제 준비 경로다. 할인 없음(listAmount = 서버 가격) · 금액 계산은 여전히 createPaymentOrder 안.
+test('createPaymentOrder 호출부는 prepare·랜딩 주문 2곳뿐', () => {
   const hits = FILES.filter(
     (f) =>
       /import\s*\{[^}]*\bcreatePaymentOrder\b|\bcreatePaymentOrder\s*\(/.test(f.text) &&
       !f.rel.endsWith('order-ledger.ts')
   ).map((f) => f.rel);
-  assert.deepEqual(hits, ['src/app/api/payments/prepare/route.ts'], hits.join(', '));
+  assert.deepEqual(hits, ['src/app/api/payments/prepare/route.ts', 'src/app/api/report-orders/route.ts'], hits.join(', '));
 });
 
 test('PG 결제창을 여는 컴포넌트는 체크아웃 1곳뿐', () => {
@@ -49,7 +50,8 @@ test('PG 결제창을 여는 컴포넌트는 체크아웃 1곳뿐', () => {
       /requestNicepayPayment\s*\(|loadTossPayments\s*\(|\bAUTHNICE\b|^import (?!type\b)[^;]*from\s*['"]@tosspayments\//m.test(f.text) &&
       !f.rel.endsWith('nicepay-checkout.ts')
   ).map((f) => f.rel);
-  assert.deepEqual(hits, ['src/components/membership/toss-membership-checkout.tsx'], hits.join(', '));
+  // 2026-10-21 — 랜딩 주문서(saju-report)는 주문 API 가 돌려준 amount 로만 결제창을 연다(order-form.test.tsx 가 고정).
+  assert.deepEqual(hits.sort(), ['src/app/saju-report/order-form.tsx', 'src/components/membership/toss-membership-checkout.tsx'], hits.join(', '));
 });
 
 // 🔴 타입이 못 잡는 자리. 여기가 어긋나면 confirm:66 / nicepay-return:216 의 금액 대조에서
@@ -287,6 +289,7 @@ test('정가·할인 스냅샷(list_amount·discount_won·coupon_percent)을 읽
     [
       'src/app/admin/coupons/coupon-admin-client.tsx',
       'src/app/api/payments/prepare/route.ts',
+      'src/app/api/report-orders/route.ts', // 2026-10-21 랜딩 비회원 주문 — createPaymentOrder 에 서버 가격을 정가로 넘김(할인 없음)
       'src/app/membership/checkout/page.tsx',
       'src/app/partner/(theme)/checkout/page.tsx', // 2026-10-09 올해운 노트 결제 페이지 — 취소선 정가 표시(membership/checkout 과 같은 quote)
       'src/app/saju/[slug]/new-year/[year]/page.tsx',

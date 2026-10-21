@@ -42,6 +42,10 @@
       "schedule": "0 2 * * *"
     },
     {
+      "path": "/api/admin/report-orders/purge",
+      "schedule": "20 19 * * *"
+    },
+    {
       "path": "/api/admin/audits/membership-drift",
       "schedule": "0 1 * * *"
     },

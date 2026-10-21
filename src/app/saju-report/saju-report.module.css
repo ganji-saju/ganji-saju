@@ -1,0 +1,420 @@
+/* 한 장짜리 랜딩 — 50대 이상 손님 기준: 본문 18px 이상 · 버튼 56px 이상 · 글자 대비 4.5:1 이상 · 390px 가로 넘침 0 */
+.page {
+  --sr-bg: #fbf8f3;
+  --sr-surface: #ffffff;
+  --sr-ink: #2b2420;
+  --sr-muted: #5c514a; /* #fbf8f3 위 7.4:1 */
+  --sr-accent: #9e3a2c; /* 흰 글자 대비 6.6:1 */
+  --sr-accent-soft: #f4e6e1;
+  --sr-line: #e6ddd4;
+  background: var(--sr-bg);
+  color: var(--sr-ink);
+  font-size: 18px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  padding-bottom: 96px; /* 하단 고정 버튼 자리 */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  background: var(--sr-surface);
+  border-bottom: 1px solid var(--sr-line);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--sr-ink);
+  text-decoration: none;
+}
+
+.section {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.sectionAlt {
+  background: var(--sr-surface);
+}
+
+.figure {
+  margin: 0 0 20px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+
+.photoNote {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--sr-muted);
+  text-align: right;
+}
+
+.question {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sr-muted);
+}
+
+.h1 {
+  margin: 20px 0 24px;
+  font-size: 28px;
+  line-height: 1.45;
+  font-weight: 800;
+  white-space: pre-line;
+}
+
+.h2 {
+  margin: 0 0 16px;
+  font-size: 24px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.h3 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.lead {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sr-accent);
+}
+
+.p {
+  margin: 0 0 14px;
+}
+
+.primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--sr-accent);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.productCard {
+  margin: 0 0 24px;
+  padding: 20px;
+  border: 2px solid var(--sr-line);
+  border-radius: 18px;
+  background: var(--sr-surface);
+}
+
+.productLead {
+  margin: 0;
+  font-size: 18px;
+  color: var(--sr-muted);
+}
+
+.productName {
+  margin: 4px 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.priceLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0 0 6px;
+}
+
+.compare {
+  font-size: 18px;
+  color: var(--sr-muted);
+}
+
+.price {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--sr-accent);
+}
+
+.pages {
+  margin: 0 0 16px;
+  font-weight: 700;
+}
+
+.productImages {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.box {
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--sr-accent-soft);
+}
+
+.certList {
+  margin: 12px 0 0;
+  padding-left: 22px;
+}
+
+.recommendList {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.recommendList li {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--sr-surface);
+  border: 1px solid var(--sr-line);
+}
+
+.num {
+  flex: none;
+  font-weight: 800;
+  color: var(--sr-accent);
+}
+
+.review {
+  margin: 0 0 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--sr-surface);
+  border: 1px solid var(--sr-line);
+}
+
+.reviewName {
+  margin: 0 0 6px;
+  font-weight: 800;
+}
+
+.faq {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--sr-surface);
+  border: 1px solid var(--sr-line);
+}
+
+.faq summary {
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.small {
+  font-size: 16px;
+  color: var(--sr-muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  font-size: 16px;
+}
+
+.links a {
+  color: var(--sr-ink);
+}
+
+/* 주문서 */
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.legend,
+.label {
+  padding: 0;
+  margin: 8px 0 0;
+  font-weight: 800;
+}
+
+.hint {
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--sr-muted);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 2px solid var(--sr-line);
+  border-radius: 12px;
+  background: var(--sr-surface);
+  color: var(--sr-ink);
+  font: inherit;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: 3px solid var(--sr-accent);
+  outline-offset: 1px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.payGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pill,
+.choiceCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 2px solid var(--sr-line);
+  border-radius: 12px;
+  background: var(--sr-surface);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.choiceCard {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.pill:has(input:checked),
+.choiceCard:has(input:checked) {
+  border-color: var(--sr-accent);
+  background: var(--sr-accent-soft);
+}
+
+.pill input,
+.choiceCard input,
+.check input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--sr-accent);
+  flex: none;
+}
+
+.choiceName {
+  flex: 1;
+  font-weight: 800;
+}
+
+.choicePrice s {
+  color: var(--sr-muted);
+  font-size: 16px;
+}
+
+.choicePrice strong {
+  color: var(--sr-accent);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 17px;
+}
+
+.check a {
+  color: var(--sr-ink);
+}
+
+.consents {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fdecea;
+  color: #8a1f12;
+  font-weight: 700;
+}
+
+.bankDone {
+  padding: 20px;
+  border: 2px solid var(--sr-accent);
+  border-radius: 16px;
+  background: var(--sr-surface);
+}
+
+.bankList {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 12px 0;
+}
+
+.bankList dt {
+  font-weight: 800;
+}
+
+.bankList dd {
+  margin: 0;
+}
+
+.sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(251, 248, 243, 0.96);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sticky .primary {
+  max-width: 608px;
+  margin: 0 auto;
+}

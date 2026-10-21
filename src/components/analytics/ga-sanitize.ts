@@ -17,6 +17,7 @@ const SAFE_QUERY_KEYS = new Set([
 // 생년월일 슬러그 형태 감지: "YYYY-M-D..." 날짜 또는 "key<hash>" 토큰(둘 다 toSlug 산출물).
 //   /saju/1988-3-12-9-female-key.. · /compatibility/share/rel--slug--slug ·
 //   /today-fortune/share/<slug> 등 민감 세그먼트를 redacted 로 치환.
+//   2026-10-21 — /r/<토큰>(랜딩 주문 결과 링크, 토큰 = 열람 열쇠)도 가린다.
 const BIRTH_DATE_SEGMENT = /\d{4}-\d{1,2}-\d{1,2}/;
 const KEY_TOKEN_SEGMENT = /key[a-z0-9]{4,}/i;
 
@@ -24,8 +25,10 @@ const KEY_TOKEN_SEGMENT = /key[a-z0-9]{4,}/i;
 export function sanitizePath(pathname: string): string {
   return pathname
     .split('/')
-    .map((seg) =>
-      seg && (BIRTH_DATE_SEGMENT.test(seg) || KEY_TOKEN_SEGMENT.test(seg)) ? 'redacted' : seg
+    .map((seg, i, segs) =>
+      seg && (BIRTH_DATE_SEGMENT.test(seg) || KEY_TOKEN_SEGMENT.test(seg) || (i === 2 && segs[1] === 'r'))
+        ? 'redacted'
+        : seg
     )
     .join('/');
 }
@@ -40,4 +43,15 @@ export function sanitizeQuery(search: string): string {
   }
   const out = safe.toString();
   return out ? `?${out}` : '';
+}
+
+/** Vercel Analytics·Speed Insights beforeSend 용: 결과 링크(/r/<토큰>) 주소만 토큰을 가린다(쿼리 포함 제거). 다른 주소는 그대로. */
+export function redactResultLinkUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!/^\/r\/[^/]+/.test(parsed.pathname)) return url;
+    return `${parsed.origin}${sanitizePath(parsed.pathname)}`;
+  } catch {
+    return url;
+  }
 }

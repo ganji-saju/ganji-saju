@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { sanitizePath, sanitizeQuery } from './ga-sanitize';
+import { sanitizePath, sanitizeQuery, redactResultLinkUrl } from './ga-sanitize';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -44,4 +44,15 @@ test('sanitizeQuery utm·유입 파라미터는 유지(어트리뷰션 보존)',
 test('sanitizeQuery 빈 쿼리 처리', () => {
   assert.equal(sanitizeQuery(''), '');
   assert.equal(sanitizeQuery('?'), '');
+});
+
+// 2026-10-21 — 랜딩 주문 결과 링크(/r/<토큰>)는 토큰 자체가 열람 열쇠다. 분석 도구로 보내면 GA 를 보는 누구나 풀이를 연다.
+test('sanitizePath 결과 링크 토큰을 가린다', () => {
+  assert.equal(sanitizePath('/r/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'), '/r/redacted');
+  assert.equal(sanitizePath('/r'), '/r');
+});
+
+test('redactResultLinkUrl Vercel Analytics 로 가는 결과 링크 주소의 토큰을 가린다', () => {
+  assert.equal(redactResultLinkUrl('https://ganjisaju.kr/r/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde?x=1'), 'https://ganjisaju.kr/r/redacted');
+  assert.equal(redactResultLinkUrl('https://ganjisaju.kr/saju-report?utm_source=ig'), 'https://ganjisaju.kr/saju-report?utm_source=ig');
 });

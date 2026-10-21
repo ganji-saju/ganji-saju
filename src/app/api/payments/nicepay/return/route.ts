@@ -45,6 +45,8 @@ import {
   type PaymentFunnelEventInput,
 } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
+import { reportOrderResultHref } from '@/lib/report-orders/report-order';
+import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 
 // 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
 //   우선순위: ① taste_product(today-detail/궁합/캘린더) ② 사주 premium·lifetime 풀이
@@ -63,6 +65,9 @@ function resolveNicepayResultHref(opts: {
   fulfillment?: PaymentFulfillmentResult | null;
 }): string {
   const { pkg, order, orderId, fulfillment } = opts;
+  // 2026-10-21 — 랜딩 비회원 주문은 이용권 화면이 없다 → 접수 완료 화면.
+  const reportHref = reportOrderResultHref(pkg, orderId);
+  if (reportHref) return reportHref;
   // 2026-06-27 — order.product/plan(주문에 저장된 사용자 실제 선택)을 1순위로. fulfillment/pkg 는 폴백.
   //   bundle 등은 fulfillment.product 가 null 이라 order.product 없이는 결과 라우팅이 샜다.
   const product =
@@ -324,6 +329,18 @@ export async function POST(req: NextRequest) {
       orderId,
       reason: 'fulfillment_error',
     });
+    // 2026-10-21 — 랜딩 비회원 주문은 승인(청구)까지 끝난 상태다. "청구되지 않았습니다" 실패 화면 대신
+    //   "결제를 확인하고 있어요" 완료 화면으로 보낸다(운영 경보 + 관리자 '결제 확인'으로 되살린다). 실패 화면에서 다시 결제하면 이중 청구.
+    const reportHref = reportOrderResultHref(pkg, orderId);
+    if (reportHref) {
+      // 확정(fulfill) 앞 단계(결제 키 연결·승인 기록)에서 죽으면 관리자 '결제 확인'이 결제 키를 못 찾는다 — 승인 거래번호를 경보에 남긴다.
+      await sendOpsAlertEmail({
+        subject: '랜딩 주문: 나이스페이 승인 뒤 처리 실패',
+        lines: [`결제 주문번호 ${orderId} · 승인 거래번호(tid) ${tid} · ${amount.toLocaleString('ko-KR')}원`, '관리자 > 랜딩 주문에서 "결제 확인"을 누르고, 안 되면 나이스페이 관리자에서 이 tid 로 확인·취소해 주세요.'],
+        url: '/admin/report-orders?filter=closed',
+      }).catch(() => undefined);
+      return redirectTo(reportHref);
+    }
     return failRedirect(err instanceof Error ? err.message : '결제 지급 처리에 실패했습니다.');
   }
 
