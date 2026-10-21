@@ -187,3 +187,30 @@ export async function sumConfirmedBankDeposits(sinceIso: string): Promise<{ coun
   const rows = (data ?? []) as { amount: number }[];
   return { count: rows.length, amount: rows.reduce((sum, r) => sum + Number(r.amount), 0) };
 }
+
+const RETENTION_DAYS = 365;
+
+/** 보관 기간(발송·종료 후 1년)이 지난 주문의 개인정보·결과 링크를 비우고 풀이 원본을 지운다. 거래 기록 칸은 남긴다. */
+export async function purgeExpiredReportOrders(now = new Date()): Promise<{ orders: number; reports: number }> {
+  const service = await createServiceClient();
+  const cutoff = new Date(now.getTime() - RETENTION_DAYS * 86400_000).toISOString();
+  const { data, error } = await service.from(TABLE).select('id,external_report_id')
+    .is('purged_at', null)
+    .or(`and(status.eq.sent,sent_at.lt.${cutoff}),and(status.in.(cancelled,refunded,pending_payment),updated_at.lt.${cutoff})`);
+  if (error) throw new Error('report_order_purge_read_failed');
+  const rows = (data ?? []) as { id: string; external_report_id: string | null }[];
+  if (rows.length === 0) return { orders: 0, reports: 0 };
+
+  const purgedAt = now.toISOString();
+  const { error: updateError } = await service.from(TABLE)
+    .update({ name: null, phone: null, email: null, birth_input: null, memo: null, result_token: null, external_report_id: null, purged_at: purgedAt, updated_at: purgedAt })
+    .in('id', rows.map((r) => r.id));
+  if (updateError) throw new Error('report_order_purge_update_failed');
+
+  const reportIds = rows.map((r) => r.external_report_id).filter((id): id is string => Boolean(id));
+  if (reportIds.length > 0) {
+    const { error: deleteError } = await service.from('admin_external_reports').delete().in('id', reportIds);
+    if (deleteError) throw new Error('report_order_purge_delete_failed');
+  }
+  return { orders: rows.length, reports: reportIds.length };
+}
