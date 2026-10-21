@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 vi.mock('server-only', () => ({}));
-vi.mock('@/lib/report-orders/report-order-store', () => ({ createReportOrder: vi.fn() }));
+vi.mock('@/lib/report-orders/report-order-store', () => ({ createReportOrder: vi.fn(), countRecentReportOrdersByPhone: vi.fn(async () => 0) }));
 vi.mock('@/lib/payments/order-ledger', () => ({ createPaymentOrder: vi.fn() }));
 vi.mock('@/lib/payments/price-resolver', () => ({ resolvePackagePrice: vi.fn() }));
 vi.mock('@/lib/report-orders/notify', () => ({ sendOrderReceivedText: vi.fn() }));
@@ -90,5 +90,15 @@ describe('POST /api/report-orders', () => {
     for (let i = 0; i < 5; i += 1) expect((await POST(request(form))).status).toBe(200);
     expect((await POST(request(form))).status).toBe(429);
     expect((await POST(request(form, {}, '2.2.2.2'))).status).toBe(200);
+  });
+});
+
+describe('같은 휴대폰 번호 하루 제한', () => {
+  it('같은 번호로 24시간 안에 3건이 있으면 429, 주문을 만들지 않는다', async () => {
+    const { countRecentReportOrdersByPhone } = await import('@/lib/report-orders/report-order-store');
+    vi.mocked(countRecentReportOrdersByPhone).mockResolvedValueOnce(3);
+    const res = await POST(request({ ...form, payMethod: 'bank' }, {}, '9.9.9.9'));
+    expect(res.status).toBe(429);
+    expect(createReportOrder).not.toHaveBeenCalled();
   });
 });

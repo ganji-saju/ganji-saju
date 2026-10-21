@@ -214,3 +214,13 @@ export async function purgeExpiredReportOrders(now = new Date()): Promise<{ orde
   }
   return { orders: rows.length, reports: reportIds.length };
 }
+
+/** 같은 휴대폰 번호로 기간 안에 들어온 주문 수(로그인 없는 주문의 문자 악용 제한 — 인스턴스와 무관한 DB 기준). */
+export async function countRecentReportOrdersByPhone(phone: string, sinceIso: string): Promise<number> {
+  const service = await createServiceClient();
+  const { count, error } = await service.from(TABLE).select('id', { count: 'exact', head: true })
+    .eq('phone', phone)
+    .gte('created_at', sinceIso);
+  if (error) throw new Error('report_order_read_failed');
+  return count ?? 0;
+}

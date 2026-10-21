@@ -12,7 +12,7 @@ import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
 import { REPORT_PACKAGE_BY_PRODUCT } from '@/lib/report-orders/report-order';
 import { parseReportOrderForm } from '@/lib/report-orders/parse-report-order';
-import { createReportOrder } from '@/lib/report-orders/report-order-store';
+import { countRecentReportOrdersByPhone, createReportOrder } from '@/lib/report-orders/report-order-store';
 import { getReportBankAccount } from '@/lib/report-orders/bank-account';
 import { sendOrderReceivedText } from '@/lib/report-orders/notify';
 import { takeReportOrderSlot } from '@/lib/report-orders/rate-limit';
@@ -46,6 +46,10 @@ export async function POST(req: NextRequest) {
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
   if (!takeReportOrderSlot(ip)) return json({ ok: false, error: '신청이 너무 많아요. 잠시 뒤 다시 시도해 주세요.' }, 429);
+
+  const PHONE_DAILY_MAX = 3;
+  const recentByPhone = await countRecentReportOrdersByPhone(order.phone, new Date(Date.now() - 86400_000).toISOString()).catch(() => 0);
+  if (recentByPhone >= PHONE_DAILY_MAX) return json({ ok: false, error: '같은 번호로 오늘 신청이 많아요. 고객센터로 문의해 주세요.' }, 429);
 
   const pkg = getPackage(REPORT_PACKAGE_BY_PRODUCT[order.product]);
   if (!pkg) return json({ ok: false, error: '상품을 찾지 못했어요.' }, 400);

@@ -108,3 +108,12 @@ describe('reportOrderResultHref', () => {
     expect(reportOrderResultHref({ kind: 'taste_product' }, 'ord_1')).toBeNull();
   });
 });
+
+describe('이름 글자 제한(문자 악용 방지)', () => {
+  it('한글·영문·공백만 받는다 — 링크·숫자·기호는 거부', async () => {
+    const { parseReportOrderForm } = await import('./parse-report-order');
+    expect(parseReportOrderForm({ ...base, name: '김민지 bit.ly/x' })).toEqual({ ok: false, error: '이름은 한글·영문 20자 이내로 입력해 주세요.' });
+    expect(parseReportOrderForm({ ...base, name: '홍길동1' }).ok).toBe(false);
+    expect(parseReportOrderForm({ ...base, name: 'Kim Minji' }).ok).toBe(true);
+  });
+});
