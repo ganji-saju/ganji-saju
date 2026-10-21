@@ -328,6 +328,10 @@ export async function POST(req: NextRequest) {
       orderId,
       reason: 'fulfillment_error',
     });
+    // 2026-10-21 — 랜딩 비회원 주문은 승인(청구)까지 끝난 상태다. "청구되지 않았습니다" 실패 화면 대신
+    //   "결제를 확인하고 있어요" 완료 화면으로 보낸다(운영 경보 + 관리자 '결제 확인'으로 되살린다). 실패 화면에서 다시 결제하면 이중 청구.
+    const reportHref = reportOrderResultHref(pkg, orderId);
+    if (reportHref) return redirectTo(reportHref);
     return failRedirect(err instanceof Error ? err.message : '결제 지급 처리에 실패했습니다.');
   }
 

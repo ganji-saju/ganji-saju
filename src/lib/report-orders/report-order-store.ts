@@ -131,15 +131,19 @@ export async function transitionReportOrder(
 }
 
 /** 카드 결제 확정(승인 return·정산 크론 어느 쪽이든 fulfill 이 부른다). 결제 대기 주문만 바꾼다 — 다시 불려도 무해. */
-export async function markReportOrderPaidByPaymentOrder(paymentOrderId: string): Promise<void> {
+export async function markReportOrderPaidByPaymentOrder(paymentOrderId: string): Promise<boolean> {
   const service = await createServiceClient();
-  const { error } = await service.from(TABLE)
+  const { data, error } = await service.from(TABLE)
     .update({ status: 'paid', updated_at: new Date().toISOString() })
     .eq('payment_order_id', paymentOrderId)
     .eq('status', 'pending_payment')
     .select('id')
     .maybeSingle();
   if (error) throw new Error('report_order_update_failed');
+  if (data) return true;
+  // 0행: 이미 paid 이후면 정상(재호출). 취소됐거나 주문이 없으면 돈만 받은 상태 → false 로 알린다.
+  const current = await getReportOrderByPaymentOrder(paymentOrderId);
+  return Boolean(current && ['paid', 'generated', 'sent'].includes(current.status));
 }
 
 /** 나이스페이 취소 통보·관리자 카드 환불. 이미 환불·취소된 주문은 그대로. */

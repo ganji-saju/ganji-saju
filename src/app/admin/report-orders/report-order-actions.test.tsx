@@ -41,6 +41,11 @@ describe('랜딩 주문 처리 버튼', () => {
     expect(buttons()).toEqual(['입금 확인', '주문 취소']);
   });
 
+  it('카드 결제 대기: 취소 대신 결제 확인만', async () => {
+    await mount({ id: 'r1', status: 'pending_payment', payMethod: 'card' });
+    expect(buttons()).toEqual(['결제 확인']);
+  });
+
   it('풀이 생성됨: 확인 완료·발송을 누르면 send 를 요청하고 새로고침', async () => {
     await mount({ id: 'r1', status: 'generated', payMethod: 'card' });
     expect(buttons()).toContain('다시 만들기');

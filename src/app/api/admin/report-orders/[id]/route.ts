@@ -7,14 +7,15 @@ import { logAdminAccess } from '@/lib/admin/access-log';
 import { generateExternalNewYearReport, generateExternalReport, parseExternalReportRequest } from '@/lib/admin/external-report';
 import { saveExternalReport } from '@/lib/admin/external-report-history';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded, type TossPaymentObject } from '@/lib/payments/order-ledger';
-import { cancelNicepayPayment } from '@/lib/payments/nicepay';
+import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
+import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
 import { getReportOrder, markReportOrderRefundedByPaymentOrder, transitionReportOrder } from '@/lib/report-orders/report-order-store';
 import { sendReportReadyMessages } from '@/lib/report-orders/notify';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const ACTIONS = ['confirm_deposit', 'generate', 'send', 'cancel', 'refund_card', 'mark_refunded'] as const;
+const ACTIONS = ['confirm_deposit', 'confirm_card', 'generate', 'send', 'cancel', 'refund_card', 'mark_refunded'] as const;
 type Action = (typeof ACTIONS)[number];
 // 같은 인스턴스에서 같은 주문 풀이를 두 번 동시에 만들지 않는다(외부 주문 PDF 라우트와 같은 방식).
 const generating = new Set<string>();
@@ -83,7 +84,28 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         await logAdminAccess({ actorId: actor, actorRole: check.role, action: 'send_report_order', targetUser: null, meta: { orderNo: order.orderNo, ...result } });
         return json({ ok: true, status, ...result });
       }
+      case 'confirm_card': {
+        // 나이스페이 승인은 됐는데 확정이 실패한 카드 주문 되살리기(정산 크론은 아직 토스만 조회한다).
+        if (order.payMethod !== 'card' || !order.paymentOrderId || order.status !== 'pending_payment') {
+          return json({ ok: false, error: '결제 대기 중인 카드 주문만 확인합니다.' }, 400);
+        }
+        const paymentOrder = await getPaymentOrderByOrderId(order.paymentOrderId);
+        if (!paymentOrder?.paymentKey) return json({ ok: false, error: '결제 승인 기록이 없습니다(손님이 결제를 끝내지 않았을 수 있습니다).' }, 409);
+        const nice = await getNicepayPayment(paymentOrder.paymentKey);
+        if (nice.status !== 'paid' || Number(nice.amount) !== paymentOrder.amount) {
+          return json({ ok: false, error: '나이스페이에서 결제 완료를 확인하지 못했습니다.' }, 409);
+        }
+        await fulfillPaymentOrder({
+          order: paymentOrder,
+          payment: { ...(nice as unknown as TossPaymentObject), status: 'DONE', paymentKey: paymentOrder.paymentKey, orderId: paymentOrder.orderId, totalAmount: paymentOrder.amount, amount: paymentOrder.amount },
+          source: 'reconciliation',
+        });
+        status = 'paid';
+        break;
+      }
       case 'cancel': {
+        // 카드 결제 대기 주문은 취소하지 않는다 — 결제창에서 결제가 끝나면 돈만 받고 취소로 남는다(보관 기간 크론이 정리).
+        if (order.payMethod === 'card') return json({ ok: false, error: '카드 주문은 취소하지 않습니다. 결제됐다면 결제 취소(환불)를 쓰세요.' }, 400);
         status = (await transitionReportOrder(id, 'cancelled', { refund_note: note || null })).status;
         break;
       }

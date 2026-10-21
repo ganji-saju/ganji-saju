@@ -17,14 +17,16 @@ vi.mock('@/lib/admin/external-report', async (orig) => ({
 }));
 vi.mock('@/lib/admin/external-report-history', () => ({ saveExternalReport: vi.fn(async () => ({ id: 'ext-1', createdAt: 'now' })) }));
 vi.mock('@/lib/payments/order-ledger', () => ({ getPaymentOrderByOrderId: vi.fn(), markPaymentOrderRefunded: vi.fn() }));
-vi.mock('@/lib/payments/nicepay', () => ({ cancelNicepayPayment: vi.fn(async () => ({ resultCode: '0000' })) }));
+vi.mock('@/lib/payments/nicepay', () => ({ cancelNicepayPayment: vi.fn(async () => ({ resultCode: '0000' })), getNicepayPayment: vi.fn() }));
+vi.mock('@/lib/payments/fulfillment', () => ({ fulfillPaymentOrder: vi.fn(async () => ({ success: true })) }));
 vi.mock('@/lib/report-orders/notify', () => ({ sendReportReadyMessages: vi.fn() }));
 
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder } from '@/lib/report-orders/report-order-store';
 import { generateExternalNewYearReport, generateExternalReport } from '@/lib/admin/external-report';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded } from '@/lib/payments/order-ledger';
-import { cancelNicepayPayment } from '@/lib/payments/nicepay';
+import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
+import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
 import { sendReportReadyMessages } from '@/lib/report-orders/notify';
 import { POST } from './route';
 
@@ -124,5 +126,29 @@ describe('관리자 랜딩 주문 처리', () => {
     const text = await (await call({ action: 'generate' })).text();
     expect(text).not.toContain('01012345678');
     expect(text).not.toContain('1968');
+  });
+});
+
+describe('카드 결제 대기 주문', () => {
+  it('취소 버튼으로 막지 않는다 — 결제창에서 결제가 끝나면 돈만 받고 취소로 남는다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
+    expect((await call({ action: 'cancel' })).status).toBe(400);
+    expect(transitionReportOrder).not.toHaveBeenCalled();
+  });
+
+  it('결제 확인: 나이스페이에 결제됨·금액 일치면 결제 확정을 다시 돌린다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
+    vi.mocked(getPaymentOrderByOrderId).mockResolvedValueOnce({ orderId: 'ord_1', paymentKey: 'tid_1', amount: 29900, status: 'fulfillment_failed' } as never);
+    vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 29900, tid: 'tid_1' } as never);
+    expect((await call({ action: 'confirm_card' })).status).toBe(200);
+    expect(fulfillPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ source: 'reconciliation' }));
+  });
+
+  it('결제 확인: 나이스페이에 결제가 없거나 금액이 다르면 409, 확정하지 않는다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
+    vi.mocked(getPaymentOrderByOrderId).mockResolvedValueOnce({ orderId: 'ord_1', paymentKey: 'tid_1', amount: 29900, status: 'confirmed' } as never);
+    vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 100, tid: 'tid_1' } as never);
+    expect((await call({ action: 'confirm_card' })).status).toBe(409);
+    expect(fulfillPaymentOrder).not.toHaveBeenCalled();
   });
 });

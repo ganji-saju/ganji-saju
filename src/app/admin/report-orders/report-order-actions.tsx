@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ReportOrderStatus, ReportPayMethod } from '@/lib/report-orders/report-order';
 
-type Action = 'confirm_deposit' | 'generate' | 'send' | 'cancel' | 'refund_card' | 'mark_refunded';
+type Action = 'confirm_deposit' | 'confirm_card' | 'generate' | 'send' | 'cancel' | 'refund_card' | 'mark_refunded';
 const LABEL: Record<Action, string> = {
   confirm_deposit: '입금 확인',
+  confirm_card: '결제 확인',
   generate: '풀이 만들기',
   send: '확인 완료·발송',
   cancel: '주문 취소',
@@ -19,7 +20,7 @@ function actionsFor(status: ReportOrderStatus, payMethod: ReportPayMethod): Acti
   const refund: Action = payMethod === 'card' ? 'refund_card' : 'mark_refunded';
   switch (status) {
     case 'awaiting_deposit': return ['confirm_deposit', 'cancel'];
-    case 'pending_payment': return ['cancel'];
+    case 'pending_payment': return payMethod === 'card' ? ['confirm_card'] : ['cancel'];
     case 'paid': return ['generate', refund];
     case 'generated': return ['send', 'generate', refund];
     case 'sent': return ['send', refund];
