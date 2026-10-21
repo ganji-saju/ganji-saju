@@ -44,3 +44,14 @@ export function sanitizeQuery(search: string): string {
   const out = safe.toString();
   return out ? `?${out}` : '';
 }
+
+/** Vercel Analytics·Speed Insights beforeSend 용: 결과 링크(/r/<토큰>) 주소만 토큰을 가린다(쿼리 포함 제거). 다른 주소는 그대로. */
+export function redactResultLinkUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!/^\/r\/[^/]+/.test(parsed.pathname)) return url;
+    return `${parsed.origin}${sanitizePath(parsed.pathname)}`;
+  } catch {
+    return url;
+  }
+}

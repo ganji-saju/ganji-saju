@@ -74,3 +74,12 @@ describe('랜딩 주문 처리 버튼', () => {
     expect(host.textContent).toContain('문자와 이메일 모두 보내지 못했습니다.');
   });
 });
+
+describe('발송 실패 뒤 복구 버튼', () => {
+  it('서버가 실패를 돌려줘도 새로고침해 바뀐 상태(다시 보내기)를 보여 준다', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: '둘 다 실패' }), { status: 502 }));
+    await mount({ id: 'r1', status: 'generated', payMethod: 'bank', reportId: 'ext-1' });
+    await clickText('확인 완료·발송');
+    expect(refresh).toHaveBeenCalled();
+  });
+});

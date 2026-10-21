@@ -115,6 +115,8 @@ describe('이름 글자 제한(문자 악용 방지)', () => {
     expect(parseReportOrderForm({ ...base, name: '김민지 bit.ly/x' })).toEqual({ ok: false, error: '이름은 한글·영문 20자 이내로 입력해 주세요.' });
     expect(parseReportOrderForm({ ...base, name: '홍길동1' }).ok).toBe(false);
     expect(parseReportOrderForm({ ...base, name: 'Kim Minji' }).ok).toBe(true);
+    expect(parseReportOrderForm({ ...base, name: 'Anne-Marie' }).ok).toBe(true);
+    expect(parseReportOrderForm({ ...base, name: "O'Neil" }).ok).toBe(true);
   });
 });
 

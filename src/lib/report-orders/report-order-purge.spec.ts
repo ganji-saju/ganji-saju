@@ -47,6 +47,9 @@ describe('purgeExpiredReportOrders', () => {
     expect(update.op).toBe('update');
     expect(update.arg).toMatchObject({ name: null, phone: null, email: null, birth_input: null, memo: null, result_token: null, external_report_id: null });
     expect(update.filters).toContainEqual(['in', 'id', ['r1', 'r2']]);
+    // 조회와 갱신 사이에 관리자가 새로 발송했으면 건드리지 않는다 — 갱신에도 같은 조건
+    expect(update.filters).toContainEqual(['is', 'purged_at', null]);
+    expect(update.filters.some((f) => f[0] === 'or')).toBe(true);
     expect(del.table).toBe('admin_external_reports');
     expect(del.op).toBe('delete');
     expect(del.filters).toContainEqual(['in', 'id', ['ext-1']]);

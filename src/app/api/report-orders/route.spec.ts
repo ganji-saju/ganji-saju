@@ -110,7 +110,8 @@ describe('GA 구매 귀속', () => {
     expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ gaClientId: '111.222', analyticsConsent: 'granted' }));
   });
   it('동의 값이 없거나 이상하면 null', async () => {
-    await POST(request({ ...form, analyticsConsent: 'yes' }, {}, '6.6.6.6'));
-    expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ analyticsConsent: null }));
+    await POST(request({ ...form, analyticsConsent: 'yes' }, { cookie: '_ga=GA1.1.111.222' }, '6.6.6.6'));
+    // 명시적 동의(granted)가 아니면 식별자도 싣지 않는다 — 서버 전송기는 'denied' 만 막는다
+    expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ analyticsConsent: null, gaClientId: null, gaSessionId: null }));
   });
 });

@@ -11,6 +11,7 @@ import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay'
 import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
 import { getReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult, transitionReportOrder } from '@/lib/report-orders/report-order-store';
 import { sendReportReadyMessages } from '@/lib/report-orders/notify';
+import { isResultLinkExpired } from '@/lib/report-orders/report-order';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             : await generateExternalReport(parsed.input, { signal: req.signal });
           const saved = await saveExternalReport({ actorId: actor, birth: parsed.birth, report });
           try {
-            status = (await transitionReportOrder(id, 'generated', { external_report_id: saved.id, generated_at: now() })).status;
+            status = (await transitionReportOrder(id, 'generated', { external_report_id: saved.id, generated_at: now() }, { expectReportId: order.externalReportId })).status;
           } catch (error) {
             // 생성 중 환불·다른 탭 생성 등으로 상태가 바뀌었다 — 연결되지 못한 원본(이름·생년월일 포함)을 남기지 않는다.
             await deleteExternalReport(saved.id).catch(() => undefined);
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           return json({ ok: false, error: '풀이가 바뀌었습니다. 새로고침해서 다시 확인해 주세요.' }, 409);
         }
         // 상태를 먼저 잡는다: 동시에 두 번 눌러도 한 번만 보내고, 문자를 받은 손님이 바로 열어도 링크가 열린다.
-        status = (await transitionReportOrder(id, 'sent', { sent_at: now(), reviewed_at: now(), reviewed_by: actor })).status;
+        status = (await transitionReportOrder(id, 'sent', { sent_at: now(), reviewed_at: now(), reviewed_by: actor }, { expectReportId: order.externalReportId })).status;
         const result = await sendReportReadyMessages(order);
         await recordReportOrderSendResult(id, result);
         await logAdminAccess({ actorId: actor, actorRole: check.role, action: 'send_report_order', targetUser: null, meta: { orderNo: order.orderNo, ...result } });
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }
       case 'resend': {
         if (order.status !== 'sent') return json({ ok: false, error: '발송 완료된 주문만 다시 보냅니다.' }, 409);
+        if (isResultLinkExpired(order.sentAt)) return json({ ok: false, error: '첫 발송 후 1년이 지나 링크가 닫혔습니다.' }, 409);
         const result = await sendReportReadyMessages(order);
         await recordReportOrderSendResult(id, result);
         await logAdminAccess({ actorId: actor, actorRole: check.role, action: 'send_report_order', targetUser: null, meta: { orderNo: order.orderNo, resend: true, ...result } });
@@ -124,6 +126,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           payment: { ...(nice as unknown as TossPaymentObject), status: 'DONE', paymentKey: paymentOrder.paymentKey, orderId: paymentOrder.orderId, totalAmount: paymentOrder.amount, amount: paymentOrder.amount },
           source: 'reconciliation',
         });
+        // 원장이 다른 처리 중(fulfilling)이면 fulfill 이 아무것도 안 하고 돌아온다 — 실제로 paid 가 됐는지 다시 본다.
+        const after = await getReportOrder(id);
+        if (after?.status !== 'paid') return json({ ok: false, error: '결제는 확인됐지만 주문 확정이 끝나지 않았습니다. 잠시 뒤 다시 눌러 주세요.' }, 409);
         status = 'paid';
         break;
       }

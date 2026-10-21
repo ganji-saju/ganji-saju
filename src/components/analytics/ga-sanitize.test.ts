@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { sanitizePath, sanitizeQuery } from './ga-sanitize';
+import { sanitizePath, sanitizeQuery, redactResultLinkUrl } from './ga-sanitize';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -50,4 +50,9 @@ test('sanitizeQuery 빈 쿼리 처리', () => {
 test('sanitizePath 결과 링크 토큰을 가린다', () => {
   assert.equal(sanitizePath('/r/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'), '/r/redacted');
   assert.equal(sanitizePath('/r'), '/r');
+});
+
+test('redactResultLinkUrl Vercel Analytics 로 가는 결과 링크 주소의 토큰을 가린다', () => {
+  assert.equal(redactResultLinkUrl('https://ganjisaju.kr/r/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde?x=1'), 'https://ganjisaju.kr/r/redacted');
+  assert.equal(redactResultLinkUrl('https://ganjisaju.kr/saju-report?utm_source=ig'), 'https://ganjisaju.kr/saju-report?utm_source=ig');
 });

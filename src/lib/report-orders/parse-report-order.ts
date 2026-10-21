@@ -30,7 +30,7 @@ export function parseReportOrderForm(payload: unknown): ParsedReportOrder {
   const name = str(p.name);
   if (!name || name.length > 20) return invalid('이름은 1자 이상 20자 이하로 입력해 주세요.');
   // 이름은 접수 문자에 그대로 들어간다 — 링크·숫자·기호를 막아 우리 발신번호로 피싱 문자를 못 보내게.
-  if (!/^[가-힣a-zA-Z ]+$/.test(name)) return invalid('이름은 한글·영문 20자 이내로 입력해 주세요.');
+  if (!/^[가-힣a-zA-Z' -]+$/.test(name)) return invalid('이름은 한글·영문 20자 이내로 입력해 주세요.');
   const phone = str(p.phone).replace(/[-\s]/g, '');
   if (!/^01[016789]\d{7,8}$/.test(phone)) return invalid('휴대폰 번호를 확인해 주세요.');
   const email = str(p.email);

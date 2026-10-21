@@ -64,9 +64,13 @@ export async function POST(req: NextRequest) {
   try {
     if (order.payMethod === 'card') {
       // GA4 구매 전환 귀속: 식별자는 요청 쿠키에서, 동의는 손님 브라우저 값 그대로(없으면 null — 임의로 주지 않는다).
-      const { clientId: gaClientId, sessionId: gaSessionId } = readGaIdentifiers(req.headers.get('cookie'), GA4_MEASUREMENT_ID);
+      // 명시적 동의(granted)일 때만 식별자를 싣는다 — 서버 전송기는 'denied' 만 막고 null 은 보낸다.
       const consentRaw = (payload as Record<string, unknown>).analyticsConsent;
       const analyticsConsent = consentRaw === 'granted' || consentRaw === 'denied' ? consentRaw : null;
+      const ids = analyticsConsent === 'granted'
+        ? readGaIdentifiers(req.headers.get('cookie'), GA4_MEASUREMENT_ID)
+        : { clientId: null, sessionId: null };
+      const { clientId: gaClientId, sessionId: gaSessionId } = ids;
       const paymentOrder = await createPaymentOrder({
         userId: null,
         gaClientId,

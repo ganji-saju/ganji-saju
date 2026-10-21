@@ -52,6 +52,8 @@ export function ReportOrderActions({ id, status, payMethod, reportId = null }: {
       const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; generationWarning?: string | null } | null;
       if (!res.ok || !data?.ok) {
         setMessage(data?.error ?? '처리하지 못했습니다.');
+        // 실패여도 상태는 바뀌었을 수 있다(발송은 상태를 먼저 잡는다) — 새로고침해 '다시 보내기' 등 다음 버튼을 보여 준다.
+        router.refresh();
         return;
       }
       setMessage(data.generationWarning ? `완료 — 주의: ${data.generationWarning}` : '완료했습니다.');

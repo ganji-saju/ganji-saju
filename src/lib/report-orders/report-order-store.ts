@@ -114,17 +114,21 @@ export async function transitionReportOrder(
   id: string,
   to: ReportOrderStatus,
   patch: Record<string, unknown> = {},
+  opts: { expectReportId?: string | null } = {},
 ): Promise<ReportOrderRow> {
   const current = await getReportOrder(id);
   if (!current) throw new Error('report_order_not_found');
   if (!canTransition(current.status, to)) throw new Error('report_order_invalid_transition');
   const service = await createServiceClient();
-  const { data, error } = await service.from(TABLE)
+  let update = service.from(TABLE)
     .update({ ...patch, status: to, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .eq('status', current.status)
-    .select('*')
-    .maybeSingle();
+    .eq('status', current.status);
+  // 풀이 id 조건: 상담사가 본 풀이가 그새 바뀌었거나(발송), 다른 생성이 먼저 저장했으면(다시 만들기) 갱신하지 않는다.
+  if (opts.expectReportId !== undefined) {
+    update = opts.expectReportId === null ? update.is('external_report_id', null) : update.eq('external_report_id', opts.expectReportId);
+  }
+  const { data, error } = await update.select('*').maybeSingle();
   if (error) throw new Error('report_order_update_failed');
   if (!data) throw new Error('report_order_conflict');
   return mapRow(data as Row);
@@ -199,13 +203,14 @@ const RETENTION_DAYS = 365;
 export async function purgeExpiredReportOrders(now = new Date()): Promise<{ orders: number; reports: number }> {
   const service = await createServiceClient();
   const cutoff = new Date(now.getTime() - RETENTION_DAYS * 86400_000).toISOString();
+  const expired = [
+    `and(status.eq.sent,sent_at.lt.${cutoff})`,
+    `and(status.in.(cancelled,refunded,pending_payment),updated_at.lt.${cutoff})`,
+    `and(status.in.(awaiting_deposit,paid,generated),created_at.lt.${cutoff})`,
+  ].join(',');
   const { data, error } = await service.from(TABLE).select('id,external_report_id')
     .is('purged_at', null)
-    .or([
-      `and(status.eq.sent,sent_at.lt.${cutoff})`,
-      `and(status.in.(cancelled,refunded,pending_payment),updated_at.lt.${cutoff})`,
-      `and(status.in.(awaiting_deposit,paid,generated),created_at.lt.${cutoff})`,
-    ].join(','));
+    .or(expired);
   if (error) throw new Error('report_order_purge_read_failed');
   const rows = (data ?? []) as { id: string; external_report_id: string | null }[];
   if (rows.length === 0) return { orders: 0, reports: 0 };
@@ -219,7 +224,10 @@ export async function purgeExpiredReportOrders(now = new Date()): Promise<{ orde
   const purgedAt = now.toISOString();
   const { error: updateError } = await service.from(TABLE)
     .update({ name: null, phone: null, email: null, birth_input: null, memo: null, result_token: null, external_report_id: null, purged_at: purgedAt, updated_at: purgedAt })
-    .in('id', rows.map((r) => r.id));
+    .in('id', rows.map((r) => r.id))
+    // 조회 뒤 관리자가 새로 만들거나 보냈으면(조건이 더는 안 맞으면) 건드리지 않는다.
+    .is('purged_at', null)
+    .or(expired);
   if (updateError) throw new Error('report_order_purge_update_failed');
   return { orders: rows.length, reports: reportIds.length };
 }

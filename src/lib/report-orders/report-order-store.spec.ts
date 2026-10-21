@@ -111,3 +111,16 @@ describe('sumConfirmedBankDeposits', () => {
     expect(query.in).toHaveBeenCalledWith('status', ['paid', 'generated', 'sent']);
   });
 });
+
+describe('transitionReportOrder 풀이 id 조건', () => {
+  it('expectReportId 를 주면 갱신 조건에 건다(null 이면 is null)', async () => {
+    query.maybeSingle.mockResolvedValueOnce({ data: dbRow({ status: 'generated', external_report_id: 'ext-1' }), error: null });
+    query.maybeSingle.mockResolvedValueOnce({ data: dbRow({ status: 'sent' }), error: null });
+    await transitionReportOrder('r1', 'sent', {}, { expectReportId: 'ext-1' });
+    expect(query.eq).toHaveBeenCalledWith('external_report_id', 'ext-1');
+    query.maybeSingle.mockResolvedValueOnce({ data: dbRow({ status: 'paid' }), error: null });
+    query.maybeSingle.mockResolvedValueOnce({ data: dbRow({ status: 'generated' }), error: null });
+    await transitionReportOrder('r1', 'generated', {}, { expectReportId: null });
+    expect(query.is).toHaveBeenCalledWith('external_report_id', null);
+  });
+});

@@ -83,7 +83,7 @@ describe('관리자 랜딩 주문 처리', () => {
     expect(res.status).toBe(200);
     expect(generateExternalReport).toHaveBeenCalled();
     expect(generateExternalNewYearReport).not.toHaveBeenCalled();
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.objectContaining({ external_report_id: 'ext-new' }));
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.objectContaining({ external_report_id: 'ext-new' }), { expectReportId: null });
     vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, product: 'new-year' } as never);
     await call({ action: 'generate' });
     expect(generateExternalNewYearReport).toHaveBeenCalled();
@@ -93,7 +93,7 @@ describe('관리자 랜딩 주문 처리', () => {
     vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: false, email: true });
     expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(200);
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.objectContaining({ reviewed_by: 'admin-1' }));
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.objectContaining({ reviewed_by: 'admin-1' }), { expectReportId: 'ext-1' });
     expect(vi.mocked(transitionReportOrder).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(sendReportReadyMessages).mock.invocationCallOrder[0]);
     expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: false, email: true });
     vi.mocked(transitionReportOrder).mockRejectedValueOnce(new Error('report_order_conflict'));
@@ -117,7 +117,7 @@ describe('관리자 랜딩 주문 처리', () => {
   });
 
   it('다시 보내기: 발송 완료 주문만, 상태·발송 시각은 그대로', async () => {
-    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'sent', externalReportId: 'ext-1' } as never);
+    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'sent', externalReportId: 'ext-1', sentAt: new Date().toISOString() } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: true, email: true });
     expect((await call({ action: 'resend' })).status).toBe(200);
     expect(transitionReportOrder).not.toHaveBeenCalled();
@@ -189,5 +189,32 @@ describe('풀이 원본이 고아로 남지 않게', () => {
     vi.mocked(transitionReportOrder).mockRejectedValueOnce(new Error('report_order_conflict'));
     expect((await call({ action: 'generate' })).status).toBe(409);
     expect(deleteExternalReport).toHaveBeenCalledWith('ext-new');
+  });
+});
+
+describe('2차 검토 반영', () => {
+  it('다시 보내기: 첫 발송 1년이 지난 링크는 보내지 않는다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, status: 'sent', externalReportId: 'ext-1', sentAt: new Date(Date.now() - 366 * 86400_000).toISOString() } as never);
+    expect((await call({ action: 'resend' })).status).toBe(409);
+    expect(sendReportReadyMessages).not.toHaveBeenCalled();
+  });
+
+  it('결제 확인: 확정 뒤 주문이 실제로 paid 가 아니면 409', async () => {
+    vi.mocked(getReportOrder)
+      .mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never)
+      .mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
+    vi.mocked(getPaymentOrderByOrderId).mockResolvedValueOnce({ orderId: 'ord_1', paymentKey: 'tid_1', amount: 29900, status: 'fulfilling' } as never);
+    vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 29900 } as never);
+    expect((await call({ action: 'confirm_card' })).status).toBe(409);
+  });
+
+  it('발송·다시 만들기는 DB 갱신 조건에 풀이 id 를 건다(확인 직후 바뀐 풀이를 못 보내게, 동시 생성 덮어쓰기 방지)', async () => {
+    vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
+    vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: true, email: true });
+    await call({ action: 'send', reportId: 'ext-1' });
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.anything(), { expectReportId: 'ext-1' });
+    vi.mocked(transitionReportOrder).mockClear();
+    await call({ action: 'generate' });
+    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.anything(), { expectReportId: 'ext-1' });
   });
 });
