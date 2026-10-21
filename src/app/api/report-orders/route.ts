@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
   if (!takeReportOrderSlot(ip)) return json({ ok: false, error: '신청이 너무 많아요. 잠시 뒤 다시 시도해 주세요.' }, 429);
 
   const PHONE_DAILY_MAX = 3;
-  const recentByPhone = await countRecentReportOrdersByPhone(order.phone, new Date(Date.now() - 86400_000).toISOString()).catch(() => 0);
+  // 조회 실패면 통과시키지 않는다(문자 악용 방지가 조용히 꺼지지 않게).
+  const recentByPhone = await countRecentReportOrdersByPhone(order.phone, new Date(Date.now() - 86400_000).toISOString()).catch(() => PHONE_DAILY_MAX);
   if (recentByPhone >= PHONE_DAILY_MAX) return json({ ok: false, error: '같은 번호로 오늘 신청이 많아요. 고객센터로 문의해 주세요.' }, 429);
 
   const pkg = getPackage(REPORT_PACKAGE_BY_PRODUCT[order.product]);

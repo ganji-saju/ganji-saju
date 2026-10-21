@@ -188,8 +188,9 @@ export async function fulfillPaymentOrder(input: {
   if (pkg.kind === 'report_order') {
     let reportPaid: boolean;
     try {
-      reportPaid = await markReportOrderPaidByPaymentOrder(claimed.orderId);
+      // 원장 먼저: 원장 확정이 실패하면 랜딩 주문은 결제 대기로 남아 관리자 '결제 확인'으로 둘 다 되살린다.
       await markPaymentOrderFulfilled({ orderId: claimed.orderId, payment: input.payment, source: input.source });
+      reportPaid = await markReportOrderPaidByPaymentOrder(claimed.orderId);
     } catch (error) {
       const message = error instanceof Error ? error.message : '랜딩 주문 결제 확정 실패';
       await sendOpsAlertEmail({
@@ -210,8 +211,9 @@ export async function fulfillPaymentOrder(input: {
     } else {
       const reportOrder = await getReportOrderByPaymentOrder(claimed.orderId).catch(() => null);
       if (reportOrder) await sendOrderReceivedText(reportOrder);
+      // 전달할 주문이 있을 때만 GA 구매로 잡는다.
+      await dispatchGaPurchase(claimed.orderId);
     }
-    await dispatchGaPurchase(claimed.orderId);
     return {
       success: true, alreadyFulfilled: false, credits: 0, totalCredits: null, subscription: null,
       entitlement: null, productEntitlement: null, bundleGrants: null, product: null, plan: null,

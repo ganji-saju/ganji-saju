@@ -124,3 +124,13 @@ describe('transitionReportOrder 풀이 id 조건', () => {
     expect(query.is).toHaveBeenCalledWith('external_report_id', null);
   });
 });
+
+describe('countRecentReportOrdersByPhone', () => {
+  it('결제창을 닫은 카드 시도(pending_payment)는 세지 않는다', async () => {
+    const { countRecentReportOrdersByPhone } = await import('./report-order-store');
+    (query as Record<string, unknown>).gte = vi.fn().mockReturnThis();
+    (query as Record<string, unknown>).neq = vi.fn().mockResolvedValue({ count: 1, error: null });
+    await expect(countRecentReportOrdersByPhone('01012345678', '2026-10-20T00:00:00Z')).resolves.toBe(1);
+    expect((query as Record<string, ReturnType<typeof vi.fn>>).neq).toHaveBeenCalledWith('status', 'pending_payment');
+  });
+});

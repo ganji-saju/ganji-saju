@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 const notFoundError = new Error('NEXT_NOT_FOUND');
 vi.mock('next/navigation', () => ({ notFound: vi.fn(() => { throw notFoundError; }) }));
+const cookieValue = vi.hoisted(() => ({ token: undefined as string | undefined }));
+vi.mock('next/headers', () => ({ cookies: async () => ({ get: (name: string) => (name === 'gs_report_view' && cookieValue.token ? { value: cookieValue.token } : undefined) }) }));
 vi.mock('@/lib/report-orders/report-order-store', () => ({ getReportOrderByToken: vi.fn() }));
 vi.mock('@/lib/admin/external-report-history', () => ({ getExternalReport: vi.fn() }));
 vi.mock('@/app/admin/external-report/report-view', () => ({
@@ -17,15 +19,22 @@ import { getExternalReport } from '@/lib/admin/external-report-history';
 import Page, { generateMetadata } from './page';
 
 const token = 'a'.repeat(43);
-const render = async () => renderToStaticMarkup(await Page({ params: Promise.resolve({ token }) }));
+const render = async () => renderToStaticMarkup(await Page());
 const sentOrder = { status: 'sent', product: 'lifetime', externalReportId: 'ext-1', purgedAt: null, name: '김민지', sentAt: new Date().toISOString() };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  cookieValue.token = token;
   vi.mocked(getExternalReport).mockResolvedValue({ report: { kind: 'lifetime', data: { subjectName: '김민지' } } } as never);
 });
 
-describe('/r/[token] 손님 결과 화면', () => {
+describe('/r/view 손님 결과 화면(토큰은 쿠키로만)', () => {
+  it('쿠키가 없으면 조회하지 않고 같은 404', async () => {
+    cookieValue.token = undefined;
+    await expect(render()).rejects.toBe(notFoundError);
+    expect(getReportOrderByToken).not.toHaveBeenCalled();
+  });
+
   it('발송된 주문이면 풀이와 PDF 저장 버튼', async () => {
     vi.mocked(getReportOrderByToken).mockResolvedValueOnce(sentOrder as never);
     const html = await render();

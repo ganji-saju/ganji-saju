@@ -7,6 +7,7 @@ vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({})) 
 vi.mock('@/lib/admin/access-log', () => ({ logAdminAccess: vi.fn() }));
 vi.mock('@/lib/report-orders/report-order-store', () => ({
   getReportOrder: vi.fn(),
+  markReportOrderPaidByPaymentOrder: vi.fn(async () => true),
   transitionReportOrder: vi.fn(async (_id: string, to: string) => ({ status: to })),
   markReportOrderRefundedByPaymentOrder: vi.fn(),
   recordReportOrderSendResult: vi.fn(),
@@ -23,7 +24,7 @@ vi.mock('@/lib/payments/fulfillment', () => ({ fulfillPaymentOrder: vi.fn(async 
 vi.mock('@/lib/report-orders/notify', () => ({ sendReportReadyMessages: vi.fn() }));
 
 import { getCurrentAdminRole } from '@/lib/admin-auth';
-import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult } from '@/lib/report-orders/report-order-store';
+import { getReportOrder, transitionReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult, markReportOrderPaidByPaymentOrder } from '@/lib/report-orders/report-order-store';
 import { generateExternalNewYearReport, generateExternalReport } from '@/lib/admin/external-report';
 import { deleteExternalReport } from '@/lib/admin/external-report-history';
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded } from '@/lib/payments/order-ledger';
@@ -37,8 +38,9 @@ const birth = {
   hour: '2', minute: '30', unknownBirthTime: false, gender: 'female',
   birthLocationCode: '', birthLocationLabel: '', birthLatitude: '', birthLongitude: '',
 };
+const UUID = '6f1e2d3c-4b5a-4987-8a6b-5c4d3e2f1a0b';
 const baseOrder = {
-  id: 'r1', orderNo: 'GS-R-1', product: 'lifetime', amount: 29900, payMethod: 'bank', status: 'paid',
+  id: UUID, orderNo: 'GS-R-1', product: 'lifetime', amount: 29900, payMethod: 'bank', status: 'paid',
   name: '김민지', phone: '01012345678', email: 'a@b.co', birth, paymentOrderId: null, externalReportId: null,
   resultToken: 't'.repeat(43), purgedAt: null,
 };
@@ -48,7 +50,7 @@ function call(body: unknown, origin = 'https://ganjisaju.kr') {
     new NextRequest('https://ganjisaju.kr/api/admin/report-orders/r1', {
       method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify(body),
     }),
-    { params: Promise.resolve({ id: 'r1' }) },
+    { params: Promise.resolve({ id: UUID }) },
   );
 }
 
@@ -83,7 +85,7 @@ describe('관리자 랜딩 주문 처리', () => {
     expect(res.status).toBe(200);
     expect(generateExternalReport).toHaveBeenCalled();
     expect(generateExternalNewYearReport).not.toHaveBeenCalled();
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.objectContaining({ external_report_id: 'ext-new' }), { expectReportId: null });
+    expect(transitionReportOrder).toHaveBeenCalledWith(UUID, 'generated', expect.objectContaining({ external_report_id: 'ext-new' }), { expectReportId: null });
     vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, product: 'new-year' } as never);
     await call({ action: 'generate' });
     expect(generateExternalNewYearReport).toHaveBeenCalled();
@@ -93,9 +95,9 @@ describe('관리자 랜딩 주문 처리', () => {
     vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: false, email: true });
     expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(200);
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.objectContaining({ reviewed_by: 'admin-1' }), { expectReportId: 'ext-1' });
+    expect(transitionReportOrder).toHaveBeenCalledWith(UUID, 'sent', expect.objectContaining({ reviewed_by: 'admin-1' }), { expectReportId: 'ext-1' });
     expect(vi.mocked(transitionReportOrder).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(sendReportReadyMessages).mock.invocationCallOrder[0]);
-    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: false, email: true });
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith(UUID, { sms: false, email: true });
     vi.mocked(transitionReportOrder).mockRejectedValueOnce(new Error('report_order_conflict'));
     vi.mocked(sendReportReadyMessages).mockClear();
     expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(409);
@@ -106,7 +108,7 @@ describe('관리자 랜딩 주문 처리', () => {
     vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: false, email: false });
     expect((await call({ action: 'send', reportId: 'ext-1' })).status).toBe(502);
-    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: false, email: false });
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith(UUID, { sms: false, email: false });
   });
 
   it('발송: 상담사가 본 풀이(reportId)가 지금 풀이와 다르면 409, 보내지 않는다', async () => {
@@ -121,7 +123,7 @@ describe('관리자 랜딩 주문 처리', () => {
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: true, email: true });
     expect((await call({ action: 'resend' })).status).toBe(200);
     expect(transitionReportOrder).not.toHaveBeenCalled();
-    expect(recordReportOrderSendResult).toHaveBeenCalledWith('r1', { sms: true, email: true });
+    expect(recordReportOrderSendResult).toHaveBeenCalledWith(UUID, { sms: true, email: true });
   });
 
   it('발송은 풀이를 만든 주문만(전이 검사 전에 막음)', async () => {
@@ -200,8 +202,8 @@ describe('2차 검토 반영', () => {
   });
 
   it('결제 확인: 확정 뒤 주문이 실제로 paid 가 아니면 409', async () => {
+    vi.mocked(markReportOrderPaidByPaymentOrder).mockResolvedValueOnce(false);
     vi.mocked(getReportOrder)
-      .mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never)
       .mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
     vi.mocked(getPaymentOrderByOrderId).mockResolvedValueOnce({ orderId: 'ord_1', paymentKey: 'tid_1', amount: 29900, status: 'fulfilling' } as never);
     vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 29900 } as never);
@@ -212,9 +214,27 @@ describe('2차 검토 반영', () => {
     vi.mocked(getReportOrder).mockResolvedValue({ ...baseOrder, status: 'generated', externalReportId: 'ext-1' } as never);
     vi.mocked(sendReportReadyMessages).mockResolvedValueOnce({ sms: true, email: true });
     await call({ action: 'send', reportId: 'ext-1' });
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'sent', expect.anything(), { expectReportId: 'ext-1' });
+    expect(transitionReportOrder).toHaveBeenCalledWith(UUID, 'sent', expect.anything(), { expectReportId: 'ext-1' });
     vi.mocked(transitionReportOrder).mockClear();
     await call({ action: 'generate' });
-    expect(transitionReportOrder).toHaveBeenCalledWith('r1', 'generated', expect.anything(), { expectReportId: 'ext-1' });
+    expect(transitionReportOrder).toHaveBeenCalledWith(UUID, 'generated', expect.anything(), { expectReportId: 'ext-1' });
+  });
+});
+
+describe('리뷰 반영', () => {
+  it('UUID 가 아닌 id 는 조회하지 않고 404', async () => {
+    const res = await POST(
+      new NextRequest('https://ganjisaju.kr/api/admin/report-orders/x', { method: 'POST', headers: { origin: 'https://ganjisaju.kr', 'content-type': 'application/json' }, body: JSON.stringify({ action: 'send' }) }),
+      { params: Promise.resolve({ id: 'not-a-uuid' }) },
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('결제 확인: 원장이 이미 확정돼 있어도(이전 시도) 랜딩 주문을 paid 로 맞춘다', async () => {
+    vi.mocked(getReportOrder).mockResolvedValueOnce({ ...baseOrder, payMethod: 'card', status: 'pending_payment', paymentOrderId: 'ord_1' } as never);
+    vi.mocked(getPaymentOrderByOrderId).mockResolvedValueOnce({ orderId: 'ord_1', paymentKey: 'tid_1', amount: 29900, status: 'fulfilled' } as never);
+    vi.mocked(getNicepayPayment).mockResolvedValueOnce({ status: 'paid', amount: 29900 } as never);
+    expect((await call({ action: 'confirm_card' })).status).toBe(200);
+    expect(markReportOrderPaidByPaymentOrder).toHaveBeenCalledWith('ord_1');
   });
 });

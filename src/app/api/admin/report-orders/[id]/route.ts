@@ -9,7 +9,7 @@ import { deleteExternalReport, saveExternalReport } from '@/lib/admin/external-r
 import { getPaymentOrderByOrderId, markPaymentOrderRefunded, type TossPaymentObject } from '@/lib/payments/order-ledger';
 import { cancelNicepayPayment, getNicepayPayment } from '@/lib/payments/nicepay';
 import { fulfillPaymentOrder } from '@/lib/payments/fulfillment';
-import { getReportOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult, transitionReportOrder } from '@/lib/report-orders/report-order-store';
+import { getReportOrder, markReportOrderPaidByPaymentOrder, markReportOrderRefundedByPaymentOrder, recordReportOrderSendResult, transitionReportOrder } from '@/lib/report-orders/report-order-store';
 import { sendReportReadyMessages } from '@/lib/report-orders/notify';
 import { isResultLinkExpired } from '@/lib/report-orders/report-order';
 
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!hasSameOrigin(req)) return json({ ok: false, error: '관리자 화면에서 다시 요청해 주세요.' }, 403);
 
   const { id } = await params;
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ ok: false, error: '주문을 찾지 못했습니다.' }, 404);
   const body = (await req.json().catch(() => null)) as { action?: string; note?: string; reportId?: string } | null;
   const action = ACTIONS.find((a) => a === body?.action) as Action | undefined;
   if (!action) return json({ ok: false, error: '알 수 없는 작업입니다.' }, 400);
@@ -126,9 +127,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           payment: { ...(nice as unknown as TossPaymentObject), status: 'DONE', paymentKey: paymentOrder.paymentKey, orderId: paymentOrder.orderId, totalAmount: paymentOrder.amount, amount: paymentOrder.amount },
           source: 'reconciliation',
         });
-        // 원장이 다른 처리 중(fulfilling)이면 fulfill 이 아무것도 안 하고 돌아온다 — 실제로 paid 가 됐는지 다시 본다.
-        const after = await getReportOrder(id);
-        if (after?.status !== 'paid') return json({ ok: false, error: '결제는 확인됐지만 주문 확정이 끝나지 않았습니다. 잠시 뒤 다시 눌러 주세요.' }, 409);
+        // 원장이 이미 확정(이전 시도)이면 fulfill 은 아무것도 안 하고 돌아온다 — 랜딩 주문은 여기서 직접 맞춘다(멱등).
+        //   원장이 다른 처리 중(fulfilling)이라 주문이 아직 결제 대기면 false → 다시 누르게 한다.
+        const paidNow = await markReportOrderPaidByPaymentOrder(order.paymentOrderId);
+        if (!paidNow) return json({ ok: false, error: '결제는 확인됐지만 주문 확정이 끝나지 않았습니다. 잠시 뒤 다시 눌러 주세요.' }, 409);
         status = 'paid';
         break;
       }

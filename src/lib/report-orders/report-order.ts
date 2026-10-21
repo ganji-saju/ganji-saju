@@ -81,3 +81,6 @@ export const RESULT_LINK_DAYS = 365;
 export function isResultLinkExpired(sentAt: string | null, now = Date.now()): boolean {
   return !sentAt || now - Date.parse(sentAt) > RESULT_LINK_DAYS * 86400_000;
 }
+
+/** 결과 링크 토큰을 담는 쿠키(/r/<토큰> 진입 때 설정, /r/view 가 읽음). */
+export const REPORT_VIEW_COOKIE = 'gs_report_view';

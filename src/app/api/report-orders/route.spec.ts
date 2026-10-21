@@ -115,3 +115,11 @@ describe('GA 구매 귀속', () => {
     expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ analyticsConsent: null, gaClientId: null, gaSessionId: null }));
   });
 });
+
+describe('번호 제한 조회 실패', () => {
+  it('DB 조회가 실패하면 통과시키지 않는다(429)', async () => {
+    const { countRecentReportOrdersByPhone } = await import('@/lib/report-orders/report-order-store');
+    vi.mocked(countRecentReportOrdersByPhone).mockRejectedValueOnce(new Error('db'));
+    expect((await POST(request({ ...form, payMethod: 'bank' }, {}, '5.5.5.5'))).status).toBe(429);
+  });
+});

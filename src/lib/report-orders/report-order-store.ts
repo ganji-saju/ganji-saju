@@ -246,7 +246,9 @@ export async function countRecentReportOrdersByPhone(phone: string, sinceIso: st
   const service = await createServiceClient();
   const { count, error } = await service.from(TABLE).select('id', { count: 'exact', head: true })
     .eq('phone', phone)
-    .gte('created_at', sinceIso);
+    .gte('created_at', sinceIso)
+    // 결제창을 닫은 카드 시도는 문자도 안 나가고 손님 재시도를 막으면 안 된다 — 세지 않는다.
+    .neq('status', 'pending_payment');
   if (error) throw new Error('report_order_read_failed');
   return count ?? 0;
 }

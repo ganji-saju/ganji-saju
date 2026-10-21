@@ -140,3 +140,21 @@ describe('음력 윤달', () => {
     expect(parseReportOrderForm({ ...base, lunarLeap: true }).ok && true).toBe(true);
   });
 });
+
+describe('takeReportOrderSlot', () => {
+  it('창이 지난 IP 기록은 지운다(메모리가 계속 커지지 않게)', async () => {
+    const { takeReportOrderSlot, rateLimitSizeForTest, resetReportOrderRateLimitForTest } = await import('./rate-limit');
+    resetReportOrderRateLimitForTest();
+    takeReportOrderSlot('1.1.1.1', 0);
+    takeReportOrderSlot('2.2.2.2', 11 * 60_000);
+    expect(rateLimitSizeForTest()).toBe(1);
+  });
+});
+
+describe('마이그레이션 091', () => {
+  it('결제 원장의 user 빈값은 랜딩 상품 두 개에만 허용한다(DB 제약)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const sql = readFileSync('supabase/migrations/091_report_orders.sql', 'utf8');
+    expect(sql).toMatch(/check \(user_id is not null or package_id in \('report_lifetime', 'report_new_year'\)\)/);
+  });
+});

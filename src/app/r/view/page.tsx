@@ -1,9 +1,10 @@
-// 랜딩 비회원 주문 손님 결과 화면. 상담사가 발송한(sent) 주문만 보인다 — 없는 토큰·발송 전·환불·보관 기간 지남은 모두 같은 404.
+// 랜딩 비회원 주문 손님 결과 화면(/r/view). 토큰은 /r/<토큰> 진입 라우트가 httpOnly 쿠키로 옮겨 둔다. 상담사가 발송한(sent) 주문만 보인다 — 없는 토큰·발송 전·환불·보관 기간 지남은 모두 같은 404.
 //   저장된 풀이 snapshot 을 그대로 그린다(AI 재호출 없음). 이름·생년월일은 공유 미리보기·검색에 내보내지 않는다.
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getReportOrderByToken } from '@/lib/report-orders/report-order-store';
-import { isResultLinkExpired } from '@/lib/report-orders/report-order';
+import { isResultLinkExpired, REPORT_VIEW_COOKIE } from '@/lib/report-orders/report-order';
 import { getExternalReport } from '@/lib/admin/external-report-history';
 import { ExternalReportView } from '@/app/admin/external-report/report-view';
 import { HistoryPrintButton } from '@/app/admin/external-report/history/history-print-button';
@@ -20,8 +21,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ReportResultPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
+export default async function ReportResultPage() {
+  const token = (await cookies()).get(REPORT_VIEW_COOKIE)?.value;
+  if (!token) notFound();
   const order = await getReportOrderByToken(token).catch(() => null);
   if (!order || order.status !== 'sent' || order.purgedAt || !order.externalReportId || isResultLinkExpired(order.sentAt)) notFound();
   const saved = await getExternalReport(order.externalReportId).catch(() => null);

@@ -36,6 +36,7 @@ import { markPaymentOrderFulfilled } from '@/lib/payments/order-ledger';
 import { markReportOrderPaidByPaymentOrder } from '@/lib/report-orders/report-order-store';
 import { sendOrderReceivedText } from '@/lib/report-orders/notify';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
+import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
 import { fulfillPaymentOrder } from './fulfillment';
 
 const order = { orderId: 'ord_1', userId: '', packageId: 'report_lifetime', amount: 29900, currency: 'KRW', status: 'confirmed', paymentKey: 'tid_1', slug: null, scope: null, metadata: {} } as unknown as PaymentOrder;
@@ -45,6 +46,12 @@ describe('랜딩 비회원 주문 결제 확정', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.claimed = order;
+  });
+
+  it('결제 원장을 먼저 확정하고 그다음 랜딩 주문을 paid 로(원장 실패 시 주문은 결제 대기로 남아 "결제 확인"으로 복구)', async () => {
+    await fulfillPaymentOrder({ order, payment, source: 'nicepay-return' });
+    expect(vi.mocked(markPaymentOrderFulfilled).mock.invocationCallOrder[0])
+      .toBeLessThan(vi.mocked(markReportOrderPaidByPaymentOrder).mock.invocationCallOrder[0]);
   });
 
   it.each(['nicepay-return', 'reconciliation'] as const)('%s: 지급 없이 주문을 paid 로, 결제 원장은 fulfilled, 접수 문자', async (source) => {
@@ -69,5 +76,7 @@ describe('결제는 됐는데 랜딩 주문을 paid 로 못 바꾼 경우(관리
     await fulfillPaymentOrder({ order, payment, source: 'nicepay-return' });
     expect(sendOpsAlertEmail).toHaveBeenCalledWith(expect.objectContaining({ subject: expect.stringContaining('랜딩 주문') }));
     expect(sendOrderReceivedText).not.toHaveBeenCalled();
+    // 전달하지 않은 거래를 GA 구매로 잡지 않는다
+    expect(dispatchGaPurchase).not.toHaveBeenCalled();
   });
 });

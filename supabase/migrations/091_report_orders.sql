@@ -44,6 +44,9 @@ grant select, insert, update on public.report_orders to service_role;
 
 -- 비회원 카드 주문은 결제 원장에 user 없이 남는다(대시보드 매출·환불·정산 크론 재사용).
 alter table public.payment_orders alter column user_id drop not null;
+-- 다른 상품이 user 없이 결제 원장에 들어오지 못하게 DB 에서 막는다(회수·멤버십·집계 코드의 user 불변식 보호).
+alter table public.payment_orders add constraint payment_orders_user_or_report_order
+  check (user_id is not null or package_id in ('report_lifetime', 'report_new_year'));
 
 -- 보관기간이 지난 랜딩 주문의 풀이 원본 삭제용.
 grant delete on public.admin_external_reports to service_role;

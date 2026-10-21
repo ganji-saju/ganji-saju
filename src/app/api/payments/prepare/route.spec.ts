@@ -187,3 +187,15 @@ describe('prepare — LLM 장애 중 결제 보류', () => {
     expect(vi.mocked(logPaymentFunnelEvent).mock.calls.some(([, e]) => e.stage === 'prepare_blocked' && e.reason === 'llm_outage_hold')).toBe(true);
   });
 });
+
+// 2026-10-21 — 랜딩 비회원 주문 상품은 /api/report-orders 로만 판다. 여기로 오면 랜딩 주문 행 없이 돈만 받는다.
+describe('prepare — 랜딩 주문 상품 차단', () => {
+  it.each(['report_lifetime', 'report_new_year'])('%s 는 410, 결제 주문을 만들지 않는다', async (packageId) => {
+    vi.mocked(createPaymentOrder).mockClear();
+    const res = await POST(new NextRequest('https://ganjisaju.kr/api/payments/prepare', {
+      method: 'POST', body: JSON.stringify({ packageId }),
+    }));
+    expect(res.status).toBe(410);
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+  });
+});
