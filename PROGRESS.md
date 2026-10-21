@@ -9,7 +9,8 @@
 - 검토: Codex 1차 "배포 보류"(치명 2: 나이스 정산 미복구·결과 토큰 분석 유출) + 별도 리뷰어 "수정 후 머지" → 반영 9건. Codex 2차 "보류" → 2차 지적 9건 추가 반영(재검토 없음 = 작성 도구 권고). 남은 이견은 decision.md.
 - 머지 전 리뷰 반영: 일반 결제 준비 경로의 랜딩 상품 차단(410) · 원장 먼저 확정 · 결과 토큰은 /r/<토큰>→httpOnly 쿠키→/r/view(주소에서 제거, GTM 차단) · 번호 제한 보강 · DB 제약(user 빈값은 랜딩 상품만).
 - 검증: node 단위 0 실패 · vitest 747/747 · tsc 0 · next build 성공 · 390px 실화면(Playwright·설치된 Chrome) 가로 넘침 0, 전 구간 스크린샷 확인. ⚠️ 실결제·실문자·실메일·DB 경로는 091 미적용이라 미검증.
-- 남은 일(사용자): ① 마이그레이션 091 운영 적용 승인(앱 배포보다 먼저) ② Vercel env `REPORT_BANK_NAME`·`REPORT_BANK_ACCOUNT`·`REPORT_BANK_HOLDER` 입력 ③ 후기 원문 ④ 개인정보처리방침 추가안(`docs/ops/2026-10-21-privacy-report-orders.md`) DB 새 버전 발행 승인 ⑤ 머지 여부 ⑥ staging 확인 뒤 `/` 를 랜딩으로 바꿀지 ⑦ 나이스 정산 크론 별도 PR(광고비 늘리기 전 권고) ⑧ 이메일 필수 유지 여부.
+- 091 운영 적용(2026-10-21, 사용자 승인, MCP supabase-ganji): 적용 전 확인 report_orders 없음·user_id NOT NULL·user 빈값 0건 → 적용 후 RLS 켬·정책 0·anon/authenticated 읽기 불가·service_role 쓰기 가능·user_id NULL 허용·제약 검증됨. 보안 점검 새 경고 0(기존 handle_new_user·search_classic_evidence 경고 2건은 이전부터).
+- 남은 일(사용자): ② Vercel env `REPORT_BANK_NAME`·`REPORT_BANK_ACCOUNT`·`REPORT_BANK_HOLDER` 입력 ③ 후기 원문 ④ 개인정보처리방침 추가안(`docs/ops/2026-10-21-privacy-report-orders.md`) DB 새 버전 발행 승인 ⑤ 머지 여부 ⑥ staging 확인 뒤 `/` 를 랜딩으로 바꿀지 ⑦ 나이스 정산 크론 별도 PR(광고비 늘리기 전 권고) ⑧ 이메일 필수 유지 여부.
 
 ## 2026-10-12 — 궁합 반합 판정 누락 수정 + 궁합 AI 시간 초과 대응 (Claude 제작 → Codex 검증 2회)
 
