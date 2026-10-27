@@ -1,7 +1,9 @@
 /* 한 장짜리 랜딩 — "상담실에서 건네받는 풀이서" 톤: 한지 바탕 · 먹 글씨 · 인주 도장 · 금빛 실선.
    50대 이상 손님 기준: 본문 18px 이상 · 버튼 56px 이상 · 글자 대비 4.5:1 이상 · 390px 가로 넘침 0.
    먹 바탕은 첫 화면과 상담사 칸 두 곳만 쓴다(DESIGN.md: 다크는 포인트 패널까지). */
-.page {
+/* 하단 고정 버튼은 body 로 portal 되어 .page 밖에 있다 — 토큰을 같이 받아야 버튼 색이 보인다. */
+.page,
+.sticky {
   --sr-paper: #f6f1e7;
   --sr-paper-deep: #eee6d6;
   --sr-sheet: #fdfaf4;
@@ -19,6 +21,9 @@
   --sr-night-muted: rgba(243, 236, 223, 0.76); /* 먹 위 8:1 */
   --sr-night-gold: #c9a45c;
   --sr-serif: var(--font-batang), 'Gowun Batang', 'Noto Serif KR', serif;
+}
+
+.page {
   background: var(--sr-paper);
   color: var(--sr-text);
   font-size: 18px;
@@ -352,7 +357,7 @@
 .products {
   max-width: none;
   padding-inline: max(20px, calc((100% - 600px) / 2));
-  background: var(--sr-paper-deep);
+  background: #fff;
 }
 
 .productCard {
