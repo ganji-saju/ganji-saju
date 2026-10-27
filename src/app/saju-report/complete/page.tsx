@@ -1,6 +1,7 @@
 // 카드 결제 뒤 나이스페이 return 이 보내는 완료 화면(reportOrderResultHref). 주문자 개인정보는 보여 주지 않는다.
 import type { Metadata } from 'next';
 import { getReportOrderByPaymentOrder } from '@/lib/report-orders/report-order-store';
+import { Masthead } from '../masthead';
 import styles from '../saju-report.module.css';
 
 export const metadata: Metadata = { title: { absolute: '간지사주 — 신청 완료' }, robots: { index: false, follow: false } };
@@ -17,7 +18,7 @@ export default async function SajuReportCompletePage({ searchParams }: { searchP
 
   return (
     <div className={styles.page}>
-      <a className={styles.header} href="/saju-report">간지사주</a>
+      <Masthead cta={false} />
       <section className={styles.section}>
         {paid ? (
           <>
