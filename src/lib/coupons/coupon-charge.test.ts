@@ -850,7 +850,7 @@ test('coupon-charge — 파트너 없이 파트너판이면 정가(prepare 의 �
 // 2026-10-28 — 사용자 신고 "간지사주50 이 신년운세 말고 다 적용된다" 재현용. 신년운세 외 모든 상품은 정가 그대로여야 한다.
 test('coupon-charge — 전단지 공용 코드 간지사주50 은 2027 신년운세 외 상품에 할인이 붙지 않고 이유를 보여 준다', async () => {
   for (const pkg of PAYMENT_PACKAGES) {
-    if (pkg.id === 'taste_new_year_2027') continue;
+    if (pkg.id === 'taste_new_year_2027' || pkg.id === 'report_new_year') continue;
     for (const viewer of [null, { id: 'u1' }]) {
       const db = fakeDb();
       const quote = await resolveChargeForUser(pkg, viewer, '간지사주50', { ...opts(db), isPremiumMember: async () => false });

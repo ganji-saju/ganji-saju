@@ -8,6 +8,7 @@ import { getPaymentProvider } from '@/lib/payments/provider';
 import { buildPaymentOrigin } from '@/lib/payments/payment-origin';
 import { createPaymentOrder } from '@/lib/payments/order-ledger';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
+import { applyPromoPrice, findPromoCode, isKnownPromoCode } from '@/lib/coupons/promo-code';
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
 import { readGaIdentifiers } from '@/lib/analytics/ga-identifiers';
@@ -58,6 +59,14 @@ export async function POST(req: NextRequest) {
   if (!pkg) return json({ ok: false, error: '상품을 찾지 못했어요.' }, 400);
   // 🔴 금액은 서버(카탈로그 + 관리자 가격 덮어쓰기)만. 화면이 보낸 금액은 읽지 않는다.
   const price = await resolvePackagePrice(pkg.id);
+  // 할인코드(전단지 공용 코드 — 지금은 '간지사주50', 신년운세 전용). 넣었는데 안 맞으면 정가로 조용히 받지 않고 멈춘다.
+  const rawPromo = (payload as Record<string, unknown>).promoCode;
+  const promoInput = typeof rawPromo === 'string' ? rawPromo.slice(0, 40) : '';
+  const promo = findPromoCode(promoInput, pkg.id, price);
+  if (promoInput.trim() && !promo) {
+    return json({ ok: false, error: isKnownPromoCode(promoInput) ? '이 할인코드는 2027 신년운세 전용입니다. 다른 상품에는 적용되지 않습니다.' : '사용할 수 없는 할인코드입니다. 코드를 확인하거나 칸을 비워 주세요.' }, 400);
+  }
+  const amount = promo ? applyPromoPrice(price, promo).chargeAmount : price;
   const source = typeof (payload as Record<string, unknown>).source === 'string'
     ? String((payload as Record<string, unknown>).source).slice(0, 60) || null
     : null;
@@ -79,6 +88,7 @@ export async function POST(req: NextRequest) {
         analyticsConsent,
         pkg,
         listAmount: price,
+        promo,
         entrySource: 'saju-report',
         acceptedKinds: ['terms', 'privacy', 'refund', 'digital-content'],
         recordedPolicyVersionIds: [],
@@ -101,7 +111,7 @@ export async function POST(req: NextRequest) {
       return json({ ok: true, payMethod: 'card', orderId: paymentOrder.orderId, amount: paymentOrder.amount, goodsName: pkg.name });
     }
 
-    const saved = await createReportOrder({ ...order, amount: price, paymentOrderId: null, source });
+    const saved = await createReportOrder({ ...order, amount, paymentOrderId: null, source });
     await sendOrderReceivedText(saved);
     return json({
       ok: true, payMethod: 'bank', orderNo: saved.orderNo, amount: saved.amount,

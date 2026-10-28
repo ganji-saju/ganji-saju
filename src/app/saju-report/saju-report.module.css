@@ -818,6 +818,23 @@
   background: var(--sr-paper);
 }
 
+/* 할인코드 결과 — 적용(인주색 굵게) / 못 씀(차분한 글자). */
+.promoOk,
+.promoBad {
+  margin: 8px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.promoOk {
+  color: var(--sr-seal-deep);
+  font-weight: 800;
+}
+
+.promoBad {
+  color: var(--sr-muted);
+}
+
 .error {
   margin: 0;
   padding: 12px 14px;

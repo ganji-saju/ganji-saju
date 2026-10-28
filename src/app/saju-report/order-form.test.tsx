@@ -137,4 +137,38 @@ describe('랜딩 주문서', () => {
     expect(host.querySelector<HTMLInputElement>('#report-order-product-new-year')!.checked).toBe(true);
     window.location.hash = '';
   });
+
+  it('할인코드 칸은 신년운세를 고를 때만 나오고, 간지사주50 이면 9,900원 안내 후 코드를 보낸다', async () => {
+    await mount(true);
+    await fillAll();
+    expect(host.querySelector('#report-order-promo')).toBeNull();
+    await click('#report-order-product-new-year');
+    await set('promo', '간지사주50');
+    expect(host.textContent).toContain('결제 시 9,900원으로 진행됩니다.');
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: 'x' }), { status: 400 }));
+    await submit();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ product: 'new-year', promoCode: '간지사주50' });
+  });
+
+  it('틀린 할인코드면 요청하지 않고 확인을 부탁한다', async () => {
+    await mount(true);
+    await fillAll();
+    await click('#report-order-product-new-year');
+    await set('promo', '아무거나');
+    expect(host.textContent).toContain('사용할 수 없는 할인코드입니다.');
+    await submit();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(host.textContent).toContain('할인코드를 확인해 주세요.');
+  });
+
+  it('신년운세에서 코드를 넣고 종합사주로 바꾸면 코드를 보내지 않는다', async () => {
+    await mount(true);
+    await fillAll();
+    await click('#report-order-product-new-year');
+    await set('promo', '간지사주50');
+    await click('#report-order-product-lifetime');
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: 'x' }), { status: 400 }));
+    await submit();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).promoCode).toBeUndefined();
+  });
 });

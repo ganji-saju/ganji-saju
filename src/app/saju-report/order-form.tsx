@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
 import { readConsent } from '@/components/analytics/analytics-consent';
+import { applyPromoPrice, findPromoCode } from '@/lib/coupons/promo-code';
 import { HOUR_SLOTS, type ReportProduct } from '@/lib/report-orders/report-order';
 import styles from './saju-report.module.css';
 
@@ -56,6 +57,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [memo, setMemo] = useState('');
+  const [promoInput, setPromoInput] = useState('');
   const [pay, setPay] = useState<string>('CARD');
   const [cashReceipt, setCashReceipt] = useState(false);
   const [consentPrivacy, setConsentPrivacy] = useState(false);
@@ -74,6 +76,10 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  // 할인코드는 신년운세 전용. 화면은 바로 보여 주기만 하고, 금액은 서버가 같은 함수로 다시 정한다.
+  const promoTyped = product === 'new-year' && promoInput.trim() !== '';
+  const promo = promoTyped ? findPromoCode(promoInput, 'report_new_year', prices['new-year'].price) : null;
+
   function missing(): string {
     if (!product) return '상품을 선택해 주세요.';
     if (!name.trim()) return '이름을 입력해 주세요.';
@@ -82,6 +88,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
     if (!hourSlot) return '태어난 시간을 선택해 주세요.';
     if (!phone.trim()) return '휴대폰 번호를 입력해 주세요.';
     if (!email.trim()) return '이메일을 입력해 주세요.';
+    if (promoTyped && !promo) return '할인코드를 확인해 주세요. 코드가 없으면 칸을 비워 주세요.';
     if (!consentPrivacy || !consentTerms) return '개인정보 수집·이용과 이용약관에 동의해 주세요.';
     return '';
   }
@@ -105,6 +112,7 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
         body: JSON.stringify({
           product, payMethod, name, gender, calendarType, lunarLeap: calendarType === 'lunar' && lunarLeap, year, month, day, hourSlot, phone, email, memo,
           cashReceipt: payMethod === 'bank' && cashReceipt, consentPrivacy, consentTerms, source,
+          promoCode: promoTyped ? promoInput : undefined,
           analyticsConsent: readConsent(),
         }),
       });
@@ -167,6 +175,21 @@ export function OrderForm({ prices, bankEnabled }: { prices: ReportPrices; bankE
           </label>
         ))}
       </fieldset>
+
+      {product === 'new-year' ? (
+        <>
+          <label className={styles.label} htmlFor="report-order-promo">할인코드 <span className={styles.hint}>(있으신 분만)</span></label>
+          <input id="report-order-promo" className={styles.input} value={promoInput} maxLength={40} autoComplete="off"
+            autoCapitalize="none" spellCheck={false} onChange={(e) => setPromoInput(e.target.value)} />
+          {promo ? (
+            <p className={styles.promoOk} role="status">
+              적용되었습니다. 결제 시 {won(applyPromoPrice(prices['new-year'].price, promo).chargeAmount)}으로 진행됩니다.
+            </p>
+          ) : promoTyped ? (
+            <p className={styles.promoBad} role="status">사용할 수 없는 할인코드입니다. 코드를 확인해 주세요.</p>
+          ) : null}
+        </>
+      ) : null}
 
       <label className={styles.label} htmlFor="report-order-name">이름</label>
       <input id="report-order-name" className={styles.input} value={name} maxLength={20} autoComplete="name"
