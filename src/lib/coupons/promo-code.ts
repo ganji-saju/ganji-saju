@@ -1,6 +1,7 @@
 // 2026-10-02 — 전단지 공용 할인코드(사용자 요청). 기존 할인쿠폰(discount-coupon)은 "코드 1장 = 1명 귀속"이라
 //   전단지 받은 사람 모두가 같은 코드를 쓰는 용도에 맞지 않는다 → 상품·고정가만 정한 공용 코드를 따로 둔다.
-//   귀속·사용 횟수 없음(신년운세는 사주 정체성당 재결제가 이미 막혀 있다). 로그인 계정만(resolveChargeForUser).
+//   귀속·사용 횟수 없음(신년운세는 사주 정체성당 재결제가 이미 막혀 있다). 앱 결제는 resolveChargeForUser,
+//   한 장짜리 랜딩(비회원)은 /api/report-orders 가 같은 함수로 판정한다.
 //   주문에는 coupon_code 대신 metadata.promoCode 로 남긴다 — coupon_code 는 승인 직전 귀속 검사(coupon-order-guard)를 탄다.
 
 export interface PromoCode {
