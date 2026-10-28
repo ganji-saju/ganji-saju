@@ -12,7 +12,7 @@ import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { MEMBER_DISCOUNT_PERCENT_BY_PACKAGE, pickBetterDiscount } from '@/lib/payments/member-discount';
 import { isPremiumMember } from '@/lib/subscription';
-import { applyPromoPrice, findPromoCode, type PromoCode } from './promo-code';
+import { applyPromoPrice, findPromoCode, isKnownPromoCode, type PromoCode } from './promo-code';
 import { PARTNER_PACKAGE_ID, applyPartnerPrice, type PartnerTerms } from '@/lib/partners/partner';
 import { after } from 'next/server';
 import { readPaymentOrigin, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
@@ -292,7 +292,8 @@ export async function resolveChargeForUser(
   //   (전단지 손님은 대부분 로그인 전에 들어온다). 실제 청구(prepare)는 로그인 뒤 아래 같은 계산으로 다시 낸다.
   if (!viewer || viewer.is_anonymous) {
     const anonPromo = findPromoCode(couponInput, pkg.id, listAmount);
-    if (!anonPromo) return noDiscount(null);
+    // 2026-10-28 — 다른 상품에 넣은 공용 코드는 "로그인하면 적용돼요"로 보이면 안 된다(적용되는 줄 안다) → 이유를 바로 보여 준다.
+    if (!anonPromo) return noDiscount(isKnownPromoCode(couponInput) ? 'promo_wrong_product' : null);
     const p = applyPromoPrice(listAmount, anonPromo);
     return { listAmount, discountWon: p.discountWon, chargeAmount: p.chargeAmount, percent: p.percent, couponCode: anonPromo.code, reason: null, claim: null, memberPercent: 0, promo: anonPromo };
   }
@@ -325,6 +326,7 @@ export async function resolveChargeForUser(
     if (member && member.chargeAmount <= p.chargeAmount) return member;
     return { listAmount, discountWon: p.discountWon, chargeAmount: p.chargeAmount, percent: p.percent, couponCode: promo.code, reason: null, claim: null, memberPercent: 0, promo };
   }
+  if (raw && isKnownPromoCode(raw)) return fallback('promo_wrong_product');
 
   const parsed = raw ? parseCouponCode(raw) : null;
   const service = opts.service ?? (await createServiceClient());

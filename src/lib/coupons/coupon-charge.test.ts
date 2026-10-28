@@ -13,7 +13,7 @@ import {
 } from './coupon-charge';
 import { STAGING_TEST_BATCH, type CouponEnv } from './discount-coupon';
 import { createPaymentOrder } from '@/lib/payments/order-ledger';
-import { getPackage, type PaymentPackage } from '@/lib/payments/catalog';
+import { getPackage, PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
@@ -845,4 +845,21 @@ test('coupon-charge — 파트너 없이 파트너판이면 정가(prepare 의 �
   const quote = await resolveChargeForUser(getPackage('taste_new_year_2027_partner')!, { id: 'u1' }, null, { ...opts(db), partner: null });
   assert.equal(quote.chargeAmount, 32000);
   assert.equal(quote.partner ?? null, null);
+});
+
+// 2026-10-28 — 사용자 신고 "간지사주50 이 신년운세 말고 다 적용된다" 재현용. 신년운세 외 모든 상품은 정가 그대로여야 한다.
+test('coupon-charge — 전단지 공용 코드 간지사주50 은 2027 신년운세 외 상품에 할인이 붙지 않고 이유를 보여 준다', async () => {
+  for (const pkg of PAYMENT_PACKAGES) {
+    if (pkg.id === 'taste_new_year_2027') continue;
+    for (const viewer of [null, { id: 'u1' }]) {
+      const db = fakeDb();
+      const quote = await resolveChargeForUser(pkg, viewer, '간지사주50', { ...opts(db), isPremiumMember: async () => false });
+      assert.equal(quote.promo ?? null, null, `${pkg.id}: 공용 코드가 붙음`);
+      assert.equal(quote.chargeAmount, quote.listAmount, `${pkg.id}(${viewer ? '로그인' : '비로그인'}): ${quote.listAmount} → ${quote.chargeAmount}`);
+      // 파트너판은 할인코드 입력칸 자체가 없다(파트너 할인만).
+      if (pkg.id !== 'taste_new_year_2027_partner') {
+        assert.equal(quote.reason, 'promo_wrong_product', `${pkg.id}: "로그인하면 적용돼요" 대신 전용 코드 안내가 나와야 한다`);
+      }
+    }
+  }
 });
