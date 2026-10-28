@@ -21,6 +21,13 @@ export function normalizePromoInput(raw: string): string {
   return raw.normalize('NFC').replace(/[\s-]/g, '').toUpperCase();
 }
 
+/** 상품과 상관없이 공용 코드 목록에 있는 코드인가 — "다른 상품에 넣은 공용 코드"를 알아보고 이유를 보여 주는 데만 쓴다. */
+export function isKnownPromoCode(raw: string | null | undefined): boolean {
+  if (!raw?.trim()) return false;
+  const input = normalizePromoInput(raw);
+  return PROMO_CODES.some((p) => normalizePromoInput(p.code) === input);
+}
+
 /** 이 상품에 쓸 수 있는 공용 코드면 반환. 정가보다 비싸지 않을 때만(정가가 내려가면 정가가 이긴다). */
 export function findPromoCode(raw: string | null | undefined, packageId: string, listAmount: number): PromoCode | null {
   if (!raw?.trim()) return null;
