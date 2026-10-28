@@ -621,7 +621,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     </p>
                   ) : null}
                   {/* 쿠폰은 로그인 계정에 붙는다(B 결정) — 비로그인이면 조회하지 않아 사유 문구가 없다. 안 알리면 "넣었는데 반응 없음"이 된다. */}
-                  {!viewer && couponInput && !quote?.promo ? (
+                  {!viewer && couponInput && !quote?.promo && !quote?.reason ? (
                     <p className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
                       로그인하면 넣은 쿠폰이 적용돼요. 결제하기를 누르면 로그인 화면으로 이동합니다.
                     </p>

@@ -108,7 +108,9 @@ export type CouponRejectReason =
   | 'rate_limited'
   /** 등급 풀(S2) 소진 — 이 사람 탓이 아니다. rate_limited 와 문구를 분리한다. */
   | 'busy'
-  | 'bind_failed';
+  | 'bind_failed'
+  /** 전단지 공용 코드(promo-code.ts)를 그 코드의 상품이 아닌 곳에 넣음. */
+  | 'promo_wrong_product';
 
 /** 미결제 귀속을 풀어 다른 사람이 쓸 수 있게 되는 시간(설계 §5-2 · B 결정의 완화책 1). */
 export const COUPON_RECLAIM_AFTER_MS = 24 * 60 * 60 * 1000;
@@ -311,6 +313,9 @@ export function couponRejectMessage(reason: CouponRejectReason): string {
       return '지금은 쿠폰 확인이 몰려 잠시 멈췄어요. 내일 0시에 다시 열립니다. 이미 등록된 쿠폰과 결제는 그대로 쓸 수 있어요.';
     case 'bind_failed':
       return '쿠폰을 적용하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.';
+    case 'promo_wrong_product':
+      // ponytail: 공용 코드가 지금 '간지사주50'(신년운세) 하나뿐이라 문구에 상품을 박았다. 다른 상품 공용 코드가 생기면 코드별 문구로.
+      return '이 할인코드는 2027 신년운세 전용입니다. 다른 상품에는 적용되지 않습니다.';
     default:
       return '사용할 수 없는 쿠폰 코드입니다.';
   }
