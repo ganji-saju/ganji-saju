@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     const saved = await createReportOrder({ ...order, amount, paymentOrderId: null, source });
     await Promise.all([
       sendOrderReceivedText(saved),
-      sendAdminOrderAlert({ kind: 'bank', product: REPORT_PRODUCT_LABEL[saved.product], amount: saved.amount, orderNo: saved.orderNo }),
+      sendAdminOrderAlert({ kind: 'bank', product: REPORT_PRODUCT_LABEL[saved.product], amount: saved.amount, adminPath: `report-orders/${saved.id}` }),
     ]);
     return json({
       ok: true, payMethod: 'bank', orderNo: saved.orderNo, amount: saved.amount,

@@ -3,7 +3,7 @@
 ## 2026-10-28 — 모든 결제·무통장 신청을 관리자 휴대폰으로 알림
 
 - 사용자 요청: "모든 결제에 관리자 알림톡으로 받게 해줘"(앱 결제 포함, 번호 2개).
-- `src/lib/admin/order-alert.ts` 신설: 구분(결제 완료 / 무통장 신청(입금 대기))·상품·금액·주문번호만 보낸다(손님 이름·전화번호 없음). 수신 번호는 기존 `OPS_ALERT_PHONES`(쉼표로 여러 개, 운영에 이미 있음 — LLM 긴급 경보와 같은 번호).
+- `src/lib/admin/order-alert.ts` 신설: 구분(결제 완료 / 무통장 신청(입금 대기))·상품·금액·확인 링크만 보낸다(손님 이름·전화번호 없음). 링크는 앱 결제=`/admin/users/<회원>`, 랜딩 주문=`/admin/report-orders/<주문>` — 처음엔 주문번호를 넣었으나 앱 결제 주문번호는 관리자 화면에 안 보인다는 지적으로 교체. 수신 번호는 기존 `OPS_ALERT_PHONES`(쉼표로 여러 개, 운영에 이미 있음 — LLM 긴급 경보와 같은 번호).
 - 채널: `KAKAO_TPL_ADMIN_ORDER`(관리자 알림톡 템플릿 번호)가 있으면 알림톡(실패 시 Solapi 문자 대체), 없으면 같은 내용을 일반 문자로. 템플릿 심사 전에도 바로 동작.
 - 연결 지점: `fulfillPaymentOrder`(앱 결제·랜딩 카드 결제 모두 지남, 주문 claim 으로 한 번만) + `/api/report-orders` 무통장 접수. 실패해도 결제 응답은 그대로(던지지 않음).
 - 검증: order-alert.test.ts 3건 구현 전 실패(모듈 없음) 확인 후 통과. npm test fail 0(첫 실행에서 coupon-chokepoint 가드가 `amount: reportOrder.amount` 를 잡아 `claimed.amount` 로 수정) · vitest payments/report-orders 95 통과 · tsc 통과.

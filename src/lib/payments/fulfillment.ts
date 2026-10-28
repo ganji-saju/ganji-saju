@@ -215,7 +215,7 @@ export async function fulfillPaymentOrder(input: {
       if (reportOrder) {
         await Promise.all([
           sendOrderReceivedText(reportOrder),
-          sendAdminOrderAlert({ kind: 'paid', product: REPORT_PRODUCT_LABEL[reportOrder.product], amount: claimed.amount, orderNo: reportOrder.orderNo }),
+          sendAdminOrderAlert({ kind: 'paid', product: REPORT_PRODUCT_LABEL[reportOrder.product], amount: claimed.amount, adminPath: `report-orders/${reportOrder.id}` }),
         ]);
       }
       // 전달할 주문이 있을 때만 GA 구매로 잡는다.
@@ -381,7 +381,7 @@ export async function fulfillPaymentOrder(input: {
     //   계측 실패로 결제 응답이 깨지면 본말전도다.
     await dispatchGaPurchase(claimed.orderId);
     // 관리자 알림(결제 완료). 위 claim 으로 주문당 한 번만 여기를 지난다. 실패해도 던지지 않는다.
-    await sendAdminOrderAlert({ kind: 'paid', product: pkg.name, amount: claimed.amount, orderNo: claimed.orderId });
+    await sendAdminOrderAlert({ kind: 'paid', product: pkg.name, amount: claimed.amount, adminPath: `users/${claimed.userId}` });
 
     return {
       success: true,
