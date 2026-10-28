@@ -38,6 +38,8 @@ import { DIALOGUE_QUESTION_CREDITS, shouldGrantCredits } from '@/lib/payments/co
 import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
 import { getReportOrderByPaymentOrder, markReportOrderPaidByPaymentOrder } from '@/lib/report-orders/report-order-store';
 import { sendOrderReceivedText } from '@/lib/report-orders/notify';
+import { REPORT_PRODUCT_LABEL } from '@/lib/report-orders/report-order';
+import { sendAdminOrderAlert } from '@/lib/admin/order-alert';
 import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 
 async function attachOwnedReading(
@@ -210,7 +212,12 @@ export async function fulfillPaymentOrder(input: {
       }).catch(() => undefined);
     } else {
       const reportOrder = await getReportOrderByPaymentOrder(claimed.orderId).catch(() => null);
-      if (reportOrder) await sendOrderReceivedText(reportOrder);
+      if (reportOrder) {
+        await Promise.all([
+          sendOrderReceivedText(reportOrder),
+          sendAdminOrderAlert({ kind: 'paid', product: REPORT_PRODUCT_LABEL[reportOrder.product], amount: claimed.amount, adminPath: `report-orders/${reportOrder.id}` }),
+        ]);
+      }
       // 전달할 주문이 있을 때만 GA 구매로 잡는다.
       await dispatchGaPurchase(claimed.orderId);
     }
@@ -373,6 +380,8 @@ export async function fulfillPaymentOrder(input: {
     //   디스패처가 DB 플래그를 선점해 멱등을 보장하고, 실패해도 예외를 던지지 않는다 —
     //   계측 실패로 결제 응답이 깨지면 본말전도다.
     await dispatchGaPurchase(claimed.orderId);
+    // 관리자 알림(결제 완료). 위 claim 으로 주문당 한 번만 여기를 지난다. 실패해도 던지지 않는다.
+    await sendAdminOrderAlert({ kind: 'paid', product: pkg.name, amount: claimed.amount, adminPath: `users/${claimed.userId}` });
 
     return {
       success: true,
