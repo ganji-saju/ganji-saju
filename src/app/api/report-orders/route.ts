@@ -13,11 +13,12 @@ import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
 import { readGaIdentifiers } from '@/lib/analytics/ga-identifiers';
 import { GA4_MEASUREMENT_ID } from '@/lib/analytics/ga-config';
-import { REPORT_PACKAGE_BY_PRODUCT } from '@/lib/report-orders/report-order';
+import { REPORT_PACKAGE_BY_PRODUCT, REPORT_PRODUCT_LABEL } from '@/lib/report-orders/report-order';
 import { parseReportOrderForm } from '@/lib/report-orders/parse-report-order';
 import { countRecentReportOrdersByPhone, createReportOrder } from '@/lib/report-orders/report-order-store';
 import { getReportBankAccount } from '@/lib/report-orders/bank-account';
 import { sendOrderReceivedText } from '@/lib/report-orders/notify';
+import { sendAdminOrderAlert } from '@/lib/admin/order-alert';
 import { takeReportOrderSlot } from '@/lib/report-orders/rate-limit';
 
 export const runtime = 'nodejs';
@@ -112,7 +113,10 @@ export async function POST(req: NextRequest) {
     }
 
     const saved = await createReportOrder({ ...order, amount, paymentOrderId: null, source });
-    await sendOrderReceivedText(saved);
+    await Promise.all([
+      sendOrderReceivedText(saved),
+      sendAdminOrderAlert({ kind: 'bank', product: REPORT_PRODUCT_LABEL[saved.product], amount: saved.amount, orderNo: saved.orderNo }),
+    ]);
     return json({
       ok: true, payMethod: 'bank', orderNo: saved.orderNo, amount: saved.amount,
       bank: bank!.bank, account: bank!.account, holder: bank!.holder, depositDueAt: saved.depositDueAt,
