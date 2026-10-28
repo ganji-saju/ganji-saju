@@ -12,8 +12,8 @@ export interface PromoCode {
 }
 
 export const PROMO_CODES: readonly PromoCode[] = [
-  // 행운곳간 구매 고객 전단지 — 2027 신년운세 19,900 → 9,900.
-  { code: '간지사주50', packageIds: ['taste_new_year_2027'], price: 9900 },
+  // 행운곳간 구매 고객 전단지 — 2027 신년운세 19,900 → 9,900. 앱 결제(taste_)와 한 장짜리 랜딩(report_) 둘 다(2026-10-28).
+  { code: '간지사주50', packageIds: ['taste_new_year_2027', 'report_new_year'], price: 9900 },
 ];
 
 /** 띄어쓰기·대소문자·한글 조합 차이(NFC/NFD)는 같은 코드로 본다. */

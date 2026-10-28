@@ -123,3 +123,42 @@ describe('번호 제한 조회 실패', () => {
     expect((await POST(request({ ...form, payMethod: 'bank' }, {}, '5.5.5.5'))).status).toBe(429);
   });
 });
+
+describe('할인코드(간지사주50) — 2027 신년운세 전용', () => {
+  const newYear = { ...form, product: 'new-year' };
+  beforeEach(() => {
+    vi.mocked(resolvePackagePrice).mockResolvedValue(19900);
+  });
+
+  it('카드: 신년운세에 넣으면 결제 원장에 공용 코드를 넘긴다(금액은 서버가 9,900 으로 계산)', async () => {
+    const res = await POST(request({ ...newYear, promoCode: '간지사주 50' }, {}, '3.3.3.1'));
+    expect(res.status).toBe(200);
+    expect(createPaymentOrder).toHaveBeenCalledWith(expect.objectContaining({ listAmount: 19900, promo: expect.objectContaining({ code: '간지사주50', price: 9900 }) }));
+  });
+
+  it('무통장: 신년운세에 넣으면 9,900원으로 접수한다', async () => {
+    const res = await POST(request({ ...newYear, payMethod: 'bank', promoCode: '간지사주50' }, {}, '3.3.3.2'));
+    expect((await res.json()).amount).toBe(9900);
+    expect(createReportOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 9900 }));
+  });
+
+  it('종합사주에 넣으면 400 — 정가로 조용히 받지 않는다', async () => {
+    vi.mocked(resolvePackagePrice).mockResolvedValue(29900);
+    const res = await POST(request({ ...form, promoCode: '간지사주50' }, {}, '3.3.3.3'));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('2027 신년운세 전용');
+    expect(createPaymentOrder).not.toHaveBeenCalled();
+    expect(createReportOrder).not.toHaveBeenCalled();
+  });
+
+  it('없는 코드는 400', async () => {
+    const res = await POST(request({ ...newYear, payMethod: 'bank', promoCode: '아무거나' }, {}, '3.3.3.4'));
+    expect(res.status).toBe(400);
+    expect(createReportOrder).not.toHaveBeenCalled();
+  });
+
+  it('빈 칸이면 정가 그대로', async () => {
+    await POST(request({ ...newYear, payMethod: 'bank', promoCode: '  ' }, {}, '3.3.3.5'));
+    expect(createReportOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 19900 }));
+  });
+});
