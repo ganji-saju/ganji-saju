@@ -112,11 +112,18 @@ describe('reportOrderResultHref', () => {
 describe('이름 글자 제한(문자 악용 방지)', () => {
   it('한글·영문·공백만 받는다 — 링크·숫자·기호는 거부', async () => {
     const { parseReportOrderForm } = await import('./parse-report-order');
-    expect(parseReportOrderForm({ ...base, name: '김민지 bit.ly/x' })).toEqual({ ok: false, error: '이름은 한글·영문 20자 이내로 입력해 주세요.' });
+    expect(parseReportOrderForm({ ...base, name: '김민지 bit.ly/x' })).toEqual({ ok: false, error: '이름에는 한글·영문만 쓸 수 있어요(숫자·기호·괄호 제외).' });
     expect(parseReportOrderForm({ ...base, name: '홍길동1' }).ok).toBe(false);
     expect(parseReportOrderForm({ ...base, name: 'Kim Minji' }).ok).toBe(true);
     expect(parseReportOrderForm({ ...base, name: 'Anne-Marie' }).ok).toBe(true);
     expect(parseReportOrderForm({ ...base, name: "O'Neil" }).ok).toBe(true);
+  });
+
+  // 2026-11-04 — 아이폰·맥 자동완성은 한글을 자모로 풀어(NFD) 보내기도 한다. 그대로 검사하면 정상 이름이 막힌다(실제 신청 실패).
+  it('자모로 풀린 한글 이름도 받고, 저장은 합친 글자로 한다', async () => {
+    const { parseReportOrderForm } = await import('./parse-report-order');
+    const result = parseReportOrderForm({ ...base, name: '홍길동'.normalize('NFD') });
+    expect(result.ok && result.order.name).toBe('홍길동');
   });
 });
 

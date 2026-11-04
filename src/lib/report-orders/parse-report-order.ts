@@ -27,10 +27,11 @@ export function parseReportOrderForm(payload: unknown): ParsedReportOrder {
   if (product !== 'lifetime' && product !== 'new-year') return invalid('상품을 선택해 주세요.');
   const payMethod = p.payMethod;
   if (payMethod !== 'card' && payMethod !== 'bank') return invalid('결제 방법을 선택해 주세요.');
-  const name = str(p.name);
+  // 아이폰·맥 자동완성은 한글을 자모로 풀어(NFD) 보내기도 한다 — 합친 글자(NFC)로 바꾼 뒤 검사·저장한다.
+  const name = str(p.name).normalize('NFC');
   if (!name || name.length > 20) return invalid('이름은 1자 이상 20자 이하로 입력해 주세요.');
   // 이름은 접수 문자에 그대로 들어간다 — 링크·숫자·기호를 막아 우리 발신번호로 피싱 문자를 못 보내게.
-  if (!/^[가-힣a-zA-Z' -]+$/.test(name)) return invalid('이름은 한글·영문 20자 이내로 입력해 주세요.');
+  if (!/^[가-힣a-zA-Z' -]+$/.test(name)) return invalid('이름에는 한글·영문만 쓸 수 있어요(숫자·기호·괄호 제외).');
   const phone = str(p.phone).replace(/[-\s]/g, '');
   if (!/^01[016789]\d{7,8}$/.test(phone)) return invalid('휴대폰 번호를 확인해 주세요.');
   const email = str(p.email);
