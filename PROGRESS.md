@@ -7,6 +7,7 @@
 - 채널: `KAKAO_TPL_ADMIN_ORDER`(관리자 알림톡 템플릿 번호)가 있으면 알림톡(실패 시 Solapi 문자 대체), 없으면 같은 내용을 일반 문자로. 템플릿 심사 전에도 바로 동작.
 - 연결 지점: `fulfillPaymentOrder`(앱 결제·랜딩 카드 결제 모두 지남, 주문 claim 으로 한 번만) + `/api/report-orders` 무통장 접수. 실패해도 결제 응답은 그대로(던지지 않음).
 - 검증: order-alert.test.ts 3건 구현 전 실패(모듈 없음) 확인 후 통과. npm test fail 0(첫 실행에서 coupon-chokepoint 가드가 `amount: reportOrder.amount` 를 잡아 `claimed.amount` 로 수정) · vitest payments/report-orders 95 통과 · tsc 통과.
+- 머지 전 리뷰(2026-11-04): 솔라피 발송에 시간 제한이 없어, 솔라피가 응답하지 않으면 결제 완료 응답까지 같이 멈출 수 있었다 → `vendor.ts` 발송 요청에 5초 제한(`AbortSignal.timeout`). 시간 제한 테스트 구현 전 실패 확인 후 통과, npm test 199/fail 0 · vitest kakao/payments/report-orders 60 통과 · tsc 통과.
 - 남은 일: 솔라피에 관리자 알림톡 템플릿 심사 → 승인되면 Vercel 에 `KAKAO_TPL_ADMIN_ORDER` 추가 후 재배포. ⚠️ 검증필요: 운영자 대상 알림톡의 카카오 심사 통과 여부.
 
 ## 2026-10-28 — 한 장짜리 랜딩 신청서에 신년운세 할인코드 입력칸
