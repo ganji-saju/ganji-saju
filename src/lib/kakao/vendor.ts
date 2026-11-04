@@ -26,6 +26,8 @@ export interface VendorSendResult {
 
 const SOLAPI_SEND_URL = 'https://api.solapi.com/messages/v4/send';
 const SOLAPI_SEND_DETAIL_URL = 'https://api.solapi.com/messages/v4/send-many/detail';
+// 결제 완료 응답이 관리자 알림 발송을 기다린다 — 솔라피가 응답하지 않아도 결제 화면이 멈추지 않게 끊는다.
+const SOLAPI_TIMEOUT_MS = 5000;
 
 /** Solapi HMAC-SHA256 인증 헤더: signature = HMAC(secret, date+salt) */
 function solapiAuthHeader(): string {
@@ -48,6 +50,7 @@ async function postSolapiMessage(message: Record<string, unknown>): Promise<Vend
         Authorization: solapiAuthHeader(),
       },
       body: JSON.stringify({ messages: [message], showMessageList: true }),
+      signal: AbortSignal.timeout(SOLAPI_TIMEOUT_MS),
     });
     const data = (await res.json().catch(() => null)) as
       | {

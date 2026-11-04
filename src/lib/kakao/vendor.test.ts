@@ -90,3 +90,21 @@ test('solapiSendAlimtalk treats a per-message provider error as failed', async (
     globalThis.fetch = originalFetch;
   }
 });
+
+// 2026-11-04 — 결제 완료 응답이 관리자 알림 발송을 기다린다(order-alert). 솔라피가 응답하지 않으면
+//   결제 화면이 같이 멈추므로 발송 요청에 시간 제한을 건다.
+test('solapiSendAlimtalk gives up when Solapi does not answer in time', async () => {
+  const originalFetch = globalThis.fetch;
+  let signal: AbortSignal | null | undefined;
+  globalThis.fetch = (async (_input, init) => {
+    signal = init?.signal;
+    return new Response(JSON.stringify({ errorCount: 0, resultList: [{ statusCode: '2000' }] }), { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    await solapiSendAlimtalk({ to: '01012345678', templateCode: 'T', variables: {} });
+    assert.ok(signal instanceof AbortSignal, '발송 요청에 시간 제한(AbortSignal)이 없다');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
