@@ -62,7 +62,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.61.0",
     "lunar-typescript": "^1.8.6",
-    "next": "^16.4.2",
+    "next": "^16.4.6",
     "openai": "^6.49.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
